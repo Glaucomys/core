@@ -1,0 +1,480 @@
+Core Changelog
+Timestamp: YYYYMMDD
+Note: i have a spelling waiver. no, seriously i do..
+
+TO DO LIST
+- remove pet buffing from /t buff queue
+- fix auto swapping of control toon for healers in raids.
+
+
+20170323
+- lots-o-changes (yes more) to core_cast()
+- class.wiz.inc
+  -- re-arranged several things to keep them nuking more.
+  -- adjusted for the new cast routines
+  
+
+20170322
+- Core Version 3.2.0
+- class.mage.inc
+  -- all cursor items work off core.loot.ini now
+- core_cast() 
+  -- validates that spells/items/aa/discs are ready before tyrying to use them
+  -- /call core_cast "whatever" NULL NULL
+     -- will figure out what you have and use it..
+- toast.inc
+  -- class AA Synergy's added. just need to work them in now
+
+
+20170321
+- events.inc
+  -- 16 anni stein fixed
+  
+
+20170320
+- sort_cursor() is replacing clear_cursor()
+  -- aligning everything to use the core.loot.ini
+
+
+20170319
+- CLR 2.1.1
+- DRU 2.0.1 
+- SHM 1.5.1
+- WAR 1.5.1 
+- PAL 0.5.1 
+- SHD 1.9.1 
+- WIZ 1.7.1 
+- ENC 1.4.1
+- MAG 2.0.1
+- RNG 2.2.1
+- BST 1.0.1 
+- BRD 1.5.1 
+- BER 1.6.1
+- ROG 1.5.1 
+- corrected the last of the subroutines with a . in the name
+- check_AA_now() will only execute when needed and only 1 time per itteration and not 3 times.
+- moved CHECKREZ to a better spot in the toon loop
+- various refinements to every class.XXX.inc
+
+
+
+20170318
+- CLEARCURSOR will not, if nothing is on the cursor.
+- adjustments to /tie. trying to catch a bug...
+  -- will not activate when command giver is not in same zone. may cause problems while zoning
+- core_cast()
+  -- will validate that disks requiring a target actually have a target to activate (blame the zerkers)
+  -- will try and acquire the forced target before it checkes to see if it failed on getting the target
+- class.shd.inc
+  -- added more control for dead targets to be released
+
+
+20170317
+- BEAT THE COMMA IN NAMED LIST... /finally
+- protection for /zonereset
+  -- will no longer update running zone info if the person making the list changes is not in the same zone.
+
+
+20170316
+- complete redesign of how cursor items are handled
+  -- foraged and fished items are now matched to core.loot.ini
+  -- same /loot?? commands apply to anything that can go on the cursor
+  -- delete the [foragelist] and [fishlist] section out of core.ini, or move them to core.loot.ini
+  -- effects mage summoned items
+  -- pet class and weapons
+- fixed logic error in CoTF Gunthak Swabby's Eyepatch buff clickie.
+- /lootignore
+  -- loot and cursor controls will completely ignore this item
+
+
+20170315
+- fixed math error in XTarget population
+
+
+20170213
+WHITEWASH
+- complete rewrite of the list control sub.
+  -- 266 lines of code to 58 /awwwwyahhhh
+  -- still cant get fucking commas in the mob names.
+- replace all instances of .CleanName -> .DisplayName
+  
+
+20170311
+- all rez switches moved under [Heal] in character ini. delete existing and let them rebuild
+  -- all classess have access to the rez switches now 
+     -- /rezcombat
+     -- /rezemergency
+     -- /rezauto
+     -- /rezeveryone
+- sped up /here command
+  -- will only attempt to stop the things it is doing
+   
+
+20170310
+WHITEWASH
+- lots of zone list control changes
+  -- alias renames:
+     -- /named -> /listnamed
+     -- /exclude -> /listexclude
+     -- /nocast -> /listnocast
+     -- /nomezz -> /listnomezz
+     -- /nomelee -> /listnomelee
+     -- /rmob -> /listrange
+     -- /nomagic -> /listnomagic
+     -- /nodisease -> /listnodisease
+     -- /nofire -> /listnofire
+     -- /nopoison -> /listnopoison
+     -- /nocold -> /listnocold
+     -- /nocorruption -> /listnocorruption
+     -- /huntmob -> /listhuntmob
+  -- ADDED /listremove
+     -- will remove your current target from ALL current zone lists.
+- corrected some logic in check_heal_ward() in class.clr.inc     
+- Sapping Strikes Disc added to class.ber.inc
+
+
+20170309
+- complete rewrite of how combat is stoped.
+  -- validates what it is stopping to see if it is even in progress
+
+
+20170308
+- Core Version 3.1.4
+WHITEWASH
+- update to MANY aliases
+  -- /: exclude, named, nomezz, nocast, nomelee, rmob, nomagic, nodisease, nofire, nopoison, nocold, nocorruption, huntmob
+  -- list controls do not require a ${Target.CleanName} or ${Target.DisplayName} in the hokey anymore. simply target the mob and issue the / command
+  -- will not add PCs to lists anymore only NPC
+- /huntmobagro [##|0|FALSE]
+  -- ## maximum range you will look for mobs to hunt
+  -- 0|FALSE will disable range checking setting it to zone wide
+-- updated HUD notices to display non-normal modes
+  
+
+20170306
+- changes to curing: 
+  -- /healcure is the only switch that is required now.
+  -- hardcoded radient cure and purify souls/group into curing routine
+  -- updated classes with new cure routine
+  -- out of combat timer added for curing. default 30 sec check
+  -- AAs: Radient Cure, Purified Spirits, Purify Soul, Group Purified Spirits all hardcoded now. First line of cure defense
+  -- can use items in inventory that will cure yourself
+  -- curing classes will cure while in combat [CLR|DRU|SHM|RNG|BST|BRD|PAL]. all other classes can use items to cure while out of combat. still need /healcure enabled
+    
+
+20170303
+HUDUPDATE
+-	fixed the HUD real/ingame time.
+
+
+20170302
+- /whohas [ITEMNAME] 
+  -- reports back in ECHOCHANNEL who has that item
+  -- works off partial names eg. /whohas fist
+  -- looks for augments too
+
+
+20170228
+- Hunter
+  -- new line in core.zone.ini
+     -- HuntMobList=|mobname1|mobname2
+  -- /hunt turns ON/OFF hunt mode  
+  -- /huntmob [TARGET] will set the current target mob in core.zone.ini as a hunted mob
+
+
+20170227
+- simple spawn watcher
+  -- /watchspawn NAME
+  -- non persistant
+  -- works on partial names zone wide
+  -- default timer to check zone for 1sec
+- HUDUPDATE
+  -- shows broadcast area GREE if on RED if off
+  -- added ## counter for watched spawns. next to current target debuffs 'till i find a better solution
+- more adjustments to the rez code. i will beat this rez token thing into submission  
+  -- Toon [Common] -> RezTokenList
+     -- list the classes you want to use rez tokens on
+  
+ 
+20170226
+- wizard AA evac [exodus]
+  -- /g gtfo and you are out..
+- cleric event to drop ToTD after set time. this will need fine tuning.
+ 
+
+20170225
+- cleared a lot of stale declare.inc entries
+- typo in common.inc .CurrentEndurance not a thing (maybe it should be). replaced with .PctEndurance
+- corrected lots of local variable name conventions
+- will not use breather in safezones.
+- /clean options are now in core.ini [hide] -> ????
+
+
+20170224
+- added /lootannounce
+  -- will announce the loot item in ECHOCHANNEL and leave it on the corpse.
+
+
+20170223
+WHITEWASH
+- replacing /port with /take
+  -- /take now acepts trade window. at least it should../shrug
+- declare.inc
+  -- replaced local variable cmd with _cmd to match established pattern
+  -- added several ECHOCHANNELs to commands
+  -- corrected some exit points
+- new command(s)
+  -- /rc will force [CLR|DRU|SHM] to cast AA Radient Cure
+  -- /purify forces [CLR] to cast AA Purify Spirits on the command giver
+  -- /bc handin
+     -- format: /bc handin |diamond|pearl|epicsword
+     -- this will tell all in your BC to hand in the 3 items listed to your current target
+     -- will take up to 4 items. all must be seperated with a pipe | for deleniation. eg: |item1|item2|item3|item4
+  -- /echoaugments
+     -- will write all augments to a file: core.augmentdump.ini
+     -- recursive of items worn, and bags/in bags/in items in bags.
+- info.inc updated
+     
+     
+20170221
+- Core Version 3.1.3
+HUDUPDATE
+- controls for swarm pets added
+  -- /petswarmengageat . ##% to send in the swarm pets/reengage them
+  -- /companionswarm .  enable/disable swarm pets
+- cleaned up the /whitewash function. had some old stuff in it.
+- ranger pet swarm added to burn
+
+
+20170220
+- WIZ Version 1.7.0
+- added wizards to the /debuffsnare switch with Atol's Shackles AA
+- rewrote wizzy burns
+  -- moved longer reuse AAs to burn routine
+- added error handeling for non snaring classes
+- cleric will QM lowest mana in group. if /useqm is off, they will still QM themselves
+- QM added to the HUD Notice list for clerics.
+
+
+20170218
+- enchanters will tash/slow/cripple in NUKE mode
+- druid/shaman call fail retry cast upped to 45 sec vice 30. getting more calls then rezes.
+
+
+20170217
+- healers will ignore control toon if they are not in the same zone. fuck that guy anyway..
+- added /lootwhat
+  -- will tell you your current [keep|sell|ignore|destroy] value for the top item on your cursor
+- small adjustment to the pull code
+- added /echochannel
+  -- can set the echo channel to whatever. FALSE to disable
+- updated cleric QM routine
+- ECHOCHANNEL added to:
+  -- cleric QM
+  -- mage CoTH
+- redesigned chanter debuf routine
+
+  
+20170216
+- Core Version 3.1.2
+- the MA will clear its assist settings so it does not try and assist the assit.
+- shaman splash will work with ma1 and ma2
+- rewrite of the pull/target acquisition code.
+  -- get_target() is now the only routine for finding a mob and getting it to camp
+  -- removed get_mob
+  -- removed pull_mob
+- toons will spout random insults on deaths again. best fucking thing ever!
+- /lootdestroy will destroy whats on your cursor as well.
+
+
+20170215
+- Core Version 3.1.1
+- aura clickies will make sure there is a space in the arua window first
+- put use_glyph() back in all the toast routines
+- will not try and use AAs when you dont have them
+- updated some function names in events.inc
+- added a channel echo "ECHOCHANNEL" in TOON [common] -> echoChannel=
+  -- ex: FALSE will disable (DEFAULT)
+  -- 1 would put output in channel 1
+  -- g would puu to group
+  -- rs raid say.. and so on
+  -- not a good idea to put it in bc. may trigger events..
+- echoChannel added to:
+  -- dying
+  -- rezzing
+  -- enc.inc Mezz Immune Target
+- condition for call vs rez. calls will still look for rez box after the fact. NOT IN COMBAT
+  
+
+20170214
+- enchanter will check for peridots when needed for spells
+
+
+20170213
+- Core Version 3.1.0 
+- all /target clears require target first. makes sense i suppose
+- get_assist_target() only regets target when needed/when there is a mismatch to the MAs target
+- correction to mage/wizard twincast
+- forced plugin validation for a lot of functions
+- updated several / commands to validate plugins and/or class control.
+- added CLEARCURSOR. gets shit off the cursor for whatever is in the Toon [Common] autoInventoryItem= list. Append TRUE to Clear everything no matter what it is
+- toons shouldn't ask corpses for modrods or weapons anymore. not like they would respond anyway.
+
+
+20170212
+- LDEBUG added to export debug output to MQLOG. this was prob a very bad idea.
+
+
+20170211
+- SDEBUG added for selective assistance in debugging.
+- corrected shaman to target the assist toon for twinheal nuke spells
+
+
+20170210
+- /sell 'ITEMNAME'
+  -- ITEMNAME in single quotes with the item you want to sell out of your inventory. It WILL sell all instances of the item in your inventory.
+  -- you can use 'lootfile' for the item name and it will match to the core.loot.ini and sell everything marked as Sell.
+  -- merchant needs to be open
+- info.inc updated
+- /lootsell will mark anything on your cursor to sell in core.loot.ini
+- added check_AA_now() to
+  -- ranger, druid, enchanter, berzerker, warrior, wizard, cleric, bard, beastlord, paladin, magician, necromancer, rogue, shadowknight, shaman
+  -- this replaces the bard check_AA_sionachies.
+- enchanters will cast DoTs now. not sure how i missed this one.
+
+
+20170209
+- wrote the HUDUPDATE out of wait_for_res(). Reversed the flow of wait_for_res() so the res acceptacnce is the last evaluation.
+- druid 2.0.0
+  -- built in synergy routine
+  -- redesigned heal variables to match druid heal spell lines and not clerics
+  -- added in more aa dps
+  -- added in more aa heal
+  -- moved AE heal ward to burns
+- check_AA_now()
+  -- [AANow] entry in toon INI. Hardcoded for 2 AAs
+  -- will keep both AAs up on the toon at all times.
+  -- this is designed for very fast cast AA with effects that you always want on the toon.
+  -- works for AAs ONLY.
+- /bc purify will have anyone with the AA Purified Spirits cast it on you.  
+- check_buffs_self() now knows the difference between item/spell/aa.
+- healers [clr|dru|shm|pal] will force mem of cure spells if /healcure is set and they are needed.
+- /buy 'ITEMNAME' ##
+  -- ITEMNAME name "Water Flask".. in SINGLE QUOTES
+  -- ## is the quantity you want to buy
+  -- merchant needs to be open
+
+
+20170208
+- Core Version 3.0.4
+- /bcsay forces all in bc to assist the sender, then everyone echos the word(s)
+  -- EXAMPLE: /bcsay hello ${Target.DisplayName} or /bcsay prepared to enter
+  -- there is a built in delay of 2-3 seconds for the response time from all but sender.
+  -- echoing toons must be in 80 of the sender
+  -- will remove all invis
+- all instances of variable Sender (local or outer) changed to _sender.
+- more changes to res routines
+ 
+
+
+20170207
+- fixed bug in pet buffing. would stop at 4. goes to 10 now.
+- all buffs limited to 10
+- fixed bard typo in do_rest hybrid list
+- added #event for death checks. hope this fucking works.
+
+
+20170206
+- Core Version 3.0.3
+- do_rest() will allow for /tell buffing
+- added some more dead mob checking to mag.inc. trying to catch a bug.
+- fixed delete functions in do_loot(). it works as advertised now, is recursive and deletes stacks.
+- fixed typo with wiz.inc for synergy
+- changed the following sub names:
+  -- clearCombat() -> clear_combat()
+  -- doTrainSkills() -> do_skill_train()
+  -- checkNoCastBuffs() -> check_no_cast_buffs()
+  -- tell_ResidentMage() -> tell_resident_mage() 
+  -- getAssistTarget() -> get_assist_target()
+  -- get_Mob() -> get_mob()  
+  -- checkEngaged() -> check_engaged()
+- removed get_target_2kill() replaced with get_assist_target()
+- removed get_target() replaced with get_assist_target()
+- started structure for versioning check_version() declare.inc
+
+
+20170204-05
+- Core Version 3.0.2
+HUDUPDATE
+- rewrite of the buff queue system.
+  -- max queue list definable in core.ini [general]->queueCountMax. default 10 (was 25)
+  -- max usable buffs that can be used for request is 8.
+- changed the following sub names:
+  -- setStop() -> set_stop()
+- HUD: added checks to the HUD that show which toons in your group have core automatic mode OFF.
+  -- /broadcast will enable/disable the HUD updates by toon
+ 
+
+20170204
+- Core Version 3.0.1
+WHITEWASH
+HUDUPDATE
+- burn routine has an issue with non di-rect target of named mobs (HEAL and DUAL modes). They no longer require isValidTarget() to function.
+- fixed cleric Veturika's when /healoveride was enabled.
+- added /healoveride checks to mage/enchanter manna checks.
+- added /healoveride checks to horn of unity.
+- HUD: creating an emergency rez system for Loyalty Token rez when your clr/dru decide to take a dirt nap.
+  -- criteria:
+  -- alias /rezemergency
+  -- cleric and druid (not gonna include paladins or shaman in the search) must be dead or non existant in 110 unit range
+  -- will not rez in safezones
+  -- hud represented by "?" in rez section
+- updated "all" calsses for the new rez check. no i didnt do the necro or monk.
+- WHITEWASH: corected a burn alias to be toast. ${burnMobCount} -> ${toastMobCount}
+- migrated toast routines for wizard, beastlord, rogue, warrior, berzerker, druid,
+- isolated Circle of Power clicks to toast routines only
+- changed the following sub names:
+  -- pull_Mob() -> pull_mob()
+  -- checkPet() -> check_pet()
+  -- useGlyph() -> use_glyph()
+  -- sendPet() -> send_pet()
+  -- setHome() -> set_home()
+  -- castServantNuke() -> cast_nuke_servant()
+  -- castRainNuke() -> cast_nuke_rain()
+  -- cast_gom_nuke() -> cast_nuke_GoM()
+  -- check_self_buffs() -> check_buffs_self()
+  -- check_raid_buffs() -> check_buffs_raid()
+  -- check_BC_buffs() -> check_buffs_BC()
+  -- check_tell_buffs() -> check_buffs_tell()
+  -- check_item_buffs() -> check_buffs_item()
+- refixed /tell buffing /sigh
+
+
+20170203
+- rebuilt echos() to replace echo_update()
+- fuck MQ2Twist... rebuilt bard in my own image.
+- BC/Tell buffs will work with items. use the item name for the buff name. and the item effect for the buff effect name.
+- bards can mez now. it's crude but effective.
+
+
+20170202
+- added Circle of Power to toast.inc
+- migrated Shadowknight toast routine
+- rewrite of magician toast
+- fixed all the /face commands to use ${If[${SetFaceFast},fast,]} alias /facefast
+- migrated rogue toast routine
+
+
+20170201
+- Core Version 3.0
+- WHITEWASH ..
+- starting changelog, yay me..
+- added toast.inc. goal is to put all burn routines into one place and get them to cooperate more effectively. this will take some time. started with ranger. cause well ranger and stuff.
+- moved the melee check out of the cast_nuke() 'cause it was hanging the SK on mob getting.
+- rewrote check_pet_buffs() to function same as self buffing.
+- rewrote get_mob() 1 less loop check.
+- redesigned the various INI's to one file. core.zone.ini
+- fixed a lot of the ranger burns.
+
+
+
