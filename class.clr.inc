@@ -43,8 +43,8 @@ sub core_CLR()
 	CHECKREZ
 	/if (${AutoBot} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
-		/if (${Me.PctMana} < 60*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]}) /call core_cast "Veturika's Perseverance" alt 0
-		/if (${Me.AltAbilityReady[Quiet Miracle]}) /call cast_quiet_miracle
+		/if (${Me.PctMana} < 60*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez}) /call core_cast "Veturika's Perseverance" alt 0
+		/if (${Me.AltAbilityReady[Quiet Miracle]} && !${flagCallNeedRez}) /call cast_quiet_miracle
 	}	
 
 	:killtarget
@@ -179,16 +179,14 @@ sub cast_quiet_miracle()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return} || !${Me.AltAbilityReady[Quiet Miracle]}) /goto :exit
+	/if (${Macro.Return} || !${Me.AltAbilityReady[Quiet Miracle]} || ${flagCallNeedRez}) /goto :exit
 	
 	/declare _count 					int local
 	/varset WorstManaID				${Me.ID}
 	/varset WorstManaPct			${If[${HealOverride},${useQMPct}*.${tmpHealOverride},${useQMPct}]}
-
 	
 	| QM cleric first always
 	/if (!${useQM} && ${Me.PctMana} < ${useQMPct}*.${tmpHealOverride}) /call core_cast "Quiet Miracle" alt ${Me.ID} 
-
 	
 	| Do group members need Manna
 	/for _count 0 to ${Group.Members}
@@ -200,7 +198,6 @@ sub cast_quiet_miracle()
 			/varset WorstManaPct ${Group.Member[${_count}].PctMana}
 		} 
   /next _count
-
 
 	/if (${WorstManaPct} < ${useQMPct}*.${tmpHealOverride}) {
 		/call core_cast "Quiet Miracle" alt ${WorstManaID}
@@ -321,12 +318,9 @@ sub check_heal_group_CLR()
     /call cast_divine_arbitration
     /goto :loopheal
   }
-  
-	| check for debuffs
-	/if (${switchHealCure}) /call cast_cure
-  
+    
   | Group Heal
-  /if (${MajorHurt}+${MinorHurt} >= 2 && ${Me.SpellReady[${healWholeGroup}]} && ${useGroupHeal}) {
+  /if (${useGroupHeal} && ${MajorHurt}+${MinorHurt} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
     /call core_cast "${healWholeGroup}" 0 ${Me.ID} check_HP_${Me.Class.ShortName}
     /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
   } 
@@ -337,6 +331,14 @@ sub check_heal_group_CLR()
   | ward of surety short buff 
 	/if (!${Bool[${timer_heal_ward}]} && ${Me.SpellReady[${healWard}]}) /call check_heal_ward
 
+	| check for personal debuffs
+	/if (${switchHealCure} && ${Debuff.Count}) {
+		| AA Purified Spirits SELF ONLY 0' range 2 min
+		/if (${Me.AltAbilityReady[Purified Spirits]}) /call core_cast "Purified Spirits" alt ${Me.ID} 
+		| AA Radient Cure SELF ONLY 100' range 1 min
+		/if (${Me.AltAbilityReady[Radiant Cure]}) /call core_cast "Radiant Cure" alt ${Me.ID} 
+	}
+	
 	ISDEAD
 	CHECKEXIT
  	/doevents
@@ -364,9 +366,16 @@ sub check_heal_group_CLR()
 	ISDEAD
 	CHECKEXIT
  	/doevents
+ 	
+ 	| agressive healing sort
+ 	/if (${switchHealAggressive} && (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]})) {
+		/goto :interventionheals
+ 	} else /if (!${switchHealAggressive} && (${Me.SpellReady[${healRemedy1}]} || ${Me.SpellReady[${healRemedy2}]})) {
+ 		/goto :remedyheals
+ 	}
 		
 	| Intervention Heals
-	/doevents
+	:interventionheals
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]})) {
   	/if (${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.AltAbilityReady[Burst of Life]}) {
 			/call core_cast "Burst of Life" alt ${WorstHurt} check_HP_${Me.Class.ShortName}
@@ -385,8 +394,8 @@ sub check_heal_group_CLR()
 	ISDEAD
 	CHECKEXIT
  	/doevents
-
 	| Remedy Heals 
+	:remedyheals
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healRemedy1}]} || ${Me.SpellReady[${healRemedy2}]})) {
       /if (${Me.SpellReady[${healRemedy1}]}) {
         /call core_cast "${healRemedy1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName} 
@@ -414,6 +423,9 @@ sub check_heal_group_CLR()
        /goto :loopheal
      }
   }  
+  
+  | check for group debuffs
+	/if (${switchHealCure} && ${Group.Members} && ${Math.Calc[${MajorHurt}+${MinorHurt}]} <= 1) /call cast_cure()
   
 	:exit
 	UPDATEHUD
@@ -744,4 +756,6 @@ sub auto_control_swap()
 
 	/call create_timer timer_auto_toon_control ${tAuto_Control_Toon}
 	:exit
-/return•
+/return
+
+

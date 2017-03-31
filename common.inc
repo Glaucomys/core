@@ -135,43 +135,43 @@ sub check_engaged()
  *	NOTE: lots of debug here. this is a problem child function.
  ***|
 sub wait_for_rez()
-	SDEBUG ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead})\ax
-	SDEBUG call Flag:${flagCallNeedRez}\ax
-	SDEBUG events flushed\ax
+	DEBUG ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead})\ax
+	DEBUG call Flag:${flagCallNeedRez}\ax
+	DEBUG events flushed\ax
 	/doevents flush
-	SDEBUG into rez, clear event marker\ax
+	DEBUG into rez, clear event marker\ax
 	/if (!${Me.State.Equal[HOVER]} && !${Me.Hovering} && !${Me.Dead} && !${markerDead} && !${flagCallNeedRez}) /goto :exit
-	SDEBUG update death count\ax
+	DEBUG update death count\ax
 	/ini "${INICore}" "deathcount" "${Me.DisplayName}" "${Int[${Math.Calc[${Ini[${INICore},deathcount,${Me.DisplayName}]}+1]}]}"
-	SDEBUG update MQ LOG\ax
+	DEBUG update MQ LOG\ax
 	MQLOG Death ${Ini[${INICore},deathcount,${Me.DisplayName}]}
 	| /if (!${flagCallNeedRez} && ${Bool[${Ini[${INICore},bitch]}]}) ECHOCHANNEL ${Ini[${INICore},bitch,${Int[${Math.Calc[${Math.Rand[${Ini[${INICore},bitch,count]}]}+1]}]}]}
 
-	SDEBUG stop movement\ax
+	DEBUG stop movement\ax
 	/ini "${INIFile}" "Movement" "SetTie" "FALSE"
 	/varset SetTie FALSE
 	/if (${Stick.Active}) /squelch /stick off
 	/if (${tempsnapstuck}) /varset tempsnapstuck FALSE
 	/if (${AdvPath.Following}) /squelch /afollow off
-	SDEBUG stop combat\ax
+	DEBUG stop combat\ax
 	/if (${Me.AutoFire}) /squelch /autofire
 	/if (${Me.Combat}) /squelch /attack off
-	SDEBUG stop casting\ax
+	DEBUG stop casting\ax
 	/if (${Me.Casting.ID}) /stopcast
-	SDEBUG clear targets\ax
+	DEBUG clear targets\ax
 	/varset Target2Kill 0
 	/varset isValidTarget FALSE
 	/if (${Target.ID}) /squelch /target clear
 	
-	SDEBUG update HUD tmpMode variable\ax
+	DEBUG update HUD tmpMode variable\ax
 	/varset tmpMode "DEAD: ${Time}"
 	/delay 3s
 	:loopwaitforrezbox
-	SDEBUG start wait for rez\ax
+	DEBUG start wait for rez\ax
 		/delay 10s ${Window[ConfirmationDialogBox].Open}
 		/delay 1s
 		/if (!${Window[ConfirmationDialogBox].Open}) /goto :loopwaitforrezbox
-		SDEBUG we have a rez box\ax
+		DEBUG we have a rez box\ax
 		/if (${Window[ConfirmationDialogBox].Open}) {
 			/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["0 percent"]}]}) {
 				/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
@@ -198,46 +198,52 @@ sub wait_for_rez()
 				/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
 				/goto :loopwaitforrezbox
 			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["96 percent"]}]}) {
-				SDEBUG found 96 rez\ax
+				DEBUG found 96 rez\ax
 				/varset flagCallNeedRez FALSE
 				/goto :acceptresbox
 			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["you will still be able to get a resurrection later"]}]}) {
-				SDEBUG found call to corpse. setting flagCallNeedRez\ax
+				DEBUG found call to corpse. setting flagCallNeedRez\ax
 				/varset flagCallNeedRez TRUE
 				/goto :acceptresbox
 			} 
-			SDEBUG :loopwaitforrez\ax
+			DEBUG :loopwaitforrez\ax
 			/goto :loopwaitforrezbox
 		}
 
 	:acceptresbox	
-	SDEBUG yes we want a rez\ax	
+	DEBUG yes we want a rez\ax	
 	/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
 	/delay 5
-	SDEBUG sorting rez selection window\ax	
+	DEBUG sorting rez selection window\ax	
 	/if (${Window[RespawnWnd].Open}) {
 		/if (${Zone.ShortName.Equal[Powar]}) {
 			/nomodkey /notify RespawnWnd RW_OptionsList listselect 1
 		} else {
-			SDEBUG option 2 in respawn window\ax
+			DEBUG option 2 in respawn window\ax
 			/nomodkey /notify RespawnWnd RW_OptionsList listselect 2 
 		}
 	}
 	/delay 1s
-	SDEBUG click RW_SelectButton.
+	DEBUG click RW_SelectButton.
 	/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
-	SDEBUG delays for rez status to clear\ax
-	/delay 5s !${Me.State.Equal[HOVER]}
-	/delay 5s !${Me.Hovering}
-	/delay 5s !${Me.Dead}
-	SDEBUG clear HUD tmpMode variable\ax
-	/varset tmpMode FALSE
-	SDEBUG Exit rez, clear event marker\ax
-	/varset markerDead FALSE
+	:cleardeadmarkers
+		DEBUG delays for rez status to clear\ax
+		/delay 2s !${Me.State.Equal[HOVER]}
+		/delay 2s !${Me.Hovering}
+		/delay 2s !${Me.Dead}
+		DEBUG clear HUD tmpMode variable\ax
+		/varset tmpMode FALSE
+		DEBUG Exit rez, clear event marker\ax
+		/varset markerDead FALSE
+		/if (${markerDead}) {
+			| /call create_timer clear_dead_event_marker 1s
+			/delay 5
+			/goto :cleardeadmarkers
+		}
 
   :exit
-	SDEBUG ${cgood}EXIT\ax ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead})\ax
-	SDEBUG call Flag:${flagCallNeedRez}\ax
+	DEBUG ${cgood}EXIT\ax ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead})\ax
+	DEBUG call Flag:${flagCallNeedRez}\ax
 /return 
 
 
@@ -946,7 +952,8 @@ sub check_shrink()
 	/doevents
 	CHECKEXIT
 	/if (${Me.Height} > 2.04 && ${Me.ItemReady[${shrinkItem}]}) {
-		/call core_cast "${shrinkItem}" 0 ${Me.ID}
+		/if (${Me.Book[${shrinkItem}]}) /call core_cast "${shrinkItem}" ${buffGem} ${Me.ID}
+		/if (${Me.ItemReady[${shrinkItem}]}) /call core_cast "${shrinkItem}" item ${Me.ID}
 	}
 	:exit
 /return
@@ -1053,12 +1060,13 @@ sub do_rest()
 
 			/if (${Select[${Me.Class.ShortName},CLR]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-				/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Veturika's Perseverance]}) /call core_cast "Veturika's Perseverance" alt 0
-				/if (${Me.AltAbilityReady[Quiet Miracle]}) /call cast_quiet_miracle
+				/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez}) /call core_cast "Veturika's Perseverance" alt 0
+				/if (${Me.AltAbilityReady[Quiet Miracle]} && !${flagCallNeedRez}) /call cast_quiet_miracle
 			} else /if (${Select[${Me.Class.ShortName},DRU]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 			} else /if (${Select[${Me.Class.ShortName},SHM]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+				/if (${Me.PctMana} < 60*.${tmpHealOverride} && !${flagCallNeedRez}) /call check_cani
 			} else /if (${Select[${Me.Class.ShortName},ENC]}) {
 			} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
 			} else /if (${Select[${Me.Class.ShortName},NEC]}) {
@@ -2233,13 +2241,13 @@ sub cast_AA_snare(int _tmpID)
 	/if (${Macro.Return} || ${timer_snare_${_tmpID}} || !${Target.ID}) /goto :exit
 	/declare _debuffSnare string local
 	/if (${Select[${Me.Class.ShortName},RNG,DRU]}) /varset _debuffSnare Entrap
-	/if (${Select[${Me.Class.ShortName},WAR]}) /varset _debuffSnare Call of Challenge
+	/if (${Select[${Me.Class.ShortName},WAR]}) /varset _debuffSnare Knee Strike
 	/if (${Select[${Me.Class.ShortName},ROG]}) /varset _debuffSnare Ligament Slice
 	/if (${Select[${Me.Class.ShortName},NEC]}) /varset _debuffSnare Encroaching Darkness
 	/if (${Select[${Me.Class.ShortName},WIZ]}) /varset _debuffSnare Atol's Shackles	
 	
-|	/if (${Me.AltAbilityReady[${debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_debuffSnare}].MyRange} || !${Target.Snared.ID}) {
-	/if (${Me.AltAbilityReady[${debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} || !${Target.Snared.ID}) {
+|	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_debuffSnare}].MyRange} || !${Target.Snared.ID}) {
+	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} || !${Target.Snared.ID}) {
 		/call core_cast "${_debuffSnare}" alt ${_tmpID}
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_snare_${_tmpID} ${Spell[${_debuffSnare}].Duration.TotalSeconds}s
@@ -2434,7 +2442,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| disc ready?
 	/if (${Select[${_type},disc]} && !${Me.CombatAbilityReady[${_spell}]}) /varset _bail disc_not_ready
 	| check enough end for disc?
-	/if (${Select[${_type},disc]} && ${Me.PctEndurance} < ${Spell[${_spell}].EnduranceCost}) /varset _bail disc_endurance
+	/if (${Select[${_type},disc]} && ${Me.PctEndurance} > ${Spell[${_spell}].EnduranceCost}) /varset _bail disc_endurance
 
 	/if (${Bool[${_bail}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} || ${_tmpID})) {
 		DEBUG ${owarning} ${sep} _bail = ${_bail} for ${_spell}
@@ -2526,7 +2534,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	:exit
 /return ${Macro.Return}
  
-
+${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]}
 
 |***
  *	DES: Cures/removes debuffs, we hope...
@@ -2540,87 +2548,77 @@ sub cast_cure()
 	/doevents
 	UPDATEHUD "CURE"
 
-
-	| if i'mf ine skip to netbots check
-	/if (!${Debuff.Cursed} && !${Debuff.Corrupted} && !${Debuff.Poisoned} && !${Debuff.Diseased}) /goto :imfinecheckgroup
-
-	| fix the ${noCureList}
-
-
-	/if (${Me.AltAbilityReady[Radiant Cure]} && (${Debuff.Diseased} || ${Debuff.Poisoned} || ${Debuff.Cursed})) {
-		/call core_cast "Radiant Cure" alt ${Me.ID} 
-		/goto :exit
-	}
-
-	| AA Purified Spirits SELF ONLY
-	| 0' 2 min
-	/if (${Me.AltAbilityReady[Purified Spirits]} && (${Debuff.Cursed} || ${Debuff.Corrupted} || ${Debuff.Poisoned} || ${Debuff.Diseased})) {
-		/call core_cast "Purified Spirits" alt ${Me.ID} 
-	}
-	
-	| cure self only with items
-	/if (${Debuff.Cursed} && ${Me.ItemReady[${cureCurseItem}]}) {
-		/call core_cast "${cureCurseItem}" item ${Me.ID}
-	} else /if (${Debuff.Corrupted} && ${Me.ItemReady[${cureCorruptItem}]}) {
-		/call core_cast "${cureCorruptItem}" item ${Me.ID}
-	} else /if (${Debuff.Poisoned} && ${Me.ItemReady[${curePoisonItem}]}) {
-		/call core_cast "${curePoisonItem}" item ${Me.ID}
-	} else /if (${Debuff.Diseased} && ${Me.ItemReady[${cureDiseaseItem}]}) {
-		/call core_cast "${cureDiseaseItem}" item ${Me.ID}
+	| if i'm fine skip to netbots check
+	/if (!${Debuff.Counters}) {
+		/goto :imfinecheckgroup
+	} else /if (${Debuff.Counters}) {
+		| cure self only with items
+		/if (${Debuff.Cursed} && ${Me.ItemReady[${cureCurseItem}]}) {
+			/call core_cast "${cureCurseItem}" item ${Me.ID}
+		} else /if (${Debuff.Corrupted} && ${Me.ItemReady[${cureCorruptItem}]}) {
+			/call core_cast "${cureCorruptItem}" item ${Me.ID}
+		} else /if (${Debuff.Poisoned} && ${Me.ItemReady[${curePoisonItem}]}) {
+			/call core_cast "${curePoisonItem}" item ${Me.ID}
+		} else /if (${Debuff.Diseased} && ${Me.ItemReady[${cureDiseaseItem}]}) {
+			/call core_cast "${cureDiseaseItem}" item ${Me.ID}
+		}
 	}
 
 	:imfinecheckgroup
+	/if (!${Group.Members}) /goto :exit
 	/if (!${Bool[${Plugin[MQ2netbots]}]} || !${Bool[${Plugin[MQ2debuffs]}]}) {
 		/if (!${Bool[${Plugin[MQ2netbots]}]}) NOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2netbots\ax for group curing.
 		/if (!${Bool[${Plugin[MQ2debuffs]}]}) NOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2debuffs\ax for group curing.
 		/goto :exit
 	}
 
+	/declare BcClients ${NetBots.Client}
 	/declare _count int local
-	/for _count 1 to ${NetBots.Counts}
+	/for _count 1 to ${Math.Calc[${NetBots.Client.Count[ ]}+1]}
 		ISDEAD
 		/doevents 
 
 		| are they debuffed in the zone and alive?
-		/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Counters} <= 0 || !${Spawn[pc ${NetBots.Client[${_count}]}].ID} || ${Spawn[${NetBots.Client[${_count}]}].Dead}) /next _count
+		/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count} <= 0 || !${Spawn[p${NetBots.Client[${_count}]}].ID} || ${Spawn[pc ${NetBots.Client[${_count}]}].Dead}) /next _count
 
 		| AA Radient Cure 
 		| 100' 1 min
-		/if (${Me.AltAbilityReady[Radiant Cure]}) {
-			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased}) {
-				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt ${Spawn[${NetBots.Client[${_count}]}].ID} 
+		/if (${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
+			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
+				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
 			}
 			/goto :exit
 		}
 
 		| AA Purify Soul
 		| 200' 5 min
-		/if (${Me.AltAbilityReady[Purify Soul]}) {
-			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased}) {
-				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[${NetBots.Client[${_count}]}].ID} 
+		/if (${Select[${Me.Class.ShortName},PAL,CLR,DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
+			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
+				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
 			}
 			/goto :exit
 		}
 		
 		| AA Group Purify Soul . were in deep shit if we've gotten this far.
-		| 100' 15 min
-		/if (${Me.AltAbilityReady[Group Purify Soul]}) {
-			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned} || ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased}) {
-				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[Group Purify Soul].MyRange}) /call core_cast "Group Purify Soul" alt ${Spawn[${NetBots.Client[${_count}]}].ID} 
+		| 0/100' 15 min
+		/if (${Select[${Me.Class.ShortName},PAL,CLR,DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
+			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
+				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt ${Me.ID} 
 			}
 			/goto :exit
-		}			
-		
+		}
+
 		| cure with spell
 		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed} && ${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCurse}].MyRange}) {
-			/call core_cast "${cureCurse}" ${buffGem} ${Spawn[${NetBots.Client[${_count}]}].ID} 
+			/call core_cast "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
 		} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCorrupt}].MyRange}) {
-			/call core_cast "${cureCorrupt}" ${buffGem} ${Spawn[${NetBots.Client[${_count}]}].ID}
+			/call core_cast "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID}
 		} else /if (${Bool[${curePoison}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${curePoison}].MyRange}) {
-			/call core_cast "${curePoison}" ${buffGem} ${Spawn[${NetBots.Client[${_count}]}].ID} 
+			/call core_cast "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
 		} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureDisease}].MyRange}) {
 			/call core_cast "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
 		}
+		
 	/next _count
 	:exit
 	UPDATEHUD

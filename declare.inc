@@ -563,6 +563,7 @@ sub declare_base()
 	/call DeclareVar HuntMobList       					string 	outer NULL
 	
 	
+	
 	| various lists for .. you know..lists and stuff.
 	/call DeclareVar MeleeList      						string 	outer |WAR|ROG|BST|MON|SHD|PAL|BER|BRD|RNG
 	/call DeclareVar CastList										string 	outer |BST|SHD|PAL|RNG|CLR|DRU|SHM|ENC|WIZ|NEC|MAG
@@ -686,6 +687,7 @@ sub declare_common()
 	/call DeclareIniVar ForageFishInvis					string	Common FALSE	
 	/call DeclareIniVar ClassChannel						int			Common FALSE	
 	/call DeclareIniVar setBroadcast						string	Common TRUE	
+	/call DeclareIniVar relayTells							string	Common FALSE /relay	
 	
 	| watch spawn stuff
 	/declare hudwatchspawn											string	outer FALSE
@@ -1793,6 +1795,7 @@ sub declare_CLR()
   /call DeclareIniVar useCelestialRegen				bool	  Heal TRUE
   /call DeclareIniVar healIssuance						string  Heal "Issuance of Spirit"
 	/call DeclareIniVar CRTXT										string	Heal "Celestial Regeneration (+11100HP / tic)"
+	/call DeclareIniVar switchHealAggressive		string	Heal FALSE
 		
 	/call DeclareIniVar doYaulp 								bool		SelfBuff TRUE /doyaulp	
 	/call DeclareIniVar sumWeaponSpell					string	SelfBuff "Hammer of	Reverence"
@@ -1844,10 +1847,10 @@ sub whitewash()
 	| Misc commands
 	/varset _todelete[8] |maxlevel|autoadjustexp|oneoff|ds|userain|resetcore|crew|info|banestrike|watchspawn|huntagro
 	/varset _todelete[9] |combatbuff|pathiosis|bcsay|blurb|clean|invis|stein|gtfo|door|echochannel|info|whohas
-	/varset _todelete[10] |mirror|checkcash|autoshrink|maintexplvl|autocontrol|killcode|echoaugments
+	/varset _todelete[10] |mirror|checkcash|autoshrink|maintexplvl|autocontrol|killcode|echoaugments|relay
 
 	| heal
-	/varset _todelete[11] |healoverride|healself|healgroup|healxtarget|healpet|healcure|usegrouphot|usegroupheal|xtheal|rc|purify
+	/varset _todelete[11] |healoverride|healself|healgroup|healxtarget|healpet|healcure|usegrouphot|usegroupheal|xtheal|rc|purify|healaggressive
 	/varset _todelete[12] |rezeveryone|rezcombat|rezauto|rezemergency
 
 	| debuffing
@@ -1860,7 +1863,7 @@ sub whitewash()
 	/varset _todelete[15] |toastmobcount|toastauto|toastengageat|toastauto|settoast|toast
 
 	| loots
-	/varset _todelete[16] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore|safezone
+	/varset _todelete[16] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore
 
 	| zone list control
 	/varset _todelete[17]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
@@ -1968,6 +1971,8 @@ sub set_alias()
 	/if (!${Bool[${Alias[/healxtarget]}]}) 		/squelch /alias /healxtarget 								NOUT Set XTarget Healing!
 	/if (!${Bool[${Alias[/healpet]}]}) 				/squelch /alias /healpet 										NOUT Set Pet Healing!
 	/if (!${Bool[${Alias[/healcure]}]}) 			/squelch /alias /healcure 									NOUT Set Curing!
+	/if (!${Bool[${Alias[/healaggressive]}]}) /squelch /alias /healaggressive							NOUT Set Aggressive Healing!
+	
 	| rez switches
 	/if (!${Bool[${Alias[/rezcombat]}]}) 			/noparse /squelch /alias /rezcombat   		 	NOUT Adjusting Resurection in Combat!
 	/if (!${Bool[${Alias[/rezeveryone]}]}) 		/noparse /squelch /alias /rezeveryone 		  NOUT Adjusting Resurection for Everyone!
@@ -2145,7 +2150,7 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
   /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /useitem "Drunkard's Stein"
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
   /if (${_cmd.Equal[spice]} && ${Select[${Me.Class.ShortName},RNG]}) /call cast_auspice
-  /if (${_cmd.Equal[paragon]} && ${Select[${Me.Class.ShortName},BST]}) /call doParagon
+  /if (${_cmd.Equal[paragon]} && ${Select[${Me.Class.ShortName},BST]}) /call cast_paragon
   /if (${_cmd.Equal[rods]} && ${Select[${Me.Class.ShortName},MAG]}) /call cast_rods
   /if (${_cmd.Equal[aid]} && ${Select[${Me.Class.ShortName},SHM]}) /call doAid
   /if (${_cmd.Equal[cr]} && ${Select[${Me.Class.ShortName},CLR,DRU,PAL]}) /call cast_celest_regen
@@ -2807,6 +2812,12 @@ sub Event_healCure()
 	/call echos switch "Curing" switchHealCure
 /return
 
+#event healAggressive "[MQ2] - Set Aggressive Healing!"
+sub Event_healAggressive()
+	/call Event_SetVar NA switchHealAggressive Heal ${If[${switchHealAggressive},FALSE,TRUE]}  
+	/call echos switch "Aggressive Healing" switchHealAggressive
+/return
+
 #event itembuffs "[MQ2] - Check Item Buffs."
 sub Event_itembuffs()
 	/call check_buffs_item
@@ -2877,6 +2888,12 @@ sub Event_setIgnoreLOS()
  ***| 	
 #event Talk "#1# tells you, '#2#'"
 sub Event_Talk(string Line, string _sender, string _chatText)
+
+	| relay tells
+	/if (${Bool[${relayTells}]} && !${_chatText.Find[${Me}]} && ${_sender.NotEqual[${relayTells}]}) {
+		/tell ${relayTells} ${_sender} told me: ${_chatText}
+	}
+
 	CHECKSAFELIST
 
 	| Tells for buffs.
@@ -3278,3 +3295,5 @@ sub Event_sellstuff(string line, string _itemtoSell)
 	/call vendor_sell "${_itemtoSell}"
 	:exit
 /return
+
+

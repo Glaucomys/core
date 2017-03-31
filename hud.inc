@@ -226,7 +226,6 @@ sub Event_HUDUpdate(string Line)
 	
 	
 	| heal switches
-	/noparse /ini HUDPATH "heal1" "3,280,86,100,149,237,Heal"
 	/noparse /ini HUDPATH "heal2" "3,305,85,100,149,237,[     ][              ]"
 	/noparse /ini HUDPATH "heal3" "3,310,86,255,255,255,${If[${HealOverride},${HealOverride},]}"
 	/noparse /ini HUDPATH "heal4" "3,310,86,25,25,25,${If[${HealOverride},,##]}"
@@ -240,6 +239,10 @@ sub Event_HUDUpdate(string Line)
 	/noparse /ini HUDPATH "heal12" "3,355,86,25,25,25,${If[${switchHealPet},,P]}"
 	/noparse /ini HUDPATH "heal13" "3,363,86,0,255,0,${If[${switchHealCure},C,]}"
 	/noparse /ini HUDPATH "heal14" "3,363,86,25,25,25,${If[${switchHealCure},,C]}"
+	/noparse /ini HUDPATH "heal15" "3,280,86,100,149,237,${If[!${Select[${Me.Class.ShortName},CLR]},Heal,]}"
+	/noparse /ini HUDPATH "heal16" "3,280,86,255,0,0,${If[${Select[${Me.Class.ShortName},CLR]} && ${switchHealAggressive},Heal,]}"
+	/noparse /ini HUDPATH "heal17" "3,280,86,0,255,0,${If[${Select[${Me.Class.ShortName},CLR]} && !${switchHealAggressive},Heal,]}"
+
 
 
 	| MGB corner 

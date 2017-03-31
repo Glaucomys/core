@@ -815,7 +815,7 @@ sub synergy_ROG()
 	/if (${Me.AltAbilityReady[Rogue's Fury]}) /call core_cast "Rogue's Fury" alt 0
 	/if (${Me.CombatAbilityReady[${DiscMark}]} && ${Me.PctEndurance} > 15) /call core_cast "${DiscMark}" disc ${Target2Kill}
 	/if (${Me.AltAbilityReady[${ROGspire3}]}) /call core_cast "${ROGspire3}" alt 0
-	/call use_glyph
+	| /call use_glyph
 	/if (${Me.AltAbilityReady[Intensity of the Resolute]} && ${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0
   /if (${Me.CombatAbilityReady[${DiscFrenzy}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscFrenzy}" disc 0
   /if (${Me.CombatAbilityReady[${DiscTwistedChance}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscTwistedChance}" disc 0

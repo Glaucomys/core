@@ -49,13 +49,13 @@ sub core_ROG()
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
-		/call use_skill_melee
-		/call stick_to_target
+		| /call use_skill_melee
+		| /call stick_to_target
 		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call use_skill_melee
-		/if (${doclickItem}) /call click_item
-		/call click_DPS_${Me.Class.ShortName}
+		| /call click_BP
+		| /call use_skill_melee
+		| /if (${doclickItem}) /call click_item
+		| /call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
 		/call send_pet
@@ -108,7 +108,7 @@ sub disc_ROG()
 	/call use_skill_melee
 	/if (${Me.CombatAbilityReady[${DiscHack}]} && ${Bool[${DiscHack}]}) /call core_cast "${DiscHack}" disc ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscBladePoison}]} && ${Bool[${DiscBladePoison}]}) /call core_cast "${DiscBladePoison}" disc 0
-|	/if (${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
+	/if (${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill}
 	:exit
 /return
@@ -131,7 +131,6 @@ sub click_DPS_ROG()
 	/if (${Macro.Return}) /goto :exit
 	/call use_skill_melee
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
 	:exit
 /return
 
@@ -178,13 +177,11 @@ sub do_SoS(bool _hide)
 		/makemevisible
 	}
 
-
-
-
+	:exit
 /return
 
 
-
+|**
 	${flagSoS}
 	
 
@@ -195,3 +192,5 @@ ${Me.Sneaking}
 
 ${Me.AbilityReady[Hide]}
 /doability Hide
+
+**|

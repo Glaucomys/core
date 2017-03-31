@@ -7,6 +7,27 @@ TO DO LIST
 - fix auto swapping of control toon for healers in raids.
 
 
+20170330
+HUDUPDATE
+WHITEWASH
+- /relay
+  -- will relay tells to a specific toon /relay PERSONTORELAYTO
+- redesign of curing.
+  -- less loops.. a lot less.
+  -- seperated AA curing to heal classes and item/spell curing is isolated.
+  -- core.clr.inc
+     -- added purify spirits and radient cure to group heal routine. can still disable with /healcure
+- /healaggressive
+  -- core.clr.inc
+  -- enabled will force interventions first
+  -- disabled will force remedys first
+  -- "Heal" in hud will be RED for enabled, GREEN for disabled; clerics only
+     
+
+20170328
+- clerics will no longer QM/VM after a summon to corpse. they will wait for a rez.
+- changed war snare from Call of Challenge to Knee Strike.
+
 20170323
 - lots-o-changes (yes more) to core_cast()
 - class.wiz.inc

@@ -285,6 +285,14 @@ sub check_heal_group_SHM()
       } 
   }  
   
+	| check for personal debuffs
+	/if (${switchHealCure} && ${Debuff.Count}) {
+		| AA Purified Spirits SELF ONLY 0' range 2 min
+		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) /call core_cast "Purified Spirits" alt ${Me.ID} 
+		| AA Radient Cure SELF ONLY 100' range 1 min
+		/if (${Me.AltAbilityReady[Radiant Cure]} && (${Debuff.Diseased} || ${Debuff.Poisoned} || ${Debuff.Cursed})) /call core_cast "Radiant Cure" alt ${Me.ID} 
+	}  
+  
  	:exit
  	
   /if ( ${Me.PctHPs} < ${SHMPoint}*.${tmpHealOverride} && !${Me.Song[${healGroupHot}].ID} && ${Me.SpellReady[${healGroupHot}]} ) {
