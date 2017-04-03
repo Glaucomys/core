@@ -7,6 +7,16 @@ TO DO LIST
 - fix auto swapping of control toon for healers in raids.
 
 
+20170402
+- /givecoin [ammount] [stack] [plat|gold|copper|silver]
+  -- will give the ammount of coint to whatecer you have targeted in stacks of whatever.
+  -- /givecoin 1000 5 gold .. will give gold, in stacks of 5, 1000 times to your target. 5k gold in total.
+
+
+20170331
+- reworking of pet healing for cleric. no longer uses pets class as basis. Strictly PetPoint % now.
+
+
 20170330
 HUDUPDATE
 WHITEWASH

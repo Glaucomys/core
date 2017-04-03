@@ -1803,7 +1803,7 @@ sub declare_CLR()
 	/call DeclareIniVar useQM										bool		SelfBuff TRUE /qm
 	/call DeclareIniVar useQMPct								int			SelfBuff 40 /qmpct
 
-	/call DeclareIniVar Spire										string	Spells "Fundament: Third Spire of Divinity"
+	| /call DeclareIniVar Spire										string	Spells "Fundament: Third Spire of Divinity"
 		
 /return	
 
@@ -1847,7 +1847,7 @@ sub whitewash()
 	| Misc commands
 	/varset _todelete[8] |maxlevel|autoadjustexp|oneoff|ds|userain|resetcore|crew|info|banestrike|watchspawn|huntagro
 	/varset _todelete[9] |combatbuff|pathiosis|bcsay|blurb|clean|invis|stein|gtfo|door|echochannel|info|whohas
-	/varset _todelete[10] |mirror|checkcash|autoshrink|maintexplvl|autocontrol|killcode|echoaugments|relay
+	/varset _todelete[10] |mirror|checkcash|autoshrink|maintexplvl|autocontrol|killcode|echoaugments|relay|givecoin
 
 	| heal
 	/varset _todelete[11] |healoverride|healself|healgroup|healxtarget|healpet|healcure|usegrouphot|usegroupheal|xtheal|rc|purify|healaggressive
@@ -2034,6 +2034,7 @@ sub set_alias()
 	/if (!${Bool[${Alias[/off]}]}) 						/noparse /squelch /alias /off						    /bca //varset AutoBot FALSE
 	/if (!${Bool[${Alias[/zonereset]}]}) 			/noparse /squelch /alias /zonereset			    /bc zonereset
 
+	/if (!${Bool[${Alias[/givecoin]}]}) 			/noparse /squelch /alias /givecoin			    NOUT Bribe Time:
 
 	
 	
@@ -2042,7 +2043,7 @@ sub set_alias()
 
 	/if (!${Bool[${Alias[/checkcash]}]}) 			/noparse /squelch /alias /checkcash  			 	NOUT Check in game cash!
 
-	/if (!${Bool[${Alias[/primary]}]}) 				/noparse /squelch /alias /primary    		   /bcaa //useitem Primary
+	/if (!${Bool[${Alias[/primary]}]}) 				/noparse /squelch /alias /primary						/bcaa //useitem Primary
 	/if (!${Bool[${Alias[/secondary]}]}) 			/noparse /squelch /alias /secondary   		  /bcaa //useitem Secondary
 
 	/if (!${Bool[${Alias[/hudtime]}]}) 				/noparse /squelch /alias /hudtime   		 	 	NOUT Adjusting HUD Time!
@@ -2877,20 +2878,86 @@ sub Event_setIgnoreLOS()
 	/if (${setIgnoreLOS}) NOUT ${owarning} ${sep} THIS IS ${cbad}NOT\ax ADVISED. You will have pathing issues.
 /return	
  
+#event bribetime "[MQ2] - Bribe Time: #1# #2# #3#"
+sub Event_bribetime(string line, int _ammount, int _stacks, string _coin)
+	DEBUG ${cbug}Event_bribetime(${_ammount}, ${_stacks}, ${_coin})\ax
+	/doevents flush
+	/declare _coinID			int local 99
+
+	| validate coin type
+	/if (${_coin.Equal[plat]}) {
+		/varset _coinID 0
+	} else /if (${_coin.Equal[gold]}) {
+		/varset _coinID 1
+	} else /if (${_coin.Equal[silver]}) {
+		/varset _coinID 2
+	} else /if (${_coin.Equal[copper]}) {
+		/varset _coinID 3
+	} else /if (${_coinID} == 99) {
+		VOUT ${ocaution} ${sep} Invalid coin type. Try again.
+		/goto :exit
+	}
+
+	/if (!${Window[InventoryWindow].Open}) /invoke ${Window[InventoryWindow].DoOpen}
+
+	/declare _count 			int local 
+	/declare _countloop 	int local 1
+
+	:loopgivemorecash
+		VOUT Giving ${_coin} stack ${sep} ${_countloop} of ${_stacks}
+		/if (!${Window[InventoryWindow].Open}) /goto :exit
+		/if (!${Target.ID} || ${Taret.ID} == (${Me.ID} || ${Pet.ID})) /goto :exit
+		/delay 2s
+		/for _count 1 to ${_stacks}
+			ISDEAD
+			DEBUG stack count: ${_count}/${_stacks}
+			/ctrl /notify InventoryWindow IW_Money${_coinID} leftmouseup
+			/delay 5
+			/click left target 
+			/delay 5 
+		/next _count 
+		/delay 3 
+		/notify GiveWnd GVW_Give_Button leftmouseup 
+
+		/delay 5 
+		/varset _countloop ${Math.Calc[${_countloop}+1]}
+		/if (${_countloop} < ${_ammount}) /goto :loopgivemorecash
+
+	VOUT ${onotice} ${sep} Done giving cash for bribes.	How the mighty have fallen.
+	:exit
+/return 
  
  
- 
+  
 |***
  *	DES: Tell buffing
  *	USE: /t uselesstoon IwantThisBuff
  *	INI: 
- *  NOTE: this is al used for the remote kill code.
+ *  NOTE:
  ***| 	
 #event Talk "#1# tells you, '#2#'"
-sub Event_Talk(string Line, string _sender, string _chatText)
+sub Event_Talk(string line, string _sender, string _chatText)
+|**
+	/declare _ignoreRelay		 	string 	local |${relayTells}|bank
+	/declare _count 					int 		local
+	/declare _relay						bool		local TRUE
+	
+	/varset _relay ${If[${_ignoreRelay.Find[${_sender}]},TRUE,]}
+	/varset _relay ${If[${_ignoreRelay.Find[${_chatText}]},TRUE,]}
 
 	| relay tells
-	/if (${Bool[${relayTells}]} && !${_chatText.Find[${Me}]} && ${_sender.NotEqual[${relayTells}]}) {
+
+	/echo ..
+	/echo R:${_relay}
+
+	/echo S: ${_sender}
+	/echo ${If[${_sender.Find[Banker]},TRUE,FALSE]}
+	/echo C: ${_chatText}
+	/echo ${If[${_ignoreRelay.Find[${_chatText}]},TRUE,FALSE]}
+	/echo ..
+	**|
+	
+	/if (${Bool[${relayTells}]} && !${_sender.Find[Banker]} && !${_sender.Find[${Me}]}) {
 		/tell ${relayTells} ${_sender} told me: ${_chatText}
 	}
 

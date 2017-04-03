@@ -1243,7 +1243,7 @@ sub do_fish_mode()
 		}
 		/if (${Me.AbilityReady[fishing]}) /doability fishing
 		/delay 16
-		/if (${Cursor.ID}) /call sort_cursor
+		/if (${Cursor.ID}) /call sort_cursor TRUE
 		/doevents
 		/if (!${setFishMode}) /goto :exit
 		/goto :loopfish
@@ -1263,12 +1263,14 @@ sub do_forage_mode()
 	NOUT Starting forage mode. ${cbad}NOTHING ELSE WILL WORK\ax
 	UPDATEHUD "FARM: Forage"
 	:loopforage
+		/if (${Cursor.ID}) /call sort_cursor TRUE
 		/if (${Bool[${ForageFishInvis}]} && !${Me.Invis}) /call MQ2Cast "${ForageFishInvis}"
 		/if (!${Me.Standing}) /stand
 		/delay 5
 		/if (${Me.AbilityReady[forage]}) /doability forage
-		/if (${Cursor.ID}) /call sort_cursor
+		/if (${Cursor.ID}) /call sort_cursor TRUE
 		/doevents
+		/if (${Cursor.ID}) /call sort_cursor TRUE
 		/if (!${setForageMode}) /goto :exit
 	/goto :loopforage
 	:exit
@@ -3146,8 +3148,10 @@ sub is_toast_time()
 
 	| if always set to toast, always toast :)
 	/if (${setToastMode}) /varset _toast TRUE
+
 	| if the current target is a namer
 	/if (${AutoToast} && ${Bool[${Target2Kill}]} && ${Spawn[${Target2Kill}].PctHPs} <= ${whentoToast} && ${NameList.Find[${_mobName}]}) /varset _toast TRUE
+
 	| if number of mobs in the local area reaches the /toastmobcount threashold
 	/if (${Bool[${toastMobCount}]} && ${SpawnCount[npc radius ${MobAgro} los targetable playerstate 4]} >= ${toastMobCount}) /varset _toast TRUE
 
@@ -3953,7 +3957,7 @@ sub set_combat_here()
 	}
 	
 	| set class specific stuff
-	/combat ${combat${Me.Class.ShortName}}
+	| /combat ${combat${Me.Class.ShortName}}
 
 	UPDATEHUD	
 	:exit
@@ -4772,7 +4776,7 @@ sub echo_augments()
 	/declare _bagslot 	int local
 	
 	| worn inventory skip powersource (21)
-	/for _slot 1 to 22
+	/for _slot 0 to 22
 		/if (${_slot} == 21) /goto :noWornItemAug
 		/for _augslot 0 to ${Me.Inventory[${_slot}].Augs}
 			/if (${Me.Inventory[${_slot}].AugSlot[${_augslot}].Empty}) /goto :noWornItemAug
@@ -4916,7 +4920,7 @@ sub check_who_has(string _sender, string _verbage)
 
 	| augment search	
 	| worn inventory skip powersource (21) unless your powersource does something mine doesn't?
-	/for _slot 1 to 22
+	/for _slot 0 to 22
 		/if (${_slot} == 21) /goto :noWornItemAug
 		/for _augslot 0 to ${Me.Inventory[${_slot}].Augs}
 			/if (${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) ECHOCHANNEL ${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name}: Worn Augment in ${Me.Inventory[${_slot}].Name} 
@@ -4956,3 +4960,62 @@ sub check_who_has(string _sender, string _verbage)
 /return
 
 
+
+|***
+ *	DES: Simply gives cash to an NPC. 
+ *	USE: /givecoin [ammount] [stacks] [plat|gold|copper|silver]
+ *	INI: NA
+ *  NOTE: It's not dumb if it works.
+ ***|
+sub give_coin(int _ammount, int _stacks, string _coin)
+	SDEBUG ${cbug}give_coin(${_ammount}, ${_stacks}, ${ _coin})\ax
+	| NOUT /givecoin [ammount] [stacks] [plat|gold|copper|silver]
+
+	/declare _count 			int local 
+	/declare _countloop 	int local 1
+	/declare _coinID			int local 99
+
+	| check target
+	/if (!${Target.ID} || ${Taret.ID} == ${Me.ID} || ${Target.ID} == ${Pet.ID}) {
+		VOUT ${owarning} ${sep} Need a target to give the coin too. Try again.
+		/goto :exit
+	}
+	| check ammount
+	
+	
+	| check stacks
+	
+	| check coin type
+	/if (${_coin.Equal[plat]}) {
+		/varset _coinID 0
+	} else /if (${_coin.Equal[gold]}) {
+		/varset _coinID 1
+	} else /if (${_coin.Equal[silver]}) {
+		/varset _coinID 2
+	} else /if (${_coin.Equal[copper]}) {
+		/varset _coinID 3
+	} else /if (${_coin.Equal[NULL]}) {
+		VOUT ${owarning} ${sep} Invalid coin type. Try again.
+		/goto :exit
+	}
+
+	:loopgivemorecash
+		/if (!${Window[InventoryWindow].Open}) /invoke ${Window[InventoryWindow].DoOpen}
+		/if (!${Target.ID} || ${Taret.ID} == (${Me.ID} || ${Pet.ID})) /goto :exit
+		/delay 2s
+		/for _count 1 to ${_stacks}
+			/ctrl /notify InventoryWindow IW_Money${_coinID} leftmouseup
+			/delay 5
+			/click left target 
+			/delay 5 
+		/next _count 
+		/delay 3 
+		/notify GiveWnd GVW_Give_Button leftmouseup 
+
+		/delay 5 
+		/varset _countloop ${Math.Calc[${_countloop}+1]}
+		/if (${_countloop} < ${_ammount}) /goto :loopgivemorecash
+
+	:exit
+	VOUT ${onotice} ${sep} Done giving cash for bribes.
+/return

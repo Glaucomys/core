@@ -26,27 +26,9 @@ sub core_info(string _section)
 	
 	/if (${Select[${_section},ALL,NULL]}) {	
 		/echo 
-		NOUT ${cgood}Use:\ax \aw/info ALL\ax or \awinfo HEAL\ax, etc..
-		NOUT ${cinfo}ALL\ax ${sep} All commands. Have fun scrolling.
-		NOUT ${cinfo}ASSIST\ax ${sep} Assist and acquisition thingies.
-		NOUT ${cinfo}BUFF\ax ${sep} All buffing related commands, Not Pet.
-		NOUT ${cinfo}Class Specific\ax ${sep}
-		NOUT   CLR,DRU,SHM,
-		NOUT   ROG,RNG,MON,BRD,BST,BER
-		NOUT   PAL,SHD,WAR
-		NOUT   MAG,WIZ,NEC,ENC
-		NOUT ${cinfo}CORE\ax ${sep} Core Base Environment Commands.
-		NOUT ${cinfo}DEBUFF\ax ${sep} all the deBuff commands
-		NOUT ${cinfo}HEAL\ax ${sep} Really?
-		NOUT ${cinfo}LOOT\ax ${sep} Loot whoring.
-		NOUT ${cinfo}MODES\ax ${sep} Combat/Non-Combat modes
-		NOUT ${cinfo}MOVEMENT\ax ${sep} Everything Related to movement.
-		NOUT ${cinfo}ODD\ax ${sep} Odd stuff out.
-		NOUT ${cinfo}PETS\ax ${sep} Pets need love too.
-		NOUT ${cinfo}TOAST\ax ${sep} Burn commands.
-		NOUT ${cinfo}LIST\ax ${sep} INI editors.
-		NOUT ${cinfo}REZ\ax ${sep} Ressurection Commands.
-		NOUT ${cinfo}BUG\ax ${sep} Debugging.
+		NOUT ${cgood}Use:\ax \aw/info ALL\ax or \aw/info HEAL\ax, etc..
+		NOUT ${cinfo}ALL\ax, ${cinfo}ASSIST\ax, ${cinfo}BUFF\ax, ${cinfo}BUG\ax, ${cinfo}CORE\ax, ${cinfo}DEBUFF\ax, ${cinfo}HEAL\ax, ${cinfo}LIST\ax, ${cinfo}LOOT\ax, ${cinfo}MODES\ax, ${cinfo}MOVEMENT\ax, ${cinfo}ODD\ax, ${cinfo}PETS\ax, ${cinfo}TOAST\ax, ${cinfo}REZ\ax
+		NOUT ${cinfo}Class Specific\ax ${sep} CLR, DRU, SHM, ROG, RNG, MON, BRD, BST, BER, PAL, SHD, WAR, MAG, WIZ, NEC, ENC
 	}	
 	
 	
@@ -198,7 +180,7 @@ sub core_info(string _section)
 		NOUT ${cinfo}/crew\ax ${sep} invites missing croup members set in core.ini -> [Group] -> [NAME|OTHERNAME]  
 		NOUT ${cinfo}/bcsay\ax ${sep} has everyone in bc say whatever words you need to your target.  
 		NOUT ${cinfo}/echoaugments\ax ${sep} will dump all augments (worn and in invnetory) to core.augmentdump.ini  
-		NOUT ${cinfo}/watchspawn\ax ${sep} [NAME] will provide a HUDCOUNT with the number of spawns with that name (even partial) in the zone.
+		NOUT ${cinfo}/watchspawn\ax ${sep} [NAME|FALSE] will provide a HUDCOUNT with the number of spawns with that name (even partial) in the zone.
 	}	
 	
 	| rezz commands
@@ -280,9 +262,6 @@ sub core_info(string _section)
 		NOUT ${onotice} ${sep} Markers are Time in Seconds and current Macro Line.
 	}
 	
-
-
-
 	
 	| trigger for class specific commands
 	/if (${Select[${_section},CLR,DRU,ROG,RNG,MON,PAL,SHD,WAR,BRD,MAG,WIZ,NEC,ENC,BST,BER]}) {	
@@ -290,8 +269,6 @@ sub core_info(string _section)
 		/echo ${sep}${sep}${_section}\ax
 		/call ${_section}_info()
 	}
-	/echo	
-	NOUT ${cbad}End\ax
 
 	:exit
 /return
