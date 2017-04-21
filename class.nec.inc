@@ -10,7 +10,7 @@ sub core_NEC()
 	DEBUG Loop start: ${cbug}core_NEC()\ax
 	/doevents
 	ISDEAD
-	/if (!${Bool[${timer_check_Tie}]} && ${Bool[${SetTie}]}) /call set_tie
+	CHECKTIE
 	/call check_AA_now
 
 	/if (${AutoBot} && !${Me.Invis}) {
@@ -21,9 +21,8 @@ sub core_NEC()
 
 
 
-|***
-	DES: Auto combat routines
-***|
+
+
 	:autokilltarget
 	/if (${AutoBot}) /call check1offBuffs
 	/if (!${Me.Invis} && ${AutoBot} && (${Bool[${Target2Kill}]} && !${combat.Equal[HEAL]})) /call is_target_valid ${Target2Kill}
@@ -122,14 +121,14 @@ sub core_NEC()
 
 
 
-sub petHeal.NEC()
+sub petHeal_NEC()
 	| Yah... whatever... placeholder
 /return
 
 
 
 
-sub disc.NEC()
+sub disc_NEC()
 	DEBUG \atdisc.${Me.Class.ShortName}()\ax 
 	/doevents
 	ISDEAD
@@ -147,7 +146,7 @@ sub disc.NEC()
 	DES: cast DPS Clickies
 	USE: this shits auto, learn to love it.
 ***|
-sub clickDPS.NEC()
+sub clickDPS_NEC()
 	DEBUG \atclickDPS.NEC()\ax 
 	/doevents
 	ISDEAD

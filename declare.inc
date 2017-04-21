@@ -17,29 +17,24 @@
 sub check_versions()
 	DEBUG ${cbug}set_versions()\ax
 
-	/declare versionCore				string	outer 3.2.0
+	/declare versionCore				string	outer 3.3.0
 	
 	/declare versionCLR 				string 	outer 2.1.1
 	/declare versionDRU 				string 	outer 2.0.1 
 	/declare versionSHM 				string 	outer 1.5.1
-
 	/declare versionWAR 				string 	outer 1.5.1 
-	/declare versionPAL 				string 	outer 0.5.1 
+	/declare versionPAL 				string 	outer 1.0.0 
 	/declare versionSHD 				string 	outer 1.9.1 
-
 	/declare versionWIZ 				string 	outer 1.7.1 
 	/declare versionENC 				string 	outer 1.4.1
 	/declare versionMAG					string 	outer 2.0.1
 	/declare versionNEC 				string 	outer 0.5.1 
-
 	/declare versionRNG 				string 	outer 2.2.1
 	/declare versionBST 				string 	outer 1.0.1 
 	/declare versionBRD 				string 	outer 1.5.1 
-
 	/declare versionBER 				string 	outer 1.6.1
-	/declare versionMON 				string 	outer 0.0.0 
+	/declare versionMNK 				string 	outer 0.5.0 
 	/declare versionROG 				string 	outer 1.5.1 
-
 
 	:exit
 /return
@@ -54,56 +49,6 @@ sub check_versions()
  *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
  ***|
 sub fix_INI_declares()
-	/ini "${INIFile}" "Common" "MyDeathCount" NULL
-	/ini "${INIFile}" "Common" "BCMA" NULL
-	/ini "${INIFile}" "Timer" "AutoInvTime" NULL
-	/ini "${INIFile}" "Common" "BuffAuto" NULL
-	/ini "${INIFile}" "Common" "BuffCombat" NULL
-	/ini "${INIFile}" "Common" "BuffSelf" NULL
-	/ini "${INIFile}" "Timer" "SummerTime" NULL
-	/ini "${INIFile}" "Timer" "CheckAmmo" NULL
-	/ini "${INIFile}" "Timer" "CheckTieTime" NULL
-	/ini "${INIFile}" "Timer" "CheckFamiliar" NULL
-	/ini "${INIFile}" "Common" "EQBCServer" NULL
-	/ini "${INIFile}" "Common" "EQBCPort" NULL
-	/ini "${INIFile}" "Common" "EQBCChannel" NULL
-	/ini "${INIFile}" "Timer" "ClearCursorTime" NULL
-	/ini "${INIFile}" "Timer" "tCheckTieTime" NULL
-	/ini "${INIFile}" "Timer" "SelfBuffTime" NULL
-	/ini "${INIFile}" "Timer" "ItemBuffTime" NULL
-	/ini "${INIFile}" "Timer" "CheckEXPTime" NULL
-	/ini "${INIFile}" "Timer" "TellBuffTime" NULL
-	/ini "${INIFile}" "Timer" "BCBuffTime" NULL
-	/ini "${INIFile}" "Timer" "RaidBuffTime" NULL
-	/ini "${INIFile}" "Timer" "CheckEQCBTime" NULL
-	/ini "${INIFile}" "Timer" "AuraTime" NULL
-	/ini "${INIFile}" "Timer" "PetBuffTime" NULL
-	/ini "${INIFile}" "Timer" "RezRetryTime" NULL
-	/ini "${INIFile}" "Timer" "BitchTime" NULL
-	/ini "${INIFile}" "Timer" "BuffKillTime" NULL
-	/ini "${INIFile}" "Timer" "XHealTime" NULL
-	/ini "${INIFile}" "Common" "setPetFarmMode" NULL
-	/ini "${INIFile}" "Common" "autoRez" NULL
-	/ini "${INIFile}" "Heal" "CombatCall" NULL
-	/ini "${INIFile}" "Spells" "useMaloTash" NULL
-	/ini "${INIFile}" "Spells" "useBuffKill" NULL
-	/ini "${INIFile}" "Common" "fubar" NULL
-	/ini "${INIFile}" "Common" "bitch" NULL
-	/ini "${INIFile}" "Timer" "tBitch" NULL
-	/ini "${INIFile}" "Timer" "tUpdateHUD_Notices" NULL
-	/ini "${INIFile}" "Movement" "followdistance" NULL
-
-/return
-
-
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub fix_core_ini()
 /return
 
 
@@ -127,7 +72,7 @@ sub Event_SetVar(string line, string _varName, string _section, string _value)
 
 |***
  *	DES: a /declare wrapper
- *	USE: /declare OPsMomisFat [int|bool|string] [outer|glogal|local] [3.14]
+ *	USE: /declare OPsMomisFat [int|bool|string] [outer|local] [3.14]
  *	INI: 
  *  NOTE: 
  ***|
@@ -236,7 +181,7 @@ sub update_zone_list(string _list)
 	}
 /return 
  
- ${Spawn[pc Airavas]}
+
  
 |***
  *	DES: check/create the zone base INI entries.
@@ -437,7 +382,7 @@ sub declare_base()
 	/call DeclareCoreIniVar setTGB							string	General on
 	/call DeclareCoreIniVar setAutoAssist				string	General off
 	/call DeclareCoreIniVar remoteKillKey				string	General "CHANGE ME" /killcode
-	/call DeclareCoreIniVar RezTokenList				string 	General |WAR|SHD|PAL|BER|ROG|MON|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
+	/call DeclareCoreIniVar RezTokenList				string 	General |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
 	
 	| buff queue variables
 	/call DeclareCoreIniVar queueCountMax				int			General 10
@@ -467,7 +412,7 @@ sub declare_base()
 	/call DeclareCoreIniVar combatENC						string	Here DUAL
 	/call DeclareCoreIniVar combatWIZ						string	Here NUKE
 	/call DeclareCoreIniVar combatNEC						string	Here NUKE
-	| /call DeclareCoreIniVar combatMON					string	Here MELEE
+	/call DeclareCoreIniVar combatMNK						string	Here MELEE
 	/call DeclareCoreIniVar combatROG						string	Here MELEE
 	/call DeclareCoreIniVar combatBER						string	Here MELEE
 	/call DeclareCoreIniVar combatBST						string	Here MELEE
@@ -526,7 +471,7 @@ sub declare_base()
 	/declare combatMode													string	outer NULL
 	/declare tmpMode														string	outer NULL
 	/declare hudWarning													string	outer	NULL
-	/declare hudNotice													string	outer	NULL
+	/declare hudNotice													string	outer	NULL	
 	/declare hudTarNotice												string	outer	NULL
 	/declare flagCallNeedRez										bool		outer FALSE
 
@@ -565,14 +510,14 @@ sub declare_base()
 	
 	
 	| various lists for .. you know..lists and stuff.
-	/call DeclareVar MeleeList      						string 	outer |WAR|ROG|BST|MON|SHD|PAL|BER|BRD|RNG
+	/call DeclareVar MeleeList      						string 	outer |WAR|ROG|BST|MNK|SHD|PAL|BER|BRD|RNG
 	/call DeclareVar CastList										string 	outer |BST|SHD|PAL|RNG|CLR|DRU|SHM|ENC|WIZ|NEC|MAG
 	/call DeclareVar PetList										string 	outer |BST|SHD|DRU|SHM|ENC|NEC|MAG
 	/call DeclareVar HealerList									string 	outer |CLR|DRU|SHM
 	/call DeclareVar RezerList									string 	outer |CLR|DRU|SHM|PAL
-	/call DeclareVar AllClassList								string 	outer |WAR|SHD|PAL|BER|ROG|MON|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
-	/call DeclareVar AASnareList								string 	outer |RNG|DRU|SHD|NEC|ROG|WAR|WIZ
-	/call DeclareVar RezTokenList								string 	outer |WAR|SHD|PAL|BER|ROG|MON|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
+	/call DeclareVar AllClassList								string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
+	/call DeclareVar AASnareList								string 	outer |RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK
+	/call DeclareVar RezTokenList								string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
 	/call DeclareVar ZoneFileList								string 	outer |ExcludeList|NoMezzList|NameList|RangeList|NoCastList|NoMeleeList|HuntMobList|NoFireList|NoPoisonList|NoMagicList|NoCorruptionList|NoColdList|NoDiseaseList|CharmMobList
 
 
@@ -599,9 +544,10 @@ sub declare_base()
 	/call DeclareIniVar	tAA_picker							string	Timer	5m
 	/call DeclareIniVar	tWatch_Spawn						string	Timer	1s
 	/call DeclareIniVar	tCast_Cure							string	Timer	30s
+	/call DeclareIniVar	tZone_Pause							string	Timer	5s
 
 	| mod rod recovered addicts
-	/if (!${Select[${Me.Class.ShortName},MAG,WAR,ROG,BRD,MON,BER]}) {
+	/if (!${Select[${Me.Class.ShortName},MAG,WAR,ROG,BRD,MNK,BER]}) {
 		/call DeclareIniVar	tAsk_for_rod						string	Timer	1m
 	}
 	/call DeclareCoreIniVar	tCheck_status				string	Timer	2s	
@@ -669,6 +615,7 @@ sub declare_common()
 	/call DeclareIniVar rezEmergency						bool		Heal FALSE
 	/call DeclareIniVar rezEveryone 						bool 		Heal FALSE 
 	/call DeclareIniVar rezCombat 							bool 		Heal FALSE 
+	/call DeclareIniVar rezEnable 							bool 		Heal FALSE 
 	
 	
 	| /call DeclareIniVar BalanceHP     					bool   	Common FALSE /balance
@@ -756,6 +703,11 @@ sub declare_common()
 	/call DeclareIniVar AANow1									string	AANow FALSE 
 	/call DeclareIniVar AANow2									string	AANow FALSE 
 
+	| discs that you want to always keep going
+	/call DeclareIniVar DiscNow1								string	DiscNow FALSE 
+	/call DeclareIniVar DiscNow2								string	DiscNow FALSE 
+
+
 	| home camp / movement / tie	
 	/call DeclareIniVar HomeSet									bool		Movement FALSE
 	/call DeclareIniVar HomeRadius							int 		Movement 5 /homeradius
@@ -788,7 +740,14 @@ sub declare_common()
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
 		/call DeclareIniVar seloskick							bool		meleedisc FALSE
 	}
-
+	/if (${Select[${Me.Class.ShortName},MNK]}) {
+		/call DeclareIniVar dragonpunch							bool		meleedisc FALSE
+		/call DeclareIniVar eaglestrike							bool		meleedisc FALSE
+		/call DeclareIniVar tigerclaw								bool		meleedisc FALSE
+		/call DeclareIniVar flyingkick							bool		meleedisc FALSE
+		/call DeclareIniVar roundkick								bool		meleedisc FALSE
+	}
+	
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD,CLR,WIZ,RNG,BRD,BST]}) {
 		/call DeclareIniVar sendPetPerc 					int			Pet 99 /petengageat
 		/call DeclareIniVar usePet 								bool 		Pet FALSE
@@ -873,13 +832,13 @@ sub declare_common()
 			/call DeclareIniVar Buff${_count}							string 	Buffs FALSE
 			/call DeclareIniVar Buff${_count}chk					string 	Buffs FALSE
 			/call DeclareIniVar Buff${_count}Alias				string 	Buffs |FALSE|FALSE 
-			/call DeclareIniVar BCBuff${_count}Class			string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MON|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
-			/call DeclareIniVar RaidBuff${_count}Class		string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MON|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
+			/call DeclareIniVar BCBuff${_count}Class			string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
+			/call DeclareIniVar RaidBuff${_count}Class		string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
 			/call DeclareIniVar Buff${_count}noBCinRaid		bool	 	Buffs FALSE
 		/next _count
 	}
 
-	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,PAL,BRD,NEC,BER,DRU]}) {
+	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,PAL,BRD,NEC,BER,DRU,MNK]}) {
 		/call DeclareIniVar Aura1Spell 						string 	Aura FALSE
 		/call DeclareIniVar Aura1Buff 						string 	Aura FALSE  
 	}
@@ -911,7 +870,7 @@ sub declare_common()
 		/call DeclareIniVar MercWarPoint 					int 		Heal 70
 		/call DeclareIniVar MercCLRPoint 					int 		Heal 80
 		/call DeclareIniVar MercDPSpoint 					int 		Heal 80	
-		/call DeclareIniVar XHealClass						string	Heal |WAR|PAL|SHD|BRD|RNG|BST|BER|MON|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
+		/call DeclareIniVar XHealClass						string	Heal |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
 		/call DeclareIniVar tXHeal								string	Timer 3m   
 		| /call DeclareIniVar useRadiantCure				bool		Cure TRUE   
 		/call DeclareIniVar toonControlXTslot			int			Heal 13
@@ -1046,17 +1005,19 @@ sub declare_WIZ()
 	/call DeclareIniVar iceclad 								string	Transport "Translocate: Iceclad"		
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 /return	
+
+
+
+
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub declare_MNK()
+/return
 
 
 
@@ -1198,15 +1159,18 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
+	/declare mobAECount													int	outer
 	/call DeclareIniVar Withstand 							string 	Discs "Repel"
-	/call DeclareIniVar BladeStrike 						string 	Discs "Gouging Blade"
+	/call DeclareIniVar BladeStrike 						string 	Discs "Lacerating Blade"
 	/call DeclareIniVar CrimsonBlade 						string 	Discs "Carmine Blade"
-	/call DeclareIniVar DefensiveDisc 					string 	Discs "BoneBrood Mantle"
+	/call DeclareIniVar DefensiveDisc 					string 	Discs "Doomscale Mantle"
 	/call DeclareIniVar DefensiveDisc2 					string 	Discs "Grelleth's Carapace"
 	/call DeclareIniVar DefensiveDisc3 					string 	Discs "Unholy Guardian Discipline"
 	/call DeclareIniVar DiscRest			 					string	Discs "Breather"
 	/call DeclareIniVar DiscFakeHate						string	Discs	"Unflinching Acrimony"
 	/call DeclareIniVar DiscLeech								string	Discs	"Leechcurse Discipline"
+	/call DeclareIniVar DiscRancor							string	Discs	"Reflexive Revulsion"
+
 
 	/call DeclareIniVar ChallengeSpell					string 	Spells "Impose for Power"
 	/call DeclareIniVar Hate1 									string 	Spells "Terror of Narus"
@@ -1244,6 +1208,7 @@ sub declare_SHD()
  *  NOTE: 
  ***|
 sub declare_PAL()
+	/declare mobAECount													int			outer
 	/declare MajorHurt 													int 		outer 0
 	/declare WorstHurt 													string 	outer NULL
 	/declare WorstHurtID 												int 		outer
@@ -1285,6 +1250,8 @@ sub declare_PAL()
 	/call DeclareIniVar DiscJudgement						string	Discs "Inquisitors Judgement"
 	/call DeclareIniVar DiscHate								string	Discs "Projection of Piety"
 	/call DeclareIniVar DiscTwincast						string	Discs "Hand of Tunare"
+	/call DeclareIniVar DiscReflexive						string	Discs "Reflexive Reverence"
+	
 
 	/call DeclareIniVar AALayonHands						string	Discs "Lay on Hands"
 	/call DeclareIniVar AAHandofPiety						string	Discs "Hand of Piety"
@@ -1300,6 +1267,8 @@ sub declare_PAL()
 
 	/call DeclareIniVar AAJudgement							string	Discs "Inquisitor's Judgement"
 	/call DeclareIniVar AAValorousRage					string	Discs "Valorous Rage"
+	/call DeclareIniVar AAShield								string	Discs "Shield of Brilliance"
+	
 
 	/call DeclareIniVar DoNuke					 				int			Spells 5
 	/call DeclareIniVar Nuke1										string 	Spells "Force of Ardency"
@@ -1310,7 +1279,12 @@ sub declare_PAL()
 
 
 	/call DeclareIniVar ChallengeSpell					string 	Spells "Impose for Honor"
+	/call DeclareIniVar ValiantDefense					string 	Spells "Valiant Defense"
+	
 	/call DeclareIniVar Twincast								string 	Spells "Glorious Exoneration"
+	
+	/call DeclareIniVar Harmonious 							string 	Spells "Harmonious Blessing"
+	
 /return	
 
 
@@ -1702,7 +1676,7 @@ sub declare_BST()
  *	INI: 
  *  NOTE: 
  ***|
-sub declare_MON()
+sub declare_MNK()
 /return	
 
 
@@ -1845,13 +1819,13 @@ sub whitewash()
 	/varset _todelete[7] |forage|fish|invites|train|combat|setpull|petfarm|setpuller|on|off|core|drag|ri|hunt
 
 	| Misc commands
-	/varset _todelete[8] |maxlevel|autoadjustexp|oneoff|ds|userain|resetcore|crew|info|banestrike|watchspawn|huntagro
+	/varset _todelete[8] |maxlevel|autoadjustexp|oneoff|ds|userain|resetcore|crew|info|banestrike|watchspawn|huntagro|autologin
 	/varset _todelete[9] |combatbuff|pathiosis|bcsay|blurb|clean|invis|stein|gtfo|door|echochannel|info|whohas
 	/varset _todelete[10] |mirror|checkcash|autoshrink|maintexplvl|autocontrol|killcode|echoaugments|relay|givecoin
 
 	| heal
 	/varset _todelete[11] |healoverride|healself|healgroup|healxtarget|healpet|healcure|usegrouphot|usegroupheal|xtheal|rc|purify|healaggressive
-	/varset _todelete[12] |rezeveryone|rezcombat|rezauto|rezemergency
+	/varset _todelete[12] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable
 
 	| debuffing
 	/varset _todelete[13] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare
@@ -1956,6 +1930,7 @@ sub set_alias()
   /if (!${Bool[${Alias[/bcsay]}]}) 					/squelch /alias /bcsay 											/bc bcsay
   /if (!${Bool[${Alias[/echoaugments]}]}) 	/squelch /alias /echoaugments								NOUT Echo Augment file!
   /if (!${Bool[${Alias[/whohas]}]}) 				/squelch /alias /whohas											/bc whohas
+  /if (!${Bool[${Alias[/autologin]}]}) 			/squelch /alias /autologin									/plugin mq2autologin unload
    
 	/if (!${Bool[${Alias[/buffraid]}]}) 			/squelch /alias /buffraid 									NOUT Set Raid Buffing!
 	/if (!${Bool[${Alias[/buffbc]}]}) 				/squelch /alias /buffbc 										NOUT Set BC Buffing!
@@ -1978,6 +1953,7 @@ sub set_alias()
 	/if (!${Bool[${Alias[/rezeveryone]}]}) 		/noparse /squelch /alias /rezeveryone 		  NOUT Adjusting Resurection for Everyone!
 	/if (!${Bool[${Alias[/rezauto]}]}) 				/noparse /squelch /alias /rezauto						NOUT Adjusting auto Rez/Calling!
 	/if (!${Bool[${Alias[/rezemergency]}]}) 	/noparse /squelch /alias /rezemergency			NOUT Adjusting Emergency Rez!
+	/if (!${Bool[${Alias[/rezenable]}]}) 			/noparse /squelch /alias /rezenable					NOUT Adjusting Resurrection/Call Casting!
 
 	/if (!${Bool[${Alias[/rc]}]}) 						/squelch /alias /rc 												/bc rc
 	/if (!${Bool[${Alias[/purify]}]}) 				/squelch /alias /purify 										/bc purify
@@ -2184,7 +2160,6 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 			/delay 1s !${Me.Invis}
 		}
 		/say ${_verbage}
-
 	}
   
   | Halts physical movement routines. Nothing else.
@@ -2396,15 +2371,35 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 	 *	DES: Cast group invis. Stacks invis if right classes are in group
 	 *	USE: /bc invis, /invis 
 	 ***|
-	/if (${_cmd.Equal[Invis]} && (${Me.AltAbilityReady[Group Perfected Invisibility]} || ${Me.AltAbilityReady[Group Perfected invisibility To Undead]})) {
-		/call MQ2Cast "Group Perfected Invisibility" alt
-		/if (${Select[${Me.Class.ShortName},CLR,NEC,PAL,SHD]}) {
-			/delay 2
-			/call MQ2Cast "Group Perfected Invisibility To Undead" alt
+	/if (${_cmd.Equal[invis]} && (${Me.AltAbilityReady[Group Perfected Invisibility]} || ${Me.AltAbilityReady[Group Perfected Invisibility to Undead]})) {
+
+		
+		| /delay ${Math.Rand[5]}
+		
+		/if (${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
+			/call core_cast "Group Perfected Invisibility" alt 0
+		} else /if (${Select[${Me.Class.ShortName},PAL,CLR,SHD,NEC]}) {
+			/delay 3
+			/call core_cast "Group Perfected Invisibility to Undead" alt 0
+		}
+   	/delay 1s
+
+
+
+|**
+		/call MQ2Cast "Group Perfected Invisibility To Undead" alt
+		/if (${Select[${Me.Class.ShortName},WIZ,MAG]}) {
+			/echo invis
+			| /delay 2
+			/call MQ2Cast "Group Perfected Invisibility" alt
 		}
 		/delay 1s
-		/goto :exit
-	}
+
+	**|
+
+
+   	/goto :exit
+  }
 	
 	:exit
 /return
@@ -2508,11 +2503,11 @@ sub Event_Blurb(string line, string exp, string event)
 		/varset eventlist ${Ini[${INIBlurb},${exp.Upper}]}
 		/if (${eventlist.Find[${event}]}) {
 				/varset blurb ${Ini[${INIBlurb},${exp.Upper},${event.Upper}]}
-				/rs ${pre}${blurb}${post}
+				/rs ${blurb}
 		}
 	}
 	:exit
-/return 
+/return
 
 
  |***
@@ -2616,6 +2611,17 @@ sub Event_rezEveryone()
 	/call echos switch "Rez Everyone" rezEveryone
 /return
 
+#event rezEnable "[MQ2] - Adjusting Resurrection/Call Casting!"
+sub Event_rezEnable()
+	/if (${Select[${Me.Class.ShortName},WAR,MNK,BST,ROG,ENC,WIZ,MAG,NEC,SHD,RNG,BRD]}) {
+		/call Event_SetVar NA rezEnable Heal FALSE
+		VOUT No rez for joo!
+		/goto :exit
+	}
+	/call Event_SetVar NA rezEnable Heal ${If[${rezEnable},FALSE,TRUE]} 
+	:exit
+	/call echos switch "Automatic Casting if Resurrection/Call" rezEnable
+/return
 
 #event rezAuto "[MQ2] - Adjusting auto Rez/Calling!"
 sub Event_rezAuto()
@@ -2877,10 +2883,10 @@ sub Event_setIgnoreLOS()
 	/call echos switch "Ignoring Line of Sight" setIgnoreLOS
 	/if (${setIgnoreLOS}) NOUT ${owarning} ${sep} THIS IS ${cbad}NOT\ax ADVISED. You will have pathing issues.
 /return	
- 
+ _amount 
 #event bribetime "[MQ2] - Bribe Time: #1# #2# #3#"
-sub Event_bribetime(string line, int _ammount, int _stacks, string _coin)
-	DEBUG ${cbug}Event_bribetime(${_ammount}, ${_stacks}, ${_coin})\ax
+sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
+	DEBUG ${cbug}Event_bribetime(${_amount}, ${_stacks}, ${_coin})\ax
 	/doevents flush
 	/declare _coinID			int local 99
 
@@ -2921,7 +2927,7 @@ sub Event_bribetime(string line, int _ammount, int _stacks, string _coin)
 
 		/delay 5 
 		/varset _countloop ${Math.Calc[${_countloop}+1]}
-		/if (${_countloop} < ${_ammount}) /goto :loopgivemorecash
+		/if (${_countloop} < ${_amount}) /goto :loopgivemorecash
 
 	VOUT ${onotice} ${sep} Done giving cash for bribes.	How the mighty have fallen.
 	:exit
@@ -2957,7 +2963,8 @@ sub Event_Talk(string line, string _sender, string _chatText)
 	/echo ..
 	**|
 	
-	/if (${Bool[${relayTells}]} && !${_sender.Find[Banker]} && !${_sender.Find[${Me}]}) {
+	
+	/if (${Bool[${relayTells}]} && !${_sender.Find[Banker]} && !${_sender.Find[${Me}]} && !${_sender.Find[${relayTells}]}) {
 		/tell ${relayTells} ${_sender} told me: ${_chatText}
 	}
 
@@ -2978,7 +2985,6 @@ sub Event_Talk(string line, string _sender, string _chatText)
   | take a tell to reform your group.
   /if (${_chatText.Equal[formgroup]}) /call set_crew main
   /if (${_chatText.Equal[disbandgroup]}) /bcaa //disband
- 
   
   :exit
 /return
@@ -2986,13 +2992,12 @@ sub Event_Talk(string line, string _sender, string _chatText)
 
 
 |***
- *	DES: 
+ *	DES: will reset the majority of core to its defaults.
  *	USE: 
  *	INI: 
- *  NOTE: 
+ *  NOTE: this needs updating
  ***|
 sub Event_resetcore(string line)
-	| /call Event_SetVar NA looter Common FALSE
 	/call Event_SetVar NA HealOverride Common 0
 	/call Event_SetVar NA autoRest Common 90
 	/call Event_SetVar NA AutoBot Common FALSE
@@ -3198,14 +3203,6 @@ sub Event_EditIniItem(string line, _action)
 	:exit
 /return
 
-| #event InventoryFull "#*#Your inventory appears full!#*#"
-| sub Event_InventoryFull
-| 	VOUT Your Inventory is full. Turning off looting functions.
-| 	/varset LootMobs FALSE
-| 	/varset InventoryFull 1
-| 	:exit
-| /return
-
 #event NullSlot "#*#Invalid item slot 'null#*#"
 sub Event_NullSlot
 	VOUT ${owarning}: Opening all bags to correct null slot
@@ -3262,16 +3259,12 @@ sub Event_send(string line, string _sender, string _location)
 		}
 		| feed the response back to sender		
 		/for _count 1 to ${_portList.Size}
-			| /if (${_count} == 12) /goto :nextcount
 			/t ${_sender} ${_portList[${_count}]}
 			/delay 8
 			:nextcount
 		/next _count
 	}
 	
-	
-	
-
 	| send 'em on their way with a valid location request
 	/if (${Defined[${_location}]}) {
 		/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
@@ -3293,18 +3286,17 @@ sub Event_send(string line, string _sender, string _location)
 sub Event_Zone()
 	/call echos zone
 	/call check_zone_INI
-	
-	
-	/call Event_SetVar NA setToastMode Common FALSE
+	/if (${setToastMode}) /call Event_SetVar NA setToastMode Common FALSE
 	/makecamp off
-	/call Event_SetVar NA HomeSet Movement FALSE
-	/call Event_SetVar NA setDragMode Common FALSE 
-	/call Event_SetVar NA setForageMode Common FALSE 
-	/call Event_SetVar NA setFishMode Common FALSE 
-	/call Event_SetVar NA setSkillsMode Common FALSE 
-	/call Event_SetVar NA setPetFarmMode Common FALSE 
+	/if (${HomeSet}) /call Event_SetVar NA HomeSet Movement FALSE
+	/if (${setDragMode}) /call Event_SetVar NA setDragMode Common FALSE 
+	/if (${setForageMode}) /call Event_SetVar NA setForageMode Common FALSE 
+	/if (${setFishMode}) /call Event_SetVar NA setFishMode Common FALSE 
+	/if (${setSkillsMode}) /call Event_SetVar NA setSkillsMode Common FALSE 
+	/if (${setPetFarmMode}) /call Event_SetVar NA setPetFarmMode Common FALSE 
 	/if (${AutoBot} && ${setAutoShrink}) /call check_shrink
 	
+	/call create_timer timer_zone_pause ${tZone_Pause}
  	:exit
 /return 
 
@@ -3316,9 +3308,9 @@ sub Event_Zone()
  *	INI: 
  *  NOTE: we force this event when recieving calls to corpse so the toon will still accept the next rez/
  ***| 
-#event markerDead "#*#Returning to Bind Location#*#"
-#event markerDead "You have been slain by#*#"
-#event markerDead "You died."
+| #event markerDead "#*#Returning to Bind Location#*#"
+| #event markerDead "You have been slain by#*#"
+| #event markerDead "You died."
 sub Event_markerDead()
 	/varset markerDead TRUE
 	/doevents flush

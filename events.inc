@@ -31,26 +31,58 @@ sub SpeakLine()
 
 
 
-|*** Anni stuff  ****|
-
-
-#event 16anniStein "#*# Visigothe says, '#1#'"
-
+| 16th anniversary .. http://special.eqresource.com/pubcrawl.php
+|***
+#event 16anniStein "#*# Visigothe says, #1#"
 sub Event_16anniStein(string line, string _verbage)
-   /if (${Spawn[npc Galdorin].ID}) /target ID ${Spawn[npc Galdorin].ID}
-   /delay 3
-   /if (${Target.CleanName.NotEqual[Galdorin Visigothe]} || ${Target.Distance} > 30) {
-      VOUT ${onotice} ${sep} Must be next to Galdorin Visigothe in Abysmal
-      /got :exit
-   }
-   /delay 5
-   /say ${_verbage}
+	/if (!${Spawn[npc Galdorin].ID}) /goto :exit
+	/if (${Spawn[npc Galdorin].ID} && ${Target.DisplayName.NotEqual[Galdorin Visigothe]} && ${Spawn[npc Galdorin].Distance} <= 30) {
+		/target ID ${Spawn[npc Galdorin].ID}
+		/delay 3 ${Target.ID} == ${Spawn[npc Galdorin].ID}
+	} else /if (${Spawn[npc Galdorin].Distance} > 30) {
+		VOUT ${onotice} ${sep} Must be next to Galdorin Visigothe in Abysmal Sea.
+		/goto :exit
+	}
+	/say ${_verbage}
 	:exit
 /return
 
 
 
+|*** Anni stuff  
 
+#event 16stein1 "Galdorin Visigothe says 'My stinky stein has rough dirty lips,'"
+#event 16stein2 "Galdorin Visigothe says 'but she loves a deep carouse.'"
+#event 16stein3 "Galdorin Visigothe says 'Beer or ale are her great trips.'"
+#event 16stein4 "Galdorin Visigothe says 'No matter how many vows'"
+#event 16stein5 "Galdorin Visigothe says 'I make or break, my drinking glass'"
+#event 16stein6 "Galdorin Visigothe says 'reminds me of my lovely Brasse.'"
+
+sub Event_16stein1(string line)
+	/say My stinky stein has rough dirty lips,
+/return
+
+sub Event_16stein2(string line)
+	/say but she loves a deep carouse.
+/return
+
+sub Event_16stein3(string line)
+	/say Beer or ale are her great trips.
+/return
+
+sub Event_16stein4(string line)
+	/say No matter how many vows
+/return
+
+sub Event_16stein5(string line)
+	/say I make or break, my drinking glass
+/return
+
+sub Event_16stein6(string line)
+	/say reminds me of my lovely Brasse.
+/return
+
+****|
 
 
 |********************************************************************************************

@@ -27,28 +27,8 @@ sub core_ENC()
 	}
 
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-	}
-	
-	CLEARCURSOR
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -421,7 +401,7 @@ sub mez_adds()
 					/call core_cast "${spellpbaeMez}" 0 0 check_for_adds
 				}
 				/if (${Me.Gem[${spellStun}]} && ${Me.SpellReady[${spellStun}]}) {
-					/if (${Me.Casting.ID}) /call interrupt
+					/if (${Me.Casting.Name.NotEqual[${spellStun}]}) /call interrupt
 					/call core_cast "${spellStun}" 0 0 check_for_adds
 				}
 			}

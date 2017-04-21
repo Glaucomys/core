@@ -5,20 +5,6 @@
  * 
  ***| 
 
-#event ditchRampage "#*#hits YOU for #*# points of damage. (Rampage)#*#"
-sub Event_ditchRampage()
-	/if (${Me.AltAbilityReady[Divine Peace]}) /call core_cast "Divine Peace" alt 0
-/return
-
-
-#event ToTD "#*#Your body is encased in perfect etheral crystal#*#"
-sub Event_ToTD()
-	/if (${Select[${Me.Class.ShortName},CLR]}) {
-		ECHOCHANNEL ToTD fired 5 second dealy for heals.
-		/delay 5s
-		/squelch /removebuff Touch of the Divine
-	}
-/return
 
 
 |***
@@ -48,28 +34,8 @@ sub core_CLR()
 	}	
 
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-	}
-	
-	CLEARCURSOR
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -179,7 +145,8 @@ sub cast_quiet_miracle()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return} || !${Me.AltAbilityReady[Quiet Miracle]} || ${flagCallNeedRez}) /goto :exit
+	/if (${Macro.Return} || !${Me.AltAbilityReady[Quiet Miracle]} || ${flagCallNeedRez} || ${Bool[${tZone_Pause}]}) /goto :exit
+
 	
 	/declare _count 					int local
 	/varset WorstManaID				${Me.ID}
@@ -194,6 +161,7 @@ sub cast_quiet_miracle()
 		/if (${Group.Member[${_count}].Dead} || !${CastList.Find[${Group.Member[${_count}].Class.ShortName}]}) /next _count
 
 		/if (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} && !${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID} && ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange} && ${Group.Member[${_count}].PctMana} < ${WorstManaPct}) {
+			/if (!${Target.Buff[Shroud of the Miracle].WillStack}) /next _count
 			/varset WorstManaID ${Group.Member[${_count}].ID}
 			/varset WorstManaPct ${Group.Member[${_count}].PctMana}
 		} 
@@ -285,9 +253,9 @@ sub check_heal_group_CLR()
  	/doevents
 	
   | AA Spire
-	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${Spire}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
-    /if (${Me.AltAbilityReady[${Spire}]}) {
-    	/call core_cast "${Spire}" alt ${WorstHurt}
+	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
+    /if (${Me.AltAbilityReady[${CLRspire3}]}) {
+    	/call core_cast "${CLRspire3}" alt ${WorstHurt}
     }
   }	
   
@@ -537,7 +505,7 @@ sub check_HP_CLR()
    :exit
 /return
 
-
+${Group.Member[1].Pet.ID}
 
 |***
  *	DES: Checks and Heals Pets. Group ONLY
@@ -547,12 +515,10 @@ sub check_HP_CLR()
  ***|
 sub check_pet_heal_CLR()
 	DEBUG ${cbug}check_pet_heal_CLR()\ax
-	/if (${Target.ID} == ${Me.Pet.ID}) /goto :exit
 	/declare _count int local
 	/varset pWorstHurt ${Me.CleanName}
 	/varset pWorstHP 100
 	/varset pWorstHurtID ${Me.ID}
-	/varset pWorstClass NULL
   
   /for _count 0 to ${Group}
 		/call check_exit
@@ -563,8 +529,8 @@ sub check_pet_heal_CLR()
 		CHECKREZ
     /if (${Group.Member[${_count}].Pet.ID}) {
       /if (${Group.Member[${_count}].Pet.Distance} <= ${Spell[${healRemedy1}].MyRange}) {
-        /if ((${Group.Member[${_count}].Pet.PctHPs} <= ${pWorstHP}) && (${Group.Member[${_count}].Pet.PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point})) {
-          /varset pWorstClass ${Group.Member[${_count}].Pet.Class.ShortName}
+        | /if ((${Group.Member[${_count}].Pet.PctHPs} <= ${pWorstHP}) && (${Group.Member[${_count}].Pet.PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point})) {
+        /if (${Group.Member[${_count}].Pet.PctHPs} < ${pWorstHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
           /varset pWorstHurt ${Group.Member[${_count}].Pet.Name}
           /varset pWorstHurtID ${Group.Member[${_count}].Pet.ID}
           /varset pWorstHP ${Group.Member[${_count}].Pet.PctHPs}
@@ -574,10 +540,17 @@ sub check_pet_heal_CLR()
   /next _count
 
   /if (${pWorstHurtID} == ${Me.ID}) /goto :exit
-  /if (${Spawn[${pWorstHurtID}].PctHPs} < ${${pWorstClass}Point} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Me.SpellReady[${healRemedy1}]}) {
-    /call core_cast "${healRemedy1}" 0 ${pWorstHurtID} check_HP_${Me.Class.ShortName}
-  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${${pWorstClass}Point} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention3}].MyRange} && ${Me.SpellReady[${healIntervention3}]}) {
-    /call core_cast "${healIntervention3}" 0 ${pWorstHurtID} check_HP_${Me.Class.ShortName}
+  DEBUG PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
+  /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Me.SpellReady[${healRemedy1}]}) {
+    /call core_cast "${healRemedy1}" 0 ${pWorstHurtID}
+  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy2}].MyRange} && ${Me.SpellReady[${healRemedy2}]}) {
+    /call core_cast "${healRemedy2}" 0 ${pWorstHurtID}  
+  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention1}].MyRange} && ${Me.SpellReady[${healIntervention1}]}) {
+    /call core_cast "${healIntervention1}" 0 ${pWorstHurtID}
+  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention2}].MyRange} && ${Me.SpellReady[${healIntervention2}]}) {
+    /call core_cast "${healIntervention2}" 0 ${pWorstHurtID}}
+  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention3}].MyRange} && ${Me.SpellReady[${healIntervention3}]}) {
+    /call core_cast "${healIntervention3}" 0 ${pWorstHurtID}
   }
   
   :exit

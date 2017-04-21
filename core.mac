@@ -61,7 +61,6 @@
 	check_exit										returns {TRUE/FALSE] if there is a reason to not do the current sub
 	create_timer									creates a timer. will declare the variable if needed
 	core_cast											"SPELLNAME" [alt|disc|gem#|item|0] [MobID|0] [subname]
-	check1offBuffs								watches the toon for very specific buffs to respond too for events.
 	Event_SetVar									updates the related ini and the loaded variable
 		
 	Tab spaces set to 2 if you care.
@@ -86,7 +85,7 @@
 #define ISDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead}) /call wait_for_rez"
 #define CHECKEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]}) /goto :exit"
 #define CHECKTIE "/if (${SetTie} && !${Bool[${timer_check_Tie}]}) /call set_tie"
-#define CHECKREZ "/if (${AutoBot} && !${setPullMode} && !${Me.Invis} && (${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} || ${rezEmergency})) /call check_for_corpse"
+#define CHECKREZ "/if (${AutoBot} && !${setPullMode} && !${Me.Invis} && ((${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} && ${rezEnable}) || ${rezEmergency})) /call check_for_corpse"
 #define CHECKSAFELIST "/if (${Bool[${forcesafelist}]} && !${safelist.Find[${_sender}]}) /goto :exit"
 #define UPDATEHUD "/call update_HUD_notices"
 | #define CLEARCURSOR "/if (${Cursor.ID} && (${AutoBot} && !${Bool[${timer_clear_cursor}]} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]})) /call sort_cursor"
@@ -109,7 +108,7 @@
 #include TC\class.dru.inc
 #include TC\class.enc.inc
 #include TC\class.mag.inc
-| #include TC\class.mon.inc
+#include TC\class.mnk.inc
 | #include TC\class.nec.inc
 #include TC\class.pal.inc
 #include TC\class.rng.inc
@@ -147,7 +146,7 @@ sub main()
 	/call intialize_item_buffs
 	/call set_alias
 	/call Event_Zone
-	/call base_OCD_shit
+	/call base_preperation
 	| /call AAInit
 	ISDEAD
 
@@ -228,6 +227,8 @@ sub main()
 
 		| check constant AA buffs
 		/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
+		| check constant Disc buffs
+		/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 
 		| do we pull or assist		
 		/if (${AutoBot} && !${Me.Invis} && !${SafeZone}) {
@@ -247,11 +248,11 @@ sub main()
 
 |***
  *	DES: Settings I like to use. 
- *	USE: /call base_OCD_shit
+ *	USE: /call base_preperation
  *	INI: varries
  *  NOTE: You are free to adjust these. If you do not like, simply comment them out. it will not "hurt" the script.
  ***|
-sub base_OCD_shit()
+sub base_preperation()
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
 	/call Event_SetVar NA SetTie Movement FALSE
@@ -308,8 +309,7 @@ sub base_OCD_shit()
 	/if (${setSkillsMode}) /call Event_SetVar NA setSkillsMode Common FALSE 
 	/if (${setPetFarmMode}) /call Event_SetVar NA setPetFarmMode Common FALSE 
 	/if (${setHunterMode}) /call Event_SetVar NA setHunterMode Common FALSE 
-	
-	
+		
 	| KillCode Warning for stupid fucks that like to AFK farm
 	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE,0]}) {
 		/mqclear
@@ -323,27 +323,20 @@ sub base_OCD_shit()
 			/bcaa //endm
 		}
 	}		
+		
+	| auto melee skills
+	/if (${Bool[${kick}]} && !${Skill[Kick].Auto}) /autoskill kick
+	/if (${Bool[${bash}]} && !${Skill[Bash].Auto}) /autoskill bash
+	/if (${Bool[${frenzy}]} && !${Skill[Frenzy].Auto}) /autoskill frenzy
+	/if (${Bool[${backstab}]} && !${Skill[Backstab].Auto}) /autoskill backstab
+	/if (${Bool[${dragonpunch}]} && !${Skill[dragon punch].Auto}) /autoskill dragon punch
+	/if (${Bool[${eaglestrike}]} && !${Skill[eagle strike].Auto}) /autoskill eagle strike
+	/if (${Bool[${tigerclaw}]} && !${Skill[tiger claw].Auto}) /autoskill tiger claw
+	/if (${Bool[${flyingkick}]} && !${Skill[flying kick].Auto}) /autoskill flying kick
+	/if (${Bool[${roundkick}]} && !${Skill[round kick].Auto}) /autoskill round kick
 	
 	:exit
 /return
-
-
-
-|***
- *	DES: Designed to check for the one-off crap. NEED TO GET THIS BACK INTO EVENTS....
- *	USE: /call check1offBuffs
- *	INI: 
- *  NOTE: THIS NEEDS TO BE WORKED OUT OF THE CODE..
- ***|
-sub check1offBuffs()
-	ISDEAD
-	| Check for specific buffs that do not use emotes..
-	/if (${Me.Buff[Holistic Health].ID}) /call cure_Anashti_DT
-	/if (${Me.Buff[Pyroignition].ID}) /call CurePyroignitionDot
-	/if (${Me.Buff[Withering Physicality].ID} || ${Me.Buff[Withering Limbs].ID} || ${Me.Buff[Withering Faith].ID}) /call CureDamselofDecay
-	:exit
-/return
-
 
 
 

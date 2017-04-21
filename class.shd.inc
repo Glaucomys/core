@@ -25,35 +25,18 @@ sub core_SHD()
 		/if (!${Macro.Return} && ${usePet}) /call check_pet
 	}	
 	
-	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-	}
+	/call check_harmonious
 	
-	CLEARCURSOR
+	:killtarget
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
 		/call use_skill_melee
+		/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 		/if (${switchdeBuffCripple}) /call cast_cripple_${Me.Class.ShortName} ${Target.ID}
@@ -63,9 +46,10 @@ sub core_SHD()
 		/if (${DoDoT}) /call cast_DOT
 		/call use_skill_melee
 		/if (${DoNuke}) /call cast_nuke
+		/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
 		/call stick_to_target
 		/call use_skill_melee
-		/if (${doclickItem}) /call click_item
+		/if (${doclickItem}) /call click_item TRUE
 		/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -73,6 +57,7 @@ sub core_SHD()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/call use_mod_rod
+	/call check_harmonious
 	/if (${AutoBot}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
@@ -109,8 +94,9 @@ sub disc_SHD()
 	/if (${Me.AltAbilityReady[Vicious Bite of Chaos]} && ${Target.Distance} <= ${Spell[Vicious Bite of Chaos].MyRange}) /call core_cast "Vicious Bite of Chaos" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[Soul Flay]}) /call core_cast "Soul Flay" alt 0
 	
-	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "Deflection Discipline" disc 0
-	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0
+	/if (${Me.PctHPs} < 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Leech Touch]}) /call core_cast "Leech Touch" alt ${Target2Kill}
+	/if (${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0
+	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]}) /call core_cast "Deflection Discipline" disc 0
 
 	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
 	:exit
@@ -119,40 +105,49 @@ sub disc_SHD()
 
 
 |***
- *	DES: 
- *	USE: 
+ *	DES: take what you want. there is no try...
+ *	USE: /call get_agro_${Me.Class.ShortName
  *	INI: 
  *  NOTE: 
  ***|
 sub get_agro_SHD()
-	DEBUG ${cbug}get_agro.${Me.Class.ShortName}()\ax
+	DEBUG ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Macro.Return}) /goto :exit
 	/call use_skill_melee
 	/if (${usePet}) /call send_pet
+
+	| single hate
+	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${Me.AltAbilityReady[Stream of Hatred]}) /call core_cast "Stream of Hatred" alt ${Target2Kill}
 	/if (${Me.SpellReady[${ChallengeSpell}]} && ${Target.Distance} <= ${Spell[${ChallengeSpell}].MyRange} && !${Target.Buff[${ChallengeSpell}].ID}) /call core_cast "${ChallengeSpell}"  0 ${Target2Kill}
-	/if (${Me.SpellReady[${AEHate1}]} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${AEHate1}].AERange} playerstate 4 targetable]} > 1) /call core_cast "${AEHate1}" 0 0
-	/if (${Me.SpellReady[${AEHate2}]} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${AEHate2}].AERange} playerstate 4 targetable]} > 3) /call core_cast "${AEHate2}" 0 0
+	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.SpellReady[${Hate1}]} && ${Target.Distance} <= ${Spell[${Hate1}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate1}" 0 ${Target2Kill}
+	/if ((${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.SpellReady[${Hate2}]} && ${Target.Distance} <= ${Spell[${Hate2}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate2}" 0 ${Target2Kill}
 
-	/if (${Me.SpellReady[${Hate1}]} && ${Target.Distance} <= ${Spell[${Hate1}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate1}" 0 ${Target2Kill}
-	/if (${Me.SpellReady[${Hate2}]} && ${Target.Distance} <= ${Spell[${Hate2}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate2}" 0 ${Target2Kill}
 
-	/if (${Me.AltAbilityReady[Mindless Hatred]} && ${Target.Distance} <= ${Spell[Mindless Hatred].MyRange} && ${Me.PctAggro} < 90 && ${Target.Level} <= 108) /call core_cast "Mindless Hatred" alt ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscFakeHate}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFakeHate}].EnduranceCost} && ${NameList.Find[${Target.CleanName}]}) /disc ${DiscFakeHate}
-	/call use_skill_melee
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]} && ${Me.SpellReady[${AeLifeTap}]}) /call core_cast "${AeLifeTap}" 0 ${Target2Kill}
-
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[Explosion of Hatred].AERange} playerstate 4 targetable]} > 2 && ${Me.AltAbilityReady[Explosion of Hatred]}) {
-		/call core_cast  "Explosion of Hatred" alt 0
-	} else /if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[Explosion of Spite].AERange} playerstate 4 targetable]} > 3 && ${Me.AltAbilityReady[Explosion of Spite]}) {
-		/call core_cast "Explosion of Spite" alt 0
+	| AE Hate
+	/varset mobAECount ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]}
+	/if  (${mobAECount} > 1) {
+		/if (${Me.SpellReady[${AEHate1}]}) /call core_cast "${AEHate1}" 0 0
+	} else /if (${mobAECount} > 2) {
+		/if (${Me.SpellReady[${AEHate2}]}) /call core_cast "${AEHate2}" 0 0
+	} else /if (${mobAECount} > 4) {
+		/if (${Me.AltAbilityReady[Explosion of Hatred]}) /call core_cast  "Explosion of Hatred" alt 0
+	} else /if (${mobAECount} > 6) {
+		/if (${Me.AltAbilityReady[Explosion of Spite]}) /call core_cast "Explosion of Spite" alt 0
 	}
+
+	| AE lifetap	
+	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]} && ${Me.SpellReady[${AeLifeTap}]}) /call core_cast "${AeLifeTap}" 0 ${Target2Kill}
 	
-	/if (${Me.TargetOfTarget.ID} != ${Me.ID} && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill}
+	| fake hate
+	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill}
+	| named fake hate
+	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mindless Hatred]} && ${Target.Level} <= 110) /call core_cast "Mindless Hatred" alt ${Target2Kill}
+	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscFakeHate}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFakeHate}].EnduranceCost}) /disc ${DiscFakeHate}
 
 	:exit
 /return
@@ -191,27 +186,6 @@ sub patch_heal_SHD()
 
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	:exit
-/return
-
-
-
-|***
- *	DES: keeps SK harmonious up.. always..
- *	USE: /call check_harmonious
- *	INI: [spells] - harmonious
- *  NOTE: 103 spell
- ***|
-sub check_harmonious()
-	DEBUG ${cbug}check_harmonious()\ax
-	ISDEAD
-	/doevents
-	/call check_exit
-	/if (${Macro.Return}) /goto :exit
-	/if (!${Bool[${Me.Buff[${Harmonious}]}]}) {
-		/call core_cast "${Harmonious}" 0 0
-	}
-
 	:exit
 /return
 

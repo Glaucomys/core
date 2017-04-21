@@ -5,11 +5,75 @@ Note: i have a spelling waiver. no, seriously i do..
 TO DO LIST
 - remove pet buffing from /t buff queue
 - fix auto swapping of control toon for healers in raids.
+- found more MON ShortNames for the monk class. /sigh  
+
+
+20170421
+- class.rng.inc
+  -- removed force of dicho casting on scarlet cheeta shortbuff. GFY DB...
+
+
+20170420
+Core Version 3.3.0
+- check_disc_now()
+  -- keep a disc running at all times
+- adjusted for /autoskill usage
+- class.MNK.inc
+  -- Masters Aura
+  -- autoskills
+  -- /debuffsnare (aa crippling strike)
+  
+  
+  
+20170415
+- introducing prep_combat()
+  -- replacement for all calsses to prep for combat and toasting
+
+
+20170413
+- misspelled miniature. Please see Note 1 at top.
+
+
+20170412
+- class.clr.inc
+  -- fixed cleric QM stacking issues
+
+
+20170410
+PAL Version 1.0.0
+- class.shd.inc
+  -- added in a few more AAs
+  -- rewrite of the agro routines. this could go badly :(
+  -- fixed spell Harmonius Disruption. i've no idea how i missed that one
+  -- fixed AAs Visage of Death/Decay stacking issues
+  -- added reflexive rancor disc line for an extra heal  when toasting
+  -- typo(s) in ${CrimsonBlade} and AA T`Vyl's Resolve. never said i could spell
+  -- wrote in epic 2.0 to toast
+- /toast in manual mode requires ${Me.Combat} to be TRUE. IE you have to be in combat
+- cast_disc_breather() will check for ${Me.CombatState} to be RESTING
+- check_engaged() adjusted combat check.
+- testing some changes to wiat_for_res()
+- class.pal.inc
+  -- rebuild of everything. ground up
+
+
+20170409
+- adjusted circle of items since they no longer use Aura Slots
+  -- renamed toast.inc synergy_click_Aura() -> synergy_click_Circle()
+- pet shrink no longer cares if its an item/spell or AA.
+
+
+20170408
+HUDUPDATE
+- can now use /toast in manual mode. has same effects as in auto mode.
+- fixed math problem in /watchspawn.. prob best to not subtract from 0 :(
+- rewrote check_ammo() to meet with core_cast()
+- pet owners can shrink with AAs again. sorry
 
 
 20170402
 - /givecoin [ammount] [stack] [plat|gold|copper|silver]
-  -- will give the ammount of coint to whatecer you have targeted in stacks of whatever.
+  -- will give the ammount of coin to whatever you have targeted in stacks of whatever.
   -- /givecoin 1000 5 gold .. will give gold, in stacks of 5, 1000 times to your target. 5k gold in total.
 
 
@@ -31,7 +95,7 @@ WHITEWASH
   -- core.clr.inc
   -- enabled will force interventions first
   -- disabled will force remedys first
-  -- "Heal" in hud will be RED for enabled, GREEN for disabled; clerics only
+  -- "Heal" in hud will be RED for enabled/damaging, GREEN for disabled/safe; clerics only
      
 
 20170328
@@ -86,7 +150,6 @@ WHITEWASH
 - check_AA_now() will only execute when needed and only 1 time per itteration and not 3 times.
 - moved CHECKREZ to a better spot in the toon loop
 - various refinements to every class.XXX.inc
-
 
 
 20170318
@@ -406,7 +469,6 @@ HUDUPDATE
 - all instances of variable Sender (local or outer) changed to _sender.
 - more changes to res routines
  
-
 
 20170207
 - fixed bug in pet buffing. would stop at 4. goes to 10 now.

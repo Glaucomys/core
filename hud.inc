@@ -126,14 +126,16 @@ sub Event_HUDUpdate(string Line)
 	| rez
 	/noparse /ini HUDPATH "rez1" "3,140,62,0,255,0,${If[${rezAuto},Rez,]}"
 	/noparse /ini HUDPATH "rez2" "3,140,62,255,0,0,${If[${rezAuto},,Rez]}"
-	/noparse /ini HUDPATH "rez3" "3,162,61,100,149,237,[         ][        ]"
-	/noparse /ini HUDPATH "rez4" "3,167,62,255,255,255,${Int[${Ini[${INICore},deathcount,${Me.CleanName}]}]}"
+	/noparse /ini HUDPATH "rez3" "3,162,61,100,149,237,[         ][          ]"
+	/noparse /ini HUDPATH "rez4" "3,167,62,255,255,255,${If[${versionCore},${Int[${Ini[${INICore},deathcount,${Me.DisplayName}]}]},]}"
 	/noparse /ini HUDPATH "rez5" "3,200,62,0,255,0,${If[${rezCombat} || ${CombatCall},C,]}"
 	/noparse /ini HUDPATH "rez6" "3,200,62,25,25,25,${If[${rezCombat} || ${CombatCall},,C]}"
 	/noparse /ini HUDPATH "rez7" "3,208,62,0,255,0,${If[${rezEveryone},E,]}"
 	/noparse /ini HUDPATH "rez8" "3,208,62,25,25,25,${If[${rezEveryone},,E]}"
 	/noparse /ini HUDPATH "rez9" "3,215,62,0,255,0,${If[${rezEmergency},?,]}"
 	/noparse /ini HUDPATH "rez10" "3,215,62,25,25,25,${If[${rezEmergency},,?]}"
+	/noparse /ini HUDPATH "rez11" "3,223,62,0,255,0,${If[${rezEnable},!,]}"
+	/noparse /ini HUDPATH "rez12" "3,223,62,25,25,25,${If[${rezEnable},,!]}"
 
 
 	| HUD WARNING notices

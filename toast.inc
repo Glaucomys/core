@@ -99,9 +99,9 @@ sub synergy_core()
 	/call DeclareCoreIniVar BRDsynergyAA					string	Synergy "Troubadour's Synergy"
 
 	| Monk
-	/call DeclareCoreIniVar MONspire1							string	Synergy 
-	/call DeclareCoreIniVar MONspire2							string	Synergy 
-	/call DeclareCoreIniVar MONspire3							string	Synergy 
+	/call DeclareCoreIniVar MONspire1							string	Synergy "Fundament: First Spire of the Sensei"
+	/call DeclareCoreIniVar MONspire2							string	Synergy "Fundament: Second Spire of the Sensei"
+	/call DeclareCoreIniVar MONspire3							string	Synergy "Fundament: Third Spire of the Sensei"
 	/call DeclareCoreIniVar MONsynergyAA					string	Synergy 
 
 	| Beastlord
@@ -134,15 +134,15 @@ sub synergy_core()
  *	INI: TOON - [General] -> Circleof[Power|Life|Mana]=
  *	NOTE: 
  ***|  
-sub synergy_click_Aura()
-	DEBUG ${cbug}synergy_click_Aura()\ax
+sub synergy_click_Circle()
+	DEBUG ${cbug}synergy_click_Circle()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit	
 	
 	| make sure we have an open aura slot
-	/if ((${Select[${Me.Class.ShortName},RNG,WAR,WIZ,SHM,SHD,ROG,BST,NEC,BER,DRU,MAG,PAL,BRD,MON]} && ${Bool[${Me.Aura[1]}]}) || (${Select[${Me.Class.ShortName},CLR,ENC]} && ${Bool[${Me.Aura[1]}]} && ${Bool[${Me.Aura[2]}]})) /goto :exit
+	| /if ((${Select[${Me.Class.ShortName},RNG,WAR,WIZ,SHM,SHD,ROG,BST,NEC,BER,DRU,MAG,PAL,BRD,MON]} && ${Bool[${Me.Aura[1]}]}) || (${Select[${Me.Class.ShortName},CLR,ENC]} && ${Bool[${Me.Aura[1]}]} && ${Bool[${Me.Aura[2]}]})) /goto :exit
 
 	| circle of power
 	/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].Stacks}) {
@@ -169,36 +169,6 @@ sub synergy_click_Aura()
 /return
 
  
- 
-
- 
- 
- 
- ${Select[${Me.Class.ShortName},RNG,WAR,WIZ,SHM,SHD,ROG,BST,NEC,BER,DRU,MAG,PAL,BRD,MON]}
- 
- 0 aura RNG,WAR,WIZ,SHM,SHD,ROG,BST,NEC
- 1 aura BER,DRU,MAG,PAL,BRD,MON
- 2 aura CLR,ENC
- 
- 	| Aura: all others
-	/if (${Bool[${Aura2Buff}]}) {
-		/if (!${Bool[${Me.Aura[1].Equal[${Aura2Buff}]}]} && !${Bool[${Me.Aura[2].Equal[${Aura2Buff}]}]}) /call core_cast "${Aura2Spell}" ${buffGem} ${Me.ID}
-	}	
- 
-  
- 	/if (${Select[${Me.Class.ShortName},MAG,ENC,PAL,BRD,BER,DRU]}) {
-		/call DeclareIniVar Aura1Spell 						string 	Aura FALSE
-		/call DeclareIniVar Aura1Buff 						string 	Aura FALSE  
-	}
-	/if (${Select[${Me.Class.ShortName},CLR,ENC]}) {
-		/call DeclareIniVar Aura2Spell 						string 	Aura FALSE
-		/call DeclareIniVar Aura2Buff 						string 	Aura FALSE
-	}
-
- 
-${Bool[${Me.Aura[1]}]}
- 
-  
   
 |***
  *	DES: Clicks usefull 1 off items during a Burn
@@ -238,7 +208,7 @@ sub synergy_CLR()
 
 
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
  	:exit	
 /return
@@ -285,7 +255,7 @@ sub synergy_DRU()
 	| AA AE heal
 	/if (${useGroupHeal} && ${Me.AltAbilityReady[Nature's Boon]}) /call core_cast "Nature's Boon" alt 0
 
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -307,7 +277,7 @@ sub synergy_SHM()
 	
 
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -329,7 +299,7 @@ sub synergy_WAR()
 	
 	
 	/if (${Me.CombatAbilityReady[${DiscAttention}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAttention}].EnduranceCost}) /call core_cast "${DiscAttention}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscPhantom}]} && ${Me.CurrentEndurance} > ${Spell[${DiscPhantom}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill}
+	/if (${Me.CombatAbilityReady[${DiscPhantom}]} && ${Me.CurrentEndurance} > ${Spell[${DiscPhantom}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill}
 
 	/if (${Me.AltAbilityReady[${AAResplendentGlory}]} && !${Me.Song[${AAHoldtheLine}].ID}) {
 		/call core_cast "${AAResplendentGlory}" alt 0
@@ -343,7 +313,7 @@ sub synergy_WAR()
 
 
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -362,7 +332,11 @@ sub synergy_SHD()
 	/doevents
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
-	
+
+	| tap disc
+	/if (${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscRancor}]}) /call core_cast "${DiscRancor}" disc ${Target2Kill}
+
+	| defensive	
 	/if (${Me.CombatAbilityReady[${DefensiveDisc}]} && ${Me.CurrentEndurance} > ${Spell[${DefensiveDisc}].EnduranceCost}) {
 		/call core_cast "${DefensiveDisc}" disc 0
 	} else /if (!${Me.CombatAbilityReady[${DefensiveDisc}]} && ${Me.CurrentEndurance} > ${Spell[${DefensiveDisc2}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
@@ -370,23 +344,35 @@ sub synergy_SHD()
 	} else /if (!${Me.CombatAbilityReady[${DefensiveDisc2}]} && ${Me.CurrentEndurance} > ${Spell[${DefensiveDisc3}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
 		/call core_cast "${DefensiveDisc3}" disc 0
 	}
-	/if (${Me.AltAbilityReady[T'vyl's Resolve]} && ${Target.Distance} <= ${Spell[T'vyl's Resolve].MyRange}) /call core_cast "T'vyl's Resolve" alt 0
-	/if (${Me.CombatAbilityReady[${CrimesonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimesonBlade}].EnduranceCost}) /call core_cast "${CrimesonBlade}" disc 0
-	/if (${Me.AltAbilityReady[Chattering Bones]}) /call core_cast "Chattering Bones" alt 0
+	
+	/if (${Me.AltAbilityReady[T`Vyl's Resolve]} && ${Target.Distance} <= ${Spell[T`Vyl's Resolve].MyRange}) /call core_cast "T`Vyl's Resolve" alt ${Target2Kill}
+	/if (${Me.CombatAbilityReady[${CrimsonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimesonBlade}].EnduranceCost}) /call core_cast "${CrimsonBlade}" disc 0
 	/if (${Me.AltAbilityReady[${SHDspire3}]}) /call core_cast "${SHDspire3}" alt 0
 	/if (${Me.AltAbilityReady[Veil of Darkness]}) /call core_cast "Veil of Darkness" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[Harm Touch]}) /call core_cast "Harm Touch" alt 0
+	/if (${Me.AltAbilityReady[Harm Touch]}) /call core_cast "Harm Touch" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[Scourge Skin]}) /call core_cast "Scourge Skin" alt 0
-	/if (${Me.AltAbilityReady[Visage of Death]}) /call core_cast "Visage of Death" alt 0
+
+	| AA Visage of Decay/Death stacking issues
+	/if (${Me.AltAbilityReady[Visage of Death]} && !${Me.Buff[Visage of Decay].ID}) {
+		/call core_cast "Visage of Death" alt 0
+	} else /if (${Me.AltAbilityReady[Visage of Decay]} && !${Me.AltAbilityReady[Visage of Death]} && !${Me.Buff[Visage of Death].ID}) {
+		/call core_cast "Visage of Decay" alt 0
+	}
+
+	| swarm pets
+	/if (${usePetSwarm} && ${Me.AltAbilityReady[Chattering Bones]}) /call core_cast "Chattering Bones" alt ${Target2Kill}
+	
+	| epic 2.0
+	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0
 
 
 	/call use_glyph	
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
-	
- 
+
+
  
  |***
  *	DES: Paladin toast routines
@@ -401,18 +387,25 @@ sub synergy_PAL()
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
 
-	/if (${setAgroMode} {
-		/if (${Me.CombatAbilityReady[${DiscUnflinching}]} && ${Bool[${DiscUnflinching}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscUnflinching}" disc 0
-		/if (${Me.AltAbilityReady[Projection of Piety]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "Projection of Piety" alt ${Target2Kill}
-	}
+	| defensive	
+	/if (${Me.CombatAbilityReady[${DiscArmor}]} && ${Me.CurrentEndurance} > ${Spell[${DiscArmor}].EnduranceCost}) {
+		/call core_cast "${DiscArmor}" disc 0
+	} else /if (!${Me.CombatAbilityReady[${DiscGuard}]} && ${Me.CurrentEndurance} > ${Spell[${DiscGuard}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
+		/call core_cast "${DiscGuard}" disc 0
+	} 
 
-	/if (${Me.AltAbilityReady[${AAGroupInquisitor}]}) /call core_cast "${AAGroupInquisitor}" alt 0
 	/if (${Me.AltAbilityReady[${AAJudgement}]}) /call core_cast "${AAJudgement}" alt 0
 	/if (${Me.AltAbilityReady[${AAValorousRage}]}) /call core_cast "${AAValorousRage}" alt 0
+	/if (${Me.AltAbilityReady[${AAShield}]}) /call core_cast "${AAShield}" alt 0
 	
-		
+	| epic 2.0
+	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0
+	
+	| dpsheal
+	/if (${Me.CombatAbilityReady[${DiscReflexive}]}) /call core_cast "${DiscReflexive}" disc ${Target2Kill}
+	
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -466,7 +459,7 @@ sub synergy_MAG()
 	/if (${usePetSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill}
 
 
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -492,7 +485,7 @@ sub synergy_ENC()
 	/if (${Me.AltAbilityReady[Calculated Insanity]}) /call core_cast "Calculated Insanity" alt	
 	
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -548,10 +541,10 @@ sub synergy_WIZ()
 	/if (${usePetSwarm} && ${Me.AltAbilityReady[Call of Xuzl]}) /call core_cast "Call of Xuzl" alt ${Target2Kill}    
 
 	| ditch agrgro on named
-	/if (${Me.PctAggro} > 80 && ${NameList.Find[${Target.CleanName}]} && ${Me.AltAbilityReady[Mind Crash]}) /call core_cast "Mind Crash" alt ${Target2Kill}
+	/if (${Me.PctAggro} > 80 && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mind Crash]}) /call core_cast "Mind Crash" alt ${Target2Kill}
 
 	/call use_glyph	
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -573,7 +566,7 @@ sub synergy_NEC()
 	
 
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -634,8 +627,11 @@ sub synergy_RNG()
 	| swarm
 	/if (${usePetSwarm} && ${Me.AltAbilityReady[Pack Hunt]}) /call core_cast "Pack Hunt" alt ${Target2Kill}    
 	
+	| ae regen 
+	/if (!${Bool[${DiscHeal}]} && !${Bool[${Me.Song[Bladespur Reflection]}]} && ${Me.CombatAbilityReady[${DiscHeal}]}) /call core_cast "${DiscHeal}" disc ${Target2Kill}
+	
 		
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
  	:exit
  /return
@@ -663,7 +659,7 @@ sub synergy_BRD()
 	/if (${Me.AltAbilityReady[Quick Time]} && !${Me.Song[Ruaabri's Fury].ID}) /call core_cast "Quick Time" alt 0
 
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast	
  	:exit	
 /return
@@ -676,16 +672,23 @@ sub synergy_BRD()
  *	INI: 
  *	NOTE: 
  ***| 
-sub synergy_MON()
+sub synergy_MNK()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
 	
+	
+	| AA Zan Fi's Whistle - DPS increase
+	| aa Focused Destructive Force
+	| AA Silent Strikes
+	| aa five point palm
+	
+	
 
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return
@@ -704,7 +707,7 @@ sub synergy_BST()
 	/doevents
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
-|	/if (${Me.AltAbilityReady[Bloodlust]}) /call core_cast "Bloodlust" alt 0
+	| /if (${Me.AltAbilityReady[Bloodlust]}) /call core_cast "Bloodlust" alt 0
 	/if (${Me.AltAbilityReady[Bestial Alignment]}) /call core_cast "Bestial Alignment" alt 0
 	/if (${Me.AltAbilityReady[Frenzied Swipes]}) /call core_cast "Frenzied Swipes" alt 0
 	/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Bestial BloodRage]}) /call core_cast "Bestial BloodRage" alt 0
@@ -723,7 +726,7 @@ sub synergy_BST()
 	}
 
 	/call use_glyph
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast	
 	:exit	
 /return
@@ -745,7 +748,6 @@ sub synergy_BER()
 	
 	/if (${Me.AltAbilityReady[desperation]} && ${Me.PctHPs} < 90) /call core_cast "Desperation" alt 0
 	/if (${Me.CombatAbilityReady[${DiscScream}]} && ${Me.CurrentEndurance} > ${Spell[${DiscScream}].EnduranceCost}) /disc ${DiscScream}
-|	/if (!${FindItem[${Epic}].Timer} && !${Me.Buff[Blinding Fury].ID} && ${FindItem[${Epic}].ID}) /call CastItemClicky "${Epic}" 
 	/if (${Me.CombatAbilityReady[${CryOfChaos}]} && !${Me.Song[${CryOfChaos}].ID}) {
 		/delay ${Math.Rand[8]}s ${Me.Song[${CryOfChaos}].ID}
 		/if (!${Me.Song[${CryOfChaos}].ID}) {
@@ -778,7 +780,7 @@ sub synergy_BER()
 	}	
 	
 	
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast	
 	:exit	
 /return
@@ -809,7 +811,7 @@ sub synergy_ROG()
 	/if (${Me.CombatAbilityReady[Dichotomic Weapons]}) /call core_cast "Dichotomic Weapons" disc 0
 	/call use_skill_melee
 	/if (${Me.AltAbilityReady[Focused Rake's Rampage]}) /call core_cast "Focused Rake's Rampage" alt 0
-	/if (${Me.CombatAbilityReady[${DiscPinPoint}]}) /call core_cast "${DiscPinPoint}" disc 
+	/if (${Me.CombatAbilityReady[${DiscPinPoint}]}) /call core_cast "${DiscPinPoint}" disc ${Target2Kill}
 	/if (${Me.AltAbilityReady[Envenomed Blades]}) /call core_cast "Envenomed Blades" alt 0
 	/if (${Bool[${Target2Kill}]} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill}
 	/if (${Me.AltAbilityReady[Rogue's Fury]}) /call core_cast "Rogue's Fury" alt 0
@@ -822,7 +824,7 @@ sub synergy_ROG()
   /if (${Me.CombatAbilityReady[${DiscEradicator}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscEradicator}" disc 0
   /if (${Me.CombatAbilityReady[${DiscRazor}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRazor}" disc 0
 
-	/call synergy_click_Aura
+	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
 /return

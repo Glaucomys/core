@@ -20,29 +20,9 @@ sub core_BER()
 	CHECKTIE
 	
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-	}
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 	
-	CLEARCURSOR
-
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/if (${isValidTarget}) /call stick_to_target
 		/if (${isValidTarget} && ${Me.CombatAbilityReady[${DiscSlapintheFace}]} && ${Me.PctAggro} <= 0 && !${Me.Combat} && ${Me.CurrentEndurance} > ${Spell[${DiscSlapintheFace}].EnduranceCost}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
@@ -77,7 +57,6 @@ sub core_BER()
  *	INI: 
  *  NOTE: 
  ***|
-
 sub disc_BER()
 	DEBUG ${cbug}disc_BER()\ax
 	ISDEAD
@@ -91,7 +70,6 @@ sub disc_BER()
 	/if (${Me.AltAbilityReady[Communion of Blood]} && ${Me.PctHPs} > 75 && ${Me.PctEndurance} < 50) /call core_cast "Communion of Blood" alt 0
 	/if (${Me.CombatAbilityReady[${DiscJolt}]} && ${Me.PctAggro} > 80 && ${Me.CurrentEndurance} > ${Spell[${DiscJolt}].EnduranceCost}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
 		/if (${Me.CombatAbilityReady[${DiscDicho}]} && ${Me.CurrentEndurance} > ${Spell[${DiscDicho}].EnduranceCost}*2) /disc 49307
-
 
 	| /if (${Me.CombatAbilityReady[${DiscOpenWound}]} && ${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscOpenWound}].EnduranceCost})  /call core_cast "${DiscOpenWound}" disc 0
 	
@@ -124,11 +102,7 @@ sub disc_BER()
  *  NOTE: 
  ***|
 sub get_agro_BER()
-	DEBUG ${cbug}get_agro_BER()\ax
-	ISDEAD
-	/doevents
-	/if (${AutoBot} && (${Bool[${NoCastList.Find[${Target.DisplayName}]}]} || ${Me.Moving} || ${Me.SpellInCooldown} || ${Bool[${Target.Mezzed}]}) || ${Me.Stunned}) /goto :exit
-	:exit
+
 /return
 
 
@@ -167,6 +141,5 @@ sub click_DPS_BER()
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
 	:exit
 /return

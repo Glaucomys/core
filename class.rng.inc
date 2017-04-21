@@ -19,29 +19,12 @@ sub core_RNG()
 	ISDEAD
 	CHECKTIE
 
+	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
+
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-	}
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 	
-	CLEARCURSOR
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -82,7 +65,6 @@ sub core_RNG()
 		/call set_combat MELEE
 		/call use_skill_melee
 		/if (${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
-		/call cast_dicho_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}
@@ -108,7 +90,7 @@ sub core_RNG()
 
 |***
  *	DES: Combat skills, Disciplines and Alternate abilities.
- *	USE: Disc-
+ *	USE: /call disc_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: 
  ***|
@@ -162,7 +144,7 @@ sub cast_auspice()
 
 |***
  *	DES: emergency healing
- *	USE: /call patch_heal_RNG
+ *	USE: /call patch_heal_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: 
  ***|
@@ -185,7 +167,7 @@ sub patch_heal_RNG()
 
 |***
  *	DES: Agro Routines
- *	USE: /call get_agro_RNG
+ *	USE: /call get_agro_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: manual/Named/raid. all sorts...
  ***|
@@ -256,7 +238,7 @@ sub cast_elemental_arrows(int _tmpID)
 
 |***
  *	DES: DPS Clickies
- *	USE: /call click_DPS_RNG
+ *	USE: /call click_DPS_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: 
  ***|
@@ -299,7 +281,8 @@ sub cast_nuke_summer(int _tmpID)
  *	USE: /call cast_dicho_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: Greater Scarlet Cheetah Fang
- ***|
+ *	NOTE2: THIS IS NO LONGER VALID... hold code for now.
+
 sub cast_dicho_RNG()
  	DEBUG ${cbug}cast_dicho_${Me.Class.ShortName}()\ax 
 	ISDEAD
@@ -308,3 +291,5 @@ sub cast_dicho_RNG()
  	/if (${Bool[${Me.Song[Greater Scarlet Cheetah Fang]}]}) /call core_cast "${GoMNuke}" 0 ${Target2Kill}	 	
  	:exit
 /return
+
+ ***|

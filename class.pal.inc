@@ -1,9 +1,10 @@
 |***
-	class.pal.inc
-	Core Paladin Include
-
-***|
-
+ *	class.pal.inc
+ * 	Core Paladin Include
+ *
+ *	
+ ***|
+ 
 
 
 |***
@@ -17,6 +18,8 @@ sub core_PAL()
 	/doevents
 	ISDEAD
 	CHECKTIE
+
+	/call check_harmonious
 
 	:killtarget
 	CHECKREZ
@@ -38,9 +41,10 @@ sub core_PAL()
 	} else /if (!${AutoBot}) {
 		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
 		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
+		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
 	}
 	
-	/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call clear_cursor
+	CLEARCURSOR
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -65,6 +69,7 @@ sub core_PAL()
 	} else /if (${Select[${combat},DUAL]}) {
 	} 
 	/call use_mod_rod
+	/call check_harmonious
 	/if (${AutoBot}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
@@ -94,24 +99,27 @@ sub disc_PAL()
 	/call is_target_dead
 	/if (${Macro.Return}) /goto :exit
 	/if (${doYaulp}) /call cast_AA_yaulp
-	/call get_agro_${Me.Class.ShortName}
+	/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscFastRune}]} && ${Bool[${DiscFastRune}]}) /call core_cast "${DiscFastRune}" disc 0
-	| /if (${Me.AltAbilityReady[${AAForceofDisruption}]} && ${Bool[${AAForceofDisruption}]}) /call core_cast "${AAForceofDisruption}" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[${AADisruptivePersecution}]} && ${Bool[${AADisruptivePersecution}]}) /call core_cast "${AADisruptivePersecution}" alt ${Target2Kill}
-
-	/if (${Me.AltAbilityReady[${AAAEBeacon}]} ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 30 targetable]} >= 2) /call core_cast "${AAAEBeacon}" alt 0
-	/if (${Me.AltAbilityReady[${AAAELodestar}]} ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 30 targetable]} >= 4) /call core_cast "${AAAELodestar}" alt 0
 
 
-	/if (${Me.AltAbilityReady[${AAInquisitor}]} ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 30 targetable]} >= 2 && !${Me.Song[armor of the Inquisitor].ID}) /call core_cast "${AAInquisitor}" alt 0
+	| AA inquisitors armor stacking control
+	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 30 targetable]} > 2) {
+		/if (${Me.AltAbilityReady[${AAInquisitor}]} && !${Me.Song[[${AAGroupInquisitor}].ID}) { 
+			/call core_cast "${AAInquisitor}" alt 0
+		} else /if (${Me.AltAbilityReady[${AAGroupInquisitor}]} && !${Me.Song[${AAInquisitor}].ID}) {
+			/call core_cast "${AAGroupInquisitor}" alt 0
+		}
+	}
 
 
+| Vanquish the Fallen. aa undead nuke
+| helix of the undying AA undead debuff
 
 
-|	/if (${Me.AltAbilityReady[Twisted Shank]}) /call core_cast "Twisted Shank" alt ${Target2Kill}
-
-
+	| Hand of Piety AA Group heal	
+	/if (${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Hand of Piety]} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0
 
 
 
@@ -140,19 +148,34 @@ sub get_agro_PAL()
 	/doevents
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
-	/if (${setAgroMode}) {
-		/if (${Me.SpellReady[${ChallengeSpell}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${ChallengeSpell}" 0 ${Target2Kill} cast_break
-	/if (${Me.AltAbilityReady[${AADivineStun}]} && ${Bool[${AADivineStun}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AADivineStun}" alt ${Target2Kill}
-	
-	} else /if (!${setAgroMode}) {
-		| aa Mar's Salvation  | anti agro
 
+	/if (${Me.SpellReady[${ChallengeSpell}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${ChallengeSpell}" 0 ${Target2Kill} cast_break
+	
+	| /if (${Me.AltAbilityReady[${AAForceofDisruption}]} && ${Bool[${AAForceofDisruption}]}) /call core_cast "${AAForceofDisruption}" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[${AADisruptivePersecution}]} && ${Bool[${AADisruptivePersecution}]}) /call core_cast "${AADisruptivePersecution}" alt ${Target2Kill}
+	| /if (${Me.AltAbilityReady[${AADivineStun}]} && ${Bool[${AADivineStun}]}) /call core_cast "${AADivineStun}" alt ${Target2Kill}
+	/if (${Me.SpellReady[${ValiantDefense}]}) /call core_cast "${ValiantDefense}" 0 ${Target2Kill}
+
+	| AE Stuns
+	/varset mobAECount ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]}
+	/if  (${mobAECount} > 1) {
+		/if (${Me.AltAbilityReady[${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill}
+	} else /if (${mobAECount} > 3) {
+		/if (${Me.AltAbilityReady[${AAAELodestar}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill}
 	}
+	
+	| pet hate
+	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${Me.AltAbilityReady[Projection of Piety]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "Projection of Piety" alt ${Target2Kill}
 		
+	| fake hate
+	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill}
+	| named fake hate
+	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscUnflinching}]} && ${Me.CurrentEndurance} > ${Spell[${DiscUnflinching}].EnduranceCost}) /disc ${DiscUnflinching}
 
 	:exit
 /return
 
+Diven call (HJA)
 
 
 |***
@@ -168,7 +191,6 @@ sub click_DPS_PAL()
 	/call check_exit
 	/if (${Macro.Return}) /goto :exit
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
 	:exit
 /return
 
@@ -194,7 +216,7 @@ sub patch_heal_PAL()
 	
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0
+
 	:exit
 /return
 
@@ -221,7 +243,6 @@ sub check_heal_group_PAL()
 	/varset MinorHurt 				0
 	/varset MajorHurt					0
 	
-	| Do group members need healing? ${Group.Member[${_count}].State.Equal[HOVER]}
 	/for _count 0 to ${Group.Members}
 		ISDEAD
 		CHECKEXIT
@@ -245,20 +266,20 @@ sub check_heal_group_PAL()
 
 
   
-|****** Panic Heal ******|
+	| Panic Heal
   /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange} && ${Me.SpellReady[${healPanic}]}) {
     /call core_cast "${healPanic}" 0 ${WorstHurt}
     /if (${castReturn.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
   }
 
 		
-|****** AA heal stuffs ******|
-  /if (${MajorHurt}+${MinorHurt} >= 3) /if (${Me.AltAbilityReady[Hand of Piety]}) /call core_cast "Hand of Piety" alt ${Me.ID}
+	| AAheal stuffs
+  /if (${MajorHurt}+${MinorHurt} >= 3) /if (${Me.AltAbilityReady[Hand of Piety]}) /call core_cast "Hand of Piety" alt 0
 	ISDEAD
 	CHECKEXIT
  	/doevents
 		
-|****** Group Heal ******|
+	| Group Heal
   /if (${MajorHurt}+${MinorHurt} >= 3 && ${Me.SpellReady[${healWholeGroup}]} && ${useGroupHeal}) {
     /call core_cast "${healWholeGroup}" 0 ${Me.ID}
     /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
@@ -267,7 +288,7 @@ sub check_heal_group_PAL()
 	CHECKEXIT
  	/doevents
 	
-|****** Touch Heals ******|
+	| Touch Heals 
 	/doevents
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healTouch}]}) {
 		/call core_cast "${healTouch}" 0 ${WorstHurt}

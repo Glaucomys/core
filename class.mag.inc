@@ -49,6 +49,7 @@ sub core_MAG()
 	} else /if (!${AutoBot}) {
 		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
 		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
+		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
 	}
 	
 	CLEARCURSOR
