@@ -1451,7 +1451,7 @@ sub Event_AM4()
 	| =/moveto loc 104 1.06
 	/moveto loc -151 284
 	/delay 1s ${Me.Moving}
-	/call CreateTimer AM4Timer 13s
+	/call create_timer AM4Timer 13s
 	:loop
 		/doevents AM1Safe
 		/if (!${AM4Timer}) /goto :endtimer
@@ -1473,7 +1473,7 @@ sub Event_AM1()
 	/declare tempy float local ${Me.Y}
 	/moveto loc 104 1.06
 	/delay 1s ${Me.Moving}
-	/call CreateTimer AM1Timer 13s
+	/call create_timer AM1Timer 13s
 	:loop
 	 /doevents AM1Safe
 	 /if (!${AM1Timer}) /goto :endtimer
@@ -1496,7 +1496,7 @@ sub Event_VitioWeapon()
   /if (!${AutoBot}) /goto :exit
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
-	/call CreateTimer VitioWeaponTimer 15s
+	/call create_timer VitioWeaponTimer 15s
 	/moveto loc 252.65 -36.91
 	/delay 1s ${Me.Moving}
 	/delay 10s !${VitioWeaponTimer}
@@ -1513,7 +1513,7 @@ sub Event_VitioClose()
   /if (!${AutoBot}) /goto :exit
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
-	/call CreateTimer VitioWeaponTimer 10s
+	/call create_timer VitioWeaponTimer 10s
 	/moveto loc ${Spawn[Praetor Vitio].Y} ${Spawn[Praetor Vitio].X}
 	/delay 1s ${Me.Moving}
 	/delay 10s !${VitioWeaponTimer}

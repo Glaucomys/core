@@ -21,6 +21,7 @@ sub core_WIZ()
 	
 	/if (${AutoBot}) {
 		/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_harvest
+		/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 	
 	:killtarget
@@ -28,6 +29,14 @@ sub core_WIZ()
 	/if (!${Macro.Return}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
+		/call set_combat MELEE
+		/call stick_to_target
+		/if (${DoNuke}) /call cast_nuke
+		/call disc_${Me.Class.ShortName}
+		/call click_BP
+		/call stick_to_target
+		/if (${doclickItem}) /call click_item
+		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
@@ -42,6 +51,7 @@ sub core_WIZ()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
+	/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	/call use_mod_rod
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
@@ -159,5 +169,28 @@ sub Event_gtfo(string line, string _sender)
 	  ECHOCHANNEL Fuck this place in particular..
 	 	/call core_cast "Exodus" alt 0
 	}
+	:exit
+/return
+
+
+
+|***
+ *	DES: Keeps chanter runed. cause the're fragile and shit.
+ *	USE: /call check_rune or /rb
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_rune_WIZ()
+	DEBUG ${cbug}check_rune_WIZ()\aw
+	ISDEAD
+	CHECKEXIT
+	| /if (${timer_check_runes}) /goto :exit
+	UPDATEHUD "BUFF: Runes"
+	/if (!${Me.Buff[${runeMagiWard}].ID} && ${FindItemCount[Peridot]} && ${Spell[${runeMagiWard}].Stacks}) /call core_cast "${runeMagiWard}" ${buffGem} ${Me.ID}
+	/if (!${Bool[${Me.Buff[${runeShieldofFate}].ID}]} && ${Spell[${runeShieldofFate}].Stacks}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
+	/if (!${Me.Buff[${runeCrystalwing}].ID} && ${Spell[${runeCrystalwing}].Stacks}) /call core_cast "${runeCrystalwing}" ${buffGem} ${Me.ID}
+	/if (!${Me.Buff[${runeGuard}].ID} && ${Spell[${runeGuard}].Stacks}) /call core_cast "${runeWard}" ${buffGem} ${Me.ID}
+	UPDATEHUD
+	/call create_timer timer_check_runes ${tCheck_Runes}
 	:exit
 /return

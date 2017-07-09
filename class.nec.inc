@@ -1,133 +1,76 @@
 |***
-	class.nec.inc
-	Core Necromancer Include
+ *	class.nec.inc
+ *	Core Necro Include
+ *
+ *
+ ***|
 
-***|
 
 
-
+|***
+ *	DES: Main Necro Routine
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
 sub core_NEC()
+	
+			/call sac_toon()
+
+|**	
 	DEBUG Loop start: ${cbug}core_NEC()\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
-	/call check_AA_now
 
 	/if (${AutoBot} && !${Me.Invis}) {
 		/call check_engaged
 		/if (!${Macro.Return} && ${usePet}) /call check_pet
 	}
 
+	:killtarget
+	/call prep_combat
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
-
-
-
-
-	:autokilltarget
-	/if (${AutoBot}) /call check1offBuffs
-	/if (!${Me.Invis} && ${AutoBot} && (${Bool[${Target2Kill}]} && !${combat.Equal[HEAL]})) /call is_target_valid ${Target2Kill}
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${useSmartAssist1} && ${Target2Kill} != ${Me.XTarget[1].ID}) /call clear_combat
-		/if (${useSmartAssist2} && ${Target2Kill} != ${Me.XTarget[2].ID}) /call clear_combat
-		/if (${useSmartAssistG} && ${Target2Kill} != ${Me.XTarget[1].ID}) /call clear_combat
-		/if ((!${isValidTarget} || !${Bool[${Spawn[${Target2Kill}]}]}) && !${combat.Equal[HEAL]}) {
-			/call clear_combat
-			/goto :exit
-		}	
-		/if (${combat.Equal[MELEE]}) {
-		}
-		/if (${combat.Equal[RANGE]}) {
-		}
-		/if (${combat.Equal[HEAL]}) {
-		}
-		/if (${combat.Equal[NUKE]}) {
-			/if (${isValidTarget}) /call setNukeAttack
-			/if (!${Bool[${timer_check_Tie}]} && ${Bool[${SetTie}]}) /call set_tie
-			/call get_assist_target
-			/call send_pet
-			/if (${Bool[${Target2Kill}]} && (${setToastMode} || (${AutoToast} && ${NameList.Find[${Target.CleanName}]}) || (${Bool[${burnMobCount}]} && ${SpawnCount[npc radius ${MobAgro} los targetable playerstate 4]} >= ${burnMobCount}))) /call burn.${Me.Class.ShortName} 
-|			/if (${Bool[${Target2Kill}]}) /call cast_Call_for_Blood
-			/if (${switchdeBuffEradicate} && !${timer_eradicate_${Target2Kill}}) /call cast_eradicate_magic ${Target2Kill}
-			/if (${Bool[${Target2Kill}]} && ${Bool[${DoDoT}]}) /call castNUKE
-			/if (${Bool[${Target2Kill}]} && ${Bool[${DoDoT}]}) /call castDOT
-			/if (${Bool[${Target2Kill}]}) /call disc.${Me.Class.ShortName}
-			/if (${Bool[${Target2Kill}]} && ${Spawn[${Target2Kill}].PctHPs} >= 20) /call doclickItem
-			/if (${Bool[${Target2Kill}]}) /call clickDPS.${Me.Class.ShortName}
-			/if (${Bool[${Target2Kill}]}) /call useModRod
-		}
-		/if (${combat.Equal[DUAL]}) {
-		}
-		/call isTargetDead
-		/if (!${Macro.Return}) /goto :autokilltarget
+	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
+	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
+	} else /if (${Select[${combat},HEAL]}) {
+	} else /if (${Select[${combat},DUAL]}) {
 	}
-
-
-	
-	|***
-	 *	DES: Manual Attack stuff
-	 *	USE: /squelch /bct ${Me} MODE (MELEE,RANGE,NUKE,HEAL,DUAL)
-	 **|
-	/if (!${AutoBot} && ${combatMode.NotEqual[FALSE]}) {
-		/if (${Target.ID} != ${Target2Kill}) {
-			/varset Target2Kill ${Target.ID}
-		}
-		/if (!${Target.ID}) /goto :exit
-		/if (${combatMode.Equal[MELEE]}) {
-		} 
-		/if (${combatMode.Equal[RANGE]}) {
-		}	
-		/if (${combatMode.Equal[HEAL]}) {
-		}
-		/if (${combatMode.Equal[NUKE]}) {
-			/if (${Me.Invis}) /makemevisible
-			:manualnuke
-			/if (!${Target.LineOfSight}) {
-				VOUT \arNO\ax line of sight for ranged attack.
-				/if (${Me.Casting.ID}) /stopcast
-				/varset combatMode FALSE
-				/goto :exit 	
-			}
-			/if (${usePet} && ${Pet.ID}) /pet attack
-			/call setNukeAttack
-			/doevents		
-			/call get_assist_target
-			/if (!${Bool[${Target.Malod}]}) /call castMaloTash
-			/call doBPClickie
-			/if (!${Bool[${timer_Call_for_Blood}]}) /call cast_call_for_blood
-			/call castNecroDot		
-	
-|			/call dotCycle
-					
-			/if (${Spawn[${Target2Kill}].PctHPs} >= 20) /call doclickItem
-			/call disc.${Me.Class.ShortName}
-			/if ((${setToastMode} || ${AutoToast}) && ${NameList.Find[${Target.CleanName}]}) /call burn.${Me.Class.ShortName} 
-			/call clickDPS.${Me.Class.ShortName}
-			/call isTargetDead
-			/if (!${Macro.Return}) /goto :manualnuke
-			/goto :exit
-		}
-		/if (${combatMode.Equal[DUAL]}) {
-		}
-		/call check_AA_now
+	/call use_mod_rod
+	/if (${AutoBot}) {	
+		/if (${switchHealCure}) /call cast_cure
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
+	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+		/call is_target_dead
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
+	}
+	**|
 	:exit	
-	
-	
-	
 /return
 
 
 
 
-
-sub petHeal_NEC()
-	| Yah... whatever... placeholder
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub pet_heal_NEC()
 /return
 
 
 
-
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
 sub disc_NEC()
 	DEBUG \atdisc.${Me.Class.ShortName}()\ax 
 	/doevents
@@ -143,9 +86,11 @@ sub disc_NEC()
 
 
 |***
-	DES: cast DPS Clickies
-	USE: this shits auto, learn to love it.
-***|
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
 sub clickDPS_NEC()
 	DEBUG \atclickDPS.NEC()\ax 
 	/doevents
@@ -160,7 +105,12 @@ sub clickDPS_NEC()
 
 
 
-
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
 sub castNecroDot()
 	DEBUG \atcastNecroDot()\ax 
 	/doevents
@@ -184,8 +134,14 @@ sub castNecroDot()
 /return
 
 
-sub mem_spell_set()
 
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub mem_spell_set()
 /varset gem ${Math.Calc[${gem}+1]}
 	/if (${gem} > 11 ) {
 		/varset gem 1
@@ -198,21 +154,17 @@ sub mem_spell_set()
 		}
 
 	}
-
-
-
 /return
 
 
 
-
-
-
-
-
-
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
 sub cast_Call_for_Blood()
-	DEBUG \atcastCallforBlood()\ax 
 	ISDEAD
 	/doevents
 	/if ((${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]} || ${Bool[${Me.Song[Chaotic Power]}]}) /goto :exit
@@ -227,44 +179,36 @@ sub cast_Call_for_Blood()
 
 
 
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub sac_toon()
+	/declare sactarget string local Jraoz
+	/if (${Spawn[pc ${sactarget}].ID}) {
+		 /delay 1
+		 /target id ${spawn[${sactarget}].ID}
+		/delay 1
+
+
+		/autoinventory
+		/call MQ2Cast "Sacrifice" gem12 5s -targetID|${Spawn[${sactarget}].ID} 
+		/delay 15s ${Cursor.ID}
+		/autoinventory
+		/delay 3s
+	}
+/return
 
 
 
-
-
-
-
-|*** Sacrifice stuff
-
-/declare sactarget string local
-
-
-|/if (!${Spawn[tilane].Dead}) {
-|	/varset sactarget ${Target.CleanName}
-|	/delay 1
-|	/target tilane
-|	/delay 1
-|} else 
-
-/if (!${Spawn[Bloodbliss].Dead}) {
-	 /varset sactarget ${Target.CleanName}
-	 /delay 1
-	 /target Bloodbliss
-	/delay 1
-}
-
-
-
-/autoinventory
-/call MQ2Cast "Sacrifice" gem12 5s -targetID|${Spawn[${sactarget}].ID} 
-/delay 2s
-/autoinventory
-***|
-
-
-
-
-
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
 sub dotCycle()
 	DEBUG \atdotCycle()\ax 
 	/doevents
@@ -292,9 +236,5 @@ sub dotCycle()
 	/next x
 	:exitdotCycle
 /return
-
-
-
-
 
 

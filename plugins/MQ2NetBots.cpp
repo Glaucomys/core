@@ -1339,7 +1339,7 @@ public:
 					for (Cpt = 0; Cpt<SONG_MAX; Cpt++) {
 						if (BotRec->Song[Cpt]) {
 							if (PSPELL buffSpell = GetSpellByID(BotRec->Song[Cpt])) {
-								if (!IsBardSong(buffSpell) && !((IsSPAEffect(tmpSpell, SPA_ILLUSION) && !tmpSpell->DurationWindow))) {
+								if (!IsBardSong(buffSpell) && !((IsSPAEffect(tmpSpell, SPA_CHANGE_FORM) && !tmpSpell->DurationWindow))) {
 									if (!NBBuffStackTest(tmpSpell, buffSpell, TRUE) || (buffSpell == tmpSpell)) {
 										Dest.DWord = false;
 										return true;

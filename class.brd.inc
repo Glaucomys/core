@@ -2,7 +2,7 @@
  *	class.brd.inc
  *	Core Bard Include
  *
- *
+ *  
  ***|
 
 
@@ -20,29 +20,8 @@ sub core_BRD()
 	CHECKTIE
 		
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
-	}
-	
-	CLEARCURSOR
+	/call prep_combat
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -91,7 +70,7 @@ sub core_BRD()
 	}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 
 	:exit
@@ -110,15 +89,15 @@ sub disc_BRD()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call stick_to_target
 	/if ((${Me.AltAbilityReady[Selo's Kick]} || ${Me.AltAbilityReady[Banestrike]} || ${Me.AltAbilityReady[Cacophony]} || ${Me.AltAbilityReady[Bladed Song]} || ${Me.AltAbilityReady[Boastful Bellow]}) && ${Me.Casting.ID}) /call pulse_stop
-
+	/call item_harmony_blade
 	/if (${Me.AltAbilityReady[Banestrike]} && ${switchBanestrike}) /call MQ2Cast "Banestrike" -targetID|${Target2Kill}
 	/if (${Me.AltAbilityReady[Selo's Kick]}) /call MQ2Cast "Selo's Kick" alt -targetID|${Target2Kill}
-	/if (${usePet}) /call cast_servant_swarm ${Target2Kill}
+	/if (${usePetSwarm}) /call cast_servant_swarm ${Target2Kill}
 	/if (${Me.AltAbilityReady[Cacophony]}) /call MQ2Cast "Cacophony" alt -targetID|${Target2Kill}
 	/if (${Me.AltAbilityReady[Bladed Song]}) /call MQ2Cast "Bladed Song" alt -targetID|${Target2Kill}
 	/if (${Me.AltAbilityReady[Boastful Bellow]}) /call MQ2Cast "Boastful Bellow" alt -targetID|${Target2Kill}
@@ -139,7 +118,7 @@ sub click_DPS_BRD()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call stick_to_target
 	/call click_horn_of_unity 	
 	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
@@ -159,9 +138,9 @@ sub cast_servant_swarm(int _tmpID)
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return} || !${usePet}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${usePetSwarm}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	
 	/if (${Spawn[${_tmpID}].LineOfSight} && ${Target.PctHPs} > 10 && ${Spawn[${_tmpID}].Distance} < ${MobAgro}) {
 		/pet swarm
@@ -193,7 +172,7 @@ sub mem_song_set(string _group)
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 
 	/call Event_SetVar NA songList Song ${_group.Upper}
 	
@@ -222,9 +201,7 @@ sub mem_song_set(string _group)
  *	INI: 
  *  NOTE:
  ***|
-sub pulse()
-	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+ sub pulse()
 	/declare _pulseSong			bool local FALSE
 	/declare _count 				int local
 	/declare _index 				int local	
@@ -237,9 +214,9 @@ sub pulse()
 			ISDEAD
 			/doevents
 			/call check_exit
-			/if (${Macro.Return}) /goto :exit
+			/if (${Bool[${Macro.Return}]}) /goto :exit
 			/call is_target_dead
-			/if (${Macro.Return} || !${Target.ID}) /goto :exit
+			/if (${Bool[${Macro.Return}]}) /goto :exit
 			/call stick_to_target
 			| /if (${Me.Casting.ID}) /stopcast
 			/call pulse_valid ${_index}
@@ -262,13 +239,13 @@ sub pulse()
 sub pulse_valid(_gem)
 	/declare _pulseSong			bool local TRUE
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /varset _pulseSong FALSE
-	/if (${Me.Buff[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 5) /varset _pulseSong FALSE
-	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 5) /varset _pulseSong FALSE
+	/if (${Me.Buff[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
+	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (!${Me.SpellReady[${Me.Gem[${_gem}].Name}]}) /varset _pulseSong FALSE
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
 	:exit
+	DEBUG VALID CAST: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
 /return ${_pulseSong}
-
 
 
 
@@ -282,6 +259,7 @@ sub pulse_stop()
 	DEBUG ${cbug}pulse_stop()\ax 
 	
 	/stopcast		
+	/delay 2
 	:stoppulse
 	/if (${Me.Casting.ID}) {
 		/delay 1
@@ -302,19 +280,22 @@ sub core_sing(_spellgem)
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem			int local ${Macro.Return}
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /goto :exit	
 	/call stick_to_target
 	/if (${Me.Casting.ID}) {
-		/call Interrupt
+		| /call Interrupt
 		/stopcast
 	}
 	VOUT Pulse: ${csp}${Me.Gem[${_gem}].Name}\ax
 	/melody ${_gem}
-	/delay 25
-	/delay 3 
+	| /delay 25
+	/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
+	
+	
+	/delay 2
 	/call pulse_stop
 
 	:exit
@@ -338,9 +319,9 @@ sub bard_nuke()
 		ISDEAD
 		/doevents
 		/call check_exit TRUE
-		/if (${Macro.Return}) /goto :exit	
+		/if (${Bool[${Macro.Return}]}) /goto :exit	
 		/call is_target_dead
-		/if (${Macro.Return}) /goto :exit		
+		/if (${Bool[${Macro.Return}]}) /goto :exit	
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${Nuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${Nuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${Nuke${_count}}].Mana}) {
 			/call stick_to_target
 			/call core_sing ${Me.Gem[${Nuke${_count}}]}
@@ -433,5 +414,19 @@ sub cast_mez_BRD(int _tmpID)
 		/goto :loopmez
 	}
 	:exit
+/return
+
+
+
+|***
+ *	DES: uses harmony blade frome HH Old Seb.
+ *	USE: /call item_harmony_blade
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub item_harmony_blade()
+	/if (${ItemReady[Darkened Breath of Harmony]} || !${Me.Song[Doben's Spyre Sonata Rk. II]}) {
+		/call core_cast "Darkened Breath of Harmony" item 0
+	}
 /return
 

@@ -23,8 +23,7 @@ sub core_RNG()
 
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
-	
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -72,7 +71,7 @@ sub core_RNG()
 		/call use_skill_melee
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
-	}
+	} 
 	/call use_mod_rod
 	/if (${AutoBot}) {	
 		/if (${switchHealCure}) /call cast_cure
@@ -80,7 +79,7 @@ sub core_RNG()
 	}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 
 	:exit
@@ -99,19 +98,20 @@ sub disc_RNG()
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
 
-	/call get_agro_${Me.Class.ShortName}
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
-	/if (!${timer_Elemental_Arrow}) /call cast_elemental_arrows ${Target2Kill}
+	/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
+	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+	/if (${Me.SpellReady[${DoTSwarmDS}]} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast "${DoTSwarmDS}" 0 ${Target2Kill}
+	/if (${Target.ID} && ${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
+	/if (${Target.ID} && !${timer_Elemental_Arrow}) /call cast_AA_elemental_arrows ${Target2Kill}
 	/call use_skill_melee
-	/if (${Bool[${DiscJolt}]} && !${setAgroMode}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
-	/if (${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
-	/if (${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill}
+	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${setAgroMode}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
+	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
+	/if (${Target.ID} && ${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill}
 	:exit
 /return
 
@@ -123,17 +123,25 @@ sub disc_RNG()
  *	INI: 
  *  NOTE: Will not cast spice if the buff is present or if your name is Norbert.
  ***|
-sub cast_auspice()
-	DEBUG ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},\agMGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
+#bind cast_AA_auspice /spice
+sub Bind_cast_AA_auspice()
+	/if (${Select[${Me.Class.ShortName},RNG]}) {
+		/delay 2s !${Me.Casting.ID}
+		/call cast_AA_auspice
+	}
+/return
+
+sub cast_AA_auspice()
+	DEBUG ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[${RNGauspice}]} && !${Bool[${Me.Song[${RNGauspice}]}]}) {
 		/call core_cast "Mass Group Buff" alt 0
 		/call core_cast "${RNGauspice}" alt 0
-| 	/if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
-| 	/if (${Bool[${ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
+		| /if (${Bool[ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
+	 	| /if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
 	} else /if (${Bool[${Me.Song[${RNGauspice}]}]}) {
 		NOUT ${cbad}QUIT\ax trying to cast ${csp}Auspice of the Hunter\ax while its running.	
 	}		
@@ -151,15 +159,14 @@ sub cast_auspice()
 sub patch_heal_RNG()
 	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/call check_exit
-	/if (${Macro.Return} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
-	
+	/if (${Bool[${Macro.Return}]} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID}
+	/if (${Me.PctHPs} <= 70*.${tmpHealOverride}) /call core_cast "Small Manisi Branch" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0
 	/if (${Me.PctHPs} <= 55*.${tmpHealOverride} && (${Bool[${NameList.Find[${Target.CleanName}]})]}	|| ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]} >= 3)) /call core_cast "Bulwark of the Brownies" alt 0
 	/if (${Me.PctHPs} <= 40*.${tmpHealOverride}) /call core_cast "Protection of the Spirit Wolf" alt 0
 	/if (${Me.PctHPs} <= 30*.${tmpHealOverride}) /call core_cast "Outrider's Evasion" alt 0
-
 	:exit
 /return
 
@@ -176,7 +183,7 @@ sub get_agro_RNG()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${setAgroMode}) {
 		/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Enabled]}) /call core_cast "Ferocious Kick Subtlety: Enabled" alt 0
 		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill}
@@ -185,7 +192,6 @@ sub get_agro_RNG()
 			/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Disabled]}) /call core_cast "Ferocious Kick Subtlety: Disabled" alt 0
 	}
 	/call use_skill_melee
-
 	:exit
 /return
 
@@ -193,16 +199,16 @@ sub get_agro_RNG()
 
 |***
  *	DES: Ranger Elemental Arrows 
- *	USE: /call cast_elemental_arrows
+ *	USE: /call cast_AA_elemental_arrows
  *	INI: 
  *  NOTE: Rotates the three ranger elemental arrows. Prevents overlapping (inc other rangers). It will attempt to keep both ice and fire debufs on the mob at the same time.
  ***|
-sub cast_elemental_arrows(int _tmpID)
-	DEBUG ${cbug}cast_elemental_arrows()\ax
+sub cast_AA_elemental_arrows(int _tmpID)
+	DEBUG ${cbug}cast_AA_elemental_arrows()\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call use_skill_melee
 	/if (${Bool[${ElementalArrow}]}) {
 		/if (!${Bool[${Target.Buff["Elemental Arrow: Ice"]}]} && !${Bool[${Target.Buff["Elemental Arrow: Fire"]}]} && !${Bool[${Target.Buff[${GlacialArow}]}]} && !${Bool[${Target.Buff[${VolatileArrow}]}]}) {
@@ -247,7 +253,7 @@ sub click_DPS_RNG()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call use_skill_melee
 	/call click_horn_of_unity 	
 	:exit
@@ -266,30 +272,11 @@ sub cast_nuke_summer(int _tmpID)
 	ISDEAD
 	/doevents
 	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit		
+	/if (${Bool[${Macro.Return}]}) /goto :exit		
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit	
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	/call core_cast "${NukeSummer}" 0 ${_tmpID}
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
 	:exit
 /return
 
-
-
-|***
- *	DES: forces ranger dicho while cheeta is running. regardless of GoM procs
- *	USE: /call cast_dicho_${Me.Class.ShortName}
- *	INI: 
- *  NOTE: Greater Scarlet Cheetah Fang
- *	NOTE2: THIS IS NO LONGER VALID... hold code for now.
-
-sub cast_dicho_RNG()
- 	DEBUG ${cbug}cast_dicho_${Me.Class.ShortName}()\ax 
-	ISDEAD
-	/call check_exit
-	/if (${Macro.Return}) /goto :exit
- 	/if (${Bool[${Me.Song[Greater Scarlet Cheetah Fang]}]}) /call core_cast "${GoMNuke}" 0 ${Target2Kill}	 	
- 	:exit
-/return
-
- ***|

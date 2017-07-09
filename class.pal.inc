@@ -20,31 +20,11 @@ sub core_PAL()
 	CHECKTIE
 
 	/call check_harmonious
-
-	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
-	}
+	/if (${useMG} && !${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	
-	CLEARCURSOR
+	:killtarget
+	/call prep_combat
+	/if (!${Bool[${Macro.Return}]} ) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -56,6 +36,7 @@ sub core_PAL()
 		/call stick_to_target
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/call stick_to_target
+		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/call use_skill_melee
 		/call stick_to_target
@@ -70,6 +51,7 @@ sub core_PAL()
 	} 
 	/call use_mod_rod
 	/call check_harmonious
+	/if (${useMG} && !${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	/if (${AutoBot}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
@@ -95,9 +77,9 @@ sub disc_PAL()
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${doYaulp}) /call cast_AA_yaulp
 	/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
@@ -119,16 +101,11 @@ sub disc_PAL()
 
 
 	| Hand of Piety AA Group heal	
-	/if (${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Hand of Piety]} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0
-
-
+	/if (${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${combatRadius} targetable]} > 1 ) /call core_cast "Hand of Piety" alt 0
 
 | AA  | 2 mobs / named
 
 | aa Thunder of Karna | spell damage
-|
-
-
 
 
 	:exit
@@ -137,8 +114,8 @@ sub disc_PAL()
 
 
 |***
- *	DES: 
- *	USE: 
+ *	DES: fight for mobs attention
+ *	USE: /call get_agro_PAL
  *	INI: 
  *  NOTE: 
  ***|
@@ -147,35 +124,35 @@ sub get_agro_PAL()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]} ) /goto :exit
 
-	/if (${Me.SpellReady[${ChallengeSpell}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${ChallengeSpell}" 0 ${Target2Kill} cast_break
+	/if (${Me.SpellReady[${ChallengeSpell}]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 80)) /call core_cast "${ChallengeSpell}" 0 ${Target2Kill} cast_break
 	
-	| /if (${Me.AltAbilityReady[${AAForceofDisruption}]} && ${Bool[${AAForceofDisruption}]}) /call core_cast "${AAForceofDisruption}" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[${AADisruptivePersecution}]} && ${Bool[${AADisruptivePersecution}]}) /call core_cast "${AADisruptivePersecution}" alt ${Target2Kill}
-	| /if (${Me.AltAbilityReady[${AADivineStun}]} && ${Bool[${AADivineStun}]}) /call core_cast "${AADivineStun}" alt ${Target2Kill}
-	/if (${Me.SpellReady[${ValiantDefense}]}) /call core_cast "${ValiantDefense}" 0 ${Target2Kill}
+	| /if (${Me.AltAbilityReady[${AAForceofDisruption}]} && ${Bool[${AAForceofDisruption}]}) /call core_cast "${AAForceofDisruption}" alt ${Target2Kill} cast_break
+	/if (${Me.AltAbilityReady[${AADisruptivePersecution}]} && ${Bool[${AADisruptivePersecution}]}) /call core_cast "${AADisruptivePersecution}" alt ${Target2Kill} cast_break
+	| /if (${Me.AltAbilityReady[${AADivineStun}]} && ${Bool[${AADivineStun}]}) /call core_cast "${AADivineStun}" alt ${Target2Kill} cast_break
+	/if (${Me.SpellReady[${ValiantDefense}]}) /call core_cast "${ValiantDefense}" 0 ${Target2Kill} cast_break
 
 	| AE Stuns
 	/varset mobAECount ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]}
 	/if  (${mobAECount} > 1) {
-		/if (${Me.AltAbilityReady[${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill}
+		/if (${Me.AltAbilityReady[${AAAELodestar}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill} cast_break
 	} else /if (${mobAECount} > 3) {
-		/if (${Me.AltAbilityReady[${AAAELodestar}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill}
+		/if (${Me.AltAbilityReady[${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill} cast_break
 	}
 	
-	| pet hate
-	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${Me.AltAbilityReady[Projection of Piety]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "Projection of Piety" alt ${Target2Kill}
+	| AA pet hate (the little sword thingie)
+	/if (${Me.AltAbilityReady[Projection of Piety]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 80)) /call core_cast "Projection of Piety" alt ${Target2Kill} cast_break
 		
 	| fake hate
-	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[Ageless Enmity]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 60)) /call core_cast "Ageless Enmity" alt ${Target2Kill} cast_break
 	| named fake hate
-	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscUnflinching}]} && ${Me.CurrentEndurance} > ${Spell[${DiscUnflinching}].EnduranceCost}) /disc ${DiscUnflinching}
+	/if (${Me.CombatAbilityReady[${DiscUnflinching}]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 80) && ${NameList.Find[${Target.DisplayName}]}  && ${Me.CurrentEndurance} > ${Spell[${DiscUnflinching}].EnduranceCost}) /disc ${DiscUnflinching}
 
 	:exit
 /return
 
-Diven call (HJA)
+
 
 
 |***
@@ -205,14 +182,13 @@ sub click_DPS_PAL()
 sub patch_heal_PAL()
 	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/call check_exit
-	/if (${Macro.Return} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
+	/if (${Bool[${Macro.Return}]}  || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
 	
 	| AA Armor of the Inquisitor | 3 mobs
 	| AA Gift of Life | TargetofTarget
 	| AA Hand of Piety | 3 targets
 	| AA Lay on Hands
 	
-	| AA Marr's Gift
 	
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
@@ -301,3 +277,53 @@ sub check_heal_group_PAL()
 	UPDATEHUD
 /return
 
+
+
+|***
+ *	DES: Mar's Gift 30ish k HP/15k manna 
+ *	USE: auto
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_AA_marrs_gift()
+	DEBUG ${cbug}cast_AA_marrs_gift()\aw
+	ISDEAD
+	/doevents
+	/call check_exit
+	/if (${Bool[${Macro.Return}]}  || !${Me.AltAbilityReady[Marr's Gift]} || ${Bool[${timer_zone_pause}]}) /goto :exit
+	/if ((${Me.PctMana} || ${Me.PctHPs}) < ${useMGPct}*.${tmpHealOverride}) /call core_cast "Marr's Gift" alt ${Me.ID} 
+	:exit
+	/call create_timer timer_check_MG ${tcheck_MG}
+/return	
+
+
+
+|***
+ *	DES: Use Marr's Gift?
+ *	USE: /usemg
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind useMG /usemg
+sub Bind_useMG()
+	/call Event_SetVar NA useMG SelfBuff ${If[${useMG},FALSE,TRUE]}  
+	/call echos switch "Use Mar's Gift" useMG
+/return
+
+	
+	
+|***
+ *	DES: Marr's Gift % usage
+ *	USE: /mgpct [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind useMGPct /mgpct
+sub Bind_useMGPct(int _useMGPct)
+	/if (${Range.Between[1,99:${_useMGPct}]}) {
+		/call Event_SetVar NA useMGPct SelfBuff ${_useMGPct} 
+		/call echos number "Marr's Gift At" ${_useMGPct}
+	} else {
+		NOUT /mgpct [${cinfo}##\ax] range ${cinfo}1 - 99\ax
+	}		
+/return	

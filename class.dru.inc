@@ -32,29 +32,8 @@ sub core_DRU()
 
 
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
-	}
-	
-	CLEARCURSOR
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -402,11 +381,11 @@ sub check_pet_heal_DRU()
  *	INI: 
  *  NOTE: Will not cast wood if the buff is present.
  ***|
-sub cast_AA_wood()
+sub cast_AA_spirit_wood()
 	DEBUG ${cbug}cast_AA_wood()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Spirit of the Wood]},${cgood}Wood\ax,${cbad}Wood\ax]}
 	ISDEAD
 	/doevents
-	/if (${AutoBot}) /goto :exit
+	| /if (${AutoBot}) /goto :exit
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Spirit of the Wood]} && !${Bool[${Me.Song[Spirit of the Wood]}]}) {
 		/call core_cast "Mass Group Buff" alt 0
 		/call core_cast "Spirit of the Wood" alt 0

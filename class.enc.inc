@@ -23,7 +23,7 @@ sub core_ENC()
 		/call check_engaged
 		/if (!${Macro.Return} && ${usePet}) /call check_pet
 		/if (!${Macro.Return}) /call check_crystals
-		/if (${BuffSelf} && !${timer_check_runes}) /call check_rune
+		/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 
 	:killtarget
@@ -80,7 +80,7 @@ sub core_ENC()
 		}
 		/call click_BP
 		/if (${doclickItem}) /call click_item
-		/if (${BuffSelf}) /call check_rune
+		/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 	/call use_mod_rod
 	/call check_crystals
@@ -150,17 +150,18 @@ sub debuff_mobs
 
 
 
+
 |***
  *	DES: Keeps chanter runed. cause the're fragile and shit.
- *	USE: auto
+ *	USE: /call check_rune or /rb
  *	INI: 
  *  NOTE: 
  ***|
-sub check_rune()
-	DEBUG ${cbug}check_rune()\aw
+sub check_rune_ENC()
+	DEBUG ${cbug}check_rune_ENC()\aw
 	ISDEAD
 	CHECKEXIT
-	/if (${timer_check_runes}) /goto :exit
+	| /if (${timer_check_runes}) /goto :exit
 	UPDATEHUD "BUFF: Runes"
 	/if (${Me.AltAbilityReady[${runeVeil}]} && !${Bool[${Me.Buff[Veil of Mindshadow]}]}) /call core_cast "${runeVeil}" alt 0
 	/if (${Me.AltAbilityReady[${runeEldritch}]} && !${Bool[${Me.Buff[Eldritch Rune]}]}) /call core_cast "${runeEldritch}" alt 0
@@ -173,7 +174,6 @@ sub check_rune()
 	/if (${Me.SpellReady[${runeWard}]} && !${Me.Buff[${runeWard}].ID}) /call core_cast "${runeWard}" 0
 	/if (${Me.AltAbilityReady[${runeMind}]} && ${Me.PctMana} > 60) /call core_cast "${runeMind}" alt 0
 	/if (!${Me.Buff[${runeEntAuspice}].ID} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID}
-
 
 	/if (${Bool[${runePoly}]} && !${Bool[${Me.Buff[${runePoly}]}]} && ${Me.CurrentMana} >= ${Spell[${runePoly}].Mana}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID}
 	/if (${Bool[${runeBrimstone}]} && !${Bool[${Me.Buff[${runeBrimstone}]}]} && ${Me.CurrentMana} >= ${Spell[${runeBrimstone}].Mana}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID}
@@ -421,7 +421,7 @@ sub mez_adds()
 		}
 		/call list_delete addList ${_tmpID}
 		| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
-		/if (!${addList.Count[|]} && ${BuffSelf} && !${timer_check_runes}) /call check_rune
+		/if (!${addList.Count[|]} && ${BuffSelf} && !${timer_check_runes}) /call Bind_check_rune
 		/goto :loopmezzadds
 	}
 	:exit

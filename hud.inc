@@ -6,8 +6,9 @@
  ***|
 
 
-#event HUDUpdate "[MQ2] - Update the HUD!"
-sub Event_HUDUpdate(string Line)
+| #event HUDUpdate "[MQ2] - Update the HUD!"
+#bind HUDUpdate /hudupdate
+sub Bind_HUDUpdate(string Line)
    
 	NOUT This will only take a second \at...\ax
 	/ini ".\..\MQ2HUD.ini" "core" NULL NULL
@@ -65,10 +66,10 @@ sub Event_HUDUpdate(string Line)
 	/noparse /ini HUDPATH "pettarget6" "3,86,98,25,25,25,${If[${usePetSwarm},,##]}"
 
 	| target effect notice
-	/noparse /ini HUDPATH "tarnotice1" "3,39,109,100,149,237,[                                                                                                        ][     ]"
+	/noparse /ini HUDPATH "tarnotice1" "3,39,109,100,149,237,[                                                                                                        ][       ]"
 	/noparse /ini HUDPATH "tarnotice2" "3,45,110,255,255,255,${hudTarNotice}"
 	/noparse /ini HUDPATH "watchspawn1" "3,362,110,0,255,0,${If[${Bool[${watchSpawn}]},${hudwatchspawn},]}"
-	/noparse /ini HUDPATH "watchspawn2" "3,362,110,25,25,25,${If[${Bool[${watchSpawn}]},,##]}"
+	/noparse /ini HUDPATH "watchspawn2" "3,362,110,25,25,25,${If[${Bool[${watchSpawn}]},,###]}"
 
 
 	| combat modes
@@ -160,14 +161,15 @@ sub Event_HUDUpdate(string Line)
 	
 	
 	| agro notices and puler status
-	/noparse /ini HUDPATH "agro0" "3,280,13,100,149,237,[       ][       ][    ]"
+	/noparse /ini HUDPATH "agro0" "3,280,13,100,149,237,[       ][       ][       ][    ]"
 	/noparse /ini HUDPATH "agro1" "3,286,14,0,255,0,${If[${setAgroMode},A,]}"
 	/noparse /ini HUDPATH "agro2" "3,286,14,255,0,0,${If[${setAgroMode},,A]}"
 	/noparse /ini HUDPATH "pull1" "3,295,14,0,255,0,${If[${setPullMode},P,]}"
 	/noparse /ini HUDPATH "pull2" "3,295,14,255,0,0,${If[${setPullMode},,P]}"	
 	/noparse /ini HUDPATH "agro4" "3,312,14,255,255,255,${MobAgro}"
-	/noparse /ini HUDPATH "cr1" "3,337,14,100,149,237,${combatRadius}"
-	/noparse /ini HUDPATH "area1" "3,355,14,100,149,237,(${SpawnCount[npc los radius ${MobAgro} targetable]}:${SpawnCount[npc los radius ${MobAgro} playerstate 4]})"
+	/noparse /ini HUDPATH "zrad" "3,339,14,255,255,255,${zradius}"
+	/noparse /ini HUDPATH "cr1" "3,364,14,100,149,237,${combatRadius}"
+	| /noparse /ini HUDPATH "area1" "3,380,14,100,149,237,(${SpawnCount[npc los radius ${MobAgro} targetable]}:${SpawnCount[npc los radius ${MobAgro} playerstate 4]})"
 
 	| ass..isting and stuff
 	/noparse /ini HUDPATH "ma11" "3,280,26,100,149,237,MA1"

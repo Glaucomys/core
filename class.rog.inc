@@ -20,6 +20,7 @@ sub core_ROG()
 	
 	| /if (!${Me.Combat} && !${SpawnCount[npc xtarget]} && !${Me.Invis}) /call do_SoS TRUE
 	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
+	/if (!${timer_click_poison}) /call Bind_click_poison
 	
 
 	:killtarget
@@ -174,3 +175,38 @@ ${Me.AbilityReady[Hide]}
 /doability Hide
 
 **|
+
+
+
+|***
+ *	DES: 
+ *	USE: /call Bind_click_poison OR /poison
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind click_poison /poison
+sub Bind_click_poison()
+	DEBUG ${cbug}Bind_click_poison(${FindItemCount[${clickPoisonItem}]} <= ${clickPoisonCount})\ax
+	ISDEAD
+	CHECKTIE
+	/call check_exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
+	
+	| keep a stock on hand
+	/if (${FindItemCount[${clickPoisonItem}]} < ${clickPoisonCount} && ${Me.ItemReady[${clickPoisonDispenser}]}) {
+		DEBUG click ${clickPoisonDispenser}
+		/call core_cast "${clickPoisonDispenser}" item ${Me.ID}
+		CLEARCURSOR TRUE
+	}
+	
+	| give us the buff
+	/if (!${Bool[${Me.Buff[${clickPoisonBuff}]}]} && ${Me.ItemReady[${clickPoisonItem}]}) /call MQ2Cast "${clickPoisonItem}" item -targetid|${Me.ID}
+
+	/call create_timer timer_click_poison ${tClick_Poison}
+	:exit
+/return
+
+
+
+
+

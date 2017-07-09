@@ -19,7 +19,7 @@ sub core_BST()
 	ISDEAD
 	CHECKTIE
 
-	/if (!${Me.Invis}) /call cast_focused_paragon
+	/if (!${Me.Invis}) /call cast_AA_focused_paragon
 
 	/if (${AutoBot} && !${Me.Invis}) {
 		/call check_engaged
@@ -27,29 +27,8 @@ sub core_BST()
 	}
 
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			| /call is_toast_time
-			| /if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
-	}
-	
-	CLEARCURSOR
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -60,11 +39,11 @@ sub core_BST()
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Sha's Reprisal"
-		/if (${usePet} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
+		/if (${${usePetSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/call use_skill_melee
-		/if (${doclickItem}) /call click_Item
+		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
-		/call cast_focused_paragon
+		/call cast_AA_focused_paragon
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
@@ -72,11 +51,11 @@ sub core_BST()
 		/call click_BP
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
-		/if (${usePet} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
+		/if (${${usePetSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/if (${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Sha's Reprisal"
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
-		/call cast_focused_paragon
+		/call cast_AA_focused_paragon
 	} else /if (${Select[${combat},HEAL]}) {
 	}	else /if (${Select[${combat},DUAL]}) {
 	}
@@ -96,18 +75,20 @@ sub core_BST()
 
 |***
  *	DES: 
- *	USE: 
+ *	USE: /call disc_BST
  *	INI: 
  *  NOTE: 
  ***|
 sub disc_BST()
-	DEBUG ${cbug}disc.BST()\ax
+	DEBUG ${cbug}disc_BST()\ax
 	ISDEAD
 	/doevents
 
 	/if (${Me.PctEndurance} < 3) /goto :exit
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/call is_target_dead
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 			
 |	/if (${Me.CurrentMana} > ${Spell[${FeroSpell}].Mana} && !${Me.Buff[${FeroSpell}].ID}) /call core_cast "${FeroSpell}" ${BuffGem} ${Me.ID}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
@@ -116,14 +97,11 @@ sub disc_BST()
 	/if (${Me.AltAbilityReady[Chameleon Strike]} && ${Target.Distance} < ${Spell[Chameleon Strike].MyRange}) /call core_cast "Chameleon Strike" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[Feral Swipe]} && ${Target.Distance} < ${Spell[Feral Swipe].MyRange}) /call core_cast "Feral Swipe" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[Bite of the Asp]} && ${Target.Distance} < ${Spell[Bite of the Asp].MyRange}) /call core_cast "Bite of the Asp" alt ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Target.Distance} < ${Spell[${DiscForay}].MyRange} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc 0
-	/if (${Me.CombatAbilityReady[${DiscFocusClaws}]}) /call core_cast "${DiscFocusClaws}" disc 0
-	/if (${Me.CombatAbilityReady[${DiscBestial}]} &&  !${Me.Song[${DiscBestial}].ID}) /call core_cast "${DiscBestial}" disc 0
-	/if (${Me.AltAbilityReady[Roar of thunder]}) /call core_cast "Roar of Thunder" alt 0
+	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Target.Distance} < ${Spell[${DiscForay}].MyRange} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc ${Target2Kill}
+	/if (${Me.CombatAbilityReady[${DiscFocusClaws}]}) /call core_cast "${DiscFocusClaws}" disc ${Target2Kill}
+	/if (${Me.AltAbilityReady[Roar of thunder]}) /call core_cast "Roar of Thunder" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[${DiscEnduring}]} && ${Target.Distance} < ${Spell[${DiscEnduring}].MyRange} && !${Bool[${Targe.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscRending}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc 0
-
-	/call cast_focused_paragon
+	/if (${Me.CombatAbilityReady[${DiscRending}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill}
 	:exit
 /return
 
@@ -131,29 +109,47 @@ sub disc_BST()
 
 |***
  *	DES: Focused Paragon. will maintain the bst then group if able
- *	USE: auto
+ *	USE: /call cast_AA_focused_paragon
  *	INI: 
  *  NOTE: 
  ***|
-sub cast_focused_paragon()
-	DEBUG ${cbug}cast_focused_paragon()\ax
+sub cast_AA_focused_paragon()
+	DEBUG ${cbug}cast_AA_focused_paragon()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
-	/declare _i 							int 	local
-	/declare _tmpID 					int 	local 0
-	/if (${Me.AltAbilityReady[Focused Paragon of Spirits]} && ${Me.PctMana} < ${selfParagon} && !${Me.Song[Paragon].ID}) /call core_cast "Focused Paragon of Spirits" alt ${Me.ID}
+	/if (${Bool[${Macro.Return}]} || !${AutoBot}) /goto :exit
+	| /call is_target_dead
+	| /if (${Bool[${Macro.Return}]}) /goto :exit
+	/declare _cout 							int 	local
+	/declare _tmpID 						int 	local 0
+	/declare _tmpTarget2Kill		int		local 
+	
+	/if (${Target2Kill}) /varset _tmpTarget2Kill ${Target2Kill}
+	
 	/if (${Me.AltAbilityReady[Consumption of Spirit]} && ${Me.PctHPs} > ${minConsumptionHP}*.${tmpHealOverride} && ${Me.PctMana} < ${selfParagon}*.${tmpHealOverride}) /call core_cast "Consumption of Spirit" alt ${Me.ID}
+
+	| self only focus
+	/if (${Me.AltAbilityReady[Focused Paragon of Spirits]} && ${Me.PctMana} < ${selfParagon} && !${Me.Song[Paragon].ID}) {
+		/call core_cast "Focused Paragon of Spirits" alt ${Me.ID}
+		/goto :exit
+	}
+
+	| check the group
 	/if (${Group} && ${Me.AltAbilityReady[Focused Paragon of Spirits]}) {
-		 /for _i 1 to ${Group}
-		 		/if (${Group.Member[${_i}].ID} && ${Group.Member[${_i}].Distance} <= ${Spell[Focused Paragon of Spirits].MyRange}  && (${Group.Member[${_i}].CurrentMana} < ${groupParagon}*.${tmpHealOverride}) && ${CanCast.Find[${Group.Member[${_i}].Class}]}) {
+		 /for _cout 1 to ${Group}
+		 		/if (${Group.Member[${_cout}].ID} && ${Group.Member[${_cout}].Distance} <= ${Spell[Focused Paragon of Spirits].MyRange}  && (${Group.Member[${_cout}].CurrentMana} < ${groupParagon}*.${tmpHealOverride}) && ${CanCast.Find[${Group.Member[${_cout}].Class}]}) {
 				/varset _tmpID ${Group.Member[${i}].ID}	 		
 		 	}
-		/next _i
+		/next _cout
 		/if (${_tmpID}) /call core_cast "Focused Paragon of Spirits" alt ${_tmpID}
 	}	
+
 	:exit
+	/if (${_tmpTarget2Kill}) {
+		/target ID ${_tmpTarget2Kill}
+		/delay 1s ${Target.ID} == ${_tmpTarget2Kill}
+	}
 /return
 
 
@@ -175,7 +171,6 @@ sub patch_heal_BST()
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID}
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0
 	:exit
 /return
 
@@ -192,7 +187,7 @@ sub pet_heal_BST()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${usePet} && ${Pet.PctHPs} < 20 && ${Me.AltAbilityReady[Mend Companion]}) {
 		VOUT Healing \a-w${Pet.CleanName}\ax with \a-rMend Companion\ax.
 		/call MQ2Cast "Mend Companion" alt
@@ -219,14 +214,21 @@ sub pet_heal_BST()
  *	INI: 
  *  NOTE: 
  ***|
-sub cast_paragon()
-	DEBUG ${cbug}cast_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},\agMGB\ax,\arMGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
+ #bind cast_AA_paragon /paragon
+sub Bind_cast_AA_paragon()
+	/if (${Select[${Me.Class.ShortName},BST]}) /call cast_AA_paragon
+/return
+
+sub cast_AA_paragon()
+	DEBUG ${cbug}cast_AA_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
 	ISDEAD
 	/doevents
+	/call check_exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Paragon of Spirit]} && !${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		/call core_cast "Mass Group Buff" alt 0
 		/call core_cast "Paragon of Spirit" alt 0
-		| /if (${Bool[${Raid.Members}]}) /rs ${ParagonTXT}
+		/if (${Bool[${Raid.Members}]}) /rs ${ParagonTXT}
 	} else /if (${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		NOUT ${owarning} trying to cast ${csp}Paragon of Spirit\ax while its running.	
 	}		
@@ -246,9 +248,8 @@ sub click_DPS_BST()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
 	:exit
 /return
 

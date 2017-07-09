@@ -24,7 +24,7 @@
 	- hud.inc										Sets the hud.
 	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias'.
 	- test.inc									empty. testing purposes.
-	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BAR|RNG|ROG|CLR|DRU|SHM]
+	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
 	- info.inc									/info text response.
 	- misc stuff.txt						Just helpful info. old code. a forgotten attic of old stuff.
 	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
@@ -74,7 +74,7 @@
 		
 ***|
 
-#turbo 80
+#turbo 100
 #define DEBUG "/if (${debug}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define SDEBUG "/echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define LDEBUG " /mqlog [${Me.Class.ShortName}:${Macro.CurLine}]: " 
@@ -89,8 +89,7 @@
 #define CHECKSAFELIST "/if (${Bool[${forcesafelist}]} && !${safelist.Find[${_sender}]}) /goto :exit"
 #define UPDATEHUD "/call update_HUD_notices"
 | #define CLEARCURSOR "/if (${Cursor.ID} && (${AutoBot} && !${Bool[${timer_clear_cursor}]} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]})) /call sort_cursor"
-#define CLEARCURSOR "/if (${Cursor.ID}) /call sort_cursor"
-
+#define CLEARCURSOR "/if ((${AutoBot} && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
 
@@ -109,7 +108,7 @@
 #include TC\class.enc.inc
 #include TC\class.mag.inc
 #include TC\class.mnk.inc
-| #include TC\class.nec.inc
+#include TC\class.nec.inc
 #include TC\class.pal.inc
 #include TC\class.rng.inc
 #include TC\class.rog.inc
@@ -119,15 +118,12 @@
 #include TC\class.wiz.inc
 #include TC\toast.inc
 
-| #include TC\aapurchase.inc
-| /call AAInit
-
 
 
 |***
  *	DES: Main .. duhh..
  *	USE: 
- *	INI: bunched of 'em
+ *	INI: bunches of 'em
  *  NOTE: 
  ***|
 sub main()
@@ -147,7 +143,6 @@ sub main()
 	/call set_alias
 	/call Event_Zone
 	/call base_preperation
-	| /call AAInit
 	ISDEAD
 
   /call echos help
@@ -183,7 +178,7 @@ sub main()
 				ISDEAD
 			  /if (${BuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
 				/call check_engaged
-				/if (!${Macro.Return} && ${AutoBot}) {
+				/if (!${Bool[${Macro.Return}]} && ${AutoBot}) {
 					/if (${BuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
 					/if (${BuffSelf} && ${Bool[${SelfBuffCount}]} && !${timer_check_buffs_self}) /call check_buffs_self
 				  /if (${BuffRaid} && ${Bool[${BuffCount}]} && !${timer_check_buffs_raid}) /call check_buffs_raid
@@ -196,19 +191,19 @@ sub main()
 
 		| check to see if someone needs a doctor?
 		/if (${AutoBot} && !${timer_check_cast_cure} && ${switchHealCure}) /call cast_cure
-
 		| fix exp
 		/if (${AutoBot} && !${timer_check_EXP} && !${SafeZone}) /call auto_adjust_EXP
 		| watch for spawn
 		/if (${Bool[${watchSpawn}]} && !${timer_check_watch_spawn}) /call check_watch_spawn
-	
-		/if (!${Me.Invis} && !${timer_Check_Ammo} && ${Bool[${RangeItemSummon}]}) /call check_ammo
-
+		| guns need ammo
+		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
+		| fix ur pet!
 		/if (${AutoBot} && !${timer_Check_Familiar}) /call sort_familiar
 		/if (${FamiliarLeave} && ${Me.Pet.Name.Find[familiar]}) /pet get lost
 		CHECKTIE
 
-		/if (${setPullMode} && ${HomeSet} && !${SpawnCount[npc targetable radius ${combatRadius}]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone}) /makecamp return
+		/if (${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone}) /makecamp return
+		| /if (${setPullMode} && ${HomeSet} && !${SpawnCount[npc targetable radius ${combatRadius}]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone}) /makecamp return
 
 		| looter stuffs
 		 /if (${AutoBot} || ${setHunterMode}) /call do_loot
@@ -221,6 +216,7 @@ sub main()
 		/if (${setFishMode}) /call do_fish_mode
 		/if (${setPetFarmMode}) /call do_pet_farm_mode
 		/if (${setHunterMode} && !${timer_wait_for_mob_to_kill}) /call do_hunt_mob_mode
+		/if (${setScorchedEarthMode} && !${timer_wait_for_mob_to_kill}) /call do_scorched_earth_mode 
 	
 		| use the one off clickies in the Toons INI
 		/if (${doclickOdds} && !${timer_check_odds_and_ends}) /call odds_and_ends
@@ -293,22 +289,24 @@ sub base_preperation()
 	/if (${Bool[${Plugin[mq2netbots]}]}) /squelch /netbots ON send=ON grab=ON	
 	
 	| turn off forced burn routines if there still on
-	/if (${setToastMode}) /call Event_SetVar NA setToastMode Common FALSE
+	/if (${Bool[${setToastMode}]}) /call Event_SetVar NA setToastMode Common FALSE
 
 	| turn off rez non guildies/group if it is still on. 'cause fuck everyone else.
-	/if (${rezEveryone}) /call Event_SetVar NA rezEveryone Heal FALSE
+	/if (${Bool[${rezEveryone}]}) /call Event_SetVar NA rezEveryone Heal FALSE
 
 	| Show the HUD	
 	/squelch /hud ${HudType}
 	/squelch /loadhud ${HudName}
 			
 	| Turn off non-normal Modes when starting if they were left on.
-	/if (${setDragMode}) /call Event_SetVar NA setDragMode Common FALSE 
-	/if (${setForageMode}) /call Event_SetVar NA setForageMode Common FALSE 
-	/if (${setFishMode}) /call Event_SetVar NA setFishMode Common FALSE 
-	/if (${setSkillsMode}) /call Event_SetVar NA setSkillsMode Common FALSE 
-	/if (${setPetFarmMode}) /call Event_SetVar NA setPetFarmMode Common FALSE 
-	/if (${setHunterMode}) /call Event_SetVar NA setHunterMode Common FALSE 
+	/if (${Bool[${setDragMode}]}) /call Event_SetVar NA setDragMode Common FALSE 
+	/if (${Bool[${setForageMode}]}) /call Event_SetVar NA setForageMode Common FALSE 
+	/if (${Bool[${setFishMode}]}) /call Event_SetVar NA setFishMode Common FALSE 
+	/if (${Bool[${setSkillsMode}]}) /call Event_SetVar NA setSkillsMode Common FALSE 
+	/if (${Bool[${setPetFarmMode}]}) /call Event_SetVar NA setPetFarmMode Common FALSE 
+	/if (${Bool[${setHunterMode}]}) /call Event_SetVar NA setHunterMode Common FALSE 
+	/if (${Bool[(${setScorchedEarthMode}]}) /call Event_SetVar NA setScorchedEarthMode Common FALSE 
+	
 		
 	| KillCode Warning for stupid fucks that like to AFK farm
 	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE,0]}) {
@@ -339,15 +337,3 @@ sub base_preperation()
 /return
 
 
-
-|***
- *	DES:  
- *	USE: 
- *	INI: 
- *  NOTE: work in progress. wrapper for critical errors. I'll get to it some day.
- ***|
-sub critical_error()
-
-${Macro.Name}
-
-/return

@@ -5,12 +5,296 @@ Note: i have a spelling waiver. no, seriously i do..
 TO DO LIST
 - remove pet buffing from /t buff queue
 - fix auto swapping of control toon for healers in raids.
-- found more MON ShortNames for the monk class. /sigh  
+
+
+20170708
+- echo()
+  -- includes tmp target ID
+	-- /call echos [type] "desc text" [VARIABLE] [Target ID] [FORCED]
+
+
+20170707
+Core Version 3.6.0
+- INTRODUCING Scorched Earth Mode. For use when you realy need to kill everything in a zone
+  -- /scorchedearth .. mode on or off
+  -- adhears to the ignore list
+  -- will use /huntmobagro ## to control range if you need. zonewide by default
+  -- finds nearest mob. kills it. moves to next
+  -- uses pets, ranged weapons, WIZ HuntNuke.
+  -- pathing mechanics similar to Hunt Mob
+- /petfarm
+  -- ENC,WIZ will now rune
+  -- bc will echo what the pet is going to kill
+
+
+20170705
+- do_hunt_mob_mode()
+  -- wizards will now nuke the mob when they get close to it. wiz INI [Spells]->HuntNuke->
+  -- clerics will sent pet hammer at the mob when they are close to it. no class INI adjustment
+
+
+20170627
+-- all are subject to the safelist
+- /t [raidleader] 
+  -- makemeraidleader .. will do just that
+  -- raidinviteme .. will do that as well.
+  -- makemedzleader .. makes sender the DZ leader
+  -- makemetaskleader -- makes sender the task leader
+  -- raid has to be unlocked
+- /t [groupleader]
+  -- makemeleader -- makes sender groupleader
+  -- makememasterlooter
+   
+
+20170626
+- bug in item clickies resetting to false. not anymore
+
+
+20170625
+- /petfarm adjustments
+
+
+20170623
+- check_pet_buffs() now adapts to petfarm and hunter modes
+
+
+20170618
+- update to wait_for_res() to accept 100% rezes and not decline them. hopefully
+
+20170617
+- class.clr.inc
+  -- adjusted heal point check for panic heal 45->20%
+  -- rewrite of dicho heal. procs on any GOM. 
+  -- fixed panic heal (again).. i hope its fixed
+  -- wrote in use for Seb HH donals Mourning helm Yaulp usage. in clerics INI change doYaulp=HELM to use
+- GoMpoint added to [Heal] INI section for healers. this sets the health point the GoM heal will be used
+- GoM heal now uses same code as normal GoM Nukes.
+  
+
+20170616
+- class.brd.inc
+  -- fixed my fixes for protecting the #binds for the bard
+- class.wiz.inc
+  -- wizard runes and spellguards now function as enchanter runes do. INI entires to match
+
+
+20170611
+- class.brd.inc
+  -- protection for #binds
+- class.clr.inc
+  -- GoM nuke not targeting again. this thing has issues
+- rewrite of echos()
+
+
+
+20170610
+- class.pal.inc
+  -- fixed the marr's gift binds
+  
+
+20170609
+- bug hunting
+  -- #binds messing up the echos() sub
+  
+
+20170608
+- finaly found a way to fix the inv/inv vs undead markers in the hud
+- class.enc.inc
+  -- fixed a rune stacking issue
+  
+
+20170608
+- class.enc.inc
+  -- fixed self imposed rune buffing bug
+- /petfarm 
+  -- do_pet_farm_mode() will force checking of living pets
+
+
+20170604
+HUDUPDATE
+- HUD
+	-- increased watchspawn by 1 digit
+	-- added /zraius next to the agro range
+	-- removed the dynamic spawn counts
+WHITEWASH
+- #bind |combatdistance|combatradius
+
+
+20170603
+WHITEWASH-
+- #bind |watchspawn
+- /hunt complete rewrite
+  -- will "should" stop moving to the mobs last spot if it is dead
+  -- more output on distance and count
+  -- /mapshow will update with the mob being hunted
+  -- pets will be sent in if within 150 range 
+  -- delay for no mobs to kill moved to toons INI [Timer] -> tHunt_delay -> 30s 
+  -- uses watchspawn to keep count of current hunted mob in zone
+- MQ2MoveUtils.INI entries to help with being stuck on geometry. this file is located in the root MQ folder
+	[StuckLogic]
+	StuckLogic=on
+	DistStuck=0.20
+	PulseCheck=2
+	PulseUnstuck=5
+	TryToJump=off
+	TurnHalf=off
+
+
+20170527
+- /petfarm 
+  -- will adhear to /listexclude mobs
+  -- timer created for 0 mob counts. 15s, Core.INI -> Timer -> TPetFarm_delay
+  -- moved count output to echos()
+  -- added druid /petfarm mode
+- #bind /zradius ##
+	-- this will adjust the zradius settings on all mob acquisitions.
+  -- /zradius ## (valid 1-200)
+  -- default 50
+  -- added to /here default 30
+- #bind /resetcore
+  -- reloads all INIs for macro
+- redesign of DeclareVar() to allow for pre-existing declares
+
+
+20170526
+- added shadowknight, ranger (wooden whistle) and shaman to /petfarm mode
+- math error in rogue poison sub Bind_click_poison()
+
+
+20170525
+- name issue in the always on discs.
+- added enchanter to the petpull list
+- AANow and DiscNow are disabled in manual mode
+
+
+20170524
+- class.brd.inc
+  -- adjusted delays for song casting to match the actual cast time vice a default 3s
+	-- sorted a bug in spam casting the aura
+	
+
+20170513
+- class.enc.inc
+  -- /rb will force casting of missing runes
+  
+
+20170512
+WHITEWASH
+- Bind_setTieMode() and set_tie() || /tie
+	-- /tie [NAME]
+		-- /tie will now accept a name (not required) after it e.g. /tie FollowMeBastards or /bca //tie ${Me.DisplayName}
+	     this will change the /tietoon [NAME]
+		-- tie will only engage if the toon being tied to is in same zone!!!!!
+	-- the #bind command /tie shouldn't break core anymore. i hope
+- /bc sma1/2/g now points to /smartma [1|2|G|X]
+- /smartma 
+  -- New and Improved! (it's either new or improved.. not both..)
+  -- /smartma [1|2|G|X] will accept variables, they are not required. /smartma is still a toggle
+  -- /setpuller will clear all assist modes.
+  -- Clerics and Pullers will ignore this command and remain assistless
+	-- all assist adjustment code in core now refrence 1 source: Bind_smartMA(string _assist) 
+- #binds |tietoon|tietime|tiedistance
+- toast.inc
+  -- added wiz epic 2.0 to toast routine
+
+
+20170510
+- rewrite of cleric GoM cast.
+  -- reduced to 1 spell.
+
+
+20170509
+- added a timer check to cleric Quiet Miracle check. tCheck_QM = 10s default
+- added a timer check to paladin Marr's Gift check. tCheck_MG = 10s default
+- logic bug in sort_cursor() for the toons autoInventoryItem
+
+
+20170507
+WHITEWASH
+RNG Version 2.2.2
+- class.rng.inc
+  -- seperated swarm reverse DS. 2 ini entries, 1 for the spell, 1 for the debuff
+- class.bst.inc
+  -- corrected some targeting issues with focused paragon
+  -- #bind |paragon  
+- fixed GoM Dichotomic. dunno what the hell was wrong with it??
+
+
+20170506
+WHITEWASH
+- #binds |primary|secondry
+
+
+20170504
+WHITEWASH
+- logic change to /toastnow. will only engage when in combat
+- #binds |toastmobcount|toastengageat
+- added error control to:
+  -- toast controls /toastengageat 1-99, /toastmobcount 1-99
+- toasting will no longer work in manual mode.
+
+
+20170503
+Core Version 3.5.1
+- fixed a couple non defined variable resets causing the mac to end. may be more /shrug
+- adjusted core_cast() to account for NULL subroutine execution
+- rewrite of the /invis routine.
+  -- /bcaa //invis will still work
+  -- added /stack as a #bind
+- added error control to:
+  -- agro ranges /engageat 1-99, /smartengageat 1-99
+  -- cast_AA_snare()
+  -- cast_eradicate_magic()
+- renamed /toast -> /toastnow
+
+
+20170430
+- class.pal.inc
+  -- rearranged some of the skills/usage of skills.
+
+
+20170428
+- class.pal.inc
+  -- added controls for Marr's Gift similar to cleric QM. Self only unlike QM
+     -- /mg [toggle] to turn usage on or off
+     -- /mgpct [##] for pct HP/Manna to use.
+     
+
+20170427
+- adjustments to pet class pull code (MAG|BST|NEC)
+- corrected NULL subroutine value in core_cast()
+
+
+20170425
+WHITEWASH
+- more #bind(s)
+  -- |forage|fish|train|petfarm|drag|ri|hunt
+
+
+20170424
+Core Version 3.4.0
+WHITEWASH
+- implementing #bind for a majority of existing events. Adding several more
+  -- |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion
+  -- |spice|stop|setagro|smartma|setpull|HUDTime|banestrike|broadcast|ib|sb|pb|resetcore|verbose|buildpet
+  -- |rezeveryone|rezcombat|rezauto|rezemergency|rezenable|core|invites|facefast|stickbehind|hudupdate
+  -- |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash
+  -- |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|tie|ignorelos
+- /alto alternate to /stop, self only. suppose you could do a /bcaa //alto  or whatever
+- /combatmelee melee attack the curent target. manual mode
+- /combatrange range attack the current target. manual mode
+- /combatnuke nuke the current target. manual mode
+- /broadcast -> /hudbroadcast
+
+
+20170423
+- logic error in Gunthak Swabby's Eyepatch clicking.
 
 
 20170421
 - class.rng.inc
   -- removed force of dicho casting on scarlet cheeta shortbuff. GFY DB...
+- adjusted remaining classes for prep_combat()
 
 
 20170420
@@ -23,8 +307,7 @@ Core Version 3.3.0
   -- autoskills
   -- /debuffsnare (aa crippling strike)
   
-  
-  
+   
 20170415
 - introducing prep_combat()
   -- replacement for all calsses to prep for combat and toasting

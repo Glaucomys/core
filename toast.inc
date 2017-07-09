@@ -458,7 +458,6 @@ sub synergy_MAG()
 	}
 	/if (${usePetSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill}
 
-
 	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
 	:exit	
@@ -480,9 +479,9 @@ sub synergy_ENC()
 	/if (${Macro.Return}) /goto :exit
 	
 	/if (${Me.AltAbilityReady[${ENCIoG}]}) /call core_cast "${ENCIoG}" alt 0
-	/if (${Me.AltAbilityReady[${ENCspire3}]}) /call core_cast "${ENCspire3}" alt 0
-	/if (${Me.AltAbilityReady[Dimensional Shield]}) /call core_cast "Dimensional Shield" alt	
-	/if (${Me.AltAbilityReady[Calculated Insanity]}) /call core_cast "Calculated Insanity" alt	
+	/if (${Me.AltAbilityReady[${ENCspire3}]} && ${Spell[${ENCspire3}].Stacks}) /call core_cast "${ENCspire3}" alt 0
+	/if (${Me.AltAbilityReady[Dimensional Shield]} && ${Spell[Dimensional Shield].Stacks}) /call core_cast "Dimensional Shield" alt 0
+	/if (${Me.AltAbilityReady[Calculated Insanity]} && ${Spell[Calculated Insanity].Stacks}) /call core_cast "Calculated Insanity" alt 0
 	
 	/call use_glyph
 	/call synergy_click_Circle
@@ -490,7 +489,7 @@ sub synergy_ENC()
 	:exit	
 /return
 	
- 
+
  
  |***
  *	DES: Wizard toast routines
@@ -507,7 +506,6 @@ sub synergy_WIZ()
 	
 	| shhhhh..
 	/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0
-
 
 	| next 45 spells +51% crit rate
 	/if (${Me.AltAbilityReady[Frenzied Devastation]}) /call core_cast "Frenzied Devastation" alt 0
@@ -528,7 +526,6 @@ sub synergy_WIZ()
 	/if (${Me.AltAbilityReady[Fury of Kerafyrm]} && !${Bool[${Me.Buff[Fury of Ro]}]}) /call core_cast "Fury of Kerafyrm" alt 0
 	/if (${Me.AltAbilityReady[Fury of Ro]} && !${Bool[${Me.Buff[Fury of Kerafyrm]}]}) /call core_cast "Fury of Ro" alt 0
 
-
 	/if (${Me.AltAbilityReady[Arcane Destruction]}) /call core_cast "Arcane Destruction" alt 0
 	
 	| increase damage
@@ -542,6 +539,10 @@ sub synergy_WIZ()
 
 	| ditch agrgro on named
 	/if (${Me.PctAggro} > 80 && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mind Crash]}) /call core_cast "Mind Crash" alt ${Target2Kill}
+	
+	| epic 2.0
+	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0
+
 
 	/call use_glyph	
 	/call synergy_click_Circle

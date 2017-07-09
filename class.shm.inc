@@ -31,29 +31,8 @@ sub core_SHM()
 	
 	
 	:killtarget
-	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/goto :exit
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_toast_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			/call is_toast_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${AutoBot}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /goto :exit
-		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
-	}
-	
-	CLEARCURSOR
+	/call prep_combat
+	/if (!${Macro.Return}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -275,7 +254,7 @@ sub check_heal_group_SHM()
   }
     
   
-|*** Single Heals ***|  
+  | Single Heals
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healMain}]} || ${Me.SpellReady[${healReckless}]})) {
       /if (${Me.SpellReady[${healMain}]}) {
         /call core_cast "${healMain}" 0 ${WorstHurt} CheckHP.${Me.Class.ShortName}
@@ -288,10 +267,10 @@ sub check_heal_group_SHM()
   
 	| check for personal debuffs
 	/if (${switchHealCure} && ${Debuff.Count}) {
-		| AA Purified Spirits SELF ONLY 0' range 2 min
-		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) /call core_cast "Purified Spirits" alt ${Me.ID} 
 		| AA Radient Cure SELF ONLY 100' range 1 min
 		/if (${Me.AltAbilityReady[Radiant Cure]} && (${Debuff.Diseased} || ${Debuff.Poisoned} || ${Debuff.Cursed})) /call core_cast "Radiant Cure" alt ${Me.ID} 
+		| AA Purified Spirits SELF ONLY 0' range 2 min
+		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) /call core_cast "Purified Spirits" alt ${Me.ID} 
 	}  
   
  	:exit
@@ -409,7 +388,7 @@ sub cast_surge_heal()
 sub checkHP.SHM()
 	/if (${HealList.Find[${Me.Casting}]}) {
 		/if (${Target.PctHPs} >= 90) {
-|	VOUT Interrupting ${Me.Casting} because ${Target.CleanName} is safe now.
+ | VOUT Interrupting ${Me.Casting} because ${Target.CleanName} is safe now.
 		/stopcast
 		/delay 1s !${Me.Casting.ID}
 		/goto :exit
@@ -450,8 +429,7 @@ sub doAid()
  *	INI: 
  *  NOTE: 
  ***|
- sub cast_cripple_SHM(int _tmpID)
-|	/declare _slowString string local
+sub cast_cripple_SHM(int _tmpID)
 	/doevents
 	ISDEAD
 	/declare _resistCount int local

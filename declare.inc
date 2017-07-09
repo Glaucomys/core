@@ -4,6 +4,7 @@
  *	All manual forced events.
  *	All created Alias' and /bc commands
  *	All INI edits
+ *	most of the #bind(s)
  *
  ***|
 
@@ -17,19 +18,19 @@
 sub check_versions()
 	DEBUG ${cbug}set_versions()\ax
 
-	/declare versionCore				string	outer 3.3.0
+	/declare versionCore				string	outer 3.6.0
 	
-	/declare versionCLR 				string 	outer 2.1.1
+	/declare versionCLR 				string 	outer 2.1.3
 	/declare versionDRU 				string 	outer 2.0.1 
 	/declare versionSHM 				string 	outer 1.5.1
 	/declare versionWAR 				string 	outer 1.5.1 
-	/declare versionPAL 				string 	outer 1.0.0 
+	/declare versionPAL 				string 	outer 1.0.2 
 	/declare versionSHD 				string 	outer 1.9.1 
-	/declare versionWIZ 				string 	outer 1.7.1 
+	/declare versionWIZ 				string 	outer 1.8.0 
 	/declare versionENC 				string 	outer 1.4.1
 	/declare versionMAG					string 	outer 2.0.1
 	/declare versionNEC 				string 	outer 0.5.1 
-	/declare versionRNG 				string 	outer 2.2.1
+	/declare versionRNG 				string 	outer 2.2.2
 	/declare versionBST 				string 	outer 1.0.1 
 	/declare versionBRD 				string 	outer 1.5.1 
 	/declare versionBER 				string 	outer 1.6.1
@@ -44,7 +45,7 @@ sub check_versions()
 
 |***
  *	DES: Used to remove stale entries from the toons INI. 'cause I gotta keep changing shits.
- *	USE: Auto
+ *	USE: /call fix_INI_declares
  *	INI: 
  *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
  ***|
@@ -61,7 +62,7 @@ sub fix_INI_declares()
  ***|
 #event SetVar 			"[MQ2] - Core: #1# -> [#2#] -> #3#"
 sub Event_SetVar(string line, string _varName, string _section, string _value)
-	/if (${Select[${_value},TRUE,ON,1]}) /varset _value TRUE
+	/if (${Select[${_value},TRUE,ON]}) /varset _value TRUE
 	/if (${Select[${_value},FALSE,OFF,0]}) /varset _value FALSE
 	/varset ${_varName} ${_value}
 	/ini "${INIFile}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
@@ -80,13 +81,18 @@ sub DeclareVar(string _name, string _type, string _scope, string _value)
 	/if (!${Defined[${_name}]}) {
 		/declare ${_name} ${_type} ${_scope}
 		/if (${_value.NotEqual[NULL]}) /varset ${_name} ${_value}
+		/varset ${_name} ${_value}
 		DEBUG Setting ${_name} ${_type} ${_scope} "${_value}" 
+	} else /if (${Defined[${_name}]}) {
+		DEBUG DEFINED/Setting:${_name} VALUE:${_value}
+		/if (${_value.NotEqual[NULL]}) /varset ${_name} ${_value}
 	}
 /return
 
 
 
-|***** Start base INI controls *****|
+|* Start base INI controls *********************************************************************************************
+
 |***
  *	DES: creates entries for the toon INI
  *	USE: 
@@ -243,6 +249,7 @@ sub Event_setTargetList(string line, string _list)
 			/call echos listexists ${_list}List
 			/goto :exit
 		} else /if (!${${_list}List.Find[${Target.DisplayName}]}) {
+			VOUT Adding ${ctar}${Target.DisplayName}\ax to ${_list}List
 			/if (${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "${${_list}List}|${Target.DisplayName}"
 			/if (!${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "|${Target.DisplayName}"
 		}
@@ -294,34 +301,34 @@ sub Event_HuntMobAgro(string line, int _huntagro)
 	/call echos hunter
 /return
 
-|***** End base INI controls *****|
+|* End base INI controls ***********************************************************************************************
 
 
 
 |***
  *	DES: Base variable inits.
  *	USE: 
- *	INI: 
+ *	INI: core.ini
  *  NOTE: 
  ***|
 sub declare_base()
 	DEBUG ${cbug}base.Environment()\ax
-	/declare core															bool	outer TRUE
-	/declare _count														int		local
+	/call DeclareVar core													bool	outer TRUE
+	/call DeclareVar _count												int		local
 		
-				|** Output Color Display 
-					Default			\ax							Black				\ab
-					Blue				\au							Brown				\a-o
-					Cyan				??							Gray				\a-w
-					Green				\ag							Pink				\am
-					Orange			\ao							Purple			\ap
-					Red					\ar							Teal				\at
-					White				\aw							Yellow			\ay
-					DarkGreen		\a-g						DarkMaroon	\a-m
-					DarkPurple	\a-p						DarkRed			\a-r
-					DarkCyan		\a-t						DarkBlue		\a-u
-					DarkYellow	\a-y
-				**|
+		|** Output Color Display 
+			Default			\ax							Black				\ab
+			Blue				\au							Brown				\a-o
+			Cyan				??							Gray				\a-w
+			Green				\ag							Pink				\am
+			Orange			\ao							Purple			\ap
+			Red					\ar							Teal				\at
+			White				\aw							Yellow			\ay
+			DarkGreen		\a-g						DarkMaroon	\a-m
+			DarkPurple	\a-p						DarkRed			\a-r
+			DarkCyan		\a-t						DarkBlue		\a-u
+			DarkYellow	\a-y
+		**|
 	
 	| visual outputs
 	/call DeclareCoreIniVar ctar								string	Output \a-w
@@ -351,11 +358,19 @@ sub declare_base()
 	/call DeclareCoreIniVar onotice							string	Output "\ayNotice\ax"
 	/call DeclareCoreIniVar prelink							string	Output "3Rorcex^11000004^0^1^1362119591^10000^'"
  	/call DeclareCoreIniVar postlink						string	Output ""	
+ 	/call DeclareCoreIniVar ocombat							string	Output "\amCombat\ax"	
+ 	
+ 	
+	| /call DeclareCoreIniVar CastRadius					int			Map 0	
+	| /call DeclareCoreIniVar CastRadiusColor			string	Map 0 255 0
+	
+
+ 	
 		
 	
 	| SET THIS TO TRUE TO ENABLE DEBUGING. ALTERNATIVE USE /varset debug TRUE
 	| on a funny note: prepare your ass for spam
-	/declare debug															bool		outer FALSE
+	/call DeclareVar debug											bool		outer FALSE
 
 	/call DeclareIniVar verbose									bool		Common TRUE
 	/call DeclareCoreIniVar EQBCServer					string	General 127.0.0.1
@@ -365,7 +380,7 @@ sub declare_base()
 	/call DeclareCoreIniVar HudType							string	General normal
 	/call DeclareCoreIniVar minMobPullLvl				int			General 1
 	/call DeclareCoreIniVar maxMobPullLvl				int			General 150
-	/call DeclareCoreIniVar combatRadius				string	General 30 /combatradius
+	/call DeclareCoreIniVar combatRadius				string	General 30
 	/call DeclareCoreIniVar plist								string	Plugin |MQ2Cast|MQ2EQBC|MQ2Exchange|MQ2MoveUtils|MQ2Netbots|MQ2Debuffs
 		
 
@@ -385,14 +400,13 @@ sub declare_base()
 	/call DeclareCoreIniVar RezTokenList				string 	General |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
 	
 	| buff queue variables
-	/call DeclareCoreIniVar queueCountMax				int			General 10
-	/declare queueBuffID[8] 										int  		outer
-	/declare queueList[${queueCountMax},2] 		 	int  		outer
-	/declare queueCount             					  int  		outer 0
-	| /declare DoBuffLowest         	   					int   outer 100
+	/call DeclareCoreIniVar queueCountMax																			int			General 10
+	/call DeclareVar queueCount             					 												int  		outer 0
+	/if (!${Defined[queueBuffID]}) /declare queueBuffID[8] 										int  		outer
+	/if (!${Defined[queueList]}) /declare queueList[${queueCountMax},2] 		 		int  		outer
 	
 	
-	/declare status_check_string								string	outer NULL
+	/call DeclareVar status_check_string								string	outer NULL
 	
 	/call DeclareCoreIniVar main								string	Group |FALSE|FALSE
 	/call DeclareCoreIniVar GroupLeader					string	Group FALSE
@@ -402,6 +416,8 @@ sub declare_base()
 	/call DeclareCoreIniVar GroupLooter					string	Group FALSE
 	/call DeclareCoreIniVar GroupMark						string	Group FALSE
 
+
+	| /here settings
 	/call DeclareCoreIniVar combatWAR						string	Here MELEE
 	/call DeclareCoreIniVar combatPAL						string	Here MELEE
 	/call DeclareCoreIniVar combatSHD						string	Here MELEE
@@ -424,6 +440,7 @@ sub declare_base()
 	/call DeclareCoreIniVar defaultTimerDelay		string	Here	1m
 	/call DeclareCoreIniVar baseAgroRange				int			Here	60
 	/call DeclareCoreIniVar emptyHands					bool		Here	TRUE
+	/call DeclareCoreIniVar hereZRadius				int			Here	30
 	
 	/call DeclareCoreIniVar count								int			bitch	20	
 	/call DeclareCoreIniVar 1										string	bitch	"Seriously... Again..."
@@ -460,30 +477,30 @@ sub declare_base()
 	/call DeclareCoreIniVar hideListedUnlocked	bool		hide FALSE
 	
 	| Base Environment settings
-	/declare noInvis 														bool 		outer TRUE
-	/declare noFeigning 												bool 		outer TRUE
-	/declare Target2Kill												int			outer 0
-	/declare UseRange														bool		outer FALSE
-	/declare currentLootCount										int			outer	0
-	/declare markerDead													bool		outer FALSE
+	/call DeclareVar noInvis 														bool 		outer TRUE
+	/call DeclareVar noFeigning 												bool 		outer TRUE
+	/call DeclareVar Target2Kill												int			outer 0
+	/call DeclareVar UseRange														bool		outer FALSE
+	/call DeclareVar currentLootCount										int			outer	0
+	/call DeclareVar markerDead													bool		outer FALSE
 	
-	/declare isValidTarget											bool		outer FALSE
-	/declare combatMode													string	outer NULL
-	/declare tmpMode														string	outer NULL
-	/declare hudWarning													string	outer	NULL
-	/declare hudNotice													string	outer	NULL	
-	/declare hudTarNotice												string	outer	NULL
-	/declare flagCallNeedRez										bool		outer FALSE
+	/call DeclareVar isValidTarget											bool		outer FALSE
+	/call DeclareVar combatMode													string	outer NULL
+	/call DeclareVar tmpMode														string	outer NULL
+	/call DeclareVar hudWarning													string	outer	NULL
+	/call DeclareVar hudNotice													string	outer	NULL	
+	/call DeclareVar hudTarNotice												string	outer	NULL
+	/call DeclareVar flagCallNeedRez										bool		outer FALSE
 
-	/declare setToastMode												bool 		outer FALSE	
-	/declare canCast														bool		outer	TRUE
-	/declare ignoreEngageAt											bool		outer FALSE
-	/declare tmpHealOverride										float 	outer 99.99	
+	/call DeclareVar setToastMode												bool 		outer FALSE	
+	/call DeclareVar canCast														bool		outer	TRUE
+	/call DeclareVar ignoreEngageAt											bool		outer FALSE
+	/call DeclareVar tmpHealOverride										float 	outer 99.99	
 	
-	/declare 	pre 															string 	outer ${Ini[${INICore},fakelink,pre]}
-	/declare 	post 															string 	outer ${Ini[${INICore},fakelink,post]}
+	/call DeclareVar 	pre 															string 	outer ${Ini[${INICore},fakelink,pre]}
+	/call DeclareVar 	post 															string 	outer ${Ini[${INICore},fakelink,post]}
 	
-	/declare hudBroadcast												string	outer
+	/call DeclareVar hudBroadcast												string	outer
 	
 	/call DeclareVar INIBlurb										string	outer tc\core.blurb.ini
 	/call DeclareVar INILoot										string  outer	tc\core.loot.ini
@@ -535,7 +552,7 @@ sub declare_base()
 	/call DeclareIniVar	tTell_Buff							string	Timer	10s	
 	/call DeclareIniVar	tCheck_EQBC							string	Timer	10m	
 	/call DeclareIniVar	tCheck_EXP							string	Timer	5m	
-	/call DeclareIniVar	tCheck_Tie							string	Timer	5 /tietime
+	/call DeclareIniVar	tCheck_Tie							string	Timer	5
 	/call DeclareIniVar	tCheck_Familiar					string	Timer	30s	
 	/call DeclareIniVar	tCheck_Ammo							string	Timer	5s	
 	/call DeclareIniVar	tCheck_snap_retry				string	Timer	15s	
@@ -545,12 +562,17 @@ sub declare_base()
 	/call DeclareIniVar	tWatch_Spawn						string	Timer	1s
 	/call DeclareIniVar	tCast_Cure							string	Timer	30s
 	/call DeclareIniVar	tZone_Pause							string	Timer	5s
+	/call DeclareIniVar	tHunt_delay							string	Timer	30s	
+	/call DeclareIniVar	tCheck_Runes						string	Timer	10s
+	/call DeclareIniVar	tScorchedEarth_delay		string	Timer	5s	
+
 
 	| mod rod recovered addicts
 	/if (!${Select[${Me.Class.ShortName},MAG,WAR,ROG,BRD,MNK,BER]}) {
 		/call DeclareIniVar	tAsk_for_rod						string	Timer	1m
 	}
 	/call DeclareCoreIniVar	tCheck_status				string	Timer	2s	
+	/call DeclareCoreIniVar	tPetFarm_delay			string	Timer	15s	
 
 /return
 
@@ -570,21 +592,19 @@ sub declare_common()
 	/call DeclareIniVar toonControl			 				string	Common FALSE /control 
 	/call DeclareIniVar autoControl			 				bool		Common FALSE 
 	/call DeclareIniVar combat					 				string	Common melee /combat 
-	/call DeclareIniVar whentoToast							int 		Common 80 /toastengageat
+	/call DeclareIniVar whentoToast							int 		Common 80
 	/call DeclareIniVar AutoToast								bool 		Common FALSE 
 	/call DeclareIniVar MA1			 								string 	Common FALSE /ma1
 	/call DeclareIniVar MA2			 								string 	Common FALSE /ma2
 	
-	/call DeclareIniVar MobAgro									int 		Common 10 /agro
-	/call DeclareIniVar engageAt 								int 		Common 98 /engageat 
-	/call DeclareIniVar smartengageAt 					int 		Common 98 /smartengageat 
-	/call DeclareIniVar autoRest 								int 		Common 90 /autorest
+	/call DeclareIniVar MobAgro									int 		Common 10
+	/call DeclareIniVar engageAt 								int 		Common 98
+	/call DeclareIniVar smartengageAt 					int 		Common 98
+	/call DeclareIniVar autoRest 								int 		Common 90
 
 	/call DeclareIniVar noCastWith							string	Common "|Quick Defense|Protection of Bayle|Interrogation Intimidation|Energy Charge|Cloud of Terror|Faith"
-	| /call DeclareIniVar doDebuff			 					bool		Common TRUE
 	/call DeclareIniVar HealOverride						int			Common 0	/healoverride
 	/call DeclareIniVar echoChannel							string	Common FALSE /echochannel
-	
 	
 	/call DeclareIniVar shrinkItem 							string 	Common "Ring of the Ancients"
 	/call DeclareIniVar setAutoShrink						bool		Common FALSE
@@ -598,6 +618,7 @@ sub declare_common()
 	/call DeclareIniVar setDragMode							bool		Common FALSE 
 	/call DeclareIniVar setForageMode						bool		Common FALSE
 	/call DeclareIniVar setPetFarmMode					bool		Common FALSE
+	/call DeclareIniVar setScorchedEarthMode		bool		Common FALSE
 	/call DeclareIniVar setHunterMode						bool		Common FALSE
 	/call DeclareIniVar setHunterAgro						int			Common FALSE 
 	/call DeclareIniVar setFishMode							bool		Common FALSE
@@ -605,7 +626,6 @@ sub declare_common()
 	/call DeclareIniVar IllusionItem						string	Common FALSE
 	/call DeclareIniVar IllusionBuff						string	Common FALSE
 	/call DeclareIniVar BuffItem	 							bool		Common TRUE 
-	/call DeclareIniVar switchHealSelf					bool 		Heal FALSE
 	/call DeclareIniVar switchInvites						bool 		Common TRUE
 	/call DeclareIniVar HUDTime									bool 		Common TRUE
 	/call DeclareIniVar GTFO										string	Common FALSE
@@ -616,30 +636,30 @@ sub declare_common()
 	/call DeclareIniVar rezEveryone 						bool 		Heal FALSE 
 	/call DeclareIniVar rezCombat 							bool 		Heal FALSE 
 	/call DeclareIniVar rezEnable 							bool 		Heal FALSE 
+	/call DeclareIniVar switchHealSelf					bool 		Heal FALSE
 	
 	
-	| /call DeclareIniVar BalanceHP     					bool   	Common FALSE /balance
 	/call DeclareIniVar AutoExpAdjust 					bool 		Common TRUE /autoadjustexp
 	/call DeclareIniVar MaintExpLvl   					int 		Common 99 /maintexplvl
 	/call DeclareIniVar MaxLevel      					int 		Common 105 /maxlevel
 	/call DeclareIniVar switchBanestrike				bool		Common FALSE		
 	/call DeclareIniVar RangeItem								string	Common FALSE		
 	/call DeclareIniVar RangeItemSummon					string	Common FALSE
-	/call DeclareIniVar autoInventoryItem				string	Common 
-	| /call DeclareIniVar autoDeleteItem					string	Common |FALSE|FALSE
+	/call DeclareIniVar autoInventoryItem				string	Common "|Summoned: Giant Modulation Shard"
 	/call DeclareIniVar stoponDS								bool		Common TRUE		
 	/call DeclareIniVar useGlyph								string	Common "Glyph of the Cataclysm"	/glyph
-	/call DeclareIniVar toastMobCount						int			Common 10 /toastmobcount
+	/call DeclareIniVar toastMobCount						int			Common 10
 	/call DeclareIniVar ResidentMage						string	Common |FALSE|FALSE
 	/call DeclareIniVar ForageFishInvis					string	Common FALSE	
 	/call DeclareIniVar ClassChannel						int			Common FALSE	
 	/call DeclareIniVar setBroadcast						string	Common TRUE	
 	/call DeclareIniVar relayTells							string	Common FALSE /relay	
+	/call DeclareIniVar zradius									int			Common 50	
 	
 	| watch spawn stuff
-	/declare hudwatchspawn											string	outer FALSE
-	/declare watchSpawnCount										int			outer	FALSE
-	/call DeclareIniVar watchSpawn							string	Common FALSE /watchspawn
+	/call DeclareVar hudwatchspawn											string	outer FALSE
+	/call DeclareVar watchSpawnCount										int			outer	FALSE
+	/call DeclareIniVar watchSpawn							string	Common FALSE 
 	
 
 	| set debuff switches by class	
@@ -714,13 +734,13 @@ sub declare_common()
 	/call DeclareIniVar HomeLeash								int 		Movement 40	/homeleash
 	/call DeclareIniVar HomeDelayMin						int 		Movement 100
 	/call DeclareIniVar HomeDelayMax						int 		Movement 500	
-	/call DeclareIniVar CombatDistance					int			Movement 15	/combatdistance
-	/declare tempHomeSet												bool		outer FALSE	
-	/declare tempsnapstuck											bool		outer	FALSE
+	/call DeclareIniVar CombatDistance					int			Movement 15
+	/call DeclareVar tempHomeSet								bool		outer FALSE	
+	/call DeclareVar tempsnapstuck							bool		outer	FALSE
   /call DeclareIniVar setIgnoreLOS						bool		Movement FALSE
-	/call DeclareIniVar SetTieToon 							string 	Movement FALSE /tietoon
+	/call DeclareIniVar SetTieToon 							string 	Movement FALSE
 	/call DeclareIniVar SetTie       						bool 		Movement FALSE
-	/call DeclareIniVar SetTieDistance 					int 		Movement 15 /tiedistance
+	/call DeclareIniVar SetTieDistance 					int 		Movement 15 
 	/call DeclareIniVar SetStickBehind 					bool 		Movement FALSE
 	/call DeclareIniVar SetFaceFast							bool		Movement FALSE
 
@@ -734,7 +754,7 @@ sub declare_common()
 		/call DeclareIniVar frenzy								bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},ROG]}) {
-		/declare flagSoS													bool	outer FALSE
+		/call DeclareVar flagSoS									bool	outer FALSE
 		/call DeclareIniVar backstab							bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
@@ -796,7 +816,6 @@ sub declare_common()
 	}	
 	
 	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,NEC,WIZ,SHM,DRU]}) { 
-		/call DeclareIniVar RuneSpell 						string 	Spells FALSE
 		/call DeclareIniVar TwincastSpell 				string 	Spells FALSE
 		/call DeclareIniVar TwincastType 					string 	Spells FALSE
 		/call DeclareInivar GatherSpell 					string 	Spells FALSE
@@ -848,7 +867,7 @@ sub declare_common()
 	}
 
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM]}) {
-		/declare callID														int 		outer
+		/call DeclareVar callID										int 		outer
 
 		/call DeclareIniVar PetPoint 							int			Heal 80	
 		/call DeclareIniVar CLRPoint 							int 		Heal 80
@@ -870,6 +889,7 @@ sub declare_common()
 		/call DeclareIniVar MercWarPoint 					int 		Heal 70
 		/call DeclareIniVar MercCLRPoint 					int 		Heal 80
 		/call DeclareIniVar MercDPSpoint 					int 		Heal 80	
+		/call DeclareIniVar GoMpoint 							int 		Heal 80	
 		/call DeclareIniVar XHealClass						string	Heal |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
 		/call DeclareIniVar tXHeal								string	Timer 3m   
 		| /call DeclareIniVar useRadiantCure				bool		Cure TRUE   
@@ -945,7 +965,6 @@ sub declare_MAG()
  *  NOTE: 
  ***|
 sub declare_WIZ()
-	| /call DeclareIniVar Familiar 								string 	Spells "Kerafyrm's Prismatic Familiar"
 	/call DeclareIniVar GatherSpell							string 	Spells "Quietscent Harvest"
 	/call DeclareIniVar GatherPercent			 			int			Spells 60 /gather
 	/call DeclareIniVar DoNuke								 	int			Spells 5
@@ -958,6 +977,8 @@ sub declare_WIZ()
 	/call DeclareIniVar Nuke7 									string 	Spells FALSE
 	/call DeclareIniVar Nuke8 									string 	Spells FALSE
 	/call DeclareIniVar tempPet						 			string	Pet "Yulin's Pyroblade"
+	/call DeclareIniVar HuntNuke								string 	Spells "Cloudburst Stormstrike"
+	
 	
 	/call DeclareIniVar fay 										string	Transport "Translocate: Fay"
 	/call DeclareIniVar dragonscale 						string	Transport "Translocate: Dragonscale Hills"
@@ -1004,6 +1025,10 @@ sub declare_WIZ()
 	/call DeclareIniVar greatdivide 						string	Transport "Translocate: Great Divide"
 	/call DeclareIniVar iceclad 								string	Transport "Translocate: Iceclad"		
 	
+	/call DeclareIniVar runeMagiWard	 					string	Rune "Doomscale Husk"
+	/call DeclareIniVar runeShieldofFate				string	Rune "Shield of Consequence"
+	/call DeclareIniVar runeCrystalwing					string	Rune "Armor of the Codex"
+	/call DeclareIniVar runeGuard			 					string	Rune "Darkmist Guard"
 	
 /return	
 
@@ -1028,12 +1053,9 @@ sub declare_MNK()
  *  NOTE: 
  ***|
 sub declare_ENC()
-	/declare mobList string outer
-	/declare addList string outer
+	/call DeclareVar mobList string outer
+	/call DeclareVar addList string outer
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer |5|8|12|17|18|42|44|80|106|129|144
-
-	/call DeclareIniVar	tCheck_Runes						string	Timer	10s
-
 
 	/call DeclareIniVar runeVeil			 					string	Rune "Veil of Mindshadow"
 	/call DeclareIniVar runeEldritch	 					string	Rune "Eldritch Rune"
@@ -1061,8 +1083,6 @@ sub declare_ENC()
 	/call DeclareIniVar spellpbaeMez						string	Spells "Perilous Bafflement"
 	/call DeclareIniVar spellStun								string	Spells "Color Concourse"
 	/call DeclareIniVar spellCharm							string	Spells "Enticer's Command"
-	
-	/call DeclareIniVar CharmList 							string 	Pet FALSE
 	
 	/call DeclareIniVar DoNuke					 				int			Spells 3
 	/call DeclareIniVar Nuke1					 					string	Spells "Chromatic Blink"
@@ -1092,8 +1112,8 @@ sub declare_ENC()
 sub declare_NEC()
 	/call DeclareIniVar tCall_for_Blood					string	Timer 30s
 		
-	/declare set																int			outer 1
-	/declare gem																int			outer 1
+	/call DeclareVar set												int			outer 1
+	/call DeclareVar gem												int			outer 1
 	
 	/call DeclareIniVar SpellSets 							int 		Spells 4
 	/call DeclareIniVar SpellSet1 							string 	Spells core1
@@ -1159,7 +1179,7 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
-	/declare mobAECount													int	outer
+	/call DeclareVar mobAECount									int	outer
 	/call DeclareIniVar Withstand 							string 	Discs "Repel"
 	/call DeclareIniVar BladeStrike 						string 	Discs "Lacerating Blade"
 	/call DeclareIniVar CrimsonBlade 						string 	Discs "Carmine Blade"
@@ -1208,20 +1228,22 @@ sub declare_SHD()
  *  NOTE: 
  ***|
 sub declare_PAL()
-	/declare mobAECount													int			outer
-	/declare MajorHurt 													int 		outer 0
-	/declare WorstHurt 													string 	outer NULL
-	/declare WorstHurtID 												int 		outer
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer NULL
-	/declare MinorHurt													int    	outer 0 
+	/call DeclareIniVar	tcheck_MG								string	Timer	10s
+
+	/call DeclareVar mobAECount									int			outer
+	/call DeclareVar MajorHurt 									int 		outer 0
+	/call DeclareVar WorstHurt 									string 	outer NULL
+	/call DeclareVar WorstHurtID 								int 		outer
+	/call DeclareVar WorstHP 										int 		outer 100
+	/call DeclareVar WorstClass 								string 	outer NULL
+	/call DeclareVar MinorHurt									int    	outer 0 
 	
 	/call DeclareIniVar useGroupHeal 						bool		Heal TRUE /usegroupheal
   /call DeclareIniVar healWholeGroup					string 	Heal "Wave of Grief"
   /call DeclareIniVar healTouch								string 	Heal "Ardent Touch"
   /call DeclareIniVar healPanic								string 	Heal FALSE
-|	/declare rezID 															int 		outer
-	/declare callID															int 		outer
+|	/call DeclareVar rezID 											int 		outer
+	/call DeclareVar callID											int 		outer
 
 	/call DeclareIniVar PetPoint 								int			Heal 80	
 	/call DeclareIniVar CLRPoint 								int 		Heal 80
@@ -1241,7 +1263,7 @@ sub declare_PAL()
 	/call DeclareIniVar BERPoint 								int 		Heal 70
 	/call DeclareIniVar PALPoint 								int 		Heal 90
 	
-	/call DeclareIniVar doYaulp 								bool		SelfBuff TRUE /doyaulp	
+	/call DeclareIniVar doYaulp 								string	SelfBuff TRUE /doyaulp	
 	/call DeclareIniVar DiscRest			 					string	Discs "Breather"
 	/call DeclareIniVar DiscFastRune	 					string	Discs "Repel"
 	/call DeclareIniVar DiscArmor			 					string	Discs "Armor of Ardency"
@@ -1277,6 +1299,12 @@ sub declare_PAL()
 	/call DeclareIniVar Nuke4										string 	Spells "Lesson of Grief"
 	/call DeclareIniVar Nuke5					 					string	Spells "Protective Proclamation"
 
+	/call DeclareIniVar DoDoT						 				int			Spells 0
+	/call DeclareIniVar DoT1					 					string	Spells FALSE
+	/call DeclareIniVar DoT2					 					string	Spells FALSE
+	/call DeclareIniVar DoT3					 					string	Spells FALSE
+	/call DeclareIniVar DoT4					 					string	Spells FALSE
+
 
 	/call DeclareIniVar ChallengeSpell					string 	Spells "Impose for Honor"
 	/call DeclareIniVar ValiantDefense					string 	Spells "Valiant Defense"
@@ -1284,6 +1312,10 @@ sub declare_PAL()
 	/call DeclareIniVar Twincast								string 	Spells "Glorious Exoneration"
 	
 	/call DeclareIniVar Harmonious 							string 	Spells "Harmonious Blessing"
+	
+	/call DeclareIniVar useMG										bool		SelfBuff TRUE
+	/call DeclareIniVar useMGPct								int			SelfBuff 60
+
 	
 /return	
 
@@ -1344,7 +1376,7 @@ sub declare_BER()
 	/call DeclareIniVar CryOfChaos 							string 	Discs "Ancient: Cry of Chaos"
 	/call DeclareIniVar DiscBerserking 					string 	Discs "Berserking Discipline"
 	/call DeclareIniVar DiscRest 								string 	Discs "Breather"
-	/call DeclareIniVar DiscCombatFrenzy 				string 	Discs "Stormwild Frenzy"
+	/call DeclareIniVar DiscCombatFrenzy 				string 	Discs "Amplified Frenzy"
 	/call DeclareIniVar DiscScream 							string 	Discs "Distressing Scream"
 	/call DeclareIniVar ThrowingAxe 						string 	Discs "Demolishing Axe Throw"
 	/call DeclareIniVar DiscJolt 								string 	Discs "Jarring Smite"
@@ -1367,13 +1399,13 @@ sub declare_BER()
  	/call DeclareIniVar DiscDisconcert					string 	Discs "Disconcerting Discipline"
  	/call DeclareIniVar DiscEnduranceTap				string 	Discs "Sapping Strikes"
 
-	/declare OpenWoundEffect										string 	outer Open Wound
+	/call DeclareVar OpenWoundEffect						string 	outer Open Wound
   /if (${OpenWoundDisc.Find[rk. III]}) {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-6]} effect II
   }
-	/declare AugmentedFrenzyEffect 							string outer Augmented Frenzy Effect
+	/call DeclareVar AugmentedFrenzyEffect 			string outer Augmented Frenzy Effect
   /if (${AugmentedFrenzyDisc.Find[rk. III]}) {
 		/varset AugmentedFrenzyEffect ${AugmentedFrenzyDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
@@ -1402,11 +1434,14 @@ sub declare_RNG()
 	/call DeclareIniVar Nuke6					 					string	Spells FALSE
 	/call DeclareIniVar NukeSummer		 					string	Spells "Summer's Cyclone"
 
-	/call DeclareIniVar DoDoT						 				int			Spells 3
+	/call DeclareIniVar DoDoT						 				int			Spells 2
 	/call DeclareIniVar DoT1					 					string	Spells "Blisterbeetle Swarm"
-	/call DeclareIniVar DoT2					 					string	Spells "Swarm of Glistenwings"
-	/call DeclareIniVar DoT3					 					string	Spells "Vespid Swarm"
+	/call DeclareIniVar DoT2					 					string	Spells "Vespid Swarm"
+	/call DeclareIniVar DoT3					 					string	Spells FALSE
 	/call DeclareIniVar DoT4					 					string	Spells FALSE
+	/call DeclareIniVar DoTSwarmDS		 					string	Spells "Swarm of Glistenwings"
+	/call DeclareIniVar DoTSwarmDSdeBuff 				string	Spells "Glistenwing Swarm"
+	
 	/call DeclareIniVar SlowHeal								string	Spells "Cloudfont" 
 	/call DeclareIniVar FastHeal			 					string	Spells "Desperate Dousing" 
 	/call DeclareIniVar FastHealPCT		 					int			Spells 25
@@ -1451,18 +1486,18 @@ sub declare_DRU()
 	/call DeclareIniVar DoT3					 					string	Spells FALSE	
 	/call DeclareIniVar DoT4					 					string	Spells FALSE	
 	
-	/declare MajorHurt 													int 		outer 0
-	/declare WorstHurt 													string 	outer NULL
-	/declare WorstHurtID 												int 		outer
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer NULL
-  /declare MinorHurt													int    	outer 0 
-  /declare WorstHp 														int    	outer 100
-  /declare pWorstHurt 												string 	outer ${Me.DisplayName}
-  /declare pWorstHP														int			outer 100
-  /declare pWorstHurtID												int 		outer ${Me.ID}
-  /declare pWorstClass												string	outer NULL
-  /declare pMajorHurt													int			outer 0
+	/call DeclareVar MajorHurt 									int 		outer 0
+	/call DeclareVar WorstHurt 									string 	outer NULL
+	/call DeclareVar WorstHurtID 								int 		outer
+	/call DeclareVar WorstHP 										int 		outer 100
+	/call DeclareVar WorstClass 								string 	outer NULL
+  /call DeclareVar MinorHurt									int    	outer 0 
+  /call DeclareVar WorstHp 										int    	outer 100
+  /call DeclareVar pWorstHurt 								string 	outer ${Me.DisplayName}
+  /call DeclareVar pWorstHP										int			outer 100
+  /call DeclareVar pWorstHurtID								int 		outer ${Me.ID}
+  /call DeclareVar pWorstClass								string	outer NULL
+  /call DeclareVar pMajorHurt									int			outer 0
 	
 	/call DeclareIniVar RandRezDelay						int 		Heal 10
 	/call DeclareIniVar ProtectOutsideGroup			string	Heal |NULL|NULL
@@ -1534,13 +1569,13 @@ sub declare_DRU()
  *  NOTE: 
  ***|
 sub declare_SHM()
-	/declare MajorHurt 													int 		outer 0
-	/declare WorstHurt 													string 	outer NULL
-	/declare WorstHurtID 												int 		outer
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer NULL
-  /declare MinorHurt													int    	outer 0 
-  /declare WorstHp 														int    	outer 100	
+	/call DeclareVar MajorHurt 									int 		outer 0
+	/call DeclareVar WorstHurt 									string 	outer NULL
+	/call DeclareVar WorstHurtID 								int 		outer
+	/call DeclareVar WorstHP 										int 		outer 100
+	/call DeclareVar WorstClass 								string 	outer NULL
+  /call DeclareVar MinorHurt									int    	outer 0 
+  /call DeclareVar WorstHp 										int    	outer 100	
   
 	/call DeclareIniVar AidTXT 									string 	Spells "ANCESTRAL AID Done (Str/Agi/Dex +300, HoT Heal +1840)"
 	/call DeclareIniVar MaloSpell 							string 	Spells "Malosinete"
@@ -1579,7 +1614,7 @@ sub declare_SHM()
 	/call DeclareIniVar ProtectInsideRaid				string	Heal |NULL|NULL
 	/call DeclareIniVar ProtectNPCList					string	Heal |NULL|NULL
 
-	/declare HealList 													string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
+	/call DeclareVar HealList 									string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
 
 /return	
 
@@ -1592,8 +1627,8 @@ sub declare_SHM()
  *  NOTE: 
  ***|
 sub declare_BRD()
-	/if (!${Defined[mobList]}) /declare mobList string outer
-	/if (!${Defined[addList]}) /declare addList string outer
+	/call DeclareVar mobList string outer
+	/call DeclareVar addList string outer
 
 	/call DeclareIniVar ServantNukeAA1 					string 	Pet "Lyrical Prankster"
 	/call DeclareIniVar ServantNukeAA2 					string 	Pet "Song of Stone"
@@ -1627,7 +1662,6 @@ sub declare_BRD()
 sub declare_BST()
 |	/call DeclareIniVar useAASlow 							bool 		Spells TRUE /aaslow
 	/call DeclareIniVar DiscForay 							string 	Spells "Pummel"
-	/call DeclareIniVar DiscBestial							string 	Spells "Bestial Evulsing"
 	/call DeclareIniVar DiscFocusClaws 					string 	Spells "Focused Clamor of Claws"
 	/call DeclareIniVar DiscSavage 							string 	Spells "Savage Rage"
 	/call DeclareiniVar DiscRuaabri 						string 	Spells "Ruaabri's Fury"	
@@ -1689,26 +1723,34 @@ sub declare_MNK()
  ***|
 sub declare_ROG()
 	| keep on cooldown
-	/call DeclareIniVar DiscRest				 				string Discs "Breather"
-	/call DeclareIniVar DiscAggro 							string Discs "Disorientation"
-	/call DeclareIniVar DiscAssault 						string Discs "Barrage"
-	/call DeclareIniVar DiscBleed 							string Discs "Hack"	
-	/call DeclareIniVar DiscPlay	 							string Discs "Knifeplay Discipline"	
-	/call DeclareIniVar DiscPhantom							string Discs "Phantom Assassin"	
-	/call DeclareIniVar DiscHack								string Discs "Jugular Hack"	
-	/call DeclareIniVar DiscHiddenBlade					string Discs "Hidden Blade"	
-	/call DeclareIniVar DiscBladePoison					string Discs "Reefcrawler Blade"	
+	/call DeclareIniVar tClick_Poison						string	Timer 30s
+
+	/call DeclareIniVar DiscRest				 				string 	Discs "Breather"
+	/call DeclareIniVar DiscAggro 							string 	Discs "Disorientation"
+	/call DeclareIniVar DiscAssault 						string 	Discs "Barrage"
+	/call DeclareIniVar DiscBleed 							string 	Discs "Hack"	
+	/call DeclareIniVar DiscPlay	 							string 	Discs "Knifeplay Discipline"	
+	/call DeclareIniVar DiscPhantom							string 	Discs "Phantom Assassin"	
+	/call DeclareIniVar DiscHack								string 	Discs "Jugular Hack"	
+	/call DeclareIniVar DiscHiddenBlade					string 	Discs "Hidden Blade"	
+	/call DeclareIniVar DiscBladePoison					string 	Discs "Reefcrawler Blade"	
 
 	| disable for toast
-	/call DeclareIniVar DiscVision 							string Discs "Thief's Vision"	
+	/call DeclareIniVar DiscVision 							string 	Discs "Thief's Vision"	
 
 	| toast
-	/call DeclareIniVar DiscPinPoint 						string Discs "Pinpoint Deficiencies"
-	/call DeclareIniVar DiscMark 								string Discs "Wide-Eyed Mark"
-	/call DeclareIniVar DiscEradicator 					string Discs "Executioner Discipline"
-	/call DeclareIniVar DiscRazor 							string Discs "Razor's Edge Discipline"	
-	/call DeclareIniVar DiscFrenzy 							string Discs "Frenzied Stabbing Discipline"	
-	/call DeclareIniVar DiscTwistedChance				string Discs "Twisted Chance Discipline"
+	/call DeclareIniVar DiscPinPoint 						string 	Discs "Pinpoint Deficiencies"
+	/call DeclareIniVar DiscMark 								string 	Discs "Wide-Eyed Mark"
+	/call DeclareIniVar DiscEradicator 					string 	Discs "Executioner Discipline"
+	/call DeclareIniVar DiscRazor 							string 	Discs "Razor's Edge Discipline"	
+	/call DeclareIniVar DiscFrenzy 							string 	Discs "Frenzied Stabbing Discipline"	
+	/call DeclareIniVar DiscTwistedChance				string 	Discs "Twisted Chance Discipline"
+	
+	/call DeclareIniVar clickPoisonBuff					string 	Poison "Bite of the Shissar Poison X"
+	/call DeclareIniVar clickPoisonItem					string 	Poison "Consigned Bite of the Shissar XVIII"
+	/call DeclareIniVar clickPoisonDispenser		string 	Poison "Selrach's Shadowscale Leggings"
+	/call DeclareIniVar clickPoisonCount				int		 	Poison 60
+	
 	
 /return	
 
@@ -1723,23 +1765,23 @@ sub declare_ROG()
 sub declare_CLR()
 	DEBUG ${cbug}declare_CLR()\ax
 	/call DeclareIniVar tHealWard								string	Timer 185s
+	/call DeclareIniVar	tcheck_QM								string	Timer	10s
 		
-	/declare MajorHurt 													int 		outer 0
-	/declare WorstHurt 													string 	outer NULL
-	/declare WorstHurtID 												int 		outer
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer NULL
-	/declare MinorHurt													int    	outer 0 
+	/call DeclareVar MajorHurt 									int 		outer 0
+	/call DeclareVar WorstHurt 									string 	outer NULL
+	/call DeclareVar WorstHurtID 								int 		outer
+	/call DeclareVar WorstHP 										int 		outer 100
+	/call DeclareVar WorstClass 								string 	outer NULL
+	/call DeclareVar MinorHurt									int    	outer 0 
 	
-	/declare pWorstHurt 												string 	outer ${Me.DisplayName}
-	/declare pWorstHP														int			outer 100
-	/declare pWorstHurtID												int 		outer ${Me.ID}
-	/declare pWorstClass												string	outer NULL
-	/declare pMajorHurt													int			outer 0
+	/call DeclareVar pWorstHurt 								string 	outer ${Me.DisplayName}
+	/call DeclareVar pWorstHP										int			outer 100
+	/call DeclareVar pWorstHurtID								int 		outer ${Me.ID}
+	/call DeclareVar pWorstClass								string	outer NULL
+	/call DeclareVar pMajorHurt									int			outer 0
 	
-	/declare WorstManaID												int			outer 0
-	/declare WorstManaPct												int			outer 0
-	
+	/call DeclareVar WorstManaID								int			outer
+	/call DeclareVar WorstManaPct								int			outer
 	
 	/call DeclareIniVar DivineRezCleric					bool 		Heal TRUE
 	/call DeclareIniVar RandRezDelay						int 		Heal 5
@@ -1771,11 +1813,11 @@ sub declare_CLR()
 	/call DeclareIniVar CRTXT										string	Heal "Celestial Regeneration (+11100HP / tic)"
 	/call DeclareIniVar switchHealAggressive		string	Heal FALSE
 		
-	/call DeclareIniVar doYaulp 								bool		SelfBuff TRUE /doyaulp	
+	/call DeclareIniVar doYaulp 								string	SelfBuff TRUE /doyaulp	
 	/call DeclareIniVar sumWeaponSpell					string	SelfBuff "Hammer of	Reverence"
 	/call DeclareIniVar sumWeaponItem						string	SelfBuff "Hammer of	Reverence III"
-	/call DeclareIniVar useQM										bool		SelfBuff TRUE /qm
-	/call DeclareIniVar useQMPct								int			SelfBuff 40 /qmpct
+	/call DeclareIniVar useQM										bool		SelfBuff TRUE
+	/call DeclareIniVar useQMPct								int			SelfBuff 40
 
 	| /call DeclareIniVar Spire										string	Spells "Fundament: Third Spire of Divinity"
 		
@@ -1787,7 +1829,7 @@ sub declare_CLR()
  *	DES: This will clear all store alises that core has created in your MacroQuest2.INI file. or those with matching names.
  *	USE: /whitewash
  *	INI: MacroQuest2.INI
- *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry its slow as fuck.
+ *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry it's slow as fuck.
  ***|
 #event whitewash "[MQ2] @@@ Core: Deleting all Core aliases.. PLEASE WAIT"
 sub Event_whitewash()
@@ -1798,63 +1840,57 @@ sub Event_whitewash()
 sub whitewash()
 	NOUT ${owarning} ${sep} Deleting all Core ${cinfo}${versionCore}\ax aliases. ${cbad}Please wait.\ax
 	/declare _count 				int local
-	/declare _todelete[22] 	string local
+	/declare _todelete[19] 	string local
 	/declare _index 				int local
 	/declare _increment			int local 1
 	
 	
 	| commands to remove forever
-	/varset _todelete[1] |setdebuff|battlerez|escort|dodebuff|autorez|followdistance|useentropy|debug|autobuff
-	/varset _todelete[2] |sellstuff|depositstuff|MezzImmune|bitch|combatrez|xheal|burnmobcount|combatcall|usemalotash
-	/varset _todelete[3] |nukemana|nukedelay|nukemode|meleeescort|BCMA|aaslow|balance|autotoast|port|cleanup|cure|buffauto
-	/varset _todelete[4] |usebuffkill|fubar|follow|meleefollow|healfollow|nukefollow|looter|lootignore|lootsell|nomezz|nocast|exclude|named|nomelee|rmob|nomagic|nodisease|nofire|nopoison|nocold|nocorruption
 	
+	/varset _todelete[15] |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion|home|paragon|combatradius
+	/varset _todelete[16] |spice|stop|setagro|smartma|setpull|HUDTime|banestrike|broadcast|ib|sb|pb|resetcore|verbose|buildpet|autorest|toastauto|primary|secondary|invis
+	/varset _todelete[17] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable|core|invites|facefast|stickbehind|hudupdate|qmpct|qm|toastmobcount|toastengageat|combatdistance
+	/varset _todelete[18] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash|agro|engageat|autorest|smartengageat|watchspawn
+	/varset _todelete[19] |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|tie|ignorelos|forage|fish|train|petfarm|drag|ri|hunt|tietoon|tiedistance|tietime
+	
+		
 	| misc HUD commnads
-	/varset _todelete[5] |verbose|hudupdate|control|whitewash|smartengageat|balance|broadcast|HUDTime
+	/varset _todelete[1] |control|whitewash|smartengageat
 	
 	| assist
-	/varset _todelete[6] |ma1|ma2|agro|engageat|autorest|smartma|combatdistance|killmob|combatradius|smartengageat|setagro
+	/varset _todelete[2] |ma1|ma2|killmob
 
 	| modes
-	/varset _todelete[7] |forage|fish|invites|train|combat|setpull|petfarm|setpuller|on|off|core|drag|ri|hunt
+	/varset _todelete[3] |combat|on|off
 
 	| Misc commands
-	/varset _todelete[8] |maxlevel|autoadjustexp|oneoff|ds|userain|resetcore|crew|info|banestrike|watchspawn|huntagro|autologin
-	/varset _todelete[9] |combatbuff|pathiosis|bcsay|blurb|clean|invis|stein|gtfo|door|echochannel|info|whohas
-	/varset _todelete[10] |mirror|checkcash|autoshrink|maintexplvl|autocontrol|killcode|echoaugments|relay|givecoin
+	/varset _todelete[4] |maxlevel|autoadjustexp|oneoff|userain|crew|info|huntagro|autologin
+	/varset _todelete[5] |pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel|info|whohas
+	/varset _todelete[6] |mirror|maintexplvl|autocontrol|killcode|echoaugments|relay|givecoin|stop
 
 	| heal
-	/varset _todelete[11] |healoverride|healself|healgroup|healxtarget|healpet|healcure|usegrouphot|usegroupheal|xtheal|rc|purify|healaggressive
-	/varset _todelete[12] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable
+	/varset _todelete[7] |usegrouphot|usegroupheal|rc|purify
 
-	| debuffing
-	/varset _todelete[13] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare
-
-	| buffing
-	/varset _todelete[14] |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|ib|sb|pb
-
-	| toast
-	/varset _todelete[15] |toastmobcount|toastauto|toastengageat|toastauto|settoast|toast
+	/varset _todelete[8] |NULL
 
 	| loots
-	/varset _todelete[16] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore
+	/varset _todelete[9] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore
 
 	| zone list control
-	/varset _todelete[17]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
+	/varset _todelete[10]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
 
 	| pets
-	/varset _todelete[18]	|petengageat|petswarmengageat|companionswarm|companion|pettype|buildpet|pettank|sendpets
+	/varset _todelete[11]	|petengageat|petswarmengageat|pettype|pettank|sendpets
 
 	| class commands
-	/varset _todelete[19] |harvest|gather|rod|redorod|rods|cr|issuance|spice|useeradicate|song
-	/varset _todelete[20] |qmpct|qm|glyph|dorain|doyaulp|lesson|wood|paragon|cani
+	/varset _todelete[12] |harvest|gather|rod|redorod|rods|cr|issuance|useeradicate|song
+	/varset _todelete[13] |glyph|doyaulp|lesson|wood|cani
 
 	| movement
-	/varset _todelete[21]	|primary|secondary|here|halt|ignorelos|facefast|stickbehind|stop|take
-	/varset _todelete[22] |tietoon|tie|tiedistance|tietime|home|homeradius|homeleash
+	/varset _todelete[14]	|here|take|homeradius|homeleash
+
 	
-	
-	/for _count 5 to ${_todelete.Size}
+	/for _count 1 to ${_todelete.Size}
 		/for _index 1 to ${_todelete[${_count}].Count[|]}
 			NOUT Deleting Alias ${If[${_count} > 4,${_increment}:,]} ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
 			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
@@ -1870,11 +1906,7 @@ sub whitewash()
 
 
 
-
-|************************************************************************************************************|
-|* Created Events from this point on..                                                                       |
-|************************************************************************************************************|
- 
+|* Created Events ******************************************************************************************************
   
 |***
  *	DES: stuf we do cause we are lazy.
@@ -1885,10 +1917,9 @@ sub whitewash()
 sub set_alias()
 	DEBUG ${cbug}set_alias()\ax Setting Aliases
 	/if (!${Bool[${Alias[/info]}]}) 					/squelch /alias /info 											NOUT Core Instructions:
-	| /if (!${Bool[${Alias[/port]}]}) 					/squelch /alias /port 											/bc port
 	/if (!${Bool[${Alias[/take]}]}) 					/squelch /alias /take 											/bc take
 	/if (!${Bool[${Alias[/door]}]}) 					/squelch /alias /door 											/bc door
-	/if (!${Bool[${Alias[/invis]}]}) 					/squelch /alias /invis 											/bc invis
+	/if (!${Bool[${Alias[/stack]}]}) 					/squelch /alias /stack 											/bcaa //invis
 	
  	| zone list control
   /if (!${Bool[${Alias[/listremove]}]}) 				/squelch /alias /listremove							VOUT Set Target Remove!
@@ -1906,94 +1937,26 @@ sub set_alias()
   /if (!${Bool[${Alias[/listnocorruption]}]}) 	/squelch /alias /listnocorruption 			VOUT Set Target NoCorruption!
   /if (!${Bool[${Alias[/listhuntmob]}]}) 				/squelch /alias /listhuntmob 						VOUT Set Target HuntMob!
   /if (!${Bool[${Alias[/huntmobagro]}]}) 				/squelch /alias /huntmobagro						/echo HuntMobAgro:
-  
    
   /if (!${Bool[${Alias[/sendpets]}]}) 			/squelch /alias /sendpets										NOUT SendPets: 
 	/if (!${Bool[${Alias[/killmob]}]}) 				/squelch /alias /killmob 										/bc killmob
 	/if (!${Bool[${Alias[/mirror]}]}) 				/squelch /alias /mirror 										/bc mirror
 	/if (!${Bool[${Alias[/stein]}]}) 					/squelch /alias /stein 											/bc stein
   /if (!${Bool[${Alias[/stop]}]}) 					/squelch /alias /stop 											/bc stop
-  /if (!${Bool[${Alias[/halt]}]}) 					/squelch /alias /halt 											/bc halt
-	/if (!${Bool[${Alias[/ib]}]}) 						/squelch /alias /ib													NOUT Check Item Buffs.
-	/if (!${Bool[${Alias[/sb]}]}) 						/squelch /alias /sb 												NOUT Check Self Buffs.
-	/if (!${Bool[${Alias[/pb]}]}) 						/squelch /alias /pb 												NOUT Check Pet Buffs.
 	/if (!${Bool[${Alias[/blurb]}]}) 					/squelch /alias /blurb 											NOUT Blurb: 
  	/if (!${Bool[${Alias[/clean]}]}) 					/squelch /alias /clean 											NOUT Clean this mess up.
- 	/if (!${Bool[${Alias[/toast]}]}) 					/squelch /alias /toast 											NOUT Adjusting the toast dial !!
  	/if (!${Bool[${Alias[/whitewash]}]}) 			/squelch /alias /whitewash 									/echo \ar@@@\ax Core: Deleting all Core aliases.. \arPLEASE WAIT\ax
- 	/if (!${Bool[${Alias[/smartma]}]}) 				/squelch /alias /smartma 										NOUT Adjusting Smart Assist !!
-  /if (!${Bool[${Alias[/buildpet]}]}) 			/squelch /alias /buildpet 									NOUT Time for a new pet.
 	/if (!${Bool[${Alias[/song]}]}) 					/squelch /alias /song 											NOUT Song: 
 	/if (!${Bool[${Alias[/crew]}]}) 					/squelch /alias /crew 											NOUT Crew: 
 	/if (!${Bool[${Alias[/here]}]}) 					/squelch /alias /here 											/bc here
-  /if (!${Bool[${Alias[/broadcast]}]}) 			/squelch /alias /broadcast 									NOUT Set Broadcast Status!
   /if (!${Bool[${Alias[/bcsay]}]}) 					/squelch /alias /bcsay 											/bc bcsay
   /if (!${Bool[${Alias[/echoaugments]}]}) 	/squelch /alias /echoaugments								NOUT Echo Augment file!
   /if (!${Bool[${Alias[/whohas]}]}) 				/squelch /alias /whohas											/bc whohas
   /if (!${Bool[${Alias[/autologin]}]}) 			/squelch /alias /autologin									/plugin mq2autologin unload
-   
-	/if (!${Bool[${Alias[/buffraid]}]}) 			/squelch /alias /buffraid 									NOUT Set Raid Buffing!
-	/if (!${Bool[${Alias[/buffbc]}]}) 				/squelch /alias /buffbc 										NOUT Set BC Buffing!
-	/if (!${Bool[${Alias[/buffself]}]}) 			/squelch /alias /buffself 									NOUT Set Self Buffing!
-	/if (!${Bool[${Alias[/buffitem]}]}) 			/squelch /alias /buffitem 									NOUT Set Item Buffing!
-	/if (!${Bool[${Alias[/buffcombat]}]}) 		/squelch /alias /buffcombat 								NOUT Set Combat Buffing!
-	/if (!${Bool[${Alias[/bufftell]}]}) 			/squelch /alias /bufftell 									NOUT Set /tell for Buffing!
-	/if (!${Bool[${Alias[/buffpet]}]}) 				/squelch /alias /buffpet 										NOUT Set Pet Buffing!
-	
-	| healing thingies
-	/if (!${Bool[${Alias[/healself]}]}) 			/squelch /alias /healself 									NOUT Set Self Healing!
-	/if (!${Bool[${Alias[/healgroup]}]}) 			/squelch /alias /healgroup 									NOUT Set Group Healing!
-	/if (!${Bool[${Alias[/healxtarget]}]}) 		/squelch /alias /healxtarget 								NOUT Set XTarget Healing!
-	/if (!${Bool[${Alias[/healpet]}]}) 				/squelch /alias /healpet 										NOUT Set Pet Healing!
-	/if (!${Bool[${Alias[/healcure]}]}) 			/squelch /alias /healcure 									NOUT Set Curing!
-	/if (!${Bool[${Alias[/healaggressive]}]}) /squelch /alias /healaggressive							NOUT Set Aggressive Healing!
-	
-	| rez switches
-	/if (!${Bool[${Alias[/rezcombat]}]}) 			/noparse /squelch /alias /rezcombat   		 	NOUT Adjusting Resurection in Combat!
-	/if (!${Bool[${Alias[/rezeveryone]}]}) 		/noparse /squelch /alias /rezeveryone 		  NOUT Adjusting Resurection for Everyone!
-	/if (!${Bool[${Alias[/rezauto]}]}) 				/noparse /squelch /alias /rezauto						NOUT Adjusting auto Rez/Calling!
-	/if (!${Bool[${Alias[/rezemergency]}]}) 	/noparse /squelch /alias /rezemergency			NOUT Adjusting Emergency Rez!
-	/if (!${Bool[${Alias[/rezenable]}]}) 			/noparse /squelch /alias /rezenable					NOUT Adjusting Resurrection/Call Casting!
 
 	/if (!${Bool[${Alias[/rc]}]}) 						/squelch /alias /rc 												/bc rc
 	/if (!${Bool[${Alias[/purify]}]}) 				/squelch /alias /purify 										/bc purify
-	
-	| debuff
-	/if (!${Bool[${Alias[/debuffmezz]}]}) 			/squelch /alias /debuffmezz								NOUT Set deBuff Mezzing!
-	/if (!${Bool[${Alias[/debuffmalo]}]}) 			/squelch /alias /debuffmalo								NOUT Set deBuff Malo!
-	/if (!${Bool[${Alias[/debufftash]}]}) 			/squelch /alias /debufftash								NOUT Set deBuff Tash!
-	/if (!${Bool[${Alias[/debuffcripple]}]}) 		/squelch /alias /debuffcripple						NOUT Set deBuff Cripple!
-	/if (!${Bool[${Alias[/debuffslow]}]}) 			/squelch /alias /debuffslow								NOUT Set deBuff Slow!
-	/if (!${Bool[${Alias[/debufferadicate]}]}) 	/squelch /alias /debufferadicate					NOUT Set deBuff Eradicate!
-	/if (!${Bool[${Alias[/debuffsnare]}]}) 			/squelch /alias /debuffsnare							NOUT Set Snare!
-
 		
-	/if (!${Bool[${Alias[/resetcore]}]}) 			/squelch /alias /resetcore 									NOUT Setting Core to Defaults!
-	/if (!${Bool[${Alias[/hudupdate]}]}) 			/squelch /alias /hudupdate 									NOUT Update the HUD!
-	/if (!${Bool[${Alias[/home]}]}) 					/squelch /alias /home			 									NOUT Update Home Camp!
-
-	/if (!${Bool[${Alias[/tie]}]}) 						/squelch /alias /tie			 									NOUT Set Tie!
-	/if (!${Bool[${Alias[/stickbehind]}]}) 		/squelch /alias /stickbehind								NOUT Set Stick Behind!
-	/if (!${Bool[${Alias[/facefast]}]}) 			/squelch /alias /facefast										NOUT Set Face Fast!
-
-	/if (!${Bool[${Alias[/drag]}]}) 					/noparse /squelch /alias /drag							NOUT Setting Drag Mode!
-	/if (!${Bool[${Alias[/forage]}]}) 				/noparse /squelch /alias /forage						NOUT Setting Forage Mode!
-	/if (!${Bool[${Alias[/fish]}]}) 					/noparse /squelch /alias /fish							NOUT Setting Fish Mode!
-	/if (!${Bool[${Alias[/train]}]}) 					/noparse /squelch /alias /train							NOUT Setting Train Skills Mode!
-	/if (!${Bool[${Alias[/petfarm]}]}) 				/noparse /squelch /alias /petfarm						NOUT Setting Pet Farm Mode!
-	/if (!${Bool[${Alias[/hunt]}]}) 					/noparse /squelch /alias /hunt							NOUT Setting Hunter Mode!
-
-	/if (!${Bool[${Alias[/invites]}]}) 				/noparse /squelch /alias /invites						NOUT Setting Group / Raid Invite acceptance!
-
-	/if (!${Bool[${Alias[/banestrike]}]}) 		/noparse /squelch /alias /banestrike				NOUT Setting Banestrike!
-
-
-	/if (!${Bool[${Alias[/ri]}]}) 						/noparse /squelch /alias /ri								NOUT Adjusting Raid Invites!
-	
-	/if (!${Bool[${Alias[/setpuller]}]}) 			/noparse /squelch /alias /setpuller					NOUT Adjusting Puller!
-	/if (!${Bool[${Alias[/setagro]}]}) 				/noparse /squelch /alias /setagro						NOUT Adjusting Agro!
-	/if (!${Bool[${Alias[/core]}]}) 					/noparse /squelch /alias /core							NOUT Adjusting Core!
-	
 	| loot stuff
 	/if (!${Bool[${Alias[/lootleave]}]}) 			/noparse /squelch /alias /lootleave					NOUT Set Loot Item Leave 
 	/if (!${Bool[${Alias[/lootkeep]}]}) 			/noparse /squelch /alias /lootkeep					NOUT Set Loot Item Keep 
@@ -2012,41 +1975,19 @@ sub set_alias()
 
 	/if (!${Bool[${Alias[/givecoin]}]}) 			/noparse /squelch /alias /givecoin			    NOUT Bribe Time:
 
-	
-	
-	| force oneoff bad buff check
 	/if (!${Bool[${Alias[/oneoff]}]}) 				/noparse /squelch /alias /oneoff   					/bc oneoff
 
-	/if (!${Bool[${Alias[/checkcash]}]}) 			/noparse /squelch /alias /checkcash  			 	NOUT Check in game cash!
-
-	/if (!${Bool[${Alias[/primary]}]}) 				/noparse /squelch /alias /primary						/bcaa //useitem Primary
-	/if (!${Bool[${Alias[/secondary]}]}) 			/noparse /squelch /alias /secondary   		  /bcaa //useitem Secondary
-
-	/if (!${Bool[${Alias[/hudtime]}]}) 				/noparse /squelch /alias /hudtime   		 	 	NOUT Adjusting HUD Time!
 	/if (!${Bool[${Alias[/gtfo]}]}) 					/noparse /squelch /alias /gtfo    			 		/bc gtfo
 	/if (!${Bool[${Alias[/lesson]}]}) 				/noparse /squelch /alias /lesson   			 		/bc lesson
 
-	/if (!${Bool[${Alias[/autoshrink]}]})			/noparse /squelch /alias /autoshrink				NOUT Adjusting Automatic Shrink!
- 	
-	/if (!${Bool[${Alias[/ignorelos]}]})			/noparse /squelch /alias /ignorelos					NOUT Adjusting LoS Requirements!
-	
- 	
-	/if (!${Bool[${Alias[/companion]}]})			/noparse /squelch /alias /companion					NOUT Adjusting Pet Usage!
-	/if (!${Bool[${Alias[/companionswarm]}]})	/noparse /squelch /alias /companionswarm		NOUT Adjusting Pet Swarm Usage!
-	/if (!${Bool[${Alias[/verbose]}]})				/noparse /squelch /alias /verbose						NOUT Setting VERBOSE Mode!
- 	
 	/if (!${Bool[${Alias[/autocontrol]}]})		/noparse /squelch /alias /autocontrol				NOUT Setting Automatic Control Toon swapping!
-	
-	/if (!${Bool[${Alias[/toastauto]}]})			/noparse /squelch /alias /toastauto					NOUT Adjusting Auto Toast on Named!
 
-	/if (${Select[${Me.Class.ShortName},WAR]}) {
-	} 
+
+
+	
 	/if (${Select[${Me.Class.ShortName},CLR]}) {
 		/if (!${Bool[${Alias[/cr]}]}) 				/squelch /alias /cr 											/bc cr
-		/if (!${Bool[${Alias[/issuance]}]}) 	/squelch /alias /issuance 								/bc issuance
-	}
-	/if (${Select[${Me.Class.ShortName},RNG]}) {
-		/if (!${Bool[${Alias[/spice]}]}) 				/squelch /alias /spice 									/bc spice
+		| /if (!${Bool[${Alias[/issuance]}]}) 	/squelch /alias /issuance 								/bc issuance
 	}
 	/if (${Select[${Me.Class.ShortName},DRU]}) {
 		/if (!${Bool[${Alias[/wood]}]}) 				/squelch /alias /wood 									/bc wood
@@ -2054,30 +1995,11 @@ sub set_alias()
 	/if (${Select[${Me.Class.ShortName},MAG]}) {
 		/if (!${Bool[${Alias[/rods]}]}) 				/squelch /alias /rods 									/bc rods
 	}
-	/if (${Select[${Me.Class.ShortName},SHD]}) {
-	}
-	/if (${Select[${Me.Class.ShortName},ENC]}) {
-	}
-	/if (${Select[${Me.Class.ShortName},PAL]}) {
-	}
-	/if (${Select[${Me.Class.ShortName},BER]}) {
-	}
 	/if (${Select[${Me.Class.ShortName},SHM]}) {
 		/if (!${Bool[${Alias[/aid]}]}) 					/squelch /alias /aid 										/bc aid
 	}
-	/if (${Select[${Me.Class.ShortName},NEC]}) {
-	}
-	/if (${Select[${Me.Class.ShortName},WIZ]}) {
-	}
-	/if (${Select[${Me.Class.ShortName},BRD]}) {
-	}
-	/if (${Select[${Me.Class.ShortName},BST]}) {
-		/if (!${Bool[${Alias[/paragon]}]}) 			/squelch /alias /paragon 								/bc paragon
-	}
-	/if (${Select[${Me.Class.ShortName},ROG]}) {
-	}
-/return
 
+/return
 
 
 #event Join "#1# invites you to join a #2#.#*#"
@@ -2116,9 +2038,8 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 
 	/if (${_cmd.Equal[horn]}) /call click_horn_of_unity 
 	/if (${_cmd.Equal[whitewash]}) /call whitewash
-	/if (${_cmd.Equal[stop]}) /call set_stop ${_sender}
+	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
   /if (${_cmd.Equal[setRaidInviteMode]}) /call setRaidInviteMode
-  /if (${_cmd.Equal[smartma]}) /call Event_smartma
   /if (${_cmd.Equal[killmob]}) {
   	/varset ignoreEngageAt ${If[${ignoreEngageAt},FALSE,TRUE]}
 		/call echos switch "Ignoring Engage at %" ignoreEngageAt
@@ -2126,29 +2047,26 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
   /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /useitem "Mirror Fragment of Anashti Sul"
   /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /useitem "Drunkard's Stein"
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
-  /if (${_cmd.Equal[spice]} && ${Select[${Me.Class.ShortName},RNG]}) /call cast_auspice
-  /if (${_cmd.Equal[paragon]} && ${Select[${Me.Class.ShortName},BST]}) /call cast_paragon
+  | MGB Class AA casts
+  /if (${_cmd.Equal[paragon]} && ${Select[${Me.Class.ShortName},BST]}) /call cast_AA_paragon
   /if (${_cmd.Equal[rods]} && ${Select[${Me.Class.ShortName},MAG]}) /call cast_rods
   /if (${_cmd.Equal[aid]} && ${Select[${Me.Class.ShortName},SHM]}) /call doAid
-  /if (${_cmd.Equal[cr]} && ${Select[${Me.Class.ShortName},CLR,DRU,PAL]}) /call cast_celest_regen
-  /if (${_cmd.Equal[issuance]} && ${Select[${Me.Class.ShortName},CLR]}) /call cast_issuance_heal
+  /if (${_cmd.Equal[cr]} && ${Select[${Me.Class.ShortName},CLR]}) /call cast_celest_regen
+  /if (${_cmd.Equal[wood]} && ${Select[${Me.Class.ShortName},DRU]}) /call cast_AA_spirit_wood
+  | /if (${_cmd.Equal[issuance]} && ${Select[${Me.Class.ShortName},CLR]}) /call cast_issuance_heal
+  /if (${_cmd.Equal[spice]} && ${Select[${Me.Class.ShortName},RNG]}) /call cast_AA_auspice
   
   /if (${_cmd.Equal[lesson]}) {
   	/if (${Me.AltAbilityReady[Lesson of the Devoted]}) /call core_cast "Lesson of the Devoted" alt 0
   	/goto :exit
   }
   
-
 	/if (${_cmd.Equal[handin]}) /call hand_in "${_sender}" "${_verbage}"
   
   | see who has the item and report back
 	/if (${_cmd.Equal[whohas]}) /call check_who_has "${_sender}" "${_verbage}"
  
- 	| buy things from a normal vendor
-	| /if (${_cmd.Equal[buyitem]} && ${Spawn[pc ${_sender}].ID} == ${Me.ID}) /call buy_item ${_verbage} ${_other}
- 
-
-	| have everyone say the same thing to the same target with a touch of random delay
+ 	| have everyone say the same thing to the same target with a touch of random delay
   /if (${_cmd.Equal[bcsay]}) {
  		/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Spawn[pc ${_sender} radius 80].ID}) {
 			/assist ${_sender}
@@ -2161,54 +2079,22 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 		}
 		/say ${_verbage}
 	}
-  
-  | Halts physical movement routines. Nothing else.
-  /if (${_cmd.Equal[halt]}) {
- 		VOUT ${onotice} ${sep} HALTING ALL Movement!\ax
-	 	/if (${Bool[${MakeCamp.Status}]}) {
-			/makecamp off
-			/call Event_SetVar NA HomeSet Movement FALSE 
-		} 	
-		/call Event_SetVar NA SetTie Movement FALSE
-		:loopkillstick
-			/stick off
-			/squelch /afollow off
-			/keypress forward
-			/keypress back
-			/delay 1
-			/varset tempsnapstuck FALSE
-		 	/if (${Stick.Active} || ${Me.Moving} || ${AdvPath.Following}) /goto :loopkillstick
-	 	/goto :exit
-  }
-  
+   
     
 	| commands to control all assist targets.  
-  /if (${_cmd.Equal[sma1]}) {
-		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
- 		/call Event_SetVar NA useSmartAssist1 Common TRUE
-		/goto :exit
+  /if (${_cmd.Equal[sma1]} && !${setPullMode} && !${Select[${Me.Class.ShortName},CLR]}) {
+		/smartma 1
   }
-  /if (${_cmd.Equal[sma2]}) {
- 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-		/call Event_SetVar NA useSmartAssist2 Common TRUE
-		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
-		/goto :exit
+  /if (${_cmd.Equal[sma2]} && !${setPullMode} && !${Select[${Me.Class.ShortName},CLR]}) {
+
+		/smartma 2
   }
-  /if (${_cmd.Equal[smag]}) {
- 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-		/call Event_SetVar NA useSmartAssistG Common TRUE
- 		/goto :exit
+  /if (${_cmd.Equal[smag]} && !${setPullMode} && !${Select[${Me.Class.ShortName},CLR]}) {
+		/smartma G
 	}
 	/if (${_cmd.Equal[smax]}) {
- 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
- 		/goto :exit
+		/smartma X
 	}
-	
-  
  
 	/if (${_cmd.Equal[MELEE]}) {
 		/if (!${Target.ID} || ${Target.ID}==${Me.ID}) {
@@ -2256,12 +2142,12 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 		/varset Target2Kill ${Target.ID}	
 	}
 
-
 	| group bail stuff
   /if (${_cmd.Equal[gtfo]}) {
   	/if (${Bool[${GTFO}]}) {
   		/call sort_cursor TRUE
-  		/call set_stop
+  		/call set_stop TRUE
+  		/call clear_combat
   		/docommand /makemevisible
   		/if (${Me.ItemReady[${GTFO}]}) /call MQ2Cast "${GTFO}" item
    		/if (${Me.SpellReady[${GTFO}]}) /call MQ2Cast "${GTFO}"
@@ -2269,10 +2155,8 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
   	}
   }
 
-
 	| if you would be so kind as to stop running around like asses and kill the shit attackign us, that would be great.
   /if (${_cmd.Equal[here]} && !${Me.DisplayName.Equal[${_sender}]}) NOUT Set Combat Here!
-
 
 	|***
 	 *	DES: Tell toon to take ports: translocate, banner, Guild Hall TL, Task Acceptance
@@ -2320,8 +2204,6 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 		:exitdoor
 	}
 
-
-
 	|***
 	* DES: Tell toon to campfire clickie
 	* USE: /bc campfire
@@ -2331,8 +2213,6 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 		/delay 1s !${Me.Invis}
 		/call core_cast  "Fellowship Registration Insignia" item
 	}
-
-
 
 	|***
 	* DES: reset the core.zone.ini for all toons in BC if you make a change to the file.
@@ -2347,8 +2227,6 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 		/goto :exit
 	}
 
-
-
 	| wis healers only
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
 		| radient Cure
@@ -2356,7 +2234,6 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 			/call core_cast "Radiant Cure" alt ${Me.ID}
 			ECHOCHANNEL Radient Cure
 		}
-		
 		
 		| Purify Spirits
 		/if (${_cmd.Equal[purify]} &&  && ${Me.AltAbilityReady[Purified Spirits]}) {
@@ -2366,47 +2243,10 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 		/goto :exit
 	}
 
-
-	|***
-	 *	DES: Cast group invis. Stacks invis if right classes are in group
-	 *	USE: /bc invis, /invis 
-	 ***|
-	/if (${_cmd.Equal[invis]} && (${Me.AltAbilityReady[Group Perfected Invisibility]} || ${Me.AltAbilityReady[Group Perfected Invisibility to Undead]})) {
-
-		
-		| /delay ${Math.Rand[5]}
-		
-		/if (${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
-			/call core_cast "Group Perfected Invisibility" alt 0
-		} else /if (${Select[${Me.Class.ShortName},PAL,CLR,SHD,NEC]}) {
-			/delay 3
-			/call core_cast "Group Perfected Invisibility to Undead" alt 0
-		}
-   	/delay 1s
-
-
-
-|**
-		/call MQ2Cast "Group Perfected Invisibility To Undead" alt
-		/if (${Select[${Me.Class.ShortName},WIZ,MAG]}) {
-			/echo invis
-			| /delay 2
-			/call MQ2Cast "Group Perfected Invisibility" alt
-		}
-		/delay 1s
-
-	**|
-
-
-   	/goto :exit
-  }
-	
 	:exit
 /return
 
-
-
-
+	
 #event camping "It will take you about 30 seconds to prepare your camp."
 sub Event_camping(string line)
 	DEBUG ${cbug}Event_camping()\ax
@@ -2426,7 +2266,6 @@ sub Event_skillup(string line, string skillname, int skillup)
 #event task_update "Your task '#1#' has been updated."
 sub Event_task_update(string line, string skillname)
    /bc [+g+]'[+x+][+y+]${skillname}[+x+][+g+]'[+x+] updated!
-|   /if (${verbose}) /popup ${skillname} updated!
 /return
 
 #event noRaid "Your raid was disbanded."
@@ -2434,14 +2273,13 @@ sub Event_noRaid()
  		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
 		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
 		/if (${setRaidInvite}) /call Event_SetVar NA setRaidInvite Common FALSE
-|		/call Event_SetVar NA useSmartAssistG Common TRUE
 /return
 
 
 
 |***
 	DES: This is for lazy people like me that have to invite people to raids and dont wanna do the work.
-	USE: /ri
+	USE:
 ***|
 #event raidinvite             "#1# tells you#*#'#*#RI#*#'"
 #event raidinvite             "#1# tells you#*#'#*#R I#*#'"
@@ -2456,7 +2294,7 @@ sub Event_raidinvite(string line, string _sender)
 			/goto :exit
 		}
 		/if (${invitelist.Find[${_sender}]}) {
-			VOUT \arNO\ax invites for ${cpc}${_sender}\ax.
+			VOUT ${cbad}NO\ax invites for ${cpc}${_sender}\ax.
 			/goto :exit
 		}
 		/declare _timeDelay ${Math.Calc[${Math.Rand[40]}+20]}
@@ -2473,15 +2311,13 @@ sub Event_raidinvite(string line, string _sender)
 
 
 
-|**************************************************
- * Forced Events 
- **************************************************|
+|* Forced Events ******************************************************************************************************* 
  
  
- |***
- *	DES: blurb events for raids. 
- *	USE: /blurb EXPANSION EVENT
- ***|
+|***
+*	DES: blurb events for raids. 
+*	USE: /blurb EXPANSION EVENT
+***|
 #event Blurb "[MQ2] - Blurb: #1# #2#"
 #event Blurb "[MQ2] - Blurb: #1#"
 
@@ -2510,10 +2346,10 @@ sub Event_Blurb(string line, string exp, string event)
 /return
 
 
- |***
- *	DES: Song Sets for Bards. 
- *	USE: /song [melee|caster|tank|mix]
- ***|
+|***
+*	DES: Song Sets for Bards. 
+*	USE: /song [melee|caster|tank|mix]
+***|
 #event Song "[MQ2] - Song: #1#"
 sub Event_Song(string line, string _group)
 	DEBUG ${cbug}Event_Song(\ax${exp.Upper}${cbug})\ax
@@ -2525,10 +2361,10 @@ sub Event_Song(string line, string _group)
 	:exit
 /return 
 
- |***
- *	DES: Invites Crew 
- *	USE: /crew [name1|name2|so on]
- ***|
+|***
+*	DES: Invites Crew 
+*	USE: /crew [name1|name2|so on]
+***|
 #event Crew "[MQ2] - Crew: #1#"
 sub Event_Crew(string line, string _clist)
 	DEBUG ${cbug}Event_Crew(\ax${exp.Upper}${cbug})\ax
@@ -2536,354 +2372,53 @@ sub Event_Crew(string line, string _clist)
 	:exit
 /return 
 
-#event HUDTime "[MQ2] - Adjusting HUD Time!"
-sub Event_HUDTime(string line)
-	/varset HUDTime ${If[${HUDTime},FALSE,TRUE]}
-	/if (${HUDTime}) VOUT Showing ${cinfo}Real Life\ax time.
-	/if (!${HUDTime}) VOUT Showing ${cinfo}In Game\ax time.
-/return
 
-#event boradcaststatus "[MQ2] - Set Broadcast Status!"
-sub Event_boradcaststatus(string line)
-	/call Event_SetVar NA setBroadcast Common ${If[${Bool[${setBroadcast}]},FALSE,TRUE]}
-	/if (${setBroadcast.Equal[FALSE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "DISABLED"
-	/if (${setBroadcast.Equal[TRUE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "${AutoBot}"
-	/call echos switch "Adjusting Broadcast Status" setBroadcast
-/return
-
-
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
 #event autocontrol "[MQ2] - Setting Automatic Control Toon swapping!"
-sub Event_autocontrol(string line)
+sub Event_autocontrol()
 	/call Event_SetVar NA autoControl Common ${If[${autoControl},FALSE,TRUE]}
 	/call echos switch "Auto Adjusting Control Toon" autoControl
 /return
 
+
+
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
 #event echoaugment "[MQ2] - Echo Augment file!"
-sub Event_echoaugment(string line)
+sub Event_echoaugment()
 	/call echo_augments
 /return
 
-#event companion "[MQ2] - Adjusting Pet Usage!"
-sub Event_companion(string line)
-	/call Event_SetVar NA usePet Pet ${If[${usePet},FALSE,TRUE]}
-	/call echos switch "Using Pets" usePet
-	/if (!${usePet} && ${Pet.ID}) {
-		/if (${Me.AltAbilityReady[Suspended Minion]}) {
-			/call core_cast "Suspended Minion" alt 0
-		} else {
-			/pet leave
-		}
-	}
-/return
 
-#event companionswarm "[MQ2] - Adjusting Pet Swarm Usage!"
-sub Event_companionswarm(string line)
-	/call Event_SetVar NA usePetSwarm Pet ${If[${usePetSwarm},FALSE,TRUE]}
-	/call echos switch "Using Pet Swarms" usePetSwarm
-/return
 
-#event verbose "[MQ2] - Setting VERBOSE Mode!"
-sub Event_verbose(string line)
-	/call Event_SetVar NA verbose Common ${If[${verbose},FALSE,TRUE]}
-	/call echos switch "VERBOSE MODE" verbose TRUE
-/return
-   
-#event gamecash "[MQ2] - Check in game cash!"
-sub Event_gamecash(string line)
-	/call check_free_ingame_cash
-/return
- 
-#event toast "[MQ2] - Adjusting the toast dial !!"
-sub Event_toast(string line)
-	/varset setToastMode ${If[${setToastMode},FALSE,TRUE]}
-	/call echos switch "Constant Toasting" setToastMode
-/return
- 
-#event rezCombat "[MQ2] - Adjusting Resurection in Combat!"
-sub Event_rezCombat()
-	/call Event_SetVar NA rezCombat Heal ${If[${rezCombat},FALSE,TRUE]} 
-	/call echos switch "Rez During Combat" rezCombat
-/return
-
-#event rezEveryone "[MQ2] - Adjusting Resurection for Everyone!"
-sub Event_rezEveryone()
-	/call Event_SetVar NA rezEveryone Heal ${If[${rezEveryone},FALSE,TRUE]} 
-	/call echos switch "Rez Everyone" rezEveryone
-/return
-
-#event rezEnable "[MQ2] - Adjusting Resurrection/Call Casting!"
-sub Event_rezEnable()
-	/if (${Select[${Me.Class.ShortName},WAR,MNK,BST,ROG,ENC,WIZ,MAG,NEC,SHD,RNG,BRD]}) {
-		/call Event_SetVar NA rezEnable Heal FALSE
-		VOUT No rez for joo!
-		/goto :exit
-	}
-	/call Event_SetVar NA rezEnable Heal ${If[${rezEnable},FALSE,TRUE]} 
-	:exit
-	/call echos switch "Automatic Casting if Resurrection/Call" rezEnable
-/return
-
-#event rezAuto "[MQ2] - Adjusting auto Rez/Calling!"
-sub Event_rezAuto()
-	/call Event_SetVar NA rezAuto Heal ${If[${rezAuto},FALSE,TRUE]} 
-	/call echos switch "Automatic Rez" rezAuto
-/return
-
-#event setRIMode "[MQ2] - Adjusting Raid Invites!"
-sub Event_setRIMode()
-	/call Event_SetVar NA setRaidInvite Common ${If[${setRaidInvite},FALSE,TRUE]} 
-	/call echos switch "Invites for Raids" setRaidInvite
-/return
-
-#event rezEmergency "[MQ2] - Adjusting Emergency Rez!"
-sub Event_rezEmergency()
-	/call Event_SetVar NA rezEmergency Heal ${If[${rezEmergency},FALSE,TRUE]} 
-	/call echos switch "Emergency Rez Mode" rezEmergency
-/return
-
-#event setDragMode "[MQ2] - Setting Drag Mode!"
-sub Event_setDragMode()
-	/call Event_SetVar NA setDragMode Common ${If[${setDragMode},FALSE,TRUE]} 
-	/call echos switch "Drag Mode" setDragMode
-/return
-
-#event setForageMode "[MQ2] - Setting Forage Mode!"
-sub Event_setForageMode()
-	/call Event_SetVar NA setForageMode Common ${If[${setForageMode},FALSE,TRUE]} 
-	/call echos switch "Forage Mode" setForageMode
-/return
-
-#event setFishMode "[MQ2] - Setting Fish Mode!"
-sub Event_setFishMode()
-	/call Event_SetVar NA setFishMode Common ${If[${setFishMode},FALSE,TRUE]} 
-	/call echos switch "Fish Mode" setFishMode
-/return
-
-#event setHuntMode "[MQ2] - Setting Hunter Mode!"
-sub Event_setHuntMode()
-	/call Event_SetVar NA setHunterMode Common ${If[${setHunterMode},FALSE,TRUE]} 
-	/call echos hunter
-/return
-
-#event setPetFarmMode "[MQ2] - Setting Pet Farm Mode!"
-sub Event_setPetFarmMode()
-	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST]}) {
-		VOUT My daughter says you're a nooblet.
-		/goto :exit
-	}
-	/call Event_SetVar NA setPetFarmMode Common ${If[${setPetFarmMode},FALSE,TRUE]} 
-	:exit
-	/call echos switch "Pet Farm Mode" setPetFarmMode
-/return
-
-#event setSkillsMode "[MQ2] - Setting Train Skills Mode!"
-sub Event_setSkillsMode()
-	/call Event_SetVar NA setSkillsMode Common ${If[${setSkillsMode},FALSE,TRUE]} 
-/return
-
-#event HomeCamp "[MQ2] - Update Home Camp!"
-sub Event_HomeCamp()
-	/call Event_SetVar NA HomeSet Movement ${If[${HomeSet},FALSE,TRUE]}  
-	/call set_home
-	| /call echos switch "Home" HomeSet
-/return
-
-#event setPuller "[MQ2] - Adjusting Puller!"
-sub Event_setPuller()
-	/call Event_SetVar NA setPullMode Common ${If[${setPullMode},FALSE,TRUE]} 
-	/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-	/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-	/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE 
-	/call echos switch "Pull Mode" setPullMode
-/return
-
-#event setAgro "[MQ2] - Adjusting Agro!"
-sub Event_setAgro()
-	/call Event_SetVar NA setAgroMode Common ${If[${setAgroMode},FALSE,TRUE]}  
-	/call echos switch "Agro Mode" setAgroMode
-/return
-
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
 #event checkOneOff "[MQ2] - Force OneOff Check!"
 sub Event_checkOneOff()
 	/call check1offBuffs
 /return
 
-|**
-#event SetCuring "[MQ2] - Adjusting Curing!"
-sub Event_SetCuring()
-	/if (!${Bool[${Plugin[MQ2netbots]}]} || !${Bool[${Plugin[MQ2debuffs]}]}) {
-		/if (!${Bool[${Plugin[MQ2netbots]}]}) VOUT you need the plugn ${cinfo}MQ2netbots\ax for curing
-		/if (!${Bool[${Plugin[MQ2debuffs]}]}) VOUT you need the plugn ${cinfo}MQ2debuffs\ax for curing
-		/call Event_SetVar NA useCure Cure FALSE  
-		/call echos switch "Curing" useCure
-	} else {
-		/call Event_SetVar NA useCure Cure ${If[${useCure},FALSE,TRUE]}  
-		/call echos switch "Curing" useCure
-	}
-/return
-**|
 
-#event takeInvites "[MQ2] - Setting Group / Raid Invite acceptance!"
-sub Event_takeInvites()
-	/call Event_SetVar NA switchInvites Common ${If[${switchInvites},FALSE,TRUE]}  
-	/call echos switch "Auto Accept Invites" switchInvites
-/return
 
-#event banestrike "[MQ2] - Setting Banestrike!"
-sub Event_banestrike()
-	/call Event_SetVar NA switchBanestrike Common ${If[${switchBanestrike},FALSE,TRUE]}  
-	/call echos switch "Use AA Banestrike" switchBanestrike
-/return
-
-#event buffself "[MQ2] - Set Self Buffing!"
-sub Event_buffself()
-	/call Event_SetVar NA BuffSelf Buffs ${If[${BuffSelf},FALSE,TRUE]}
-	/call echos switch "Buff Self" BuffSelf
-/return
-
-#event buffitem "[MQ2] - Set Item Buffing!"
-sub Event_buffitem()
-	/call Event_SetVar NA BuffItem Common ${If[${BuffItem},FALSE,TRUE]}
-	/call echos switch "Buff Item" BuffItem
-/return
-
-#event buffbc "[MQ2] - Set BC Buffing!"
-sub Event_buffbc()
-	/if (!${Bool[${Plugin[MQ2netbots]}]}) {
-		VOUT you need the plugn ${cinfo}MQ2netbots\ax for curing
-		/call Event_SetVar NA BuffBC Buffs FALSE
-		/call echos switch "Buff BC" BuffBC
-	} else {
-		/call Event_SetVar NA BuffBC Buffs ${If[${BuffBC},FALSE,TRUE]}
-		/call echos switch "Buff BC" BuffBC
-	}
-/return
-
-#event buffcombat "[MQ2] - Set Combat Buffing!"
-sub Event_buffcombat()
-	/call Event_SetVar NA BuffCombat Buffs ${If[${BuffCombat},FALSE,TRUE]}
-	/call echos switch "Buff Combat [range ${combatRadius}]" BuffCombat
-/return
-
-#event buffraid "[MQ2] - Set Raid Buffing!"
-sub Event_buffraid()
-	/call Event_SetVar NA BuffRaid Buffs ${If[${BuffRaid},FALSE,TRUE]}
-	/call echos switch "Buff Raid" BuffRaid
-/return
-
-#event bufftell "[MQ2] - Set /tell for Buffing!"
-sub Event_bufftell()
-	/call Event_SetVar NA BuffTell Buffs ${If[${BuffTell},FALSE,TRUE]}
-	/call echos switch "Buff Tell" BuffTell
-/return
-
-#event buffpet "[MQ2] - Set Pet Buffing!"
-sub Event_buffpet()
-	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) /call Event_SetVar NA BuffPet Pet ${If[${BuffPet},FALSE,TRUE]}  
-	/call echos switch "Buff Pet" BuffPet
-/return
-
-#event healself "[MQ2] - Set Self Healing!"
-sub Event_healself()
-	/if (${Select[${Me.Class.ShortName},DRU,CLR,SHM,PAL]}) {
-		VOUT Heal Classes [CLR,DRU,SHM,PAL] use /healgroup. Not /healself.
-		/call Event_SetVar NA switchHealSelf Heal FALSE 
-		/call echos switch "Heal Self" switchHealSelf
-	} else {
-		/call Event_SetVar NA switchHealSelf Heal ${If[${switchHealSelf},FALSE,TRUE]}  
-		/call echos switch "Heal Self" switchHealSelf
-	}
-/return
-
-#event healgroup "[MQ2] - Set Group Healing!"
-sub Event_healgroup()
-	/call Event_SetVar NA switchHealGroup Heal ${If[${switchHealGroup},FALSE,TRUE]}  
-	/call echos switch "Heal Group" switchHealGroup
-/return
-
-#event healxtarget "[MQ2] - Set XTarget Healing!"
-sub Event_healxtarget()
-	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) /call Event_SetVar NA switchHealXTarget Heal ${If[${switchHealXTarget},FALSE,TRUE]}
-	/call echos switch "Heal XTarget" switchHealXTarget
-/return
-
-#event healPet "[MQ2] - Set Pet Healing!"
-sub Event_healpet()
-	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,MAG]}) /call Event_SetVar NA switchHealPet Pet ${If[${switchHealPet},FALSE,TRUE]}  
-	/call echos switch "Heal Pet" switchHealPet
-/return
-
-#event healCure "[MQ2] - Set Curing!"
-sub Event_healCure()
-	/call Event_SetVar NA switchHealCure Heal ${If[${switchHealCure},FALSE,TRUE]}  
-	/call echos switch "Curing" switchHealCure
-/return
-
-#event healAggressive "[MQ2] - Set Aggressive Healing!"
-sub Event_healAggressive()
-	/call Event_SetVar NA switchHealAggressive Heal ${If[${switchHealAggressive},FALSE,TRUE]}  
-	/call echos switch "Aggressive Healing" switchHealAggressive
-/return
-
-#event itembuffs "[MQ2] - Check Item Buffs."
-sub Event_itembuffs()
-	/call check_buffs_item
-/return
-
-#event selfbuffs "[MQ2] - Check Self Buffs."
-sub Event_selfbuffs()
-	DEBUG ${cbug}Event_selfbuffs()\ax
-	/call check_buffs_self
-/return
-
-#event petbuffs "[MQ2] - Check Pet Buffs."
-sub Event_petbuffs()
-	DEBUG ${cbug}Event_petbuffs()\ax
-	/call check_pet_buffs
-/return
-
-#event buildpet "[MQ2] - Time for a new pet."
-sub Event_buildpet()
-	DEBUG ${cbug}Event_buildpet()\ax
-	/call check_pet
-/return
-
-#event clean "[MQ2] - Clean this mess up."
-sub Event_clean()
-	DEBUG ${cbug}Event_clean()\ax
-	/call sort_cursor TRUE
-	| none is kind of counterproductive..
-	| /if (${hideNone}) /hidecorpse none
-	
-	/if (${hideAll}) /hidecorpse all
-	/if (${hideAlways}) /hidecorpse always
-	/if (${hideLooted}) /hidecorpse looted
-	/if (${hideAllButGroup}) /hidecorpse allbutgroup
-	/if (${hideNPC}) /hidecorpse npc
-	/if (${hideListed}) /hidecorpse listed
-	/if (${hideListedUnlocked}) /hidecorpse listedunlocked  
-/return
-
-#event setCore "[MQ2] - Adjusting Core!"
-sub Event_setCore()
-	/call Event_SetVar NA AutoBot Common ${If[${AutoBot},FALSE,TRUE]}  
-	/call set_stop TRUE
-	/call echos switch "Automatic Mode" AutoBot
-/return
-
-#event setAutoShrink "[MQ2] - Adjusting Automatic Shrink!"
-sub Event_setAutoShrink()
-	/call Event_SetVar NA setAutoShrink Common ${If[${setAutoShrink},FALSE,TRUE]}  
-	/call echos switch "Automatic Shrink" setAutoShrink
-/return
-
-#event setIgnoreLOS "[MQ2] - Adjusting LoS Requirements!"
-sub Event_setIgnoreLOS()
-	/call Event_SetVar NA setIgnoreLOS Movement ${If[${setIgnoreLOS},FALSE,TRUE]}  
-	/call echos switch "Ignoring Line of Sight" setIgnoreLOS
-	/if (${setIgnoreLOS}) NOUT ${owarning} ${sep} THIS IS ${cbad}NOT\ax ADVISED. You will have pathing issues.
-/return	
- _amount 
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
 #event bribetime "[MQ2] - Bribe Time: #1# #2# #3#"
 sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 	DEBUG ${cbug}Event_bribetime(${_amount}, ${_stacks}, ${_coin})\ax
@@ -2936,7 +2471,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
  
   
 |***
- *	DES: Tell buffing
+ *	DES: Tells for specific things.. i guess?
  *	USE: /t uselesstoon IwantThisBuff
  *	INI: 
  *  NOTE:
@@ -2977,7 +2512,8 @@ sub Event_Talk(string line, string _sender, string _chatText)
   
 	| Remote kill execution. CHANGE THE CORE.INI
   /if (${Bool[${remoteKillKey}]} && ${_chatText.Equal[${remoteKillKey}]}) {
-  	/call set_stop
+  	/call set_stop FALSE
+  	/call clear_combat
   	NOUT ${owarning} ${sep} Recieved tell from ${cpc}${_sender}\ax to end current macro.
   	/endm
   }
@@ -2985,6 +2521,14 @@ sub Event_Talk(string line, string _sender, string _chatText)
   | take a tell to reform your group.
   /if (${_chatText.Equal[formgroup]}) /call set_crew main
   /if (${_chatText.Equal[disbandgroup]}) /bcaa //disband
+  /if (${_chatText.Equal[makemeleader]}) /makeleader ${_sender}
+  /if (${_chatText.Equal[makememasterlooter]}) /delegategmasterlooter ${_sender}
+  
+  | raid chat
+  /if (${_chatText.Equal[raidinviteme]} && ${Me.DisplayName.Equal[${Raid.Leader}]} && !${Raid.Locked}) /raidinvite ${_sender}
+  /if (${_chatText.Equal[makemeraidleader]} && ${Me.DisplayName.Equal[${Raid.Leader}]} && !${Raid.Locked}) /makeraidleader ${_sender}
+  /if (${_chatText.Equal[makemedzleader]}) /dzmakeleader ${_sender}
+  /if (${_chatText.Equal[makemetaskleader]}) /taskmakeleader ${_sender}
   
   :exit
 /return
@@ -2992,193 +2536,24 @@ sub Event_Talk(string line, string _sender, string _chatText)
 
 
 |***
- *	DES: will reset the majority of core to its defaults.
- *	USE: 
+ *	DES: 
+ *	USE: /here or /bc here
  *	INI: 
- *  NOTE: this needs updating
- ***|
-sub Event_resetcore(string line)
-	/call Event_SetVar NA HealOverride Common 0
-	/call Event_SetVar NA autoRest Common 90
-	/call Event_SetVar NA AutoBot Common FALSE
-	/call Event_SetVar NA setDragMode Common FALSE
-	/call Event_SetVar NA setForageMode Common FALSE
-	/call Event_SetVar NA setFishMode Common FALSE
-	/call Event_SetVar NA setSkillsMode Common FALSE
-	
- 	/call Event_SetVar NA useSmartAssist1 Common FALSE
-	/call Event_SetVar NA useSmartAssist2 Common FALSE
-	/call Event_SetVar NA useSmartAssistG Common FALSE
-	/call Event_SetVar NA engageAt Common 98
-	/call Event_SetVar NA smartengageAt Common 98
-	/if (${usePet}) /call Event_SetVar NA sendPetPerc Pet 98
-	/if (${usePet}) /call Event_SetVar NA PetTank Pet FALSE
-	/call Event_SetVar NA MA1 Common FALSE
-	/call Event_SetVar NA MA2 Common FALSE
-	/call Event_SetVar NA SetTie Movement FALSE 
-	/call Event_SetVar NA SetTieToon Movement FALSE 
-/return
-
-#event setTieMode "[MQ2] - Set Tie!"
-sub Event_setTieMode()
-	/if (!${Bool[${SetTieToon}]}) {
-		NOUT ${owarning} You need to set someone to be close too ${cinfo}/tietoon\ax [NAME].
-		/goto :exit
-	}
-	/call Event_SetVar NA SetTie Movement ${If[${SetTie},FALSE,TRUE]} 
-	/if (${Bool[${SetTie}]}) /call set_tie
-	/if (!${Bool[${SetTie}]}) /stick off
-	/call echos switch "Tie to ${cpc}${SetTieToon}" SetTie TRUE
-
-	:exit
-/return
-
-#event setStickBehind "[MQ2] - Set Stick Behind!"
-sub Event_SetStickBehind()
-	/call Event_SetVar NA SetStickBehind Movement ${If[${SetStickBehind},FALSE,TRUE]}  
-	/call echos switch "Stick behind target"  SetStickBehind
-
-	| disable mezzing with stickbehind enabled.
-	/if (${switchdeBuffMezz} && ${SetStickBehind}) {
-		/call Event_SetVar NA switchdeBuffMezz Common FALSE  
-		/call echos switch "deBuff  Mezz" switchdeBuffMezz
-	}
-/return
-
-#event setFaceFast "[MQ2] - Set Face Fast!"
-sub Event_SetFaceFast()
-	/call Event_SetVar NA SetFaceFast Movement ${If[${SetFaceFast},FALSE,TRUE]}  
-	/call echos switch "Face Fast"  SetFaceFast
-	/if (${SetFaceFast}) VOUT ${cbad}WARNING\ax ${sep} This is a MQ2 Dead Giveaway. Use with caution.
-/return
-
-#event smartma "[MQ2] - Adjusting Smart Assist !!"
-sub Event_smartma(string line)
-	DEBUG ${cbug}Event_smartma()\ax
-	/if (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]}) {
-		VOUT Try joining some people.
- 		/call Event_SetVar NA useSmartAssist1 Common FALSE
-		/call Event_SetVar NA useSmartAssist2 Common FALSE
-		/call Event_SetVar NA useSmartAssistG Common FALSE
-		/goto :exit
-	} else /if (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG}) {
- 		/call Event_SetVar NA useSmartAssist1 Common FALSE
-		/call Event_SetVar NA useSmartAssist2 Common FALSE
-		/call Event_SetVar NA useSmartAssistG Common TRUE
-		/goto :exit
-	}
-	/call clear_combat
-	/call Event_SetVar NA setPullMode Common FALSE
-	/if (!${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]}) {
- 		/call Event_SetVar NA useSmartAssist1 Common TRUE
-		/call Event_SetVar NA useSmartAssist2 Common FALSE
-		/call Event_SetVar NA useSmartAssistG Common FALSE
-		VOUT Assisting Raid Assist 1
-	} else /if (${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]}) {
- 		/call Event_SetVar NA useSmartAssist1 Common FALSE
-		/call Event_SetVar NA useSmartAssist2 Common TRUE
-		/call Event_SetVar NA useSmartAssistG Common FALSE
-		VOUT Assisting Raid Assist 2
-	} else /if (!${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) {
- 		/call Event_SetVar NA useSmartAssist1 Common FALSE
-		/call Event_SetVar NA useSmartAssist2 Common FALSE
-		/call Event_SetVar NA useSmartAssistG Common TRUE
-		VOUT Assisting Group Assist
-	} else /if (!${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) {
- 		/call Event_SetVar NA useSmartAssist1 Common FALSE
-		/call Event_SetVar NA useSmartAssist2 Common FALSE
-		/call Event_SetVar NA useSmartAssistG Common FALSE
-		VOUT Exiting SmartAssist Mode
-	}
-	:exit
-/return
-
-#event SendPets "[MQ2] - SendPets: #1#"
-sub Event_SendPets(string line, int _tmpID)
-	DEBUG ${cbug}Event_SendPets()\ax
-	/if (${usePet} && ${Pet.ID}) {
-		VOUT Sending ${cpc}${Pet.DisplayName}\ax
-		/target	ID ${_tmpID}
-		/pet attack
-	}
-	:exit
-/return
-
-#event deBuffMezz "[MQ2] - Set deBuff Mezzing!"
-sub Event_deBuffMezz()
-	/call Event_SetVar NA switchdeBuffMezz Common ${If[${switchdeBuffMezz},FALSE,TRUE]}  
-	/call echos switch "deBuff  Mezz" switchdeBuffMezz
-
-	| clear stickbehind. it will force bad targeting fot the mezzer.
-	/if (${SetStickBehind} && ${switchdeBuffMezz}) {
-		/call Event_SetVar NA SetStickBehind Movement FALSE  
-		/call echos switch "Stick behind target"  SetStickBehind
-	}
-/return
-
-#event deBuffMalo "[MQ2] - Set deBuff Malo!"
-sub Event_deBuffMalo()
-	/call Event_SetVar NA switchdeBuffMalo Common ${If[${switchdeBuffMalo},FALSE,TRUE]}  
-	/call echos switch "deBuff  Malo" switchdeBuffMalo
-/return
-
-#event deBuffTash "[MQ2] - Set deBuff Tash!"
-sub Event_deBuffTash()
-	/call Event_SetVar NA switchdeBuffTash Common ${If[${switchdeBuffTash},FALSE,TRUE]}  
-	/call echos switch "deBuff  Tash" switchdeBuffTash
-/return
-
-#event deBuffCripple "[MQ2] - Set deBuff Cripple!"
-sub Event_deBuffCripple()
-	/call Event_SetVar NA switchdeBuffCripple Common ${If[${switchdeBuffCripple},FALSE,TRUE]}  
-	/call echos switch "deBuff  Cripple" switchdeBuffCripple
-/return
-
-#event deBuffSlow "[MQ2] - Set deBuff Slow!"
-sub Event_deBuffSlow()
-	/call Event_SetVar NA switchdeBuffSlow Common ${If[${switchdeBuffSlow},FALSE,TRUE]}  
-	/call echos switch "deBuff Slow" switchdeBuffSlow
-/return
-
-#event deBuffEradicate "[MQ2] - Set deBuff Eradicate!"
-sub Event_deBuffEradicate()
-	/if (${Select[${Me.Class.ShortName},ENC,MAG,NEC,WIZ,RNG,DRU]}) /call Event_SetVar NA switchdeBuffEradicate Common ${If[${switchdeBuffEradicate},FALSE,TRUE]}  
-	/call echos switch "deBuff Eradicate" switchdeBuffEradicate
-/return
-	
-#event deBuffSnare "[MQ2] - Set Snare!"
-sub Event_deBuffSnare()
-	/if (${AASnareList.Find[${Me.Class.ShortName}]}) {
-		/call Event_SetVar NA switchdeBuffSnare Common ${If[${switchdeBuffSnare},FALSE,TRUE]}  
-	} else {
-		VOUT ${onotice} ${sep} Not an AA snaring class. Get bent.
-		/call Event_SetVar NA switchdeBuffSnare Common FALSE  
-	}
-	/call echos switch "deBuff Snare" switchdeBuffSnare
-/return
-	
-#event toastauto "[MQ2] - Adjusting Auto Toast on Named!"
-sub Event_toastauto()
-	/call Event_SetVar NA AutoToast Common ${If[${AutoToast},FALSE,TRUE]}  
-	/call echos switch "Auto Toast" AutoToast
-/return
-
+ *  NOTE: 
+ ***| 	
 #event setCombatHere "[MQ2] - Set Combat Here!"
 sub Event_setCombatHere()
 	/call set_combat_here
 /return
 
-#event setMount "[MQ2] - Adjusting Mount!"
-sub Event_setMount()
-
-/return
 
 
-
-
-
-| Loot Events
-
+|***
+ *	DES: 
+ *	USE: NA
+ *	INI: NA
+ *  NOTE: STILL NEEDED????
+ ***| 	
 #Event CantLoot "#*#may not loot this corpse#*#"
 sub Event_CantLoot
    DEBUG Event_CantLoot Can't loot ${Target.DisplayName} ${Target.ID}
@@ -3186,6 +2561,14 @@ sub Event_CantLoot
 	:exit
 /return
 
+
+
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
 #event EditIniItem "[MQ2] - Set Loot Item #1#"
 sub Event_EditIniItem(string line, _action)
 	/if (${_action.Equal[What]} && ${Cursor.ID}) {
@@ -3203,9 +2586,17 @@ sub Event_EditIniItem(string line, _action)
 	:exit
 /return
 
+
+
+|***
+ *	DES: This is a cover all for the null slot issue when swapping gear.
+ *	USE: NA
+ *	INI: NA
+ *  NOTE: 
+ ***| 	
 #event NullSlot "#*#Invalid item slot 'null#*#"
 sub Event_NullSlot
-	VOUT ${owarning}: Opening all bags to correct null slot
+	NOUT ${owarning} ${sep} Opening all bags to correct null slot
 	/keypress OPEN_INV_BAGS
 	/timed 10 /keypress CLOSE_INV_BAGS
 /return
@@ -3218,7 +2609,7 @@ sub Event_NullSlot
  *	INI: 
  *  NOTE: 
  ***|
-#event send 			"#1# tells you, 'send #2#'"
+#event send "#1# tells you, 'send #2#'"
 sub Event_send(string line, string _sender, string _location)
 	CHECKSAFELIST
 	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]} || ${Spawn[pc ${_sender}].Distance} > 125) /goto :exit
@@ -3294,10 +2685,11 @@ sub Event_Zone()
 	/if (${setFishMode}) /call Event_SetVar NA setFishMode Common FALSE 
 	/if (${setSkillsMode}) /call Event_SetVar NA setSkillsMode Common FALSE 
 	/if (${setPetFarmMode}) /call Event_SetVar NA setPetFarmMode Common FALSE 
+	/if (${Bool[(${setScorchedEarthMode}]}) /call Event_SetVar NA setScorchedEarthMode Common FALSE 
+	/if (${setHunterMode}) /call Event_SetVar NA setHunterMode Common FALSE
 	/if (${AutoBot} && ${setAutoShrink}) /call check_shrink
 	
 	/call create_timer timer_zone_pause ${tZone_Pause}
- 	:exit
 /return 
 
 
@@ -3314,7 +2706,6 @@ sub Event_Zone()
 sub Event_markerDead()
 	/varset markerDead TRUE
 	/doevents flush
-	:exit
 /return
 
 
@@ -3330,16 +2721,12 @@ sub Event_buystuff(string line, string _itemtoBuy, int _buyAmount)
 	DEBUG (string:${_itemtoBuy}, int:${_buyAmount})
 	/if (${_itemtoBuy.Equal[NULL]}) {
 		NOUT Need an item to buy, in single qoutes.
-		/goto :exit
-	}
-	/if (${_buyAmount} < 1) {
+	} else /if (${_buyAmount} < 1) {
 		NOUT Need a valid quantity. 
-		/goto :exit
-	} 
-	/call vendor_buy "${_itemtoBuy}" ${_buyAmount}
-	:exit
+	} else {
+		/call vendor_buy "${_itemtoBuy}" ${_buyAmount}
+	}
 /return
-
 
 
 |***
@@ -3352,7 +2739,1437 @@ sub Event_buystuff(string line, string _itemtoBuy, int _buyAmount)
 sub Event_sellstuff(string line, string _itemtoSell)
 	DEBUG (string:${_itemtoSell})
 	/call vendor_sell "${_itemtoSell}"
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
+#event SendPets "[MQ2] - SendPets: #1#"
+sub Event_SendPets(string line, int _tmpID)
+	DEBUG ${cbug}Event_SendPets()\ax
+	/if (${usePet} && ${Pet.ID}) {
+		VOUT Sending ${cpc}${Pet.DisplayName}\ax
+		/target	ID ${_tmpID}
+		/pet attack
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
+#event clean "[MQ2] - Clean this mess up."
+sub Event_clean()
+	DEBUG ${cbug}Event_clean()\ax
+	/call sort_cursor TRUE
+	/if (${hideAll}) /hidecorpse all
+	/if (${hideAlways}) /hidecorpse always
+	/if (${hideLooted}) /hidecorpse looted
+	/if (${hideAllButGroup}) /hidecorpse allbutgroup
+	/if (${hideNPC}) /hidecorpse npc
+	/if (${hideListed}) /hidecorpse listed
+	/if (${hideListedUnlocked}) /hidecorpse listedunlocked  
+/return
+
+
+
+
+|* #bind(s) ************************************************************************************************************
+
+|***
+ *	DES: forces the character into melee combat if there is a target.
+ *	USE: /combatmelee
+ *	INI: 
+ *  NOTE: manual mode
+ ***| 	
+#bind combatmelee /combatmelee
+sub Bind_combatmelee()
+	/call sort_combatmelee
+/return
+
+sub sort_combatmelee()
+	/if (${Target.ID}) {
+		/varset isValidTarget TRUE
+		/varset combat MELEE
+		/varset Target2Kill ${Target.ID}
+		VOUT ${ocombat} Melee ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+	} else {
+		/varset combat FALSE
+		NOUT ${onotice} ${sep} You need a target.
+		/call echos needtarget
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /combatrange
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind combatrange /combatrange
+sub Bind_combatrange()
+	/if (${Target.ID} && ${Target.Distance} > 30) {
+		/varset isValidTarget TRUE
+		/varset combat RANGE
+		/varset Target2Kill ${Target.ID}	
+		VOUT ${ocombat} Range ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+	} else /if (!${Target.ID} || ${Target.ID} == ${Me.ID} || ${Target.Distance} < 31) {
+		/varset combat FALSE
+		/call echos needtarget
+	} 
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /combatnuke
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind combatnuke /combatnuke
+sub Bind_combatnuke()
+	/if (${Target.ID} && ${Target.ID} != ${Me.ID} && ${Target.ID} != ${Me.Pet.ID}) {
+		/varset isValidTarget TRUE
+		/varset combat NUKE
+		/varset Target2Kill ${Target.ID}
+		VOUT ${ocombat} Nuke ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+	} else 	/if (!${Target.ID} || ${Target.ID} == ${Me.ID} || ${Target.ID} == ${Me.Pet.ID}) {
+		/varset combat FALSE
+		/call echos needtarget
+	} 
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /hudtime
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind HUDTime /hudtime
+sub Bind_HUDTime(string line)
+	/varset HUDTime ${If[${HUDTime},FALSE,TRUE]}
+	/if (${HUDTime}) VOUT Showing ${cinfo}Real Life\ax time.
+	/if (!${HUDTime}) VOUT Showing ${cinfo}In Game\ax time.
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /hudbroadcast
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setBroadcast /hudbroadcast
+sub Bind_setBroadcast()
+	/call Event_SetVar NA setBroadcast Common ${If[${Bool[${setBroadcast}]},FALSE,TRUE]}
+	/if (${setBroadcast.Equal[FALSE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "DISABLED"
+	/if (${setBroadcast.Equal[TRUE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "${AutoBot}"
+	/call echos switch "Adjusting Broadcast Status" setBroadcast
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /companionpet
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind companion /companionpet
+sub Bind_companion()
+	/call Event_SetVar NA usePet Pet ${If[${usePet},FALSE,TRUE]}
+	/call echos switch "Use Pet" usePet
+	/if (!${usePet} && ${Pet.ID}) {
+		/if (${Me.AltAbilityReady[Suspended Minion]}) {
+			/call core_cast "Suspended Minion" alt 0
+		} else {
+			/pet leave
+		}
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /companionswarm
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind companionswarm /companionswarm
+sub Bind_companionswarm()
+	/call Event_SetVar NA usePetSwarm Pet ${If[${usePetSwarm},FALSE,TRUE]}
+	/call echos switch "Using Pet Swarms" usePetSwarm
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /verbose
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind verbose /verbose
+sub Bind_verbose()
+	/call Event_SetVar NA verbose Common ${If[${verbose},FALSE,TRUE]}
+	/call echos switch "Verbose EQBC Echo" verbose
+/return
+   
+   
+   
+|***
+ *	DES: 
+ *	USE: /checkcash
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind gamecash /checkcash
+sub Bind_gamecash()
+	/call check_free_ingame_cash
+/return
+ 
+ 
+ 
+|***
+ *	DES: 
+ *	USE: /toastnow
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind toast_now /toastnow
+sub Bind_toast_now()
+	/varset setToastMode ${If[${setToastMode},FALSE,TRUE]}
+	/call echos switch "Constant Toasting" setToastMode
+/return
+ 
+
+
+|***
+ *	DES: 
+ *	USE: /toastmobcount
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind toast_mobcount /toastmobcount
+sub Bind_toast_mobcount(int _toastmobcount)
+ 	/if (${Range.Between[1,99:${_toastmobcount}]}) {
+		/call Event_SetVar NA toastMobCount Common ${_toastmobcount} 
+		/call echos number "Toast # Mob Enagage At" ${_toastmobcount}
+	} else {
+		NOUT /toastmobcount [${cinfo}##\ax] of mobs in range ${cinfo}1 - 99\ax
+	}
+/return 
+ 
+
+ 
+ |***
+ *	DES: 
+ *	USE: /toastengageat
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind toast_engageat /toastengageat
+sub Bind_toast_engageat(int _toastengageat)
+ 	/if (${Range.Between[1,99:${_toastengageat}]}) {
+		/call Event_SetVar NA whentoToast Common ${_toastengageat} 
+		/call echos number "Toast % Health Enagage At" ${_toastengageat}
+	} else {
+		NOUT /toastengageat [${cinfo}##\ax] % of mobs health to engage toast at ${cinfo}1 - 99\ax
+	}
+/return 
+ 
+ 
+ 
+|***
+ *	DES: 
+ *	USE: /rezcombat
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind rezCombat /rezcombat
+sub Bind_rezCombat()
+	/call Event_SetVar NA rezCombat Heal ${If[${rezCombat},FALSE,TRUE]} 
+	/call echos switch "Rez During Combat" rezCombat
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /rezeveryone
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind rezEveryone /rezeveryone
+sub Bind_rezEveryone()
+	/call Event_SetVar NA rezEveryone Heal ${If[${rezEveryone},FALSE,TRUE]} 
+	/call echos switch "Rez Everyone" rezEveryone
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /rezenable
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind rezEnable /rezenable
+sub Bind_rezEnable()
+	/if (${Select[${Me.Class.ShortName},WAR,MNK,BST,ROG,ENC,WIZ,MAG,NEC,SHD,RNG,BRD]}) {
+		/call Event_SetVar NA rezEnable Heal FALSE
+		VOUT No rez for joo!
+		/goto :exit
+	}
+	/call Event_SetVar NA rezEnable Heal ${If[${rezEnable},FALSE,TRUE]} 
+	:exit
+	/call echos switch "Automatic Casting if Resurrection/Call" rezEnable
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /rezauto
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind rezAuto /rezauto
+sub Bind_rezAuto()
+	/call Event_SetVar NA rezAuto Heal ${If[${rezAuto},FALSE,TRUE]} 
+	/call echos switch "Automatic Rez" rezAuto
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /ri
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setRIMode /ri
+sub Event_setRIMode()
+	/call Event_SetVar NA setRaidInvite Common ${If[${setRaidInvite},FALSE,TRUE]} 
+	/call echos switch "Invites for Raids" setRaidInvite
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /rezemergency
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind rezEmergency /rezemergency
+sub Bind_rezEmergency()
+	/call Event_SetVar NA rezEmergency Heal ${If[${rezEmergency},FALSE,TRUE]} 
+	/call echos switch "Emergency Rez Mode" rezEmergency
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /drag
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setDragMode /drag
+sub Bind_setDragMode()
+	/call Event_SetVar NA setDragMode Common ${If[${setDragMode},FALSE,TRUE]} 
+	/call echos switch "Drag Mode" setDragMode
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /forage
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setForageMode /forage
+sub Bind_setForageMode()
+	/call Event_SetVar NA setForageMode Common ${If[${setForageMode},FALSE,TRUE]} 
+	/call echos switch "Forage Mode" setForageMode
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /fish
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setFishMode /fish
+sub Bind_setFishMode()
+	/call Event_SetVar NA setFishMode Common ${If[${setFishMode},FALSE,TRUE]} 
+	/call echos switch "Fish Mode" setFishMode
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /hunt
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setHuntMode /hunt
+sub Bind_setHuntMode()
+	/call Event_SetVar NA setHunterMode Common ${If[${setHunterMode},FALSE,TRUE]} 
+	/call echos hunter
+	/if (!${setHunterMode}) {
+		/call set_stop TRUE
+		/call clear_combat
+		| /varset Target2Kill 0
+		/call Event_SetVar NA watchSpawn Common FALSE
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /petfarm
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setPetFarmMode /petfarm
+sub Bind_setPetFarmMode()
+	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST,SHD,SHM,RNG,DRU]} || ${SafeZone}) {
+		VOUT My daughter says you're a nooblet.
+	} else {
+		/call Event_SetVar NA setPetFarmMode Common ${If[${setPetFarmMode},FALSE,TRUE]} 
+	}
+	/if (!${setPetFarmMode}) {
+		/call set_stop FALSE
+		/call clear_combat
+	}
+	/call echos switch "Pet Farm Mode" setPetFarmMode
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /scorchedearth
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setScorchedEarthMode /scorchedearth
+sub Bind_setScorchedEarthMode()
+	/if (${SafeZone}) {
+		VOUT My daughter says you're a nooblet.
+	} else {
+		/call Event_SetVar NA setScorchedEarthMode Common ${If[${setScorchedEarthMode},FALSE,TRUE]} 
+	}
+	/if (!${setScorchedEarthMode}) {
+		/call set_stop FALSE
+		/call clear_combat
+	}
+	/call echos switch "Scorched Earth Mode" setScorchedEarthMode
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /train
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setSkillsMode /train
+sub Bind_setSkillsMode()
+	/call Event_SetVar NA setSkillsMode Common ${If[${setSkillsMode},FALSE,TRUE]} 
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /home
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind HomeCamp /home
+sub Bind_HomeCamp()
+	/call Event_SetVar NA HomeSet Movement ${If[${HomeSet},FALSE,TRUE]}  
+	/call set_home
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /setpuller
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setPuller /setpuller
+sub Bind_setPuller()
+	/call Event_SetVar NA setPullMode Common ${If[${setPullMode},FALSE,TRUE]} 
+	/call echos switch "Pull Mode" setPullMode
+	/if (${setPullMode}) /smartma X
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /setagro
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setAgro /setagro
+sub Bind_setAgro()
+	/call Event_SetVar NA setAgroMode Common ${If[${setAgroMode},FALSE,TRUE]}  
+	/call echos switch "Agro Mode" setAgroMode
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /invites
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind takeInvites /invites
+sub Bind_takeInvites()
+	/call Event_SetVar NA switchInvites Common ${If[${switchInvites},FALSE,TRUE]}  
+	/call echos switch "Auto Accept Invites" switchInvites
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /banestrike
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind banestrike /banestrike
+sub Bind_banestrike()
+	/call Event_SetVar NA switchBanestrike Common ${If[${switchBanestrike},FALSE,TRUE]}  
+	/call echos switch "Use AA Banestrike" switchBanestrike
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /buffself
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind buffself /buffself
+sub Bind_buffself()
+	/call Event_SetVar NA BuffSelf Buffs ${If[${BuffSelf},FALSE,TRUE]}
+	/call echos switch "Buff Self" BuffSelf
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /buffitem
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind buffitem /buffitem
+sub Bind_buffitem()
+	/call Event_SetVar NA BuffItem Common ${If[${BuffItem},FALSE,TRUE]}
+	/call echos switch "Buff Item" BuffItem
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /buffbc
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind buffbc /buffbc
+sub Bind_buffbc()
+	/if (!${Bool[${Plugin[MQ2netbots]}]}) {
+		VOUT you need the plugn ${cinfo}MQ2netbots\ax for curing
+		/call Event_SetVar NA BuffBC Buffs FALSE
+	} else {
+		/call Event_SetVar NA BuffBC Buffs ${If[${BuffBC},FALSE,TRUE]}
+	}
+		/call echos switch "Buff BC" BuffBC
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /buffcombat
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind buffcombat /buffcombat
+sub Bind_buffcombat()
+	/call Event_SetVar NA BuffCombat Buffs ${If[${BuffCombat},FALSE,TRUE]}
+	/call echos switch "Buff Combat [range ${combatRadius}]" BuffCombat
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /buffraid
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind buffraid /buffraid
+sub Bind_buffraid()
+	/call Event_SetVar NA BuffRaid Buffs ${If[${BuffRaid},FALSE,TRUE]}
+	/call echos switch "Buff Raid" BuffRaid
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /bufftell
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind bufftell /bufftell
+sub Bind_bufftell()
+	/call Event_SetVar NA BuffTell Buffs ${If[${BuffTell},FALSE,TRUE]}
+	/call echos switch "Buff Tell" BuffTell
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /buffpet
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind buffpet /buffpet
+sub Bind_buffpet()
+	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) /call Event_SetVar NA BuffPet Pet ${If[${BuffPet},FALSE,TRUE]}  
+	/call echos switch "Buff Pet" BuffPet
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /healself
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind healself /healself
+sub Bind_healself()
+	/if (${Select[${Me.Class.ShortName},DRU,CLR,SHM,PAL]}) {
+		VOUT Heal Classes [CLR,DRU,SHM,PAL] use /healgroup. Not /healself.
+		/call Event_SetVar NA switchHealSelf Heal FALSE 
+	} else {
+		/call Event_SetVar NA switchHealSelf Heal ${If[${switchHealSelf},FALSE,TRUE]}  
+	}
+	/call echos switch "Heal Self" switchHealSelf
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /healgroup
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind healgroup /healgroup
+sub Bind_healgroup()
+	/call Event_SetVar NA switchHealGroup Heal ${If[${switchHealGroup},FALSE,TRUE]}  
+	/call echos switch "Heal Group" switchHealGroup
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /healxtarget
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind healxtarget /healxtarget
+sub Bind_healxtarget()
+	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) /call Event_SetVar NA switchHealXTarget Heal ${If[${switchHealXTarget},FALSE,TRUE]}
+	/call echos switch "Heal XTarget" switchHealXTarget
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /healpet
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind healpet /healpet
+sub Bind_healpet()
+	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,MAG]}) /call Event_SetVar NA switchHealPet Pet ${If[${switchHealPet},FALSE,TRUE]}  
+	/call echos switch "Heal Pet" switchHealPet
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /healcure
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind healcure /healcure
+sub Bind_healCure()
+	/call Event_SetVar NA switchHealCure Heal ${If[${switchHealCure},FALSE,TRUE]}  
+	/call echos switch "Curing" switchHealCure
+/return
+
+
+
+|***
+ *	DES: force self item buffing
+ *	USE: /ib
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind itembuffs /ib
+sub Bind_itembuffs()
+	/call check_buffs_item
+/return
+
+
+
+|***
+ *	DES: force self spell buffing
+ *	USE: /sb
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind selfbuffs /sb
+sub Bind_selfbuffs()
+	/call check_buffs_self
+/return
+
+
+
+|***
+ *	DES: force self pet buffing
+ *	USE: /pb
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind petbuffs /pb
+sub Bind_petbuffs()
+	/call check_pet_buffs
+/return
+
+
+
+|***
+ *	DES: force build a new pet
+ *	USE: /buildpet
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind buildpet /buildpet
+sub Bind_buildpet()
+	/call check_pet
+/return
+
+
+
+|***
+ *	DES: turns automatic mode on or off
+ *	USE: /core
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setCore /core
+sub Bind_setCore()
+	/call sort_core
+/return
+
+sub sort_core()
+	/call Event_SetVar NA AutoBot Common ${If[${AutoBot},FALSE,TRUE]}  
+	/if (!${AutoBot}) { 
+		/call set_stop TRUE
+		/call clear_combat
+	}
+	/call echos switch "Automatic" AutoBot
+/return
+
+
+
+|***
+ *	DES: enable or disable auto shrinking 
+ *	USE: /autoshrink
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setAutoShrink /autoshrink
+sub Bind_setAutoShrink()
+	/call Event_SetVar NA setAutoShrink Common ${If[${setAutoShrink},FALSE,TRUE]}  
+	/call echos switch "Automatic Shrink" setAutoShrink
+/return
+
+
+
+|***
+ *	DES: alternate to /bc stop. self only
+ *	USE: /alto
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setstop /alto
+sub Bind_setstop()
+	/call set_stop FALSE
+	/call clear_combat
+/return
+
+
+
+|***
+ *	DES: enable/disable Line of Site checking
+ *	USE: /ignorelos
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setIgnoreLOS /ignorelos
+sub Bind_setIgnoreLOS()
+	/call Event_SetVar NA setIgnoreLOS Movement ${If[${setIgnoreLOS},FALSE,TRUE]}  
+	/call echos switch "Ignoring Line of Sight" setIgnoreLOS
+	/if (${setIgnoreLOS}) NOUT ${owarning} ${sep} THIS IS ${cbad}NOT\ax ADVISED. You will have pathing issues.
+/return	
+
+
+
+|***
+ *	DES: 
+ *	USE: /tietoon [NAME]
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind setTieToon /tietoon
+sub Bind_setTieToon(string _settietoon)
+	/if (${_settietoon.NotEqual[${Me.DisplayName}]}) {	
+		/call Event_SetVar NA SetTieToon Movement ${_settietoon}	
+		/call echos	string "Set Tie Toon" _settietoon
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /tietime [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setTietime /tietime
+sub Bind_setTietime(int _setTietime)
+	/if (${Range.Between[5,50:${_setTietime}]}) {
+		/call Event_SetVar NA tCheck_Tie Timer ${_setTietime} 
+	} else {
+		NOUT /tietime [${cinfo}##\ax] allowable range is ${cinfo}5 - 50\ax
+	}
+	/call echos number "Tie Check Time" ${_setTietime}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /tiedistance [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind SetTieDistance /tiedistance
+sub Bind_SetTieDistance(int _SetTieDistance)
+	/if (${Range.Between[1,99:${_SetTieDistance}]}) {
+		/call Event_SetVar NA SetTieDistance Movement ${_SetTieDistance} 
+	} else {
+		NOUT /tiedistance [${cinfo}##\ax] allowable range is ${cinfo}1 - 99\ax
+	}
+		/call echos number "Tie Distance" ${_SetTieDistance}
+/return
+
+
+
+|***
+ *	DES: enable/disable Tie
+ *	USE: /tie [NAME]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setTieMode /tie
+sub Bind_setTieMode(string _settietoon)
+
+	| do we want to change the /tietoon [NAME]
+	/if (${Bool[${_settietoon}]} && ${SetTieToon.NotEqual[${_settietoon}]}) /tietoon ${_settietoon}
+	
+	| is tietoon set or in zone?
+	/if (!${Bool[${SetTieToon}]} || !${Bool[${Spawn[pc ${SetTieToon}].ID}]}) {
+		/if (!${Bool[${SetTieToon}]}) {
+			NOUT ${owarning} ${sep} You need to set someone to be close too ${cinfo}/tietoon\ax [NAME].
+			/call Event_SetVar NA SetTie Movement FALSE 
+			/call echos switch "Tie" SetTie
+		}
+		/if (!${Bool[${Spawn[pc ${SetTieToon}].ID}]}) {
+			NOUT ${onotice} ${sep} ${cpc}${SetTieToon}\ax is not in same zone.
+			/call Event_SetVar NA SetTie Movement FALSE 
+			/call echos switch "Tie to ${cpc}${SetTieToon}\ax" SetTie 
+		}
+	| adjust the switch
+	} else {
+		/call Event_SetVar NA SetTie Movement ${If[${SetTie},FALSE,TRUE]} 
+		/call echos switch "Tie to ${cpc}${SetTieToon}\ax" SetTie
+	}
+/return
+
+sub sort_setTieMode(string _settietoon)
+	| do we want to change the /tietoon [NAME]
+	/if (${Bool[${_settietoon}]} && ${SetTieToon.NotEqual[${_settietoon}]}) /tietoon ${_settietoon}
+	
+	| is tietoon set or in zone?
+	/if (!${Bool[${SetTieToon}]} || !${Bool[${Spawn[pc ${SetTieToon}].ID}]}) {
+		/if (!${Bool[${SetTieToon}]}) {
+			NOUT ${owarning} ${sep} You need to set someone to be close too ${cinfo}/tietoon\ax [NAME].
+			/call Event_SetVar NA SetTie Movement FALSE 
+			/call echos switch "Tie" SetTie
+		}
+		/if (!${Bool[${Spawn[pc ${SetTieToon}].ID}]}) {
+			NOUT ${onotice} ${sep} ${cpc}${SetTieToon}\ax is not in same zone.
+			/call Event_SetVar NA SetTie Movement FALSE 
+			/call echos switch "Tie to ${cpc}${SetTieToon}\ax" SetTie 
+		}
+	| adjust the switch
+	} else {
+		/call Event_SetVar NA SetTie Movement ${If[${SetTie},FALSE,TRUE]} 
+		/call echos switch "Tie to ${cpc}${SetTieToon}\ax" SetTie
+	}
+/return
+
+
+
+
+|***
+ *	DES: 
+ *	USE: /stickbehind
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind SetStickBehind /stickbehind
+sub Bind_SetStickBehind()
+	/call Event_SetVar NA SetStickBehind Movement ${If[${SetStickBehind},FALSE,TRUE]}  
+	/call echos switch "Stick behind target"  SetStickBehind
+
+	| disable mezzing with stickbehind enabled.
+	/if (${switchdeBuffMezz} && ${SetStickBehind}) {
+		/if (${Defined[switchdeBuffMezz]}) /call Event_SetVar NA switchdeBuffMezz Common FALSE  
+		/call echos switch "deBuff  Mezz" switchdeBuffMezz
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /facefast
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind SetFaceFast /facefast
+sub Bind_SetFaceFast()
+	/call Event_SetVar NA SetFaceFast Movement ${If[${SetFaceFast},FALSE,TRUE]}  
+	/call echos switch "Face Fast"  SetFaceFast
+	/if (${SetFaceFast}) NOUT ${owarning} ${sep} This is a MQ2 Dead Giveaway. Use with caution.
+/return
+
+
+
+|***
+ *	DES: Adjusts the smart assist through Raid 1 then Raid 2 then Group then off
+ *	USE: /smartma [1|2|X|G]
+ *	INI: 
+ *  NOTE: this is a four way toggle
+ ***| 	
+#bind smartMA /smartma
+sub Bind_smartMA(string _assist)
+	DEBUG ${cbug}Event_smartma()\ax
+	/call clear_combat
+
+	| Raid Assist 1
+	/if ((${_assist.Equal[1]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode}) {
+		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode})
+ 		/if (!${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common TRUE
+		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
+		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
+		/xtarget set 1 Raidassist1target
+		VOUT Setting Assist ${sep} ${cinfo}Raid 1\ax
+	| Raid Assist 2
+	} else /if ((${_assist.Equal[2]} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode}) {
+		DEBUG ((${_assist} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode})
+ 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
+		/if (!${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common TRUE
+		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
+		/xtarget set 1 Raidassist1target
+		VOUT Setting Assist ${sep} ${cinfo}Raid 2\ax
+	| NO Assist
+	} else /if ((${_assist.Equal[X]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${Select[${Me.Class.ShortName},CLR]} || ${setPullMode}) {
+		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${Select[${Me.Class.ShortName},CLR]} || ${setPullMode})
+ 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
+		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
+		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
+		/if (${Bool[${MA1}]}) /call Event_SetVar NA MA1 Common FALSE
+		/if (${Bool[${MA2}]}) /call Event_SetVar NA MA2 Common FALSE
+		| /if (${setPullMode}) /call echos switch "Pull Mode" setPullMode
+		/xtarget set 1 Autohater
+		VOUT Setting Assist ${sep} ${odisabled}\ax
+	| Goup Main Assist
+	} else /if ((${_assist.Equal[G]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode}) {
+		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode})
+ 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
+		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
+		/if (!${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common TRUE
+		/xtarget set 1 Groupassisttarget
+		VOUT Setting Assist ${sep} ${cinfo}Group\ax
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /debuffmezz
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind deBuffMezz /debuffmezz
+sub Bind_deBuffMezz()
+	/call Event_SetVar NA switchdeBuffMezz Common ${If[${switchdeBuffMezz},FALSE,TRUE]}  
+	/call echos switch "deBuff  Mezz" switchdeBuffMezz
+
+	| clear stickbehind. it will force bad targeting fot the mezzer.
+	/if (${SetStickBehind} && ${switchdeBuffMezz}) {
+		/call Event_SetVar NA SetStickBehind Movement FALSE  
+		/call echos switch "Stick behind target"  SetStickBehind
+	}
 	:exit
 /return
 
 
+
+|***
+ *	DES: 
+ *	USE: /debuffmalo
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind deBuffMalo /debuffmalo
+sub Bind_deBuffMalo()
+	/if (${Select[${Me.Class.ShortName},SHM,MAG]}) {
+		/call Event_SetVar NA switchdeBuffMalo Common ${If[${switchdeBuffMalo},FALSE,TRUE]}  
+ 	} else {
+		VOUT ${onotice} ${sep} Not an AA Malo class.
+		/if (${Defined[switchdeBuffMalo]}) /call Event_SetVar NA switchdeBuffMalo Common FALSE  
+	}
+	/call echos switch "deBuff Malo" switchdeBuffMalo	
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /debufftash
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind deBuffTash /debufftash
+sub Bind_deBuffTash()
+	/call Event_SetVar NA switchdeBuffTash Common ${If[${switchdeBuffTash},FALSE,TRUE]}  
+	/call echos switch "deBuff  Tash" switchdeBuffTash
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /debuffcripple
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind deBuffCripple /debuffcripple
+sub Bind_deBuffCripple()
+	/call Event_SetVar NA switchdeBuffCripple Common ${If[${switchdeBuffCripple},FALSE,TRUE]}  
+	/call echos switch "deBuff  Cripple" switchdeBuffCripple
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /debuffslow
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind deBuffSlow /debuffslow
+sub Bind_deBuffSlow()
+	/call Event_SetVar NA switchdeBuffSlow Common ${If[${switchdeBuffSlow},FALSE,TRUE]}  
+	/call echos switch "deBuff Slow" switchdeBuffSlow
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /debufferadicate
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind deBuffEradicate /debufferadicate
+sub Bind_deBuffEradicate()
+	/if (${Select[${Me.Class.ShortName},ENC,MAG,NEC,WIZ,RNG,DRU]}) {
+		/call Event_SetVar NA switchdeBuffEradicate Common ${If[${switchdeBuffEradicate},FALSE,TRUE]}  
+	} else {
+		VOUT ${onotice} ${sep} Not an AA Eradicate class. Please come back later.
+		/if (${Defined[switchdeBuffEradicate]}) /call Event_SetVar NA switchdeBuffEradicate Common FALSE  
+	}
+	/call echos switch "deBuff Eradicate" switchdeBuffEradicate
+/return
+	
+	
+	
+|***
+ *	DES: 
+ *	USE: /debuffsnare
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind deBuffSnare /debuffsnare
+sub Bind_deBuffSnare()
+	/if (${AASnareList.Find[${Me.Class.ShortName}]}) {
+		/call Event_SetVar NA switchdeBuffSnare Common ${If[${switchdeBuffSnare},FALSE,TRUE]}  
+	} else {
+		VOUT ${onotice} ${sep} Not an AA snaring class. Please come back later.
+		/if (${Defined[switchdeBuffSnare]}) /call Event_SetVar NA switchdeBuffSnare Common FALSE  
+	}
+	/call echos switch "deBuff Snare" switchdeBuffSnare
+/return
+	
+	
+	
+|***
+ *	DES: 
+ *	USE: /toastauto
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind toastauto /toastauto
+sub Bind_toastauto()
+	/call Event_SetVar NA AutoToast Common ${If[${AutoToast},FALSE,TRUE]}  
+	/call echos switch "Auto Toast" AutoToast
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /autorest [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind autoRest /autorest
+sub Bind_autoRest(int _autoRest)
+	/if (${Bool[${_autoRest}]}) /call Event_SetVar NA autoRest Common ${_autoRest}  
+	/call echos number "Auto Rest" ${If[${_autoRest},${_autoRest},${autoRest}]} 
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /agro [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind MobAgro /agro
+sub Bind_MobAgro(int _MobAgro)
+	/if (${Range.Between[1,400:${_MobAgro}]}) {
+		/call Event_SetVar NA MobAgro Common ${_MobAgro} 
+		/call echos number "Mob Agro Range" ${_MobAgro}
+	} else {
+		NOUT /agro [${cinfo}##\ax] allowable range is ${cinfo}1 - 400\ax
+	}
+/return
+
+	
+	
+|***
+ *	DES: 
+ *	USE: /engageat [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind engageAt /engageat
+sub Bind_engageAt(int _engageAt)
+	/if (${Range.Between[1,99:${_engageAt}]}) {
+		/call Event_SetVar NA engageAt Common ${_engageAt} 
+`	/call echos number "MA1/2 Enagage At" ${_engageAt}
+	} else {
+		NOUT /engageat [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
+	}
+/return	
+	
+
+
+|***
+ *	DES: 
+ *	USE: /smartengageat [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind smartengageAt /smartengageat
+sub Bind_smartengageAt(int _smartengageAt)
+	/if (${Range.Between[1,99:${_smartengageAt}]}) {
+		/call Event_SetVar NA smartengageAt Common ${_smartengageAt} 
+		/call echos number "Smart Enagage At" ${_smartengageAt}
+	} else {
+		NOUT /smartengageat [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
+	}
+/return	
+	
+
+
+|***
+ *	DES: stack invis
+ *	USE: /invis
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind cast_AA_invis /invis
+sub Bind_cast_AA_invis()
+		| /delay ${Math.Rand[5]}
+		/if (${Me.AltAbilityReady[Group Perfected Invisibility]} && ${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
+			/call MQ2Cast "Group Perfected Invisibility" alt -targetid|${Me.ID}
+			ECHOCHANNEL AA: Group Perfected Invisibility
+		}  
+		/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},PAL,CLR,SHD,NEC]}) {
+			/delay 3
+			/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
+			ECHOCHANNEL AA: Group Perfected Invisibility to Undead
+		}
+
+	:exit
+/return		
+	
+
+
+|***
+ *	DES: force 1 toast routine
+ *	USE: /toastforce
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind toast_force /toastforce
+sub Bind_toast_force()
+	/call synergy_${Me.Class.ShortName}
+/return
+
+
+|***
+ *	DES: use primary anchor.
+ *	USE: /primary
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind click_primary_anchor /primary
+sub Bind_click_primary_anchor()
+	/if (${Me.ItemReady[Primary Anchor Transport Device]}) {
+		/if (${Me.Casting.ID}) /stopcast
+		/call core_cast "Primary Anchor Transport Device" item
+	}
+/return
+
+
+
+|***
+ *	DES: use secondary anchor
+ *	USE: /secondary
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind click_secondary_anchor /secondary
+sub Bind_click_secondary_anchor()
+	/if (${Me.ItemReady[Secondary Anchor Transport Device]}) {
+		/if (${Me.Casting.ID}) /stopcast
+		/call core_cast "Secondary Anchor Transport Device" item
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /zradius ##
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind zradius /zradius
+sub Bind_zradius(int _zradius)
+	/if (${Range.Between[1,200:${_zradius}]}) {
+		/call Event_SetVar NA zradius Common ${_zradius} 
+		/call echos number "Set ZRadius At" ${_zradius}
+	} else {
+		NOUT /zradius [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 200\ax
+	}
+/return
+
+
+
+|***
+ *	DES: forces a reload of all INIs
+ *	USE: /resetcore
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind resetcore /resetcore
+sub Bind_resetcore()
+	
+	NOUT ${cgood}Reloading of all INIs\ax
+	/call declare_base
+	/call check_plugin
+	/call echos startup
+	/call declare_common
+	/call declare_${Me.Class.ShortName}
+	/call synergy_core
+	/call intialize_item_buffs
+	/call set_alias
+	/call Event_Zone
+	/call base_preperation
+	
+	| /call clear_combat
+	/if (${usePet} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
+
+	| get shit out of our hands
+	CLEARCURSOR TRUE
+	
+	| clear the current target
+	/if (${clearTarget} && ${Target.ID}) /squelch /target clear
+	/call set_stop TRUE
+	/call clear_combat
+	
+	| set assists
+	/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode}) {
+		/smartma G
+ 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${setPullMode}) {
+		/smartma 1
+	}	else /if (${Select[${Me.Class.ShortName},CLR]} || ${setPullMode}) {
+		/smartma X
+	}	
+	
+	| other misc resets
+	/call Event_SetVar NA watchSpawn Common False
+	
+	NOUT ${cgood}Done\ax
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /watchspawn
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind watchspawn /watchspawn
+sub Bind_watchspawn(string _spawn)
+	/if (${Bool[${_spawn}]}) {
+		/call Event_SetVar NA watchSpawn Common "${_spawn}"
+	} else /if (!${Bool[${_spawn}]} && ${Target.ID}) {
+		/call Event_SetVar NA watchSpawn Common "${Target.DisplayName}"
+	} else /if (!${Bool[${_spawn}]} && !${Target.ID}) {
+		VOUT ${sep} ${cinfo}/watchspawn\ax requires a taret or mob partial name. 
+		VOUT ${sep} NPC and CORPSE is also acceptable.
+		/if (!${Bool[${_spawn}]}) /call Event_SetVar NA watchSpawn Common FALSE
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /combatradius
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind combatRadius /combatradius
+sub Bind_combatRadius(string _combatRadius)
+	/if (${Range.Between[1,99:${_combatRadius}]}) {
+		/call Event_SetVar NA combatRadius Common ${_combatRadius}
+		/call echos number "Fake Safe Combat Radius" ${_combatRadius}
+	} else {
+		NOUT /combatradius [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
+	}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /combatdistance
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind CombatDistance /combatdistance
+sub Bind_CombatDistance(string _CombatDistance)
+	/if (${Range.Between[1,99:${_CombatDistances}]}) {
+		/call Event_SetVar NA CombatDistance Common ${_CombatDistance}
+		/call echos number "Mele Combat Distance" ${_CombatDistance}
+	} else {
+		NOUT /combatradius [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
+	}
+/return
+
+
+
+
+
+|***
+ *	DES: forces checking for runes and spellguards
+ *	USE: /rb
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind check_rune /rb
+sub Bind_check_rune()
+	/if (${Select[${Me.Class.ShortName},WIZ,ENC]}) /call check_rune_${Me.Class.ShortName}
+/return
+	

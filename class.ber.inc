@@ -67,9 +67,12 @@ sub disc_BER()
 	/if (${Me.AltAbilityReady[Battle Leap]} && !${Me.Underwater} && !${Me.Song[Battle Leap Warcry].ID}) /call core_cast "Battle Leap" alt 0	
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 		
+	/if (${Me.CombatAbilityReady[${DiscCombatFrenzy}]} && ${Me.CurrentEndurance} > ${Spell[${DiscCombatFrenzy}].EnduranceCost}) /call core_cast "${DiscCombatFrenzy}" disc ${Target2Kill}
+		
+		
 	/if (${Me.AltAbilityReady[Communion of Blood]} && ${Me.PctHPs} > 75 && ${Me.PctEndurance} < 50) /call core_cast "Communion of Blood" alt 0
 	/if (${Me.CombatAbilityReady[${DiscJolt}]} && ${Me.PctAggro} > 80 && ${Me.CurrentEndurance} > ${Spell[${DiscJolt}].EnduranceCost}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
-		/if (${Me.CombatAbilityReady[${DiscDicho}]} && ${Me.CurrentEndurance} > ${Spell[${DiscDicho}].EnduranceCost}*2) /disc 49307
+	/if (${Me.CombatAbilityReady[${DiscDicho}]} && ${Me.CurrentEndurance} > ${Spell[${DiscDicho}].EnduranceCost}*2) /disc 49307
 
 	| /if (${Me.CombatAbilityReady[${DiscOpenWound}]} && ${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscOpenWound}].EnduranceCost})  /call core_cast "${DiscOpenWound}" disc 0
 	
