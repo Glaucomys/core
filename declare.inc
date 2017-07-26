@@ -18,8 +18,7 @@
 sub check_versions()
 	DEBUG ${cbug}set_versions()\ax
 
-	/declare versionCore				string	outer 3.6.0
-	
+	/declare versionCore				string	outer 3.7.0
 	/declare versionCLR 				string 	outer 2.1.3
 	/declare versionDRU 				string 	outer 2.0.1 
 	/declare versionSHM 				string 	outer 1.5.1
@@ -36,10 +35,7 @@ sub check_versions()
 	/declare versionBER 				string 	outer 1.6.1
 	/declare versionMNK 				string 	outer 0.5.0 
 	/declare versionROG 				string 	outer 1.5.1 
-
-	:exit
 /return
-
 
 
 
@@ -50,6 +46,28 @@ sub check_versions()
  *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
  ***|
 sub fix_INI_declares()
+	/ini "${INIFile}" "Common" "SetModeInvis" NULL
+	/ini "${INIFile}" "Common" "SetScorchedEarthMode" NULL
+	/ini "${INIFile}" "Common" "SetSkillsMode" NULL
+	/ini "${INIFile}" "Common" "SetFishMode" NULL
+	/ini "${INIFile}" "Common" "SetForageMode" NULL
+	/ini "${INIFile}" "Common" "SetDragMode" NULL
+	/ini "${INIFile}" "Common" "Looter" NULL
+	/ini "${INIFile}" "Common" "ForageFishInvis" NULL
+	/ini "${INIFile}" "Common" "SetHunterMode" NULL
+	/ini "${INIFile}" "Common" "SetHunterAgro" NULL
+	/ini "${INIFile}" "Common" "SetPetFarmMode" NULL
+	
+	| mage
+	/ini "${INIFile}" "SelfBuff" "ElementalForm" NULL
+	/ini "${INIFile}" "SelfBuff" "ElementalFormCheck" NULL
+	
+	| timer	
+	/ini "${INICore}" "Timer" "tPetFarm_delay" NULL
+	
+	
+
+
 /return
 
 
@@ -291,15 +309,7 @@ sub Event_setTargetList(string line, string _list)
 /return
 
 
-#event HuntMobAgro			"[MQ2] HuntMobAgro: #1#"
-sub Event_HuntMobAgro(string line, int _huntagro)
-	/if (${_huntagro} <= 0 || !${_huntagro}) {
-		/call Event_SetVar NA setHunterAgro Common 0
-	} else /if (${_huntagro}) {
-		/call Event_SetVar NA setHunterAgro Common ${_huntagro} 
-	}
-	/call echos hunter
-/return
+
 
 |* End base INI controls ***********************************************************************************************
 
@@ -477,30 +487,45 @@ sub declare_base()
 	/call DeclareCoreIniVar hideListedUnlocked	bool		hide FALSE
 	
 	| Base Environment settings
-	/call DeclareVar noInvis 														bool 		outer TRUE
-	/call DeclareVar noFeigning 												bool 		outer TRUE
-	/call DeclareVar Target2Kill												int			outer 0
-	/call DeclareVar UseRange														bool		outer FALSE
-	/call DeclareVar currentLootCount										int			outer	0
-	/call DeclareVar markerDead													bool		outer FALSE
+	/call DeclareVar noInvis 										bool 		outer TRUE
+	/call DeclareVar noFeigning 								bool 		outer TRUE
+	/call DeclareVar Target2Kill								int			outer 0
+	/call DeclareVar UseRange										bool		outer FALSE
+	/call DeclareVar currentLootCount						int			outer	0
+	/call DeclareVar markerDead									bool		outer FALSE
 	
-	/call DeclareVar isValidTarget											bool		outer FALSE
-	/call DeclareVar combatMode													string	outer NULL
-	/call DeclareVar tmpMode														string	outer NULL
-	/call DeclareVar hudWarning													string	outer	NULL
-	/call DeclareVar hudNotice													string	outer	NULL	
-	/call DeclareVar hudTarNotice												string	outer	NULL
-	/call DeclareVar flagCallNeedRez										bool		outer FALSE
+	| non-standard mode control
+	/call DeclareVar modeTypes									string	outer "stop|fish|forage|drag|petfarm|scorch|hunt"
+	/call DeclareVar setMode										bool		outer FALSE
+	/call DeclareVar setModeType								string	outer FALSE
+	/call DeclareIniVar setModeAgro							int			Common FALSE 
+	/call DeclareVar setModeDrag								bool		outer FALSE 
+	/call DeclareVar setModeForage							bool		outer FALSE
+	/call DeclareVar setModePetfarm							bool		outer FALSE
+	/call DeclareVar setModeScorch							bool		outer FALSE
+	/call DeclareVar setModeHunt								bool		outer FALSE
+	/call DeclareVar setModeFish								bool		outer FALSE
+	/call DeclareVar setModeSkill								bool		outer FALSE
+	
+	
+	
+	/call DeclareVar isValidTarget							bool		outer FALSE
+	/call DeclareVar combatMode									string	outer NULL
+	/call DeclareVar tmpMode										string	outer NULL
+	/call DeclareVar hudWarning									string	outer	NULL
+	/call DeclareVar hudNotice									string	outer	NULL	
+	/call DeclareVar hudTarNotice								string	outer	NULL
+	/call DeclareVar flagCallNeedRez						bool		outer FALSE
 
-	/call DeclareVar setToastMode												bool 		outer FALSE	
-	/call DeclareVar canCast														bool		outer	TRUE
-	/call DeclareVar ignoreEngageAt											bool		outer FALSE
-	/call DeclareVar tmpHealOverride										float 	outer 99.99	
+	/call DeclareVar setToastMode								bool 		outer FALSE	
+	/call DeclareVar canCast										bool		outer	TRUE
+	/call DeclareVar ignoreEngageAt							bool		outer FALSE
+	/call DeclareVar tmpHealOverride						float 	outer 99.99	
 	
-	/call DeclareVar 	pre 															string 	outer ${Ini[${INICore},fakelink,pre]}
-	/call DeclareVar 	post 															string 	outer ${Ini[${INICore},fakelink,post]}
+	/call DeclareVar 	pre 											string 	outer ${Ini[${INICore},fakelink,pre]}
+	/call DeclareVar 	post 											string 	outer ${Ini[${INICore},fakelink,post]}
 	
-	/call DeclareVar hudBroadcast												string	outer
+	/call DeclareVar hudBroadcast								string	outer
 	
 	/call DeclareVar INIBlurb										string	outer tc\core.blurb.ini
 	/call DeclareVar INILoot										string  outer	tc\core.loot.ini
@@ -565,6 +590,8 @@ sub declare_base()
 	/call DeclareIniVar	tHunt_delay							string	Timer	30s	
 	/call DeclareIniVar	tCheck_Runes						string	Timer	10s
 	/call DeclareIniVar	tScorchedEarth_delay		string	Timer	5s	
+	/call DeclareIniVar	tScorchedEarth_fail			string	Timer	1m	
+	/call DeclareIniVar	tScorchedEarth_ignore		string	Timer	30s	
 
 
 	| mod rod recovered addicts
@@ -572,7 +599,7 @@ sub declare_base()
 		/call DeclareIniVar	tAsk_for_rod						string	Timer	1m
 	}
 	/call DeclareCoreIniVar	tCheck_status				string	Timer	2s	
-	/call DeclareCoreIniVar	tPetFarm_delay			string	Timer	15s	
+	/call DeclareIniVar	tPetfarm_delay					string	Timer	1s	
 
 /return
 
@@ -615,14 +642,6 @@ sub declare_common()
 	/call DeclareIniVar setRaidInvite						bool		Common FALSE
 	/call DeclareIniVar setAgroMode							bool		Common FALSE 
 	/call DeclareIniVar setPullMode							bool		Common FALSE
-	/call DeclareIniVar setDragMode							bool		Common FALSE 
-	/call DeclareIniVar setForageMode						bool		Common FALSE
-	/call DeclareIniVar setPetFarmMode					bool		Common FALSE
-	/call DeclareIniVar setScorchedEarthMode		bool		Common FALSE
-	/call DeclareIniVar setHunterMode						bool		Common FALSE
-	/call DeclareIniVar setHunterAgro						int			Common FALSE 
-	/call DeclareIniVar setFishMode							bool		Common FALSE
-	/call DeclareIniVar setSkillsMode						bool		Common FALSE
 	/call DeclareIniVar IllusionItem						string	Common FALSE
 	/call DeclareIniVar IllusionBuff						string	Common FALSE
 	/call DeclareIniVar BuffItem	 							bool		Common TRUE 
@@ -650,7 +669,6 @@ sub declare_common()
 	/call DeclareIniVar useGlyph								string	Common "Glyph of the Cataclysm"	/glyph
 	/call DeclareIniVar toastMobCount						int			Common 10
 	/call DeclareIniVar ResidentMage						string	Common |FALSE|FALSE
-	/call DeclareIniVar ForageFishInvis					string	Common FALSE	
 	/call DeclareIniVar ClassChannel						int			Common FALSE	
 	/call DeclareIniVar setBroadcast						string	Common TRUE	
 	/call DeclareIniVar relayTells							string	Common FALSE /relay	
@@ -761,24 +779,37 @@ sub declare_common()
 		/call DeclareIniVar seloskick							bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},MNK]}) {
-		/call DeclareIniVar dragonpunch							bool		meleedisc FALSE
-		/call DeclareIniVar eaglestrike							bool		meleedisc FALSE
-		/call DeclareIniVar tigerclaw								bool		meleedisc FALSE
-		/call DeclareIniVar flyingkick							bool		meleedisc FALSE
-		/call DeclareIniVar roundkick								bool		meleedisc FALSE
+		/call DeclareIniVar dragonpunch						bool		meleedisc FALSE
+		/call DeclareIniVar eaglestrike						bool		meleedisc FALSE
+		/call DeclareIniVar tigerclaw							bool		meleedisc FALSE
+		/call DeclareIniVar flyingkick						bool		meleedisc FALSE
+		/call DeclareIniVar roundkick							bool		meleedisc FALSE
 	}
 	
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD,CLR,WIZ,RNG,BRD,BST]}) {
-		/call DeclareIniVar sendPetPerc 					int			Pet 99 /petengageat
+		/call DeclareIniVar sendPetPerc 					int			Pet 99
 		/call DeclareIniVar usePet 								bool 		Pet FALSE
-		/call DeclareIniVar sendPetSwarmPerc			int			Pet 99 /petswarmengageat
+		/call DeclareIniVar sendPetSwarmPerc			int			Pet 99
 		/call DeclareIniVar usePetSwarm						bool 		Pet FALSE
 		/call DeclareIniVar switchHealPet					bool 		Pet FALSE
 	}
 	
-	/call DeclareIniVar sumFamiliar								string	Pet FALSE
-	/call DeclareIniVar sumFamiliarBuff						string	Pet FALSE
-	/call DeclareIniVar sumFamiliarLeave					bool		Pet TRUE
+	/call DeclareIniVar sumFamiliar							string	Pet FALSE
+	/call DeclareIniVar sumFamiliarBuff					string	Pet FALSE
+	/call DeclareIniVar sumFamiliarLeave				bool		Pet TRUE
+
+
+	| food/drink
+	/call DeclareIniVar clickFoodDispenser			string 	Meal FALSE
+	/call DeclareIniVar clickFoodItem						string 	Meal FALSE
+	/call DeclareIniVar clickFoodCount					int		 	Meal 0
+	/call DeclareIniVar clickDrinkDispenser			string 	Meal FALSE
+	/call DeclareIniVar clickDrinkItem					string 	Meal FALSE
+	/call DeclareIniVar clickDrinkCount					int		 	Meal 0
+	/call DeclareIniVar tClick_FoodDrink				string	Timer 10m
+
+
+
 
 
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) {
@@ -1847,10 +1878,10 @@ sub whitewash()
 	
 	| commands to remove forever
 	
-	/varset _todelete[15] |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion|home|paragon|combatradius
+	/varset _todelete[15] |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion|home|paragon|combatradius|HuntMobAgro
 	/varset _todelete[16] |spice|stop|setagro|smartma|setpull|HUDTime|banestrike|broadcast|ib|sb|pb|resetcore|verbose|buildpet|autorest|toastauto|primary|secondary|invis
 	/varset _todelete[17] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable|core|invites|facefast|stickbehind|hudupdate|qmpct|qm|toastmobcount|toastengageat|combatdistance
-	/varset _todelete[18] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash|agro|engageat|autorest|smartengageat|watchspawn
+	/varset _todelete[18] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash|agro|engageat|autorest|smartengageat|watchspawn|petengageat|petswarmengageat
 	/varset _todelete[19] |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|tie|ignorelos|forage|fish|train|petfarm|drag|ri|hunt|tietoon|tiedistance|tietime
 	
 		
@@ -1880,7 +1911,7 @@ sub whitewash()
 	/varset _todelete[10]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
 
 	| pets
-	/varset _todelete[11]	|petengageat|petswarmengageat|pettype|pettank|sendpets
+	/varset _todelete[11]	|pettype|pettank|sendpets
 
 	| class commands
 	/varset _todelete[12] |harvest|gather|rod|redorod|rods|cr|issuance|useeradicate|song
@@ -1936,7 +1967,6 @@ sub set_alias()
   /if (!${Bool[${Alias[/listnocold]}]}) 				/squelch /alias /listnocold							VOUT Set Target NoCold!
   /if (!${Bool[${Alias[/listnocorruption]}]}) 	/squelch /alias /listnocorruption 			VOUT Set Target NoCorruption!
   /if (!${Bool[${Alias[/listhuntmob]}]}) 				/squelch /alias /listhuntmob 						VOUT Set Target HuntMob!
-  /if (!${Bool[${Alias[/huntmobagro]}]}) 				/squelch /alias /huntmobagro						/echo HuntMobAgro:
    
   /if (!${Bool[${Alias[/sendpets]}]}) 			/squelch /alias /sendpets										NOUT SendPets: 
 	/if (!${Bool[${Alias[/killmob]}]}) 				/squelch /alias /killmob 										/bc killmob
@@ -2479,7 +2509,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 #event Talk "#1# tells you, '#2#'"
 sub Event_Talk(string line, string _sender, string _chatText)
 |**
-	/declare _ignoreRelay		 	string 	local |${relayTells}|bank
+	/declare _ignoreRelay		 	string 	local |${relayTells}|bank|${Me.Pet.DisplayName}|${Me}
 	/declare _count 					int 		local
 	/declare _relay						bool		local TRUE
 	
@@ -2499,7 +2529,7 @@ sub Event_Talk(string line, string _sender, string _chatText)
 	**|
 	
 	
-	/if (${Bool[${relayTells}]} && !${_sender.Find[Banker]} && !${_sender.Find[${Me}]} && !${_sender.Find[${relayTells}]}) {
+	/if (${Bool[${relayTells}]} && !${_sender.Find[Banker]} && !${_sender.Find[${Me}]} && !${_sender.Find[${relayTells}]} && !${_sender.Find[${Me.Pet.DisplayName}]} ) {
 		/tell ${relayTells} ${_sender} told me: ${_chatText}
 	}
 
@@ -2680,13 +2710,7 @@ sub Event_Zone()
 	/if (${setToastMode}) /call Event_SetVar NA setToastMode Common FALSE
 	/makecamp off
 	/if (${HomeSet}) /call Event_SetVar NA HomeSet Movement FALSE
-	/if (${setDragMode}) /call Event_SetVar NA setDragMode Common FALSE 
-	/if (${setForageMode}) /call Event_SetVar NA setForageMode Common FALSE 
-	/if (${setFishMode}) /call Event_SetVar NA setFishMode Common FALSE 
-	/if (${setSkillsMode}) /call Event_SetVar NA setSkillsMode Common FALSE 
-	/if (${setPetFarmMode}) /call Event_SetVar NA setPetFarmMode Common FALSE 
-	/if (${Bool[(${setScorchedEarthMode}]}) /call Event_SetVar NA setScorchedEarthMode Common FALSE 
-	/if (${setHunterMode}) /call Event_SetVar NA setHunterMode Common FALSE
+	/call mode_clear_all
 	/if (${AutoBot} && ${setAutoShrink}) /call check_shrink
 	
 	/call create_timer timer_zone_pause ${tZone_Pause}
@@ -2770,7 +2794,7 @@ sub Event_SendPets(string line, int _tmpID)
 #event clean "[MQ2] - Clean this mess up."
 sub Event_clean()
 	DEBUG ${cbug}Event_clean()\ax
-	/call sort_cursor TRUE
+	/if (${Cursor.ID}) /call sort_cursor TRUE
 	/if (${hideAll}) /hidecorpse all
 	/if (${hideAlways}) /hidecorpse always
 	/if (${hideLooted}) /hidecorpse looted
@@ -3088,125 +3112,6 @@ sub Bind_rezEmergency()
 
 |***
  *	DES: 
- *	USE: /drag
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setDragMode /drag
-sub Bind_setDragMode()
-	/call Event_SetVar NA setDragMode Common ${If[${setDragMode},FALSE,TRUE]} 
-	/call echos switch "Drag Mode" setDragMode
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /forage
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setForageMode /forage
-sub Bind_setForageMode()
-	/call Event_SetVar NA setForageMode Common ${If[${setForageMode},FALSE,TRUE]} 
-	/call echos switch "Forage Mode" setForageMode
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /fish
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setFishMode /fish
-sub Bind_setFishMode()
-	/call Event_SetVar NA setFishMode Common ${If[${setFishMode},FALSE,TRUE]} 
-	/call echos switch "Fish Mode" setFishMode
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /hunt
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setHuntMode /hunt
-sub Bind_setHuntMode()
-	/call Event_SetVar NA setHunterMode Common ${If[${setHunterMode},FALSE,TRUE]} 
-	/call echos hunter
-	/if (!${setHunterMode}) {
-		/call set_stop TRUE
-		/call clear_combat
-		| /varset Target2Kill 0
-		/call Event_SetVar NA watchSpawn Common FALSE
-	}
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /petfarm
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setPetFarmMode /petfarm
-sub Bind_setPetFarmMode()
-	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST,SHD,SHM,RNG,DRU]} || ${SafeZone}) {
-		VOUT My daughter says you're a nooblet.
-	} else {
-		/call Event_SetVar NA setPetFarmMode Common ${If[${setPetFarmMode},FALSE,TRUE]} 
-	}
-	/if (!${setPetFarmMode}) {
-		/call set_stop FALSE
-		/call clear_combat
-	}
-	/call echos switch "Pet Farm Mode" setPetFarmMode
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /scorchedearth
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setScorchedEarthMode /scorchedearth
-sub Bind_setScorchedEarthMode()
-	/if (${SafeZone}) {
-		VOUT My daughter says you're a nooblet.
-	} else {
-		/call Event_SetVar NA setScorchedEarthMode Common ${If[${setScorchedEarthMode},FALSE,TRUE]} 
-	}
-	/if (!${setScorchedEarthMode}) {
-		/call set_stop FALSE
-		/call clear_combat
-	}
-	/call echos switch "Scorched Earth Mode" setScorchedEarthMode
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /train
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setSkillsMode /train
-sub Bind_setSkillsMode()
-	/call Event_SetVar NA setSkillsMode Common ${If[${setSkillsMode},FALSE,TRUE]} 
-/return
-
-
-
-|***
- *	DES: 
  *	USE: /home
  *	INI: 
  *  NOTE:
@@ -3476,6 +3381,8 @@ sub Bind_itembuffs()
 #bind selfbuffs /sb
 sub Bind_selfbuffs()
 	/call check_buffs_self
+	/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
+	/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 /return
 
 
@@ -3908,8 +3815,12 @@ sub Bind_toastauto()
  ***| 	
 #bind autoRest /autorest
 sub Bind_autoRest(int _autoRest)
-	/if (${Bool[${_autoRest}]}) /call Event_SetVar NA autoRest Common ${_autoRest}  
-	/call echos number "Auto Rest" ${If[${_autoRest},${_autoRest},${autoRest}]} 
+	/if (${Range.Between[1,99:${_autoRest}]}) {
+		/call Event_SetVar NA autoRest Common ${_autoRest}  
+		/call echos number "Auto Rest" ${If[${_autoRest},${_autoRest},${autoRest}]} 
+	} else {
+		NOUT /autorest [${cinfo}##\ax] allowable range is ${cinfo}1 - 99\ax
+	}
 /return
 
 
@@ -4081,6 +3992,9 @@ sub Bind_resetcore()
 	| get shit out of our hands
 	CLEARCURSOR TRUE
 	
+	| clear modes
+	/call mode_clear_all
+	
 	| clear the current target
 	/if (${clearTarget} && ${Target.ID}) /squelch /target clear
 	/call set_stop TRUE
@@ -4160,8 +4074,6 @@ sub Bind_CombatDistance(string _CombatDistance)
 
 
 
-
-
 |***
  *	DES: forces checking for runes and spellguards
  *	USE: /rb
@@ -4172,4 +4084,42 @@ sub Bind_CombatDistance(string _CombatDistance)
 sub Bind_check_rune()
 	/if (${Select[${Me.Class.ShortName},WIZ,ENC]}) /call check_rune_${Me.Class.ShortName}
 /return
+
+
 	
+|***
+ *	DES: 
+ *	USE: /sendpetperc
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind sendPetPerc /petengageat
+sub Bind_sendPetPerc(string _sendpetperc)
+	/if (${Range.Between[1,99:${_sendpetperc}]}) {
+		/call Event_SetVar NA sendPetPerc Common ${_sendpetperc}
+		/call echos number "Pet Engage" ${_sendpetperc}
+	} else {
+		NOUT /sendpetperc [${cinfo}##\ax] valid range range ${cinfo}1 - 99\ax
+	}
+/return	
+
+
+	
+|***
+ *	DES: 
+ *	USE: /petswarmengageat
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind sendPetSwarmPerc /petswarmengageat
+sub Bind_sendPetSwarmPerc(string _sendpetswarmperc)
+	/if (${Range.Between[1,99:${_sendpetswarmperc}]}) {
+		/call Event_SetVar NA sendPetSwarmPerc Common ${_sendpetswarmperc}
+		/call echos number "Swarm Pet Engage" ${_sendpetswarmperc}
+	} else {
+		NOUT /sendpetswarmperc [${cinfo}##\ax] valid range range ${cinfo}1 - 99\ax
+	}
+/return	
+
+
+

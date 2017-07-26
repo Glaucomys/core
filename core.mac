@@ -3,8 +3,13 @@
 	Core Macro
 	exspes007
 	
-	"Somoene once told me it taks a lot of skill and preperation to be effectively lazy."
+	"Someone once told me it taks a lot of skill and preperation to be effectively lazy."
 	-- unknown
+	
+	GitHub: https://github.com/exspes007
+	GitHub Code: https://github.com/exspes007/core
+	GitHub Wiki: https://github.com/exspes007/core/wiki
+	
 	
 	Required Plugins:	
 	- MQ2Cast
@@ -25,17 +30,17 @@
 	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias'.
 	- test.inc									empty. testing purposes.
 	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
-	- info.inc									/info text response.
-	- misc stuff.txt						Just helpful info. old code. a forgotten attic of old stuff.
+	- misc stuff.txt						Just helpful info. old code. A forgotten attic of old stuff.
 	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
 	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell
 	- blurb.inc									Expansion specific raid announcements. A lazy way to send raid instructions to all in RS.
 	- toast.inc									All class toast routines.
+	- mode.inc									All Non-Standard Mode controlls.
 	- core.SERVER.CLS.NAME.ini	Character specific INI settings.
 	- core.augmentdump.ini			list of all augments by toon.
 	
 	
-	Naming Conventions
+	Naming Conventions:
 	Local/Private Variables: _camelCasing						eg. _loopOutside, _count
 	Outer/Global Variables: camelCasing							eg. Nuke1 or healIntervention1
 	Running Timers: Timer_Use_For_Timer 						eg. timer_Check_Ammo
@@ -70,7 +75,7 @@
 		- NinjaADVLoot - 	is the core of the do_loot loot function used with VERY heavy mods/butchering. http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=19707
 		- whoHas.mac [/whohas] - http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=20212 (this is a genius idea)
 		- puller/targ acquisition is very loosely based off nytemyst pull code for his SK and the healing foundation
-		- i stole the base forage functions from someone years ago. Thank You whomever. fish code based off same processes. and then promptly adapted. rewritten to use the advloot list.
+		- i stole the base forage functions from someone years ago. Thank You whomever. fish code based off same processes. and then promptly adapted. rewritten to use core.loot.ini list.
 		
 ***|
 
@@ -89,15 +94,15 @@
 #define CHECKSAFELIST "/if (${Bool[${forcesafelist}]} && !${safelist.Find[${_sender}]}) /goto :exit"
 #define UPDATEHUD "/call update_HUD_notices"
 | #define CLEARCURSOR "/if (${Cursor.ID} && (${AutoBot} && !${Bool[${timer_clear_cursor}]} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]})) /call sort_cursor"
-#define CLEARCURSOR "/if ((${AutoBot} && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
+#define CLEARCURSOR "/if (((${AutoBot} || ${setModeForage}) && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
 
 #include TC\declare.inc
-#include TC\info.inc 
 #include TC\common.inc
 #include TC\MQ2Cast_Spell_Routines.inc
 #include TC\hud.inc
+#include TC\mode.inc
 #include TC\events.inc
 #include TC\test.inc
 #include TC\class.ber.inc
@@ -134,18 +139,17 @@ sub main()
 	/call declare_base
 	/call check_plugin
 	/call echos startup
-
 	/call declare_common
 	/call declare_${Me.Class.ShortName}
 	/call synergy_core
-	| /call fix_INI_Declares
+	/call fix_INI_Declares
 	/call intialize_item_buffs
 	/call set_alias
 	/call Event_Zone
 	/call base_preperation
 	ISDEAD
 
-  /call echos help
+  | /call echos help
   /mqlog ---- Starting Core:${versionCore}, ${Me.Class.ShortName}:${version${Me.Class.ShortName}}, INI: core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini, 
   /if (${setIgnoreLOS}) NOUT ${ocaution} ${sep} Ignoring Line of Sight.\ax
 
@@ -200,6 +204,11 @@ sub main()
 		| fix ur pet!
 		/if (${AutoBot} && !${timer_Check_Familiar}) /call sort_familiar
 		/if (${FamiliarLeave} && ${Me.Pet.Name.Find[familiar]}) /pet get lost
+		| food/drink
+		/if (${Bool[${clickFoodDispenser}]} && !${timer_click_food}) /call click_summon_food
+		/if (${Bool[${clickDrinkDispenser}]} && !${timer_click_drink}) /call click_summon_drink
+
+		
 		CHECKTIE
 
 		/if (${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone}) /makecamp return
@@ -210,21 +219,16 @@ sub main()
 
 		/doevents		
 		
-		| non normal modes of operation.
-		/if (${setDragMode}) /call set_drag_mode
-		/if (${setForageMode}) /call do_forage_mode
-		/if (${setFishMode}) /call do_fish_mode
-		/if (${setPetFarmMode}) /call do_pet_farm_mode
-		/if (${setHunterMode} && !${timer_wait_for_mob_to_kill}) /call do_hunt_mob_mode
-		/if (${setScorchedEarthMode} && !${timer_wait_for_mob_to_kill}) /call do_scorched_earth_mode 
+		| non normal modes of operation
+		/call do_mode
 	
 		| use the one off clickies in the Toons INI
 		/if (${doclickOdds} && !${timer_check_odds_and_ends}) /call odds_and_ends
 
 		| check constant AA buffs
-		/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
+		/if (${AutoBot} && (${Bool[${AANow1}]} || ${Bool[${AANow2}]})) /call check_AA_now
 		| check constant Disc buffs
-		/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
+		/if (${AutoBot} && (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]})) /call check_Disc_now
 
 		| do we pull or assist		
 		/if (${AutoBot} && !${Me.Invis} && !${SafeZone}) {
@@ -298,15 +302,6 @@ sub base_preperation()
 	/squelch /hud ${HudType}
 	/squelch /loadhud ${HudName}
 			
-	| Turn off non-normal Modes when starting if they were left on.
-	/if (${Bool[${setDragMode}]}) /call Event_SetVar NA setDragMode Common FALSE 
-	/if (${Bool[${setForageMode}]}) /call Event_SetVar NA setForageMode Common FALSE 
-	/if (${Bool[${setFishMode}]}) /call Event_SetVar NA setFishMode Common FALSE 
-	/if (${Bool[${setSkillsMode}]}) /call Event_SetVar NA setSkillsMode Common FALSE 
-	/if (${Bool[${setPetFarmMode}]}) /call Event_SetVar NA setPetFarmMode Common FALSE 
-	/if (${Bool[${setHunterMode}]}) /call Event_SetVar NA setHunterMode Common FALSE 
-	/if (${Bool[(${setScorchedEarthMode}]}) /call Event_SetVar NA setScorchedEarthMode Common FALSE 
-	
 		
 	| KillCode Warning for stupid fucks that like to AFK farm
 	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE,0]}) {
