@@ -94,10 +94,11 @@
 #define CHECKSAFELIST "/if (${Bool[${forcesafelist}]} && !${safelist.Find[${_sender}]}) /goto :exit"
 #define UPDATEHUD "/call update_HUD_notices"
 | #define CLEARCURSOR "/if (${Cursor.ID} && (${AutoBot} && !${Bool[${timer_clear_cursor}]} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]})) /call sort_cursor"
-#define CLEARCURSOR "/if (((${AutoBot} || ${setModeForage}) && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
+| #define CLEARCURSOR "/if (((${AutoBot} || ${setModeForage}) && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
+#define CLEARCURSOR "/if ((${autoCursor} && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
-
+autoCursor
 #include TC\declare.inc
 #include TC\common.inc
 #include TC\MQ2Cast_Spell_Routines.inc

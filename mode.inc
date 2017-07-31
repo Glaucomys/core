@@ -11,7 +11,7 @@
 
 |***
  *	DES: set mode type
- *	USE: /mode [fish|forage|drag|petfarm|scorch|hunt]
+ *	USE: /mode [fish|forage|drag|petfarm|scorch|hunt|harvest]
  *	INI: NA
  *  NOTE: starts/ends non-standard modes
  ***|
@@ -22,8 +22,11 @@ sub Bind_mode(string _modeType)
 		/varset setModeType ${_modeType.Left[1].Upper}${_modeType.Right[-1].Lower}
 		/if (${Defined[setMode${setModeType}]}) {
 			/varset setMode${setModeType} ${If[${setMode${setModeType}},FALSE,TRUE]}
-			/call echos switch "Mode ${cinfo}${setModeType}\ax" setMode${setModeType}
-			/if (${setModeType.Equal[hunt]}) /call echos hunter
+			/call echos mode "${setModeType}" setMode${setModeType}
+			/if ((${_modeType.Equal[hunt]} || ${_modeType.Equal[scorch]}) && ${Bool[${setModeType}]}) {
+				/call set_stop TRUE
+				/call clear_combat
+			}
 		} else {
 			/goto :namefail
 		}
@@ -94,13 +97,17 @@ sub mode_clear_all()
 	}
 	/if (${setModeScorch}) {
 		/varset setModeScorch FALSE 
-		/call echos switch "Mode ${cinfo}Scorched Earth\ax" setModeScorch
+		/call echos mode "Scorched Earth" setModeScorch
 		/if (${ignoreEngageAt}) /varset ignoreEngageAt FALSE
 		/if (${setIgnoreLOS} && !${Select[${Me.Class.ShortName},ROG]}) /varset setIgnoreLOS FALSE
 	}
 	/if (${setModeHunt}) {
 		/varset setModeHunt FALSE
-		/call echos switch "Mode ${cinfo}Hunt\ax" setModeHunt
+		/call echos mode "Hunter" setModeHunt
+	}
+	/if (${setModeHarvest}) {
+		/varset setModeHarvest FALSE
+		/call echos mode "Harvest" setModeHarvest
 	}
 /return
 
@@ -123,6 +130,64 @@ sub do_mode()
 	/if (${setModePetfarm} && !${timer_Petfarm_delay}) /call mode_petfarm
 	/if (${setModeHunt} && !${timer_wait_for_mob_to_kill}) /call mode_hunt
 	/if (${setModeScorch} && !${timer_ScorchedEarth_delay}) /call mode_scorched_earth
+	/if (${setModeHarvest} && !${timer_Harvest_delay}) /call mode_harvest
+	:exit
+/return
+
+
+
+|***
+ *	DES: central get target and kill for hunting modes
+ *	USE: /call mode_get_mob
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub mode_get_mob()
+	DEBUG ${cbug}mode_get_mob(${Target2Kill})\ax
+	:movetomob
+	/doevents
+	ISDEAD
+	CLEARCURSOR TRUE
+	/doevents
+	
+	/if (!${Spawn[${Target2Kill}].ID} || ${Spawn[${Target2Kill}].Dead}) {
+		DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
+		/call set_stop TRUE
+		/call clear_combat
+		/goto :exit
+	}
+
+	/call check_watch_spawn
+
+	/if (!${Stick.Active} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
+		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+		/squelch /stick ID ${Target2Kill} ${CombatDistance} UW
+	} else /if (${Spawn[${Target2Kill}].Distance} <= ${CombatDistance} || ${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
+		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+		/target ID ${Target2Kill}
+	}
+					
+	/if (${Spawn[${Target2Kill}].Distance} < ${MobAgro} && ${Spawn[${Target2Kill}].Distance} > 31) {
+		DEBUG distance ${Spawn[${Target2Kill}].Distance} range
+		/target ID ${Target2Kill}
+		/if (${Me.Pet.ID} && !${Me.Pet.Target.ID}) /pet attack
+		/if (${Target.ID} && ${Spawn[${Target2Kill}].LineOfSight}) /range
+	} else /if (${Spawn[${Target2Kill}].Distance} < ${CombatDistance}) {
+		DEBUG distance ${Spawn[${Target2Kill}].Distance} melee
+		/call set_combat MELEE
+		/if (${Me.Pet.ID} && !${Me.Pet.Target.ID}) /pet attack
+		/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+		
+		/if (${Bool[${ModeNuke}]}) {
+			/if (${Me.Book[${ModeNuke}]}) /call core_cast "${ModeNuke}" ${buffGem} ${Target2Kill}
+			/if (${Me.ItemReady[${ModeNuke}]}) /call core_cast "${ModeNuke}" item ${Target2Kill}
+			/if (${Me.CombatAbility[${ModeNuke}]}) /call core_cast "${ModeNuke}" disc ${Target2Kill}
+			/if (${Me.AltAbilityReady[${ModeNuke}]})  /call core_cast "${ModeNuke}" alt ${Target2Kill}
+		}
+	} 
+
+	/if (${Spawn[${Target2Kill}].ID} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) /goto :movetomob	
+
 	:exit
 /return
 
@@ -168,6 +233,7 @@ sub mode_fish()
 	DEBUG ${cbug}mode_fish()\ax
 	UPDATEHUD "Fish"
 	/if (!${Me.Standing}) /stand
+	/call check_buff_routines TRUE
 	/if (!${Me.ItemReady[Brell's Fishin' Pole]}) {
 		/if (${Me.Invis}) /docommand /makemevisable
 		/call core_cast "Fisherman's Companion" item ${Me.ID}
@@ -193,6 +259,7 @@ sub mode_forage()
 	UPDATEHUD "Forage"
 	CLEARCURSOR TRUE
 	/if (!${Me.Standing}) /stand
+	/call check_buff_routines TRUE
 	/doability forage
 	CLEARCURSOR TRUE
 	/doevents
@@ -231,6 +298,9 @@ sub mode_drag()
 
 
 
+
+
+
 |***
  *	DES: turns the toon into a hunter of things.
  *	USE: /hunt
@@ -248,66 +318,27 @@ sub mode_hunt()
 	/for _count 1 to ${HuntMobList.Count[|]}
 		/if (${Spawn[npc ${HuntMobList.Arg[${_count},|]}].ID} ${If[${setModeAgro},radius ${setModeAgro},]}) {
 			/varset Target2Kill ${NearestSpawn[npc ${HuntMobList.Arg[${_count},|]}].ID}
-			| /call echos hunt 0 0 ${Target2Kill}
+			/call echos hunt 0 0 ${Target2Kill}
 			/call Event_SetVar NA watchSpawn Common "${Spawn[${Target2Kill}].DisplayName}"
 			/goto :haveatarget
 		}
 	/next _count	
 
+	:haveatarget
 	/if (!${Target2Kill}) {
 		/call create_timer timer_wait_for_mob_to_kill ${tHunt_delay}
-		/call check_engaged
-		/if (!${Bool[${Macro.Return}]}) {
-			/if (${BuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
-			/if (${BuffSelf} && ${Bool[${SelfBuffCount}]} && !${timer_check_buffs_self}) /call check_buffs_self
-			/if (${BuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
-			/if ((${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
-		}
+		/call check_buff_routines TRUE
 	}
-	:haveatarget
-	
-	/if (${Spawn[${Target2Kill}].ID} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
-		:movetomob
-		/if (!${Spawn[${Target2Kill}].ID} || ${Spawn[${Target2Kill}].Dead}) /goto :hunttargetdead
-		/doevents
-		ISDEAD	
-		/call check_watch_spawn
-		/if (!${Stick.Active} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
-			/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
-			/squelch /stick ID ${Target2Kill} ${CombatDistance} UW
-		}
-		CLEARCURSOR TRUE
-		/doevents
-		/delay 1		
-		
-		/if (${Spawn[${Target2Kill}].ID}) {
 
-			/if (${Spawn[${Target2Kill}].Distance} < ${MobAgro} && ${Spawn[${Target2Kill}].Distance} > 31) {
-				DEBUG distance ${Spawn[${Target2Kill}].Distance} range
-				/target ID ${Target2Kill}
-				| /delay 1s ${Target.ID} == ${Target2Kill}
-				/if (${Me.Pet.ID}) /pet attack
-				/if (${Target.ID} && ${Spawn[${Target2Kill}].LineOfSight}) /range
-			} else /if (${Spawn[${Target2Kill}].Distance} < ${CombatDistance}) {
-				DEBUG distance ${Spawn[${Target2Kill}].Distance} melee
-				| /call set_combat MELEE
-				/target ID ${Target2Kill}
-				/if (${Select[${Me.Class.ShortName},WAR,MON,SHD,BST,BER,RNG,BRD]}) {
-					/varset combat MELEE
-					/call core_${Me.Class.ShortName}
-				}
-				/if (${Me.Pet.ID}) /pet attack
-				/if (${Select[${Me.Class.ShortName},WIZ]}) /call core_cast "${HuntNuke}" 0 ${Target2Kill}
-				/if (${Select[${Me.Class.ShortName},CLR]}) /call core_cast "${tempPet}" ${buffGem} ${Target2Kill}
-			} 
-			/if (${Spawn[${Target2Kill}].ID}) /goto :movetomob
-		} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID}) {
-			:hunttargetdead
-			DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
-			/call set_stop TRUE
-			/call clear_combat
-		}
-	}
+	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
+	/if (${Spawn[${Target2Kill}].ID}) {
+		/call mode_get_mob
+	} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
+		/if (!${timer_scorched_earth_fail}) /call create_timer timer_scorched_earth_ignore_${Target2Kill} ${tScorchedEarth_ignore} 
+		DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
+		/call set_stop TRUE
+		/call clear_combat
+	}	
 		
 	:exit
 	UPDATEHUD
@@ -342,7 +373,7 @@ sub mode_petfarm()
 		/goto :exit
 	}
 	/call check_watch_spawn
-
+	| /call check_buff_routines TRUE
 	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} zradius ${zradius} targetable]}) {
 		/varset _spawnCount ${SpawnCount[npccorpse ${If[${setIgnoreLOS},,los]} radius ${MobAgro} zradius ${zradius}]}	
 		/varset Target2Kill ${Spawn[${NearestSpawn[1, ${If[${setIgnoreLOS},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}
@@ -441,7 +472,8 @@ sub mode_scorched_earth()
 		/goto :exit
 	}
 	/call check_watch_spawn
-
+	/call check_buff_routines TRUE
+	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
 	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} ${If[${setModeAgro},radius ${setModeAgro},]} targetable]}) {
 		/varset _spawnCount ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} ${If[${setModeAgro},radius ${setModeAgro},]} targetable]}	
 		/varset Target2Kill ${Spawn[${NearestSpawn[1, npc ${If[${setIgnoreLOS},,los]} ${If[${setModeAgro},radius ${setModeAgro},]} targetable]}].ID}
@@ -476,51 +508,19 @@ sub mode_scorched_earth()
 		/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) /call core_cast "Summon Companion" alt 0
 		/goto :exit
 	}
-	
-	VOUT Kill ${sep} [${ctar}${Spawn[id ${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target}].LineOfSight},${cgood}${Target.Distance}\ax,${cbad}${Spawn[id ${Target2Kill}].Distance}\ax]}
+	/call echos hunt 0 0 ${Target2Kill}
 
 	:gettarget
 	/doevents
 	
 	/if (!${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]} && !${timer_scorched_earth_ignore_${Target2Kill}}) {
 		/if (${Spawn[${Target2Kill}].ID}) {
-			:movetomob
-			/if (!${Spawn[${Target2Kill}].ID} || ${Spawn[${Target2Kill}].Dead}) /goto :hunttargetdead
-			/doevents
-			ISDEAD
-			CLEARCURSOR TRUE
-			/doevents
-				
-			/call check_watch_spawn
-			/if (!${Stick.Active} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
-				/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
-				/squelch /stick ID ${Target2Kill} ${CombatDistance} UW
-			} else /if (${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) {
-				/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
-				/target ID ${Target2Kill}
-				/goto :killmob
-			}
-					
-			/if (${Spawn[${Target2Kill}].Distance} < ${MobAgro} && ${Spawn[${Target2Kill}].Distance} > 31) {
-				DEBUG distance ${Spawn[${Target2Kill}].Distance} range
-				/target ID ${Target2Kill}
-				/if (${Me.Pet.ID} && !${Me.Pet.Target.ID}) /pet attack
-				/if (${Target.ID} && ${Spawn[${Target2Kill}].LineOfSight}) /range
-			} else /if (${Spawn[${Target2Kill}].Distance} < ${CombatDistance}) {
-				:killmob
-				DEBUG distance ${Spawn[${Target2Kill}].Distance} melee
-				/call set_combat MELEE
-				/if (${Me.Pet.ID} && !${Me.Pet.Target.ID} && ${Me.Pet.Distance}) /pet attack
-				/if (${Select[${Me.Class.ShortName},WIZ]}) /call core_cast "${HuntNuke}" 0 ${Target2Kill}
-				/if (${Select[${Me.Class.ShortName},CLR]}) /call core_cast "${tempPet}" ${buffGem} ${Target2Kill}
-			} 
-			/if (${Spawn[${Target2Kill}].ID} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) /goto :movetomob
+			/call mode_get_mob
 		} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
 			/if (!${timer_scorched_earth_fail}) /call create_timer timer_scorched_earth_ignore_${Target2Kill} ${tScorchedEarth_ignore} 
-				:hunttargetdead
-				DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
-				/call set_stop TRUE
-				/call clear_combat
+			DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
+			/call set_stop TRUE
+			/call clear_combat
 		}
 	}
 	
@@ -545,3 +545,62 @@ sub mode_scorched_earth()
 	:exit
 	UPDATEHUD
 /return
+
+
+
+|***
+ *	DES: Harvest Mode
+ *	USE: /call mode_Harvest
+ *	INI: core.zone.ini [zone]->HarvestList=
+ *  NOTE: Will run around and pick up shit off the ground
+ ***|
+sub mode_harvest()
+	DEBUG ${cbug}mode_harvest()\ax
+	/declare _count int local
+	
+	
+	/call check_buff_routines TRUE
+	/if (${Cursor.ID}) /call sort_cursor TRUE
+	/for _count 1 to ${HarvestList.Count[|]}
+		/if (${GroundItemCount[${HarvestList.Arg[${_count},|]}]}) {
+			/call get_ground_harvest "${HarvestList.Arg[${_count},|]}"
+		} else {
+			/if (!${timer_Harvest_delay}) /call create_timer timer_Harvest_delay ${tHarvest_delay}
+		}
+	/next _count	
+
+	:exit
+/return
+
+
+|***
+ *	DES: moves tot he ground item and picks it up
+ *	USE: /call get_ground_harvest "ITEM NAME"
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub get_ground_harvest(string _tmpItem)
+	DEBUG ${cbug}get_ground_harvest(Harvest: ${_tmpItem})\ax
+	/squelch /itemtarget ${_tmpItem}
+	/delay 2s ${Bool[${Ground.ID}]}
+	/if (${Bool[${Ground.ID}]}) {
+		/if (${Ground.Distance3D} < ${setModeAgro}) {
+			:loopMove 
+			/face nolook loc ${Ground.Y}, ${Ground.X}
+			/delay 1 
+			/keypress forward hold 
+			/if (${Ground.Distance3D} > 15) /goto :loopMove
+			/keypress forward
+			/click left item
+			/delay 5s (${Cursor.ID})
+			/delay ${Math.Rand[10]}
+			| VOUT Keep ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax] 
+			| /autoinv
+			CLEARCURSOR TRUE
+			/delay 5s (!${Cursor.ID})
+			/delay ${Math.Rand[10]}
+		}
+	}
+/return
+
+

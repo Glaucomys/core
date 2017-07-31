@@ -18,7 +18,7 @@
 sub check_versions()
 	DEBUG ${cbug}set_versions()\ax
 
-	/declare versionCore				string	outer 3.7.0
+	/declare versionCore				string	outer 3.7.4
 	/declare versionCLR 				string 	outer 2.1.3
 	/declare versionDRU 				string 	outer 2.0.1 
 	/declare versionSHM 				string 	outer 1.5.1
@@ -64,6 +64,10 @@ sub fix_INI_declares()
 	
 	| timer	
 	/ini "${INICore}" "Timer" "tPetFarm_delay" NULL
+	
+	| wizard
+	/ini "${INIFile}" "Spells" "HuntNuke" NULL
+
 	
 	
 
@@ -206,7 +210,7 @@ sub update_zone_list(string _list)
 /return 
  
 
- 
+
 |***
  *	DES: check/create the zone base INI entries.
  *	USE: /call check_zone_INI
@@ -220,17 +224,71 @@ sub check_zone_INI(string _sender)
 	/declare _count 				int local	
 	/declare _listtype 			string local	
 	/declare _list 					string local ${ZoneFileList}
+	/declare _tmpString			string local
 	
-	/for _count 1 to ${_list.Count[|]}
-		/varset _listtype ${_list.Arg[${_count},|]}
-		/if (!${Bool[${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_listtype}" ""
-		/varset ${_listtype} ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
-	/next _count	
-	
-	| set safezone 
-	/if (!${Bool[${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}]}) /ini "${INIZone}" "${Zone.ShortName}" "SafeZone" "FALSE"
-	/varset SafeZone ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
+	/if (${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {
+		/varset FullZoneName ${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}	
+		/varset SafeZone ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
+		
+		/for _count 1 to ${_list.Count[|]}
+			/varset _listtype ${_list.Arg[${_count},|]}
+			/if (!${Bool[${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_listtype}" ""
+			/varset ${_listtype} ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
+		/next _count				
 
+		/goto :exit
+	} else /if (${Bool[${Ini[${INIZone},"${Zone.Name}"]}]} || !${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} || !${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {	
+		| start swap. create a full zone name INI
+		/if (!${Bool[${Ini[${INIZone},"${Zone.Name}","SafeZone"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}]}) {
+			/ini "${INIZone}" "${Zone.Name}" "SafeZone" ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
+		} else /if (!${Bool[${Ini[${INIZone},"${Zone.Name}","SafeZone"]}]} && !${Bool[${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}]}) {
+			/ini "${INIZone}" "${Zone.Name}" "SafeZone" "FALSE"
+		}
+		
+		/for _count 1 to ${_list.Count[|]}
+			/varset _listtype ${_list.Arg[${_count},|]}
+			
+			| create full name
+			/if (!${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}]}) {
+				/varset _tmpString ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
+				/ini "${INIZone}" "${Zone.Name}" "${_listtype}" "${_tmpString}"
+			} else /if (!${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]} && !${Bool[${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}]}) {
+				/ini "${INIZone}" "${Zone.Name}" "${_listtype}" ""
+			}
+		/next _count	
+		
+
+		| create new short name section entries	
+		
+		| delete the short name and start the recreation	
+		/if (${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} && ${Zone.ShortName.NotEqual[${Zone.Name}]}) /ini "${INIZone}" "${Zone.ShortName}" NULL NULL
+		
+		| create full zone name and load
+		/ini "${INIZone}" "${Zone.ShortName}" "FullZoneName" "${Zone.Name}"
+		/varset FullZoneName ${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}		
+
+		| create safezone and load 
+		/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" ${Ini[${INIZone},"${Zone.Name}","SafeZone"]}
+		/varset SafeZone ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
+		
+		
+		| create mob entries and load
+		/for _count 1 to ${_list.Count[|]}
+			/varset _listtype ${_list.Arg[${_count},|]}
+			/if (${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]}) {
+				/varset _tmpString ${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}
+				/ini "${INIZone}" "${Zone.ShortName}" "${_listtype}" "${_tmpString}"
+			} else /if (!${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]} ) {
+				/ini "${INIZone}" "${Zone.ShortName}" "${_listtype}" ""
+			}
+			/varset ${_listtype} ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
+		/next _count	
+		
+		| delete the full name and hope this shit works
+		/if (${Bool[${Ini[${INIZone},"${Zone.Name}"]}]} && ${Zone.Name.NotEqual[${Zone.ShortName}]}) /ini "${INIZone}" "${Zone.Name}" NULL NULL
+	}
+	
+	
  	:exit
 /return 
 
@@ -495,7 +553,7 @@ sub declare_base()
 	/call DeclareVar markerDead									bool		outer FALSE
 	
 	| non-standard mode control
-	/call DeclareVar modeTypes									string	outer "stop|fish|forage|drag|petfarm|scorch|hunt"
+	/call DeclareVar modeTypes									string	outer "stop|fish|forage|drag|petfarm|scorch|hunt|harvest"
 	/call DeclareVar setMode										bool		outer FALSE
 	/call DeclareVar setModeType								string	outer FALSE
 	/call DeclareIniVar setModeAgro							int			Common FALSE 
@@ -506,6 +564,7 @@ sub declare_base()
 	/call DeclareVar setModeHunt								bool		outer FALSE
 	/call DeclareVar setModeFish								bool		outer FALSE
 	/call DeclareVar setModeSkill								bool		outer FALSE
+	/call DeclareVar setModeHarvest							bool		outer FALSE
 	
 	
 	
@@ -547,7 +606,9 @@ sub declare_base()
 	/call DeclareVar NoColdList       					string 	outer NULL
 	/call DeclareVar CharmMobList      					string 	outer NULL
 	/call DeclareVar SafeZone		       					string 	outer NULL
+	/call DeclareVar FullZoneName      					string 	outer NULL
 	/call DeclareVar HuntMobList       					string 	outer NULL
+	/call DeclareVar HarvestList       					string 	outer NULL
 	
 	
 	
@@ -560,7 +621,7 @@ sub declare_base()
 	/call DeclareVar AllClassList								string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
 	/call DeclareVar AASnareList								string 	outer |RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK
 	/call DeclareVar RezTokenList								string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
-	/call DeclareVar ZoneFileList								string 	outer |ExcludeList|NoMezzList|NameList|RangeList|NoCastList|NoMeleeList|HuntMobList|NoFireList|NoPoisonList|NoMagicList|NoCorruptionList|NoColdList|NoDiseaseList|CharmMobList
+	/call DeclareVar ZoneFileList								string 	outer |NameList|ExcludeList|NoMezzList|RangeList|NoCastList|NoMeleeList|HuntMobList|CharmMobList|NoFireList|NoPoisonList|NoMagicList|NoCorruptionList|NoColdList|NoDiseaseList|HarvestList
 
 
 	
@@ -592,6 +653,7 @@ sub declare_base()
 	/call DeclareIniVar	tScorchedEarth_delay		string	Timer	5s	
 	/call DeclareIniVar	tScorchedEarth_fail			string	Timer	1m	
 	/call DeclareIniVar	tScorchedEarth_ignore		string	Timer	30s	
+	/call DeclareIniVar	tHarvest_delay					string	Timer	1s	
 
 
 	| mod rod recovered addicts
@@ -673,6 +735,9 @@ sub declare_common()
 	/call DeclareIniVar setBroadcast						string	Common TRUE	
 	/call DeclareIniVar relayTells							string	Common FALSE /relay	
 	/call DeclareIniVar zradius									int			Common 50	
+	/call DeclareIniVar ModeNuke								string	Common FALSE	
+	/call DeclareIniVar autoCursor							bool		Common FALSE	
+	
 	
 	| watch spawn stuff
 	/call DeclareVar hudwatchspawn											string	outer FALSE
@@ -1008,7 +1073,6 @@ sub declare_WIZ()
 	/call DeclareIniVar Nuke7 									string 	Spells FALSE
 	/call DeclareIniVar Nuke8 									string 	Spells FALSE
 	/call DeclareIniVar tempPet						 			string	Pet "Yulin's Pyroblade"
-	/call DeclareIniVar HuntNuke								string 	Spells "Cloudburst Stormstrike"
 	
 	
 	/call DeclareIniVar fay 										string	Transport "Translocate: Fay"
@@ -2664,7 +2728,7 @@ sub Event_send(string line, string _sender, string _location)
 			/varset _portList[14] --Port List End
 		} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
 			/varset _portList[1] Alaris: pillars, sarith 
-			/varset _portList[2] Antonica: northkarna, commonlands, nektulos, qeyenos, northro, cazic, undershore, westkarana
+			/varset _portList[2] Antonica: northkarana, commonlands, nektulos, qeyenos, northro, cazic, undershore, westkarana
 			/varset _portList[3] Discord: wallofslaughter, bloodfields
 			/varset _portList[4] Faydwer: fay, dragonscale
 			/varset _portList[5] Kunark: lceanium, dreadlands
@@ -4122,4 +4186,34 @@ sub Bind_sendPetSwarmPerc(string _sendpetswarmperc)
 /return	
 
 
+|***
+ *	DES: 
+ *	USE: /safezone
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind SafeZone /safezone
+sub Bind_SafeZone()
+	/if (${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}) {
+		/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" "FALSE"
+		/varset SafeZone FALSE
+	} else /if (!${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}) {
+		/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" "TRUE"
+		/varset SafeZone TRUE
+	}
+	/call echos switch "Safe Zone ${sep} ${cinfo}${Zone.Name}\ax" SafeZone
+/return
 
+
+
+|***
+ *	DES: 
+ *	USE: /cursor
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind autoCursor /cursor
+sub Bind_autoCursor()
+	/call Event_SetVar NA autoCursor Common ${If[${autoCursor},FALSE,TRUE]}  
+	/call echos switch "Auto Inventory Cursor" autoCursor
+/return	

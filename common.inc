@@ -67,7 +67,11 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, bool _
 		NOUT Initializing Core: ${cinfo}${versionCore}\ax ${sep} ${Me.Class} ${cinfo}${version${Me.Class.ShortName}}\ax
 	} else /if (${_type.Equal[zone]}) {
 		| zone initialization
-		NOUT ${onotice} ${sep} Setting: ${cinfo}${Zone}\ax: \a-w${Zone.ShortName}\ax [\a-y${Zone.ID}\ax]
+		/if (${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {
+			NOUT Setting Zone ${sep} ${cinfo}${Zone.Name}\ax
+		} else {
+			NOUT Creating Zone ${sep} ${cinfo}${Zone.Name}\ax
+		}
 	} else /if (${_type.Equal[help]}) {
 		| help command
 		| NOUT Use ${cinfo}/info\ax to list '${cinfo}/\ax' commands.
@@ -83,17 +87,15 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, bool _
 	} else /if (${_type.Equal[hunt]}) {
 		| hunt
 		NOUT Hunt ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax] ${sep} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}${Int[${Spawn[${_tmpID}].Distance}]}\ax,${cbad}${Int[${Spawn[${_tmpID}].Distance}]}\ax]}
-	} else /if (${_type.Equal[hunter]}) {
-		| hunter info
-		NOUT Hunter Mode: ${sep} ${oenabled}
-		NOUT Hunter List: ${cinfo}${HuntMobList}\ax
-		NOUT Hunter Agro Range: ${If[${setHunterAgro},${cinfo}${setHunterAgro}\ax,${cinfo}Zone\ax]}
+	} else /if (${_type.Equal[mode]}) {
+		| mode echos...
+		NOUT Mode ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
 	} else /if (${_type.Equal[listexists]}) {
 		| exists in zone.ini lists already
 		NOUT ${onotice} ${sep} ${cinfo}${Target.DisplayName}\ax is already in list ${sep} [${ctar}${_verbage}\ax]
 	} else /if (${_type.Equal[petfarm]}) {
 		| petfarm
-		VOUT Pet: ${cinfo}${Me.Pet.DisplayName}\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Spawn[${Target2Kill}].Distance}\ax,${cbad}${Spawn[${Target2Kill}].Distance}\ax]}
+		VOUT Pet ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Spawn[${Target2Kill}].Distance}\ax,${cbad}${Spawn[${Target2Kill}].Distance}\ax]}
 		| ${sep} ${sepO}${ctar}${_tmpVariable}\ax${sepC} ${If[${${_tmpVariable}} == 1,target,targets]}
 	} else /if (${_type.Equal[pull]} && ${Target2Kill}) {
 		| pull
@@ -305,7 +307,7 @@ sub cast_summon_pet()
 		/delay 5s ${Me.Pet.ID}
 	}
 	/if (${usePet} && !${Me.Pet.ID})  {
-		VOUT Making a new pet: ${csp}${PetTypeSpell}\ax
+		VOUT Building ${sep} ${csp}${PetTypeSpell}\ax
 		/call core_cast "${PetTypeSpell}" ${buffGem} 0 
 		/call create_timer timer_check_pet_buffs 20
 		/delay 20s !${Me.Casting.ID}
@@ -477,8 +479,8 @@ sub auto_adjust_EXP()
 		/alternateadv off
 	| set to AA cause the cleric rules	
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && (${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int})) {
-		VOUT Maintain EXP ${sepO}${cinfo}${MaintExpLvl}%\ax${sepC}. AA: ${sepO}${cinfo}${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}\ax${sepC}. 
-		VOUT Adjusting EXP to full AA.
+		VOUT Maintain EXP ${sep} ${sepO}${cinfo}${MaintExpLvl}%\ax${sepC}. AA: ${sepO}${cinfo}${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}\ax${sepC}. 
+		VOUT Adjusting EXP ${sep} Setting to full AA.
 		/alternateadv on 100
 	| set back to exp cause nothing else to buy
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && (${Me.AAPoints} == ${Float[${Math.Calc[${Me.Level}*2]}].Int})) {
@@ -509,7 +511,7 @@ sub check_aura()
 	
 	| Aura: berzerker, monk
 	/if (${Bool[${Aura1Buff}]} && ${Select[${Me.Class.ShortName},BER,MNK]} && !${Bool[${Me.Aura[1].Equal[${Aura1Buff}]}]}) {
-		VOUT Disc: ${csp}${Aura1Spell}\ax
+		VOUT Disc ${sep} ${csp}${Aura1Spell}\ax
 		/disc ${Aura1Spell}
 		| /call core_cast "${Aura1Spell}" ${buffGem} ${Me.ID}
 		/delay 8s
@@ -521,7 +523,7 @@ sub check_aura()
 		/call fix_gem_id "${buffGem}"
 		/declare _gem			int local ${Macro.Return}
 		/call scribe "${Aura1Buff}" "${_gem}" 10
-		VOUT Pulse: ${csp}${Me.Gem[${_gem}].Name}\ax
+		VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
 		/melody ${_gem}
 		/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
 		/delay 2 
@@ -554,7 +556,7 @@ sub intialize_item_buffs()
 	DEBUG ${cbug}intialize_item_buffs()\ax
 	ISDEAD
 	/doevents
-	VOUT Initializing Item Click Buffs
+	| VOUT Initializing Item Click Buffs
 	/declare ClickItem											int			outer 1
 	/declare InvItem              					int			local 0
 	/declare ContainerItem									int			local 0
@@ -644,7 +646,7 @@ sub check_buffs_item()
 
  	CHECKEXIT
   /if (${Me.ItemReady[${IllusionItem}]} && (!${Bool[${Me.Buff[${IllusionBuff}]}]}) && (${Spell[${IllusionBuff}].Stacks})) {
-		VOUT Item: ${citem}${IllusionItem}\ax
+		VOUT Item ${sep} ${citem}${IllusionItem}\ax
  		/call MQ2Cast "${IllusionItem}" item 30s
 | 		/nomodkey /useitem ${IllusionItem}
  	}  	
@@ -676,7 +678,7 @@ sub remove_unwanted_buffs()
 		/doevents
 		ISDEAD
 		/if (${Bool[${Me.Buff[${_remove.Arg[${_count},|]}]}]})  {
-			VOUT Buff ${cbad}${_remove.Arg[${_count},|]}\ax found. Removing it.
+			VOUT Buff ${sep} ${cbad}${_remove.Arg[${_count},|]}\ax found. Removing it.
 			/squelch /removebuff ${_remove.Arg[${_count},|]}
 		}
 	/next _count		
@@ -852,7 +854,7 @@ sub check_buffs_BC()
 			/if (!${Bool[${Buff${_b}}]} || !${Bool[${Buff${_b}chk}]} || !${Bool[${BCBuff${_b}Class}]} || (${Raid.Members} && ${Buff${_b}noBCinRaid}) || (!${Me.SpellReady[${Buff${_b}}]} && ${Me.Gem[${Buff${_b}}]}) || !${NetBots[${NetBots.Client[${_x}]}].Stacks[${Spell[${Buff${_b}chk}].ID}]}) /goto :skipBCspell
 			DEBUG spell=${_b}/${BuffCount}: ${Buff${_b}chk} Stacks:${NetBots[${NetBots.Client[${_x}]}].Stacks[${Spell[${Buff${_b}chk}].ID}]}
 			/if (${Me.CurrentMana} > ${Spell[${Buff${_b}}].Mana} && ${NetBots[${NetBots.Client[${_x}]}].Stacks[${Spell[${Buff${_b}chk}].ID}]} && ${BCBuff${_b}Class.Find[${Spawn[${NetBots.Client[${_x}]}].Class.ShortName}]}) { 
-  		  VOUT BC Buff: ${csp}${Buff${_b}}\ax ${sep} [${cpc}${NetBots.Client[${_x}]}\ax]
+  		  VOUT BC Buff ${sep} ${csp}${Buff${_b}}\ax ${sep} [${cpc}${NetBots.Client[${_x}]}\ax]
 				:retrycastcheckbcbuffs
 				/call MQ2Cast "${Buff${_b}}" ${buffGem} 10s -targetid|${NetBots[${NetBots.Client[${_x}]}].ID} 	
 				/if (${Macro.Return.Equal[CAST_FIZZLE]}) /goto :retrycastcheckbcbuffs
@@ -975,15 +977,12 @@ sub do_rest()
 	}
 
 	/if (${AutoBot} && (${Bool[${Group.Members}]} && ${Group.MasterLooter.ID}==${Me.ID}) && ${Me.UseAdvancedLooting} && !${AdvLoot.LootInProgress} && !${Stick.Active}) /call do_loot
-	
 	/varset _needrest FALSE
-
-	| /if (${Bool[${autoRest}]} && !${Me.Casting.ID} && !${Me.Moving} && !${Select[${Me.CombatState},COMBAT,ACTIVE]} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) {
 	/if (${Bool[${autoRest}]} && !${Me.Casting.ID} && !${Me.Moving} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) {
 			
 		| Hybrid: RNG,BRD,SHD,BST,PAL
 		/if (${MeleeList.Find[${Me.Class.ShortName}]} && ${CastList.Find[${Me.Class.ShortName}]}) {
-			| DEBUG REST RNG,BRD,SHD,BST,PAL
+			DEBUG REST RNG,BRD,SHD,BST,PAL
 			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/call use_mod_rod
@@ -1001,7 +1000,7 @@ sub do_rest()
 		
 		| Melee: WAR,MNK,ROG,BER
 		/if (${MeleeList.Find[${Me.Class.ShortName}]} && !${CastList.Find[${Me.Class.ShortName}]}) {
-			| DEBUG REST WAR,MNK,ROG,BER
+			DEBUG REST WAR,MNK,ROG,BER
 			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/call cast_disc_breather
 			/if (${Select[${Me.Class.ShortName},WAR]}) {
@@ -1013,7 +1012,7 @@ sub do_rest()
 		
 		| Caster: CLR,DRU,SHM,ENC,WIZ,NEC,MAG
 		/if (!${MeleeList.Find[${Me.Class.ShortName}]} && ${CastList.Find[${Me.Class.ShortName}]}) {
-			| DEBUG REST CLR,DRU,SHM,ENC,WIZ,NEC,MAG
+			DEBUG REST CLR,DRU,SHM,ENC,WIZ,NEC,MAG
 			/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/call use_mod_rod
 
@@ -1040,12 +1039,7 @@ sub do_rest()
 		DEBUG RESTING ${Me.PctMana} / ${Me.PctEndurance}
 		UPDATEHUD "REST"
 		/if (${Me.State.NotEqual[SIT]} && !${Bool[${Me.Mount.ID}]}) /sit
-
-			| /if (${setPullMode} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) {
-			| 	/delay ${Math.Calc[${Math.Rand[5]}+2]}s ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}
-			| } else /if (!${setPullMode}) {
-				/delay 1
-			| }
+		/delay 1
 		CHECKTIE
 		ISDEAD
 		/goto :loopneedmorerest
@@ -1159,7 +1153,7 @@ sub click_item(bool _clickEpic)
  *  NOTE: 
  ***|
 sub sort_cursor(bool _ignoreTimer)
-	DEBUG ${cbug}sort_cursor()\ax
+	DEBUG ${cbug}sort_cursor(Ignore Timer: ${_ignoreTimer})\ax
 	/if (${Bool[${_ignoreTimer}]} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /goto :ignoretimer
 	/if (${AutoBot} && ${Bool[${timer_clear_cursor}]}) /goto :exit
 	/if (!${AutoBot} && !${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /goto :exit
@@ -1173,13 +1167,13 @@ sub sort_cursor(bool _ignoreTimer)
 		/if (${Cursor.ID}) /varset _cursorChoice ${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"]}
 		/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]} || ${Select[${_cursorChoice},Keep,Sell,Announce]}) {
 			/if (${Select[${_cursorChoice},Announce]}) ECHOCHANNEL Cursor: ${Cursor.Name}
-			/if (${Cursor.ID}) VOUT Cursor: Keep ${sep} ${cinfo}${Cursor.Name}\ax
+			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax]
 			/if (${Cursor.ID}) /nomodkey /autoinventory
 		} else /if (${Select[${_cursorChoice},Destroy]}) {
-			/if (${Cursor.ID}) VOUT Cursor: ${odestroy} ${sep} ${cinfo}${Cursor.Name}\ax
+			/if (${Cursor.ID}) VOUT Cursor ${sep} ${odestroy} ${sep} ${cinfo}${Cursor.Name}\ax
 			/if (${Cursor.ID} && ${_cursorChoice.Equal[Destroy]}) /nomodkey /destroy
 		} else /if (${Select[${_cursorChoice},Leave]}) {
-			/if (${Cursor.ID}) VOUT Cursor: Leave ${sep} ${cinfo}${Cursor.Name}\ax
+			/if (${Cursor.ID}) VOUT Cursor ${sep} ${oleave} ${sep} ${cinfo}${Cursor.Name}\ax
 			/if (${Cursor.ID} && ${_cursorChoice.Equal[Leave]}) /nomodkey /drop
 		} else /if (${Select[${_cursorChoice},Ignore]}) {
 			/goto :exit
@@ -1200,7 +1194,7 @@ sub sort_cursor(bool _ignoreTimer)
  ***|
 sub set_xtarget()
 	DEBUG ${cbug}setXTarget()\ax 
-	VOUT Sorting XTargets every ${cinfo}${tXHeal}\ax
+	VOUT Sorting XTargets ${sep} ${cinfo}${tXHeal}\ax
 	/declare _x 				int 		local 
 	/declare _b 				int 		local 0
 	/declare _count 		int			local
@@ -2081,7 +2075,6 @@ sub send_pet(int _tmpID)
 		
 	/if (${usePet} && ${Me.Pet.ID} &&  (${Target.PctHPs} <= ${sendPetPerc} || ${ignoreEngageAt}) && !${Bool[${Me.Pet.Target}]}) {
 		/call echos petfarm "filler" ${Target2Kill}
-		| VOUT Pet: ${cinfo}${Me.Pet.DisplayName}\ax ${sep} [${If[${Bool[${Target.ID}]},${ctar}${Target.DisplayName}\ax,${cbad}BAD TARGET\ax]}] ${sep} ${If[${Spawn[${Target}].LineOfSight},${cgood}${Target.Distance}\ax,${cbad}${Target.Distance}\ax]}
 		/pet attack
 	}
 	
@@ -2157,7 +2150,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| no target
 	/if (!${Select[${_type},item]} && ${Bool[${_tmpID}]} && !${Target.ID}) /varset _bail no_target
 	| moving?
-	/if (!${Select[${_type},alt,item,disc]} && (${Stick.Active} || ${Me.Moving} || ${AdvPath.Following})) /varset _bail im_moving
+	/if (!${Select[${_type},alt,item,disc]} && ((${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) || ${Me.Moving} || ${AdvPath.Following})) /varset _bail im_moving
 	| spell casting?
 	/if (!${Select[${_type},alt,item,disc]} && ${Me.Casting.ID}) /varset _bail im_casting_spell
 	| line of site valid?
@@ -2237,12 +2230,12 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| Spell
 	/if (!${Select[${_type},alt,item,disc]}) {
 		/if (${_tmpID} == 0) {
-			VOUT Spell: ${csp}${_spell}\ax
+			VOUT Spell ${sep} ${csp}${_spell}\ax
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
 		} else /if (${_tmpID} != 0 && ${Target.ID}) {
 			/if (${Me.Song[Gift of Mana (${GoMLevel})].ID}) /call cast_nuke_GoM ${_tmpID}
 			DEBUG MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
-			VOUT Spell: ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			VOUT Spell ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} ${If[${Bool[${_sub}]},${_sub},]} -targetid|${_tmpID}
 		}
 		/goto :cooldown
@@ -2251,10 +2244,10 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| AA
 	/if (${Select[${_type},alt]}) {
 		/if (${_tmpID} == 0) {
-			VOUT AA: ${csp}${_spell}\ax
+			VOUT AA ${sep} ${csp}${_spell}\ax
 			/call MQ2Cast "${_spell}" alt 
 		} else /if (${_tmpID} != 0 && ${Target.ID}) {
-			VOUT AA: ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			VOUT AA ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" alt -targetid|${_tmpID}
 		}
 		/goto :cooldown
@@ -2263,10 +2256,10 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| item
 	/if (${Select[${_type},item]}) {
 		/if (${_tmpID} == 0) {
-			VOUT Item: ${citem}${_spell}\ax
+			VOUT Item ${sep} ${citem}${_spell}\ax
 			/call MQ2Cast "${_spell}" item
 		} else /if (${_tmpID} != 0 && ${Target.ID}) {
-			VOUT Item: ${citem}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			VOUT Item ${sep} ${citem}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" item -targetid|${_tmpID}
 		}
 		/goto :cooldown
@@ -2274,8 +2267,8 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	
 	| disc
 	/if (${Select[${_type},disc]}) {
-		/if (${_tmpID} == 0) VOUT Disc: ${csp}${_spell}\ax
-		/if (${_tmpID} != 0 && ${Target.ID}) VOUT Disc: ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[ID ${_tmpID}].DisplayName}\ax]
+		/if (${_tmpID} == 0) VOUT Disc ${sep} ${csp}${_spell}\ax
+		/if (${_tmpID} != 0 && ${Target.ID}) VOUT Disc ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[ID ${_tmpID}].DisplayName}\ax]
 		/disc ${_spell}
 		/delay 5s !${Me.Casting.ID}
 		/goto :cooldown
@@ -2457,12 +2450,12 @@ sub use_skill_melee()
 
 	| taunt /setagro
 	/if (${Bool[${taunt}]} && ${Bool[${setAgroMode}]} && ${Me.AbilityReady[Taunt]} && ${Spawn[${Target2Kill}].Distance} <= 18 && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-		VOUT Melee: ${csp}Taunting\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+		VOUT Melee ${sep} ${csp}Taunting\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 		/if (${Target.ID}) /doability Taunt
 	}
 	| disarm
 	/if (${Bool[${disarm}]} && !${Skill[Disarm].Auto}  && ${Me.AbilityReady[Disarm]} && ${Spawn[${Target2Kill}].Distance} <= 15) {
-		VOUT Melee: ${csp}Disarm\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+		VOUT Melee ${sep} ${csp}Disarm\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 		/if (${Target.ID}) /doability Disarm
 	}
 	
@@ -2470,24 +2463,24 @@ sub use_skill_melee()
 	
 	| kick
  	/if (!${Select[${Me.Class.ShortName},MNK]} && ${Bool[${kick}]} && !${Skill[Kick].Auto} && ${Me.AbilityReady[Kick]} && ${Spawn[${Target2Kill}].Distance} <= 15) {
-		VOUT Melee: ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+		VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 		/if (${Target.ID}) /doability Kick
 	}
 	| bash
 	/if (${Bool[${bash}]} && !${Skill[Bash].Auto} && ${Me.AbilityReady[Bash]} && ${Spawn[${Target2Kill}].Distance} <= 15) {
-		VOUT Melee: ${csp}Bash\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+		VOUT Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 		/if (${Target.ID}) /doability Bash
 	}
 	
 	| Zerker only skill.
 	/if (${Bool[${frenzy}]} && !${Skill[Frenzy].Auto} && ${Me.AbilityReady[Frenzy]} && ${Spawn[${Target2Kill}].Distance} <= 13) {
-		VOUT Melee: ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+		VOUT Melee ${sep} ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 		/if (${Target.ID}) /doability Frenzy
 	}
 
 	| rogue only skill.
 	/if (${Bool[${backstab}]} && !${Skill[Backstab].Auto} && ${Me.AbilityReady[Backstab]} && ${Spawn[${Target2Kill}].Distance} <= 13) {
-		VOUT Melee: ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+		VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 		/if (${Target.ID}) /doability Backstab
 	}
 	
@@ -2495,24 +2488,24 @@ sub use_skill_melee()
 	/if (${Select[${Me.Class.ShortName},MNK]} && ${Spawn[${Target2Kill}].Distance} <= 15) {
 		| fist
 		/if (${Bool[${dragonpunch}]} && !${Skill[Dragon Punch].Auto} && ${Me.AbilityReady[Dragon Punch]}) {
-			VOUT Melee: ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Dragon Punch"
 		} else /if (${Bool[${eaglestrike}]} && !${Skill[Eagle Strike].Auto} && ${Me.AbilityReady[Eagle Strike]}) {
-			VOUT Melee: ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Eagle Strike"
 		} else /if (${Bool[${tigerclaw}]} && !${Skill[Tiger Claw].Auto} && ${Me.AbilityReady[Tiger Claw]}) {
-			VOUT Melee: ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Tiger Claw"
 		}
 		| kick
 	 	/if (${Bool[${kick}]} && !${Skill[Kick].Auto} && ${Me.AbilityReady[Kick]}) {
-			VOUT Melee: ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Kick
 		} else /if (${Bool[${flyingkick}]} && !${Skill[Flying Kick].Auto} && ${Me.AbilityReady[Flying Kick]}) {
-			VOUT Melee: ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Flying Kick"
 		} else /if (${Bool[${roundkick}]} && !${Skill[Rounf Kick].Auto} && ${Me.AbilityReady[Round Kick]}) {
-			VOUT Melee: ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Round Kick"
 		}		
 	}
@@ -2607,11 +2600,11 @@ sub cast_nuke_GoM(int _tmpID)
 	
 	/if (${Me.SpellReady[${GoMNuke}]}) {
 		/target ID ${_tmpID}
-		VOUT Dichotomic: ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+		VOUT Dichotomic ${sep} ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke}" gem${Me.Gem[${GoMNuke}]} -targetid|${_tmpID}
 	} else /if (${Me.SpellReady[${GoMNuke2}]}) {
 		/target ID ${_tmpID}
-		VOUT Dichotomic Backup: ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+		VOUT Dichotomic Backup ${sep} ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke2}" gem${Me.Gem[${GoMNuke2}]} -targetid|${_tmpID}
 	}
 		
@@ -2665,7 +2658,7 @@ sub check_buffs_raid()
 					/next _y
 					/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
 						CLEARCURSOR TRUE
-						VOUT Raid Buffing: ${csp}${Buff${_x}}\ax on [${cpc}${Raid.Member[${_i}].DisplayName}\ax]
+						VOUT Raid Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${Raid.Member[${_i}].DisplayName}\ax]
 						/call MQ2Cast "${Buff${x}}" ${buffGem} -targetid|${Raid.Member[${_i}].ID} 
 					}
 					/call create_timer timer_Raid_Buffs${Spell[${Buff${_x}chk}].ID}${Raid.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
@@ -2699,7 +2692,7 @@ sub cast_buffs_queue(string _sender, string _verbage)
    		/doevents
       /if (${_verbage.Find["${Buff${_i}Alias.Arg[${_a},|]}"]}) {
         /if (${_verbage.Find["pet"]} || ${_verbage.Find[${Spawn[pc ${_sender}].Pet.DisplayName}]} || ${Spawn[pet ${_sender}].ID}) {
-          VOUT Buffing ${cpc}${_sender}'s\ax Pet.
+          VOUT Buffing ${sep} ${cpc}${_sender}'s\ax Pet.
           /call queue_buff_add ${Spawn[pc ${_sender}].Pet.ID} ${_i}
         } else {
           DEBUG ${_sender} requested ${cinfo}${Buff${_i}}\ax
@@ -3029,35 +3022,38 @@ sub update_HUD_notices(string _mode)
 	| Mode Notice
 	| DEBUG HUD: Mode Notice
 	/if (${Bool[${setModeHunt}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MODE: Hunt - ${If[${setModeAgro},${setModeAgro},Zone]}
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Hunt[${If[${setModeAgro},${setModeAgro},Zone]}]
 		/varset _sep TRUE
 	}		
 	/if (${Bool[${setModeScorch}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MODE: Scorched Earth - ${If[${setModeAgro},${setModeAgro},Zone]}
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Scorch[${If[${setModeAgro},${setModeAgro},Zone]}]
 		/varset _sep TRUE
 	}		
+	/if (${Bool[${setModeHarvest}]}) {
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Harvest[${If[${setModeAgro},${setModeAgro},Zone]}]
+		/varset _sep TRUE
+	}	
 	/if (${Bool[${setModeDrag}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MODE: Corpse Drag
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Drag
 		/varset _sep TRUE
 	}
-	|***
 	/if (${Bool[${setModeForage}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MODE: Forage
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Forage
 		/varset _sep TRUE
 	}
 	/if (${Bool[${setModeFish}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MODE: Fish
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Fish
 		/varset _sep TRUE
 	}
 	/if (${Bool[${setModePetFarm}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MODE: Pet Farm
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Pet Farm
 		/varset _sep TRUE
 	}
 	/if (${Bool[${setModeSkill}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MODE: Skill Trainer
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Skill Trainer
 		/varset _sep TRUE
 	}		
-	***|
+
 		
 	
 	| WARNINGS FOR TOP OF HUD.. USE THIS SPARINGLY
@@ -3255,30 +3251,36 @@ sub set_crew(string _crewNumber)
 	/declare _count 				int local
 	/declare _clist 				string local ${Ini[${INICore},Group,${_crewNumber}]}
 	
-	| drop raids and groups for a fresh start	
+	| disband raid if exists
 	/if (${Raid.Members}) {
-		/bcaa //raiddisband
-		/delay 2s ${Raid.Members} == 0
-		/delay 1s
+		/for _count 1 to ${_clist.Count[|]}
+			/if (${Bool[${Raid.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //raiddisband
+			/delay 2s !${Bool[${Group.GroupSize}]}
+			/delay 1
+		/next _count	
 	}
+	
+	| disband group if exists
 	/if (${Group.GroupSize}) {
-		/bcaa //disband
-		/delay 2s !${Bool[${Group.GroupSize}]}
-		/delay 1
+		/for _count 1 to ${_clist.Count[|]}
+			/if (${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //disband
+			/delay 2s !${Bool[${Group.GroupSize}]}
+			/delay 1
+		/next _count			
 	}
 
-	| invite the members in the list...
+	| invite the members in the list
 	/for _count 1 to ${_clist.Count[|]}
 		ISDEAD
 		/if (!${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) {
-			NOUT Inviting ${cpc}${_clist.Arg[${_count},|]}\ax
+			VOUT Inviting ${sep} ${cpc}${_clist.Arg[${_count},|]}\ax
 			/invite ${_clist.Arg[${_count},|]}
 		}	
 	/next _count	
 	/delay 1s
 	/delay 12s ${Group.GroupSize} == ${_clist.Count[|]}
 	/if (${Group.GroupSize} != ${_clist.Count[|]}) {
-		VOUT ${owarning} ${sep} Group failed to form properly. Try again.
+		VOUT ${owarning} ${sep} Group failed to form properly.
 		/goto :exit
 	}
 	
@@ -3384,13 +3386,13 @@ sub scribe(string _spellname, string _spellgem, bool _wait)
 	/if (!${Me.Book[${_spellname}]}) {
 		/if (!${Me.Book[${_spellname}]} && !${timer_scribe_timer}) {
 			/call create_timer timer_scribe_timer 60s
-			VOUT You don't have ${csp}${_spellname}\ax in your book. Check INI.
+			VOUT ${onotice} ${sep} You don't have ${csp}${_spellname}\ax in your book.
 		}
 		/goto :exit
 	}
 
 	/if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /goto :exit
-	VOUT Scribe: ${csp}${Spell[${_spellname}].RankName}\ax
+	VOUT Scribe ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
 	DEBUG ${_gem} "${Spell[${_spellname}].RankName}"
 	/memspell ${_gem} "${Spell[${_spellname}].RankName}"
 	/if (${_wait}) {
@@ -4031,7 +4033,7 @@ sub Event_forcedloreleave(string line, string _itemName)
 	| /if (${AdvLoot.SList[1].Name}) {
 
 		/varset _itemName ${AdvLoot.SList[1].Name}
-		VOUT Loot INI: ${cinfo}${_itemName}\ax -> Leave 
+		VOUT Cursor ${sep} ${cinfo}${_itemName}\ax -> ${oleave} 
 		/ini "${INILoot}" "${_itemName.Left[1]}" "${_itemName}" Leave
 		| /echo "${_itemName}"  .. Leave
 	| }
@@ -4079,10 +4081,10 @@ sub do_loot()
 			/if (${AdvLoot.SList[${_scount}].ID} && !${Select[${_advlChoice},Leave,Keep,Destroy,Sell,Announce,Ignore]}) {
 				| Add item to ini if it not in there
 				/if (${AdvLoot.SList[${_scount}].NoDrop} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
-					VOUT ${oadd}: ${_advlItem} = Leave [no drop/lore].
+					VOUT ${oadd} ${sep} ${_advlItem} = ${oleave} [no drop/lore].
 					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Leave
 				} else {
-					VOUT ${oadd}: ${_advlItem} = Keep [default].
+					VOUT ${oadd} ${sep} ${_advlItem} = ${okeep} [default].
 					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Keep
 				}
 				| if we make a new entry, update shits.
@@ -4122,11 +4124,11 @@ sub do_loot()
 					/delay 1s !${AdvLoot.LootInProgress}
 					/advloot personal ${_pcount} leave
 				} else /if (${AdvLoot.PList[${_pcount}].NoDrop} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
-					VOUT Adding ${cinfo}${_advlItem}\ax = Leave loot file [no drop].
+					VOUT Cursor ${sep} ${cinfo}${_advlItem}\ax = ${oleave} loot file [no drop].
 					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Leave
 					/goto :looppersonalitem
 				} else {
-					VOUT Adding ${cinfo}${_advlItem}\ax = Keep loot file [default].
+					VOUT Cursor ${sep} ${cinfo}${_advlItem}\ax = ${okeep} loot file [default].
 					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Keep
 				}
 				/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
@@ -4147,7 +4149,7 @@ sub do_loot()
 					/delay 1s ${Cursor.Name.Equal[${_advlItem}]}
 					/delay 5
 					
-					VOUT ${odestroy} ${sep} ${cinfo}${_advlItem}\ax
+					VOUT Cursor ${sep} ${odestroy} ${sep} ${cinfo}${_advlItem}\ax
 					/if (${Cursor.Name.Equal[${_advlItem}]}) /destroy
 					/delay 1
 					 /if (${Window[ConfirmationDialogBox].Open}) {
@@ -4210,7 +4212,7 @@ sub vendor_buy(string _itemtoBuy, int _buyAmount)
 	} 	
 
 	/if (!${_listItem}) {
-		VOUT ${ocaution} couldn't find ${_itemtoBuy}
+		VOUT ${ocaution} ${sep} Couldn't find ${_itemtoBuy}
 		/goto :exit
 	} else {
 		/if (${Target.ID} == ${Spawn[npc alerynril].ID}) {
@@ -4221,7 +4223,7 @@ sub vendor_buy(string _itemtoBuy, int _buyAmount)
 		/delay 5       
 	}	
 
-	VOUT Buying ${citem}${_itemtoBuy}\ax 'till I get ${_buyAmount} 
+	VOUT Buying ${sep} ${citem}${_itemtoBuy}\ax 'till I get ${_buyAmount} 
 
 	:loopbuyitems
 	/doevents
@@ -4322,7 +4324,7 @@ sub vendor_sell_item(string _itemtoSell)
   /if (!${Window[MerchantWnd].Open}) /goto :exit
 
 	:loopsell
-	VOUT Selling ${citem}${_itemtoSell}\ax
+	VOUT Selling ${sep} ${citem}${_itemtoSell}\ax
 	/if (${InvSlot[pack${Select[${FindItem[=${_itemtoSell}].ItemSlot},23,24,25,26,27,28,29,30,31,32]}].Item.Container}) {
 		/squelch /nomodkey /itemnotify in Pack${Math.Calc[${FindItem[=${_itemtoSell}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${_itemtoSell}].ItemSlot2}+1]} leftmouseup
 	} else /if (${FindItem[=${_itemtoSell}].InvSlot}) {
@@ -4423,8 +4425,8 @@ sub get_target()
 				/varset Target2Kill ${_tmpID}
 				/varset _mobHP ${Spawn[id ${_tmpID}].PctHPs}
 				/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-					/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) VOUT Mez Immune: ${cbad}${Spawn[ID ${_tmpID}].DisplayName}\ax
-					/if (${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) VOUT Named: ${cbad}${Spawn[ID ${_tmpID}].DisplayName}\ax
+					/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) VOUT Mez Immune ${sep} ${cbad}${Spawn[ID ${_tmpID}].DisplayName}\ax
+					/if (${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) VOUT Named ${sep} ${cbad}${Spawn[ID ${_tmpID}].DisplayName}\ax
 					/varset _priorityMob TRUE
 				}
 			}
@@ -4930,7 +4932,6 @@ sub click_summon_food()
  *	DES: Summons Drink
  *	USE: /call click_summon_drink
  *	INI: toon INI [Meal]->
- 
  *  NOTE: 
  ***|
 sub click_summon_drink()
@@ -4951,3 +4952,28 @@ sub click_summon_drink()
 
 
 
+|***
+ *	DES: check all buff routines
+ *	USE: /call check_buff_routines [TRUE|FALSE] TRUE forces the check even when in manual
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_buff_routines(bool _force)
+	DEBUG ${cbug}check_buff_routines(Force: ${_force})\ax
+	/if (!${AutoBot} && !${_force}) /goto :exit
+	/doevents
+	ISDEAD
+	/if (!${Me.Invis}) {
+	  /if (${BuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
+		/call check_engaged
+		/if (!${Bool[${Macro.Return}]}) {
+			/if (${BuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
+			/if (${BuffSelf} && ${Bool[${SelfBuffCount}]} && !${timer_check_buffs_self}) /call check_buffs_self
+		  /if (${BuffRaid} && ${Bool[${BuffCount}]} && !${timer_check_buffs_raid}) /call check_buffs_raid
+			/if (${BuffBC} && ${Bool[${BuffCount}]} && !${timer_check_buffs_BC}) /call check_buffs_BC
+			/if (${BuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
+			/if ((${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
+		}
+	}
+	:exit
+/return

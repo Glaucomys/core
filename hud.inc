@@ -33,9 +33,10 @@ sub Bind_HUDUpdate(string Line)
 	/noparse /ini HUDPATH "loc2" "3,44,62,100,149,237,${Int[${Me.Y}]}, ${Int[${Me.X}]}, ${Int[${Me.Z}]}"
 
 	| mode
-	/noparse /ini HUDPATH "mode0" "3,5,74,255,255,255,Mode"
-	/noparse /ini HUDPATH "mode1" "3,44,74,255,255,0,${If[${Bool[${tmpMode}]},${tmpMode},]}"
-	/noparse /ini HUDPATH "mode2" "3,44,74,25,25,25,${If[${Bool[${tmpMode}]},,NONE]}"
+	/noparse /ini HUDPATH "mode0" "3,5,74,0,255,0,${If[${Bool[${autoCursor}]},Mode,]}"
+	/noparse /ini HUDPATH "mode1" "3,5,74,255,0,0,${If[${Bool[${autoCursor}]},,Mode]}"	
+	/noparse /ini HUDPATH "mode2" "3,44,74,255,255,0,${If[${Bool[${tmpMode}]},${tmpMode},]}"
+	/noparse /ini HUDPATH "mode3" "3,44,74,25,25,25,${If[${Bool[${tmpMode}]},,NONE]}"
 
 	| distance and LOS
 	/noparse /ini HUDPATH "LoS1" "3,5,86,255,255,255,LoS"
@@ -46,7 +47,6 @@ sub Bind_HUDUpdate(string Line)
 	/noparse /ini HUDPATH "target1" "3,5,98,255,255,255,Target"
 	/noparse /ini HUDPATH "target2" "3,103,97,100,149,237,${If[${Target.ID},[${Target.Class.ShortName} ${Target.Level}] ${Target.Name} ${If[${Bool[${Target.Guild}]},<${Target.Guild}>, ]}, ]}"
 	/noparse /ini HUDPATH "target3" "3,39,97,100,149,237,[     ][     ][     ]"
-
 
 	| engage ##
 	/noparse /ini HUDPATH "engage1" "3,44,98,255,255,255,${If[(!${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && !${ignoreEngageAt} && (${Bool[${MA1}]} || ${Bool[${MA2}]}),${engageAt},]}"

@@ -1,14 +1,151 @@
-Core Changelog
-Timestamp: YYYYMMDD
-Note: i have a spelling waiver. no, seriously i do..
+|***
+ *	changelog.txt
+ *	Core Change Log
+ *  Timestamp: YYYYMMDD
+ *
+ *  WHITEWASH means a /whitewash needs to be run to update the aliases
+ *  HUDUPDATE means you need to do a /hudupdate to make needed changes to the hud.ini
+ ***|
 
-TO DO LIST
-- remove pet buffing from /t buff queue
-- fix auto swapping of control toon for healers in raids.
+
+20170730
+Core Version 3.7.4
+HUDUPDATE
+- /cursor - toggle. clearing cursor items is no longer tied to automatic mode
+  -- enabled Core will apply core.loot.ini to whatever is on the cursor and deal with it.
+  -- disable Core will ignore whatever is on the cursor
+  -- toon.ini [Common]->AutoInventoryItem= will still override everything
+- /mode harvest now feeds off of core.loot.ini list file for everything you pick up
+- HUD - the word Mode is now GREEN for auto cursor inventory and RED for dont inventory shit
+- do_loot()
+  -- visual changes to output
+  -- keeping an item will also echo how many of that item you have on you
+- lot of other echo visual changes
+- /crew will no longer uses /bcaa. it is specfic to people in the list ONLY for all joining and disbanding purposes
+
+
+20170729
+Core Version 3.7.3
+- buffs
+  -- centralized the full buff check routine
+  -- /call check_buff_routines [TRUE|FALSE] TRUE to force checking even when not in Auto
+- modes
+  -- mode_get_mob() centralized mob acquisition and combat routines for modes Hunt and Scorch
+  -- Toon INI [Common] -> HuntNuke=
+    -- change this to a Nuke/AA/Disc/Item you want to use on mobs while in Hunt or Scorch
+    -- deleted cleric pet and wizard specific nukes. for hunt/scorch modes. use the [Common] one
+  -- if banestrike is enable, toons banestrike while in hunt or scorch
+  -- /range will (shoud) work as long as target is Line of Sight and within /agro,/zradius range
+  -- rewrote reacquire if target is killed while in route
+  -- simplified the HUD display for all modes
+  -- should summon range items when they are needed. unlike before
+  -- all modes (excluding drag) will check buff routines when not doing anything else important in auto or otherwise
+  -- NEW MODE Harvest: /mode harvest
+    -- will find and loot ground spawns according to the HarvestList in core.zone.ini for that specific zone
+    -- area you will harvest in adheres to /setmodeagro [##]
+    -- NOTE: the name of the item is from the display name from /mapfilter ground command. NOT the actual name of he item
+		-- harvest DOES NOT adhere to the loot.ini list file. you pick it up, you keep it
+
+   
+20170728
+Core Version 3.7.2
+- So.. going to full names for zone.ini section names was a bad call
+- core.zone.ini
+  -- reverting back to short names for zone sections
+  -- adding in a Key of FullZoneName with a value of the actual full name of the zone
+  -- all zone functions reset to short names
+- check_zone_INI()
+  -- will now load and create (reorganize) all zone sections in core.zone.ini
+  -- deleting key fillzonename will force a reset if needed
+- /safezone
+  -- will toggle the zone section key SafeZone True or FALSE
+- echos()
+  -- logic error in echoing hunter mode
+- modes
+  -- ending hunt or scorch will stop toon and clear combat
+  
+
+20170727
+Core Version 3.7.1
+* I would suggest making a backup of your zone file. just in case I screwed this up. *
+- core.zone.ini
+  -- changing INI sections from Zone.ShortName to Zone.Name
+  -- this is a change of attrition. when you go to a zone the first time it will make the section change for you
+  -- all settings will remain for the zone
+  -- the order of the lists is changes slightly
+- all zone functions adjusted to reflect full zone names and not zone shortnames
+  -- update_zone_list()
+  -- Event_setTargetList()
+  -- check_zone_INI()
+  
+
+20170726 
+WHITEWASH
+- alias: deleted /petengageat, /petswarmengageat
+- binds: added /petengageat, /petswarmengageat
+- /petengageat limited from 1,99 now
+- /petswarmengageat limited from 1,99 now
+
+
+20170723
+Core Version 3.7.0
+WHITEWASH
+--MODES-- non standard mode rewrite
+  -- new file: mode.inc
+  -- rename of all do_"modename"() subs -> mode_"name"()
+  -- force removed old mode entries from Toon INIs
+  -- all modes are now non-persistant
+  -- forage and fish no longer invis
+  -- centralized kill for all modes
+  -- all modes adhere to core.loot.ini list
+  -- all modes adhere to core.zone.ini excludemob lists
+  -- mode clearing added to /here, /resetcore, safezones (for DPS modes) and zoning
+  -- hunt, petfarm, scorch: do not work in safezones
+  -- modes can stack stack. /mode stop will disable all running modes
+# bind
+  -- deleted: /hunt, /forage, /scorchedearth, /drag, /fish, /petfarm
+  -- /mode [stop|hunt|fish|forage|scorch|drag|petfarm]
+  -- /setmodeagro [NULL|0-9999] (0 or NULL to set to entire zone. default. persistant)
+- alias
+  -- deleted: /HuntMobAgro
+- class.mag.inc
+  -- updated pre_combat() to match all other classes
+  -- removed ElementalForm/check from mage toon INI
+  -- removed cast_elemental_form(). covered by aa_now()
+- aa_now() no longer works in manual mode
+- disc_now() no longer works in manual mode 
+- /sb will cast [aa_now] and [disc_now] after normal buffs
+- tPetfarm_delay removed from core.ini and placed into the toons INI. default 1s
+
+
+20170721
+- do_scorched_earth_mode()
+  -- relocated echo so it will no longer show Excluded List mobs
+
+
+20170720
+- /relay will no longer relay pets telling you shit. they talk way too much
+- sort_cursor() no more echo if nothing on cursor
+
+
+20170714
+- do_pet_farm_mode()
+  -- fixed echos bug when no mobs to kill
+- do_scorched_earth_mode()
+  -- fixed echos() when not using a pet
+  -- added in a fail to get to mob timer [Timers]->tScorchedEarth_fail. 1 min by default 
+  -- added ignore for failed mobs [Timers]->tScorchedEarth_ignore. 30s by default
+  -- added in timed dealy when no mobs up [Timers]->tScorchedEarth_delay. 5s by default
+- Food and Drink code for you lazy bastards (espc me)
+  -- buy the food/drink clickie items from the marketplace
+  --Toons INI 
+    -- [Meal]->clickFoodDispenser  == the name of the item summoning the food
+    -- [Meal]->clickFoodItem       == name of the food summoned
+    -- [Meal]->clickFoodCount      == how many you want to keep in your inventory
 
 
 20170708
-- echo()
+- echos()
   -- includes tmp target ID
 	-- /call echos [type] "desc text" [VARIABLE] [Target ID] [FORCED]
 
@@ -84,7 +221,6 @@ Core Version 3.6.0
 - class.clr.inc
   -- GoM nuke not targeting again. this thing has issues
 - rewrite of echos()
-
 
 
 20170610
