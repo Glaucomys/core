@@ -14,14 +14,14 @@
  *  NOTE: 
  ***|
 sub core_BER()
-	DEBUG Loop start: ${cbug}core_BER()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
 	
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/if (${isValidTarget}) /call stick_to_target
@@ -44,7 +44,7 @@ sub core_BER()
 	/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 	:exit
 /return
@@ -58,7 +58,7 @@ sub core_BER()
  *  NOTE: 
  ***|
 sub disc_BER()
-	DEBUG ${cbug}disc_BER()\ax
+	DEBUGCLASS ${cbug}disc_BER()\ax
 	ISDEAD
 	/doevents
 	/if (${Me.CombatAbilityReady[${DiscOverwhelmingFrenzy}]}) /call core_cast "${DiscOverwhelmingFrenzy}" disc ${Target2Kill}
@@ -68,7 +68,6 @@ sub disc_BER()
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 		
 	/if (${Me.CombatAbilityReady[${DiscCombatFrenzy}]} && ${Me.CurrentEndurance} > ${Spell[${DiscCombatFrenzy}].EnduranceCost}) /call core_cast "${DiscCombatFrenzy}" disc ${Target2Kill}
-		
 		
 	/if (${Me.AltAbilityReady[Communion of Blood]} && ${Me.PctHPs} > 75 && ${Me.PctEndurance} < 50) /call core_cast "Communion of Blood" alt 0
 	/if (${Me.CombatAbilityReady[${DiscJolt}]} && ${Me.PctAggro} > 80 && ${Me.CurrentEndurance} > ${Spell[${DiscJolt}].EnduranceCost}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
@@ -117,9 +116,9 @@ sub get_agro_BER()
  *  NOTE: 
  ***|
 sub patch_heal_BER()
-	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/call check_exit
-	/if (${Macro.Return} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
 
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Communion of Blood]}) /call core_cast "Uncanny Resilience" alt 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Blood Sustenance]}) /call core_cast "Blood Sustenance" alt 0
@@ -138,11 +137,11 @@ sub patch_heal_BER()
  *  NOTE: 
  ***|
 sub click_DPS_BER()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
 	:exit
 /return

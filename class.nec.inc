@@ -14,11 +14,12 @@
  *  NOTE: 
  ***|
 sub core_NEC()
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	
 			/call sac_toon()
 
 |**	
-	DEBUG Loop start: ${cbug}core_NEC()\ax
+	DEBUGCLASS Loop start: ${cbug}core_NEC()\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
@@ -72,7 +73,7 @@ sub pet_heal_NEC()
  *  NOTE: 
  ***|
 sub disc_NEC()
-	DEBUG \atdisc.${Me.Class.ShortName}()\ax 
+	DEBUGCLASS \atdisc.${Me.Class.ShortName}()\ax 
 	/doevents
 	ISDEAD
 	/if ((${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
@@ -92,7 +93,7 @@ sub disc_NEC()
  *  NOTE: 
  ***|
 sub clickDPS_NEC()
-	DEBUG \atclickDPS.NEC()\ax 
+	DEBUGCLASS \atclickDPS.NEC()\ax 
 	/doevents
 	ISDEAD
 	/if ((${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
@@ -112,7 +113,7 @@ sub clickDPS_NEC()
  *  NOTE: 
  ***|
 sub castNecroDot()
-	DEBUG \atcastNecroDot()\ax 
+	DEBUGCLASS \atcastNecroDot()\ax 
 	/doevents
 	ISDEAD
 	/if (!${Bool[${dotR${set}-${gem}}]}) /goto :exitcastNecroDot
@@ -210,7 +211,7 @@ sub sac_toon()
  *  NOTE: 
  ***|
 sub dotCycle()
-	DEBUG \atdotCycle()\ax 
+	DEBUGCLASS \atdotCycle()\ax 
 	/doevents
 	/if (${AutoBot} && (${Bool[${NoCastList.Find[${Target.DisplayName}]}]} || ${Me.Moving} || ${Bool[${Target.Mezzed}]})) /goto :exitdotCycle
 	ISDEAD

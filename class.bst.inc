@@ -14,21 +14,20 @@
  *  NOTE: 
  ***|
 sub core_BST()
-	DEBUG Loop start: ${cbug}core_BST()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
 
-	/if (!${Me.Invis}) /call cast_AA_focused_paragon
-
 	/if (${AutoBot} && !${Me.Invis}) {
+		/call cast_AA_focused_paragon
 		/call check_engaged
-		/if (!${Macro.Return} && ${usePet}) /call check_pet
+		/if (!${Bool[${Macro.Return}]} && ${switchPcPet}) /call check_pet
 	}
 
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -39,7 +38,7 @@ sub core_BST()
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Sha's Reprisal"
-		/if (${${usePetSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
+		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/call use_skill_melee
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
@@ -51,7 +50,7 @@ sub core_BST()
 		/call click_BP
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
-		/if (${${usePetSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
+		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/if (${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Sha's Reprisal"
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
@@ -66,7 +65,7 @@ sub core_BST()
 	/if (${AutoBot} && ${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 	:exit
 /return
@@ -80,7 +79,7 @@ sub core_BST()
  *  NOTE: 
  ***|
 sub disc_BST()
-	DEBUG ${cbug}disc_BST()\ax
+	DEBUGCLASS ${cbug}disc_BST()\ax
 	ISDEAD
 	/doevents
 
@@ -90,7 +89,6 @@ sub disc_BST()
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 			
-|	/if (${Me.CurrentMana} > ${Spell[${FeroSpell}].Mana} && !${Me.Buff[${FeroSpell}].ID}) /call core_cast "${FeroSpell}" ${BuffGem} ${Me.ID}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	/if (!${Me.Song[${GrowlSpell}].ID} && ${Me.Pet.ID} && !${Me.PetBuff[Savage Rage]} && !${Me.Song[${DiscSavage}].ID}) /call core_cast "${GrowlSpell}"
@@ -114,13 +112,11 @@ sub disc_BST()
  *  NOTE: 
  ***|
 sub cast_AA_focused_paragon()
-	DEBUG ${cbug}cast_AA_focused_paragon()\ax
+	DEBUGCLASS ${cbug}cast_AA_focused_paragon()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]} || !${AutoBot}) /goto :exit
-	| /call is_target_dead
-	| /if (${Bool[${Macro.Return}]}) /goto :exit
 	/declare _cout 							int 	local
 	/declare _tmpID 						int 	local 0
 	/declare _tmpTarget2Kill		int		local 
@@ -161,7 +157,7 @@ sub cast_AA_focused_paragon()
  *  NOTE: 
  ***|
 sub patch_heal_BST()
-	DEBUG ${cbug}patch_heal_BST()\ax
+	DEBUGCLASS ${cbug}patch_heal_BST()\ax
 	/doevents	
  	/if (${Me.PctHPs} < 75*.${tmpHealOverride}  && ${Me.AltAbilityReady[Warder's Gift]}) /call core_cast "Warder's Gift" alt 0
 	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride} && ${Me.SpellReady[${FastHeal}]}) {
@@ -169,7 +165,6 @@ sub patch_heal_BST()
 		/if (${Me.AltAbilityReady[Focused Paragon of Spirits]}) /call core_cast "Focused Paragon of Spirits" alt ${Me.ID}
 	}
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID}
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
 	:exit
 /return
@@ -183,22 +178,23 @@ sub patch_heal_BST()
  *  NOTE: 
  ***|
 sub pet_heal_BST()
-	DEBUG ${cbug}pet_heal_BST()\aw
+	DEBUGCLASS ${cbug}pet_heal_BST()\aw
 	ISDEAD
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
-	/if (${usePet} && ${Pet.PctHPs} < 20 && ${Me.AltAbilityReady[Mend Companion]}) {
-		VOUT Healing \a-w${Pet.CleanName}\ax with \a-rMend Companion\ax.
-		/call MQ2Cast "Mend Companion" alt
-	 	/delay 5s !${Me.SpellInCooldown}
+	/if (${switchPcPet} && ${Pet.PctHPs} < 20 && ${Me.AltAbilityReady[Mend Companion]}) {
+		/call core_cast "Mend Companion" alt ${Me.Pet.ID}
+		| VOUT Healing \a-w${Pet.CleanName}\ax with \a-rMend Companion\ax.
+		| /call MQ2Cast "Mend Companion" alt
+	 	| /delay 5s !${Me.SpellInCooldown}
 	}
-	/if (${usePet} && ${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) {
+	/if (${switchPcPet} && ${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) {
 		VOUT Healing \a-w${Pet.CleanName}\ax with \a-r${PetHealSpell}\ax.
 		/call MQ2Cast "${PetHealSpell}" ${PetHealType} 30s -targetid|${Pet.ID}
 	 	/delay 5s !${Me.SpellInCooldown}
 	}
-	/if (${usePet} && ${Pet.PctHPs} < 80 && ${Me.SpellReady[${PetRenewalSpell}]}) {
+	/if (${switchPcPet} && ${Pet.PctHPs} < 80 && ${Me.SpellReady[${PetRenewalSpell}]}) {
 		VOUT Healing \a-w${Pet.CleanName}\ax with \a-r${PetRenewalSpell}\ax.
 		/call MQ2Cast "${PetRenewalSpell}" ${PetRenewalType} 30s
 	 	/delay 5s !${Me.SpellInCooldown}
@@ -216,11 +212,12 @@ sub pet_heal_BST()
  ***|
  #bind cast_AA_paragon /paragon
 sub Bind_cast_AA_paragon()
+	DEBUGCLASS ${cbug}Bind_cast_AA_paragon()\ax
 	/if (${Select[${Me.Class.ShortName},BST]}) /call cast_AA_paragon
 /return
 
 sub cast_AA_paragon()
-	DEBUG ${cbug}cast_AA_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
+	DEBUGCLASS ${cbug}cast_AA_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -244,7 +241,7 @@ sub cast_AA_paragon()
  *  NOTE: 
  ***|
 sub click_DPS_BST()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call check_exit

@@ -80,22 +80,26 @@
 ***|
 
 #turbo 100
-#define DEBUG "/if (${debug}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
+#define DEBUG "/if (${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
+#define DEBUGCAST "/if (${switchDebugCast} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
+#define DEBUGCLASS "/if (${switchDebugClass} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
+#define DEBUGREZ "/if (${switchDebugRez} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
+#define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define SDEBUG "/echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
-#define LDEBUG " /mqlog [${Me.Class.ShortName}:${Macro.CurLine}]: " 
+| #define LDEBUG " /mqlog [${Me.Class.ShortName}:${Macro.CurLine}]: " 
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
 #define NOUT "/echo ${c-}-\ax"
 #define HUDPATH ".\..\MQ2HUD.ini core"
 #define MQLOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
-#define ISDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead}) /call wait_for_rez"
+#define ISDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
 #define CHECKEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]}) /goto :exit"
 #define CHECKTIE "/if (${SetTie} && !${Bool[${timer_check_Tie}]}) /call set_tie"
-#define CHECKREZ "/if (${AutoBot} && !${setPullMode} && !${Me.Invis} && ((${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} && ${rezEnable}) || ${rezEmergency})) /call check_for_corpse"
+#define CHECKREZ "/if (${AutoBot} && !${switchPullMode} && !${Me.Invis} && ((${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} && ${switchRezGive}) || ${switchRezEmergency})) /call check_for_corpse"
 #define CHECKSAFELIST "/if (${Bool[${forcesafelist}]} && !${safelist.Find[${_sender}]}) /goto :exit"
 #define UPDATEHUD "/call update_HUD_notices"
 | #define CLEARCURSOR "/if (${Cursor.ID} && (${AutoBot} && !${Bool[${timer_clear_cursor}]} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]})) /call sort_cursor"
-| #define CLEARCURSOR "/if (((${AutoBot} || ${setModeForage}) && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
-#define CLEARCURSOR "/if ((${autoCursor} && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
+| #define CLEARCURSOR "/if (((${AutoBot} || ${switchModeForage}) && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
+#define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
 autoCursor
@@ -113,8 +117,8 @@ autoCursor
 #include TC\class.dru.inc
 #include TC\class.enc.inc
 #include TC\class.mag.inc
-#include TC\class.mnk.inc
-#include TC\class.nec.inc
+| #include TC\class.mnk.inc
+| #include TC\class.nec.inc
 #include TC\class.pal.inc
 #include TC\class.rng.inc
 #include TC\class.rog.inc
@@ -150,19 +154,18 @@ sub main()
 	/call base_preperation
 	ISDEAD
 
-  | /call echos help
   /mqlog ---- Starting Core:${versionCore}, ${Me.Class.ShortName}:${version${Me.Class.ShortName}}, INI: core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini, 
-  /if (${setIgnoreLOS}) NOUT ${ocaution} ${sep} Ignoring Line of Sight.\ax
+  /if (${switchOverrideLos}) NOUT ${ocaution} ${sep} Ignoring Line of Sight.\ax
+	/varset tmpHealOverride ${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
 
 	NOUT ${cgood}Ready\ax
   
 	:loopmain
-  	DEBUG ${cbug}:loopmain\ax
+  	DEBUG ${cbug}:loopmain (core ver: ${versionCore}\ax
 	  ISDEAD  
 		/if (!${Bool[${timer_check_EQCB}]}) /call check_one_mind
 		/varset combat ${If[${AutoBot},${Ini[${INIFile},Common,combat]},FALSE]}
-		/varset tmpHealOverride ${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-			
+		CHECKREZ	
 	  UPDATEHUD	
 	 	/doevents
 
@@ -177,27 +180,14 @@ sub main()
 			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
 			/call check1offBuffs
 			ISDEAD
-			/if (${autoRest} && !${setPullMode} || ${autoRest} && ${setPullMode} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) /call do_rest
-			/if (!${Me.Invis}) {
-				/doevents
-				ISDEAD
-			  /if (${BuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
-				/call check_engaged
-				/if (!${Bool[${Macro.Return}]} && ${AutoBot}) {
-					/if (${BuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
-					/if (${BuffSelf} && ${Bool[${SelfBuffCount}]} && !${timer_check_buffs_self}) /call check_buffs_self
-				  /if (${BuffRaid} && ${Bool[${BuffCount}]} && !${timer_check_buffs_raid}) /call check_buffs_raid
-					/if (${BuffBC} && ${Bool[${BuffCount}]} && !${timer_check_buffs_BC}) /call check_buffs_BC
-					/if (${BuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
-					/if ((${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
-				}
-			}
+			/if (${autoRest} && !${switchPullMode} || ${autoRest} && ${switchPullMode} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) /call do_rest
+			/call check_buff_routines
 		}
 
 		| check to see if someone needs a doctor?
 		/if (${AutoBot} && !${timer_check_cast_cure} && ${switchHealCure}) /call cast_cure
 		| fix exp
-		/if (${AutoBot} && !${timer_check_EXP} && !${SafeZone}) /call auto_adjust_EXP
+		/if (${AutoBot} && !${timer_check_EXP} && !${SafeZone} && !${switchOverrideSafezone}) /call auto_adjust_EXP
 		| watch for spawn
 		/if (${Bool[${watchSpawn}]} && !${timer_check_watch_spawn}) /call check_watch_spawn
 		| guns need ammo
@@ -212,11 +202,10 @@ sub main()
 		
 		CHECKTIE
 
-		/if (${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone}) /makecamp return
-		| /if (${setPullMode} && ${HomeSet} && !${SpawnCount[npc targetable radius ${combatRadius}]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone}) /makecamp return
+		/if (${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone} && !${switchOverrideSafezone}) /makecamp return
 
 		| looter stuffs
-		 /if (${AutoBot} || ${setHunterMode}) /call do_loot
+		 /if ((${AutoBot} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
 
 		/doevents		
 		
@@ -232,10 +221,10 @@ sub main()
 		/if (${AutoBot} && (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]})) /call check_Disc_now
 
 		| do we pull or assist		
-		/if (${AutoBot} && !${Me.Invis} && !${SafeZone}) {
-			/if (!${setPullMode}) {
+		/if (${AutoBot} && !${Me.Invis} && !${SafeZone} && !${switchOverrideSafezone}) {
+			/if (!${switchPullMode}) {
 				/call get_assist_target	
-			} else /if (${setPullMode} && !${Target2Kill}) {	
+			} else /if (${switchPullMode} && !${Target2Kill}) {	
 				DEBUG get target <= ${MobAgro} = ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} targetable]}		
 				/call get_target
 			}
@@ -256,7 +245,7 @@ sub main()
 sub base_preperation()
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
-	/call Event_SetVar NA SetTie Movement FALSE
+	| /call Event_SetVar NA SetTie Movement FALSE
 	
 	| set me some xtargets
  	/if (!${Bool[${Group.Members}]} && !${Bool[${Raid.Members}]}) {
@@ -294,10 +283,10 @@ sub base_preperation()
 	/if (${Bool[${Plugin[mq2netbots]}]}) /squelch /netbots ON send=ON grab=ON	
 	
 	| turn off forced burn routines if there still on
-	/if (${Bool[${setToastMode}]}) /call Event_SetVar NA setToastMode Common FALSE
+	/if (${Bool[${switchToastMode}]}) /call Event_SetVar NA switchToastMode Common FALSE
 
 	| turn off rez non guildies/group if it is still on. 'cause fuck everyone else.
-	/if (${Bool[${rezEveryone}]}) /call Event_SetVar NA rezEveryone Heal FALSE
+	/if (${switchRezEveryone}) /call Event_SetVar NA switchRezEveryone Heal FALSE
 
 	| Show the HUD	
 	/squelch /hud ${HudType}
@@ -308,7 +297,7 @@ sub base_preperation()
 	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE,0]}) {
 		/mqclear
 		NOUT ${sep} Hey.. You!
-		NOUT ${owarning} ${sep} FIX: core.ini -> [General] -> RemoteKillKey=${remoteKillKey}
+		NOUT ${owarning} ${sep} FIX: ${cinfo}core.ini\ax -> ${cinfo}[General]\ax -> ${cinfo}RemoteKillKey=\ax${remoteKillKey}
 		NOUT ${cbad}GO CHANGE THIS\ax
 		/call echos ending
 		/if (!${EQBC.Connected}) { 
@@ -331,5 +320,3 @@ sub base_preperation()
 	
 	:exit
 /return
-
-

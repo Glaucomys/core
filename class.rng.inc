@@ -7,6 +7,7 @@
 
 
 
+
 |***
  *	DES: Main Ranger Routine
  *	USE: 
@@ -14,7 +15,7 @@
  *  NOTE: 
  ***|
 sub core_RNG()
-	DEBUG Loop start: ${cbug}core_RNG()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
@@ -94,7 +95,7 @@ sub core_RNG()
  *  NOTE: 
  ***|
 sub disc_RNG()
-	DEBUG	${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
@@ -103,13 +104,13 @@ sub disc_RNG()
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
 
-	/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
+	/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.SpellReady[${DoTSwarmDS}]} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast "${DoTSwarmDS}" 0 ${Target2Kill}
 	/if (${Target.ID} && ${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 	/if (${Target.ID} && !${timer_Elemental_Arrow}) /call cast_AA_elemental_arrows ${Target2Kill}
 	/call use_skill_melee
-	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${setAgroMode}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
+	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${switchAgroMode}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill}
 	:exit
@@ -132,7 +133,7 @@ sub Bind_cast_AA_auspice()
 /return
 
 sub cast_AA_auspice()
-	DEBUG ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
+	DEBUGCLASS ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -157,7 +158,7 @@ sub cast_AA_auspice()
  *  NOTE: 
  ***|
 sub patch_heal_RNG()
-	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/call check_exit
 	/if (${Bool[${Macro.Return}]} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0
@@ -179,16 +180,16 @@ sub patch_heal_RNG()
  *  NOTE: manual/Named/raid. all sorts...
  ***|
 sub get_agro_RNG()
-	DEBUG ${cbug}get_agro_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
-	/if (${setAgroMode}) {
+	/if (${switchAgroMode}) {
 		/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Enabled]}) /call core_cast "Ferocious Kick Subtlety: Enabled" alt 0
 		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill}
 	}
-	/if (!${setAgroMode}) {
+	/if (!${switchAgroMode}) {
 			/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Disabled]}) /call core_cast "Ferocious Kick Subtlety: Disabled" alt 0
 	}
 	/call use_skill_melee
@@ -204,7 +205,7 @@ sub get_agro_RNG()
  *  NOTE: Rotates the three ranger elemental arrows. Prevents overlapping (inc other rangers). It will attempt to keep both ice and fire debufs on the mob at the same time.
  ***|
 sub cast_AA_elemental_arrows(int _tmpID)
-	DEBUG ${cbug}cast_AA_elemental_arrows()\ax
+	DEBUGCLASS ${cbug}cast_AA_elemental_arrows()\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
@@ -249,7 +250,7 @@ sub cast_AA_elemental_arrows(int _tmpID)
  *  NOTE: 
  ***|
 sub click_DPS_RNG()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -268,7 +269,7 @@ sub click_DPS_RNG()
  *  NOTE: When burn is engaged, the timer for this is ignored.
  ***|
 sub cast_nuke_summer(int _tmpID)
-	DEBUG ${cbug}cast_nuke_summer()\ax 
+	DEBUGCLASS ${cbug}cast_nuke_summer()\ax 
 	ISDEAD
 	/doevents
 	/call is_target_dead

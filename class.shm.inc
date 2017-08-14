@@ -14,7 +14,7 @@
  *  NOTE: 
  ***|
 sub core_SHM()
-	DEBUG Loop start: ${cbug}core_SHM()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
@@ -32,7 +32,7 @@ sub core_SHM()
 	
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -53,7 +53,7 @@ sub core_SHM()
 			/call clickDPS_${Me.Class.ShortName}
 			/call disc_${Me.Class.ShortName}
 		}
-		/if (${usePet} && !${Me.Pet.ID}) /call check_pet
+		/if (${switchPcPet} && !${Me.Pet.ID}) /call check_pet
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/if (${AutoBot}) {	
@@ -63,7 +63,7 @@ sub core_SHM()
 	/call use_mod_rod
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 	:exit
 /return
@@ -77,7 +77,7 @@ sub core_SHM()
  *  NOTE: 
  ***|
 sub disc_SHM()
-	DEBUG	${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	CHECKEXIT
@@ -95,7 +95,7 @@ sub disc_SHM()
  *  NOTE: 
  ***|
 sub clickDPS_SHM()
-	DEBUG ${cbug}clickDPS.${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}clickDPS.${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	CHECKEXIT
@@ -118,11 +118,11 @@ sub clickDPS_SHM()
  *  NOTE: 
 
 sub cast_AA_slow_SHM(int _tmpID)
-	DEBUG ${cbug}cast_AA_slow_SHM(${_tmpID})\ax
+	DEBUGCLASS ${cbug}cast_AA_slow_SHM(${_tmpID})\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return} || ${timer_slow_${_tmpID}}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${timer_slow_${_tmpID}}) /goto :exit
 
 	| check for overwrite slows
 	/declare _tmpSlow string local ${Target.Slowed}
@@ -161,7 +161,7 @@ sub cast_AA_slow_SHM(int _tmpID)
  *  NOTE: 
  ***|
 sub check_cani()
-	DEBUG ${cbug}check_cani()\ax
+	DEBUGCLASS ${cbug}check_cani()\ax
 	ISDEAD
 	/doevents
 	CHECKEXIT
@@ -184,7 +184,7 @@ sub check_cani()
  *  NOTE: 
  ***|
 sub check_heal_group_SHM()
-	DEBUG ${cbug}checkHealGroup.SHM()\ax
+	DEBUGCLASS ${cbug}checkHealGroup.SHM()\ax
 	CHECKEXIT
 
 	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
@@ -292,7 +292,7 @@ sub check_heal_group_SHM()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_SHM()
-	DEBUG ${cbug}check_heal_XTarget_SHM()\ax
+	DEBUGCLASS ${cbug}check_heal_XTarget_SHM()\ax
 	ISDEAD
 	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
   /declare _count int local
@@ -325,7 +325,7 @@ sub check_heal_XTarget_SHM()
  *  NOTE: this will try and get a twinheal proc first.
  ***|
 sub cast_surge_heal()
-	DEBUG ${cbug}cast_surge_heal()\ax
+	DEBUGCLASS ${cbug}cast_surge_heal()\ax
 	ISDEAD
 	/doevents
 	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
@@ -407,7 +407,7 @@ sub checkHP.SHM()
  *  NOTE: Will not cast Aid if the buff is present.
  ***|
 sub doAid()
-	DEBUG ${cbug}doAid()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},\agMGB\ax,\arMGB\ax]} ${If[${Me.AltAbilityReady[Ancestral Aid]},\agSpice\ax,\arSpice\ax]}
+	DEBUGCLASS ${cbug}doAid()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},\agMGB\ax,\arMGB\ax]} ${If[${Me.AltAbilityReady[Ancestral Aid]},\agSpice\ax,\arSpice\ax]}
 	ISDEAD
 	/doevents
 	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
@@ -434,7 +434,7 @@ sub cast_cripple_SHM(int _tmpID)
 	ISDEAD
 	/declare _resistCount int local
 	/call check_exit
-	/if (${Macro.Return} || ${timer_cripple_${_tmpID}} || !${_tmpID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${timer_cripple_${_tmpID}} || !${_tmpID}) /goto :exit
 	
 	/if (${Target.Crippled.Duration}) {
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s

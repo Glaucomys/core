@@ -14,14 +14,14 @@
  *  NOTE: 
  ***|
 sub core_WAR()
-	DEBUG Loop start: ${cbug}core.WAR()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
 
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -40,7 +40,7 @@ sub core_WAR()
 	/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 	:exit
 /return
@@ -54,14 +54,14 @@ sub core_WAR()
  *  NOTE: 
  ***|
 sub disc_WAR()
-	DEBUG ${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit
-	/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
+	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 
@@ -73,7 +73,7 @@ sub disc_WAR()
 	/if (${Me.AltAbilityReady[${AAKneeStrike}]} && ${Target.Distance} <= ${Spell[${AAKneeStrike}].MyRange}) /call core_cast "${AAKneeStrike}" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[${AAMageHunter}]} && !${Me.Buff[${AAMageHunter}].ID}) /call core_cast "${AAMageHunter}" alt 0
 	
-	/if (${Me.AltAbilityReady[${AAHeroicBlade}]} && ${Target.Distance} <= ${Spell[${AAHeroicBlade}].MyRange} && !${setAgroMode}) /call core_cast "${AAHeroicBlade}" alt 0
+	/if (${Me.AltAbilityReady[${AAHeroicBlade}]} && ${Target.Distance} <= ${Spell[${AAHeroicBlade}].MyRange} && !${switchAgroMode}) /call core_cast "${AAHeroicBlade}" alt 0
 	/if (${Me.AltAbilityReady[${AABladeGuardian}]} && ${Me.Song[${AABladeGuardian}].Stacks}) /call core_cast "${AABladeGuardian}" alt 0
 
 	/if (${Me.CombatAbilityReady[${DiscField}]} && ${Me.CurrentEndurance} > ${Spell[${DiscField}].EnduranceCost} && !${Me.Song[${DiscField}].ID} ) /call core_cast "${DiscField}" disc 0
@@ -90,12 +90,12 @@ sub disc_WAR()
  *  NOTE: 
  ***|
 sub get_agro_WAR()
-	DEBUG ${cbug}get_agro_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	CHECKEXIT
 	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${Me.AltAbilityReady[${AARageoftheForsaken}]} && ${Target.Distance} <= ${Spell[${AARageoftheForsaken}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AARageoftheForsaken}" alt ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscInsult}]} && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscInsult}" disc ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscWade}]} && ${Me.CurrentEndurance} > ${Spell[${DiscWade}].EnduranceCost} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscWade}" disc 0
@@ -116,7 +116,7 @@ sub get_agro_WAR()
  *  NOTE: 
  ***|
 sub patch_heal_WAR()
-	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	ISDEAD
 	CHECKEXIT
 	CHECKTIE
@@ -139,10 +139,9 @@ sub patch_heal_WAR()
  *  NOTE: 
  ***|
 sub click_DPS_WAR()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
 	:exit
 /return

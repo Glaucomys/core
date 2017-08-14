@@ -14,19 +14,19 @@
  *  NOTE: 
  ***|
 sub core_WIZ()
-	DEBUG Loop start: ${cbug}core_WIZ()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
 	
 	/if (${AutoBot}) {
 		/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_harvest
-		/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
+		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 	
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -51,13 +51,15 @@ sub core_WIZ()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
-	/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	/call use_mod_rod
+	/if (${AutoBot}) {	
+		/if (${switchHealCure}) /call cast_cure
+		| /if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+	}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
-
 	:exit
 /return
 
@@ -70,19 +72,19 @@ sub core_WIZ()
  *  NOTE: 
  ***|
 sub disc_WIZ()
-	DEBUG ${cbug}disc_WIZ()\ax 
+	DEBUGCLASS ${cbug}disc_WIZ()\ax 
 	ISDEAD
 	/doevents
 	CHECKTIE
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	| debuff the mob
 	/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
-	/if (!${Target.Buff[Lower Element].ID}) /call core_cast "Lower Element" alt ${Target2Kill}
+	/if (${switchdeBuffCripple} && !${Target.Buff[Lower Element].ID}) /call core_cast "Lower Element" alt ${Target2Kill}
 
 	| ditch agro
 	/if (${Me.PctAggro} > 30) /call core_cast "Arcane Whisper" alt ${Target2Kill}
@@ -93,15 +95,10 @@ sub disc_WIZ()
 	
 	/if (${Me.AltAbilityReady[Force of Flame]}) {
 		/call core_cast "Force of Flame" alt ${Target2Kill}
-		/goto :exit
-	}
-	/if (${Me.AltAbilityReady[Force of Will]}) {
+	} else /if (${Me.AltAbilityReady[Force of Will]}) {
 		/call core_cast "Force of Will" alt ${Target2Kill}
-		/goto :exit
-	}
-	/if (${Me.AltAbilityReady[Force of Ice]}) {
+	} else /if (${Me.AltAbilityReady[Force of Ice]}) {
 		/call core_cast "Force of Ice" alt ${Target2Kill}
-		/goto :exit
 	}
 
 	:exit
@@ -116,7 +113,7 @@ sub disc_WIZ()
  *  NOTE: 
  ***|
 sub click_DPS_WIZ()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	/doevents
 	ISDEAD
 	/call click_horn_of_unity 	
@@ -132,17 +129,17 @@ sub click_DPS_WIZ()
  *  NOTE: 
  ***|
 sub check_harvest()
-	DEBUG ${cbug}check_harvest()\ax
+	DEBUGCLASS ${cbug}check_harvest()\ax
 	ISDEAD
 	/doevents
 	CHECKTIE
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit	
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 
 	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID}) /goto :exit
 
-	/if (${Me.SpellReady[${GatherSpell}]}) {
-		/call core_cast "${GatherSpell}" 0 ${Me.ID}
+	/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride} && ${Me.SpellReady[${GatherSpell}]}) {
+		/call core_cast "${GatherSpell}" 0 0
 		/goto :exit
 	}
 	/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Harvest of Druzzil]}) {
@@ -181,15 +178,14 @@ sub Event_gtfo(string line, string _sender)
  *  NOTE: 
  ***|
 sub check_rune_WIZ()
-	DEBUG ${cbug}check_rune_WIZ()\aw
+	DEBUGCLASS ${cbug}check_rune_WIZ()\aw
 	ISDEAD
 	CHECKEXIT
-	| /if (${timer_check_runes}) /goto :exit
 	UPDATEHUD "BUFF: Runes"
-	/if (!${Me.Buff[${runeMagiWard}].ID} && ${FindItemCount[Peridot]} && ${Spell[${runeMagiWard}].Stacks}) /call core_cast "${runeMagiWard}" ${buffGem} ${Me.ID}
-	/if (!${Bool[${Me.Buff[${runeShieldofFate}].ID}]} && ${Spell[${runeShieldofFate}].Stacks}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
-	/if (!${Me.Buff[${runeCrystalwing}].ID} && ${Spell[${runeCrystalwing}].Stacks}) /call core_cast "${runeCrystalwing}" ${buffGem} ${Me.ID}
-	/if (!${Me.Buff[${runeGuard}].ID} && ${Spell[${runeGuard}].Stacks}) /call core_cast "${runeWard}" ${buffGem} ${Me.ID}
+	/if (!${Me.Buff[${runeMagiWard}].ID} && ${FindItemCount[Peridot]} && ${Spell[${runeMagiWard}].Stacks}) /call core_cast "${runeMagiWard}" ${buffGem} 0
+	/if (!${Bool[${Me.Buff[${runeShieldofFate}].ID}]} && ${Spell[${runeShieldofFate}].Stacks}) /call core_cast "${runeShieldofFate}" ${buffGem} 0
+	/if (!${Me.Buff[${runeCrystalwing}].ID} && ${Spell[${runeCrystalwing}].Stacks}) /call core_cast "${runeCrystalwing}" ${buffGem} 0
+	/if (!${Me.Buff[${runeGuard}].ID} && ${Spell[${runeGuard}].Stacks}) /call core_cast "${runeWard}" ${buffGem} 0
 	UPDATEHUD
 	/call create_timer timer_check_runes ${tCheck_Runes}
 	:exit

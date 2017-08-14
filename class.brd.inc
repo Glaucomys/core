@@ -14,7 +14,7 @@
  *  NOTE: 
  ***|
 sub core_BRD()
-	DEBUG Loop start: ${cbug}core_BRD()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
@@ -85,7 +85,7 @@ sub core_BRD()
  *  NOTE: 
  ***|
 sub disc_BRD()
-	DEBUG	${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -114,7 +114,7 @@ sub disc_BRD()
  *  NOTE: 
  ***|
 sub click_DPS_BRD()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -134,7 +134,7 @@ sub click_DPS_BRD()
  *  NOTE: send in ALL THE PETS
  ***|
 sub cast_servant_swarm(int _tmpID)
-	DEBUG ${cbug}cast_servant_swarm()\ax
+	DEBUGCLASS ${cbug}cast_servant_swarm()\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
@@ -168,7 +168,7 @@ sub cast_servant_swarm(int _tmpID)
  *  NOTE: send in ALL THE PETS
  ***|
 sub mem_song_set(string _group)
- 	DEBUG ${cbug}mem_song_set(${_group})\ax
+ 	DEBUGCLASS ${cbug}mem_song_set(${_group})\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -244,7 +244,7 @@ sub pulse_valid(_gem)
 	/if (!${Me.SpellReady[${Me.Gem[${_gem}].Name}]}) /varset _pulseSong FALSE
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
 	:exit
-	DEBUG VALID CAST: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
+	DEBUGCLASS VALID CAST: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
 /return ${_pulseSong}
 
 
@@ -256,7 +256,7 @@ sub pulse_valid(_gem)
  *  NOTE: 
  ***|
 sub pulse_stop()
-	DEBUG ${cbug}pulse_stop()\ax 
+	DEBUGCLASS ${cbug}pulse_stop()\ax 
 	
 	/stopcast		
 	/delay 2
@@ -310,7 +310,7 @@ sub core_sing(_spellgem)
  *  NOTE: 
  ***|
 sub bard_nuke()
-	DEBUG ${cbug}bard_nuke()\ex
+	DEBUGCLASS ${cbug}bard_nuke()\ex
 	ISDEAD
 	/doevents 
 	/call get_assist_target
@@ -339,7 +339,7 @@ sub bard_nuke()
  *  NOTE: 
  ***|
 sub mez_adds_BRD()
-	DEBUG ${cbug}mez_adds()\ax
+	DEBUGCLASS ${cbug}mez_adds()\ax
 	ISDEAD
 	/doevents
 	/declare _tmpID string local
@@ -382,7 +382,7 @@ sub mez_adds_BRD()
  *  NOTE: 
  ***|
 sub cast_mez_BRD(int _tmpID)
-	DEBUG cast_mez_BRD(${_tmpID})
+	DEBUGCLASS cast_mez_BRD(${_tmpID})
 	/doevents
 	ISDEAD
 	:loopmez

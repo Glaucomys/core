@@ -14,14 +14,14 @@
  *  NOTE: 
  ***|
 sub core_CLR()
-	DEBUG Loop start: ${cbug}core_CLR()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	| /if (${AutoBot} && !${timer_auto_toon_control} && ${autoControl} && ${Raid.Members}) /call auto_control_swap
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 	CHECKTIE
 
-  /if (!${Bool[${timer_set_xtarget}]} && ${switchHealXTarget}) {
+  /if (!${Bool[${timer_set_xtarget}]} && ${switchHealXtarget}) {
     /call set_xtarget
     /call create_timer timer_set_xtarget ${tXHeal}
   }	
@@ -46,9 +46,9 @@ sub core_CLR()
 		CHECKREZ
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${Bool[${doYaulp}]}) /call check_yaulp
-		/if (${usePet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
@@ -74,7 +74,7 @@ sub core_CLR()
  *  NOTE: 
  ***|
 sub click_DPS_CLR()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -92,7 +92,7 @@ sub click_DPS_CLR()
  *  NOTE: 
  ***|
 sub disc_CLR()
-	DEBUG	${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -114,7 +114,7 @@ sub disc_CLR()
  *  NOTE: 
  ***|
 sub cast_sum_weapon()
-	DEBUG ${cbug}cast_sum_weapon()\ax
+	DEBUGCLASS ${cbug}cast_sum_weapon()\ax
 	ISDEAD
 	/doevents
 	/if (${Me.Primary}) /goto :exit
@@ -144,7 +144,7 @@ sub cast_sum_weapon()
  *  NOTE: 
  ***|	
 sub cast_AA_quiet_miracle()
-	DEBUG ${cbug}cast_AA_quiet_miracle(QM%:${useQMPct}, useQM:${useQM})\aw
+	DEBUGCLASS ${cbug}cast_AA_quiet_miracle(QM%:${useQMPct}, useQM:${useQM})\aw
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -159,11 +159,11 @@ sub cast_AA_quiet_miracle()
 	
 	| Do group members need Manna
 	/for _count 0 to ${Group.Members}
-		DEBUG ${_count}: ${Group.Member[${_count}].ID}-${Group.Member[${_count}].DisplayName} ${Group.Member[${_count}].PctMana}%
+		DEBUGCLASS ${_count}: ${Group.Member[${_count}].ID}-${Group.Member[${_count}].DisplayName} ${Group.Member[${_count}].PctMana}%
 		/if (${Group.Member[${_count}].Dead} || !${CastList.Find[${Group.Member[${_count}].Class.ShortName}]} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) /goto :nextcount
 
 		/if (${Spawn[pc ID ${Group.Member[${_count}].ID}].ID} && ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange} && ${Group.Member[${_count}].PctMana} < ${WorstManaPct}) {
-		DEBUG (Spawn: ${Spawn[pc ID ${Group.Member[${_count}].ID}].ID}, Distance: ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange}
+		DEBUGCLASS (Spawn: ${Spawn[pc ID ${Group.Member[${_count}].ID}].ID}, Distance: ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange}
 			| /if (!${Target.Buff[Shroud of the Miracle].WillStack}) /goto :nextcount
 			/varset WorstManaID ${Group.Member[${_count}].ID}
 			/varset WorstManaPct ${Group.Member[${_count}].PctMana}
@@ -197,7 +197,7 @@ ${Group.Member[Airavas].Distance} ${Group.Member[Airavas].PctMana}
  *  NOTE: bread and butter baby...
  ***|
 sub check_heal_group_CLR()
-	DEBUG ${cbug}check_heal_group_CLR()\ax
+	DEBUGCLASS ${cbug}check_heal_group_CLR()\ax
 	CHECKEXIT
 	/declare _count						int	local
 	
@@ -243,7 +243,7 @@ sub check_heal_group_CLR()
 	UPDATEHUD "HEAL"
 	CHECKREZ
 	
-	DEBUG WorstHurt:${Spawn[id ${WorstHurt}].DisplayName} ${sep} HP:${WorstHP}
+	DEBUGCLASS WorstHurt:${Spawn[id ${WorstHurt}].DisplayName} ${sep} HP:${WorstHP}
 	
 	
 	| Regen Heals 
@@ -278,7 +278,7 @@ sub check_heal_group_CLR()
   
 	| Dichotomic Heal
 	/if (${Me.Song[Gift of Mana (${GoMLevel})].ID} && ${Me.SpellReady[${GoMNuke}]} && ${Spawn[${WorstHurt}].PctHPs} < ${GoMpoint}*.${tmpHealOverride}) { 
-		SDEBUG cast_nuke_GoM ${WorstHurt}
+		DEBUGCLASS cast_nuke_GoM ${WorstHurt}
 		/call cast_nuke_GoM ${WorstHurt}
 		
 		|**
@@ -430,7 +430,7 @@ sub check_heal_group_CLR()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_CLR()
-	DEBUG ${cbug}check_heal_XTarget_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}check_heal_XTarget_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
@@ -484,7 +484,7 @@ sub check_heal_XTarget_CLR()
  *  NOTE: 
  ***|
 sub check_HP_CLR()
-	DEBUG ${cbug}check_HP_CLR()\ax
+	DEBUGCLASS ${cbug}check_HP_CLR()\ax
 	ISDEAD
 	/if (!${Me.Casting.ID}) /goto :exit
 	/declare _count 					int local
@@ -536,7 +536,7 @@ sub check_HP_CLR()
  *  NOTE: 
  ***|
 sub check_pet_heal_CLR()
-	DEBUG ${cbug}check_pet_heal_CLR()\ax
+	DEBUGCLASS ${cbug}check_pet_heal_CLR()\ax
 	/declare _count int local
 	/varset pWorstHurt ${Me.CleanName}
 	/varset pWorstHP 100
@@ -562,7 +562,7 @@ sub check_pet_heal_CLR()
   /next _count
 
   /if (${pWorstHurtID} == ${Me.ID}) /goto :exit
-  DEBUG PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
+  DEBUGCLASS PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
   /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Me.SpellReady[${healRemedy1}]}) {
     /call core_cast "${healRemedy1}" 0 ${pWorstHurtID}
   } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy2}].MyRange} && ${Me.SpellReady[${healRemedy2}]}) {
@@ -587,7 +587,7 @@ sub check_pet_heal_CLR()
  *  NOTE: Setting [Heal] -> setDivinetoGroupHeal to TRUE in the clerics INI will force a group heal after the health arbitration.
  ***|
 sub cast_divine_arbitration()
-	DEBUG ${cbug}cast_divine_arbitration()\ax
+	DEBUGCLASS ${cbug}cast_divine_arbitration()\ax
 	ISDEAD
 	/if ( ${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]} ) /goto :exit
   /if (${Me.ItemReady[Aegis of Superior Divinity]}) {    
@@ -620,7 +620,7 @@ sub cast_divine_arbitration()
  *	Will not cast cr if the buff is present or if your name is Norbert.
  ***|
 Sub cast_celest_regen()
-	DEBUG ${cbug}cast_celest_regen()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Celestial Regeneration]},${cgood}CR\ax,${cbad}CR\ax]}
+	DEBUGCLASS ${cbug}cast_celest_regen()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Celestial Regeneration]},${cgood}CR\ax,${cbad}CR\ax]}
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -645,7 +645,7 @@ Sub cast_celest_regen()
  *  NOTE.. THIS IS BROKEN.. It's not my fault.
  ***|
 sub cast_issuance_heal()
-	DEBUG ${cbug}cast_issuance_heal()\ax
+	DEBUGCLASS ${cbug}cast_issuance_heal()\ax
 	ISDEAD
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
@@ -668,7 +668,7 @@ sub cast_issuance_heal()
  *  NOTE: 
  ***|
 sub cast_temp_pet_CLR()
-	DEBUG ${cbug}cast_temp_pet()\ax
+	DEBUGCLASS ${cbug}cast_temp_pet()\ax
 	ISDEAD
 	/doevents
 	CHECKTIE
@@ -678,7 +678,7 @@ sub cast_temp_pet_CLR()
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]} || ${Pet.ID}) /goto :exit
 	/if (${Spawn[${Target2Kill}].Distance} < ${MobAgro} && ${Spawn[${Target2ll}].PctHPs} <= ${sendPetPerc}) {
-		/if (${setToastMode} || (${AutoToast} && ${NameList.Find[${Target.CleanName}]}) && ${Me.AltAbilityReady[Celestial Hammer]}) /call core_cast "Celestial Hammer" alt ${Target2Kill}    
+		/if (${switchToastMode} || (${AutoToast} && ${NameList.Find[${Target.CleanName}]}) && ${Me.AltAbilityReady[Celestial Hammer]}) /call core_cast "Celestial Hammer" alt ${Target2Kill}    
 		VOUT Sending ${cpc}${tempPet}\ax ${sep} [${ctar}${Spawn[${Target2Kill}].CleanName}\ax].
 		/call MQ2Cast "${tempPet}" -targetid|${Target2Kill}
 	}
@@ -694,7 +694,7 @@ sub cast_temp_pet_CLR()
  *  NOTE: 
  ***|
 sub check_heal_ward()
-	DEBUG ${cbug}check_heal_ward()\ax
+	DEBUGCLASS ${cbug}check_heal_ward()\ax
 	/if (!${Me.SpellReady[${healWard}]}) /goto :exit
 	
 	/declare _healwardID int local ${Spell[${healWard}].ID}
@@ -729,7 +729,7 @@ sub check_heal_ward()
  *  NOTE: THIS DOES NOT WORK.. /cry
  ***|
 sub auto_control_swap()
-	DEBUG ${cbug}auto_control_swap()\ax
+	DEBUGCLASS ${cbug}auto_control_swap()\ax
 	/if (!${autoControl}) /goto :exit
 	ISDEAD
 	/doevents
@@ -763,6 +763,7 @@ sub auto_control_swap()
  ***| 	
 #bind useQM /qm
 sub Bind_useQM()
+	DEBUGCLASS ${cbug}Bind_useQM()\ax
 	/call Event_SetVar NA useQM SelfBuff ${If[${useQM},FALSE,TRUE]}  
 	/call echos switch "Use Quiet Miracle" useQM
 /return
@@ -777,22 +778,10 @@ sub Bind_useQM()
  ***| 	
 #bind useQMPct /qmpct
 sub Bind_useQMPct(int _useQMPct)
+	DEBUGCLASS ${cbug}Bind_useQMPct(%: ${_useQMPct})\ax
 	/if (${Range.Between[1,100:${_useQMPct}]}) /call Event_SetVar NA useQMPct SelfBuff ${_useQMPct} 
 	/call echos number "Quiet Miracle At" ${If[${_useQMPct},${_useQMPct},${useQMPct}]} 
 /return	
-
-
-|***
- *	DES: 
- *	USE: /healaggressive
- *	INI: 
- *  NOTE: Clerics ONLY
- ***| 	
-#bind healaggressive /healaggressive
-sub Bind_healAggressive()
-	/if (${Select[${Me.Class.ShortName},CLR]}) /call Event_SetVar NA switchHealAggressive Heal ${If[${switchHealAggressive},FALSE,TRUE]}  
-	/call echos switch "Aggressive Healing" switchHealAggressive
-/return
 
 
 
@@ -803,7 +792,7 @@ sub Bind_healAggressive()
  *  NOTE: Seb HH cleric only item from Commander camp
  ***| 
 sub check_yaulp()
-	DEBUG ${cbug}check_yaulp()\ax
+	DEBUGCLASS ${cbug}check_yaulp()\ax
 	CHECKEXIT
 	ISDEAD
 	/doevents

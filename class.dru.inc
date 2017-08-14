@@ -13,7 +13,7 @@
  *  NOTE: 
  ***|
 sub core_DRU()
-	DEBUG Loop start: ${cbug}core_${Me.Class.ShortName}()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
@@ -27,13 +27,13 @@ sub core_DRU()
 	/if (${AutoBot}) {
 		/doevents
 		/call check_engaged
-		/if (!${Macro.Return} && ${usePet}) /call check_pet
+		/if (!${Bool[${Macro.Return}]} && ${switchPcPet}) /call check_pet
 	}	
 
 
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -79,7 +79,7 @@ sub core_DRU()
 	}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 	:exit
 /return
@@ -93,7 +93,7 @@ sub core_DRU()
  *  NOTE: 
  ***|
 sub disc_DRU()
-	DEBUG	${cbug}disc.${Me.Class.ShortName}()\ax
+	DEBUGCLASS	${cbug}disc.${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
@@ -117,9 +117,9 @@ sub disc_DRU()
  *  NOTE: 
  ***|
 sub patch_heal_DRU()
-	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]}) /call core_cast "Convergence of Spirits" alt ${Me.ID}
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
@@ -136,13 +136,13 @@ sub patch_heal_DRU()
  *  NOTE: 
  ***|
 sub click_DPS_DRU()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${Target.ID}) /goto :exit
 	/if (${Bool[${Epic}]} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID})  /call core_cast "${Epic}" item ${Target2Kill}
 	/call click_horn_of_unity 	
 	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
@@ -158,13 +158,13 @@ sub click_DPS_DRU()
  *  NOTE: 
  ***|
 sub cast_AA_ro(int _tmpID)
-	DEBUG ${cbug}cast_AA_ro()\ax
+	DEBUGCLASS ${cbug}cast_AA_ro()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return} || ${timer_ro_${_tmpID}} || ${Target.Buff[Blessing of Ro].ID} || ${Target.Buff[Fixation of Ro].ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${timer_ro_${_tmpID}} || ${Target.Buff[Blessing of Ro].ID} || ${Target.Buff[Fixation of Ro].ID}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	
 	| /if ((${Target.BuffDuration[]} <= 2 && ${Spawn[${Target.Buff[].Caster}].ID} == ${Me.ID}) || !${Target.Buff[].ID}) /goto :exit{
 	/if (${Bool[${debuffRo}]} && ${Me.AltAbilityReady[${debuffRo}]}) {
@@ -185,7 +185,7 @@ sub cast_AA_ro(int _tmpID)
  *  NOTE: 
  ***|
 sub check_heal_group_DRU()
-	DEBUG ${cbug}check_heal_group_DRU()\ax
+	DEBUGCLASS ${cbug}check_heal_group_DRU()\ax
 	/if (${Me.State.Equal[FEIGN]}) /goto :exit
 	/declare _count						int	local
 
@@ -300,7 +300,7 @@ sub check_heal_group_DRU()
  *  NOTE: 
  ***|
 sub check_healXTarget_DRU()
-	DEBUG ${cbug}check_HealXTarget_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}check_HealXTarget_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/if (${Me.State.Equal[FEIGN]}) /goto :exit
   /declare _count int local
@@ -339,7 +339,7 @@ sub check_healXTarget_DRU()
  *  NOTE: 
  ***|
 sub check_pet_heal_DRU()
-	DEBUG ${cbug}checkPetHeal.${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}checkPetHeal.${Me.Class.ShortName}()\ax
 	ISDEAD
 	/if (${Me.State.Equal[FEIGN]} || ${Me.Moving} || ${Target.ID} == ${Me.Pet.ID}) /goto :exit
 	/declare _count int local
@@ -382,7 +382,7 @@ sub check_pet_heal_DRU()
  *  NOTE: Will not cast wood if the buff is present.
  ***|
 sub cast_AA_spirit_wood()
-	DEBUG ${cbug}cast_AA_wood()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Spirit of the Wood]},${cgood}Wood\ax,${cbad}Wood\ax]}
+	DEBUGCLASS ${cbug}cast_AA_wood()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Spirit of the Wood]},${cgood}Wood\ax,${cbad}Wood\ax]}
 	ISDEAD
 	/doevents
 	| /if (${AutoBot}) /goto :exit

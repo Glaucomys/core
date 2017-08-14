@@ -14,19 +14,18 @@
  *  NOTE: 
  ***|
 sub core_MAG()
-	DEBUG Loop start: ${cbug}core_MAG()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
 
 	/if (${AutoBot} && !${Me.Invis}) {
 		/call check_engaged
-		/if (!${Macro.Return}) {
-			/if (${usePet}) /call check_pet
+		/if (!${Bool[${Macro.Return}]}) {
+			/if (${switchPcPet}) /call check_pet
 			CHECKEXIT
 			/if (!${timer_caldron_use}) /call use_cauldron
 		}
-		/call check_rods
 	}
 
 	:killtarget
@@ -37,12 +36,12 @@ sub core_MAG()
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
-		/if (${usePet} && !${Pet.ID} && ${AutoBot}) /call check_pet
+		/if (${switchPcPet} && !${Pet.ID} && ${AutoBot}) /call check_pet
 		/call send_pet
 		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
-		/if (${usePetSwarm}) /call cast_nuke_servant
+		/if (${switchPcSwarm}) /call cast_nuke_servant
 		/if (${useRain}) /call cast_nuke_rain		
 		/if (${doclickItem}) /call click_item
 		/call disc_${Me.Class.ShortName}
@@ -50,10 +49,10 @@ sub core_MAG()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
-	 /if (${AutoBot}) {	
-		 /if (${switchHealCure}) /call cast_cure
-		 /if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-	 }
+	/if (${AutoBot}) {	
+		/if (${switchHealCure}) /call cast_cure
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+	}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Macro.Return}) /goto :killtarget
@@ -70,10 +69,10 @@ sub core_MAG()
  *  NOTE: 
  ***|
 sub disc_MAG()
-	DEBUG ${cbug}disc_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax 
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	ISDEAD
 	CHECKTIE
 	/call is_target_dead
@@ -93,15 +92,15 @@ sub disc_MAG()
  *  NOTE: 
  ***|
 sub use_cauldron()
-	DEBUG ${cbug}use_cauldron()\ax 
+	DEBUGCLASS ${cbug}use_cauldron()\ax 
 	/doevents
 	ISDEAD
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	CHECKTIE
 	/if (${Bool[${Cauldron}]} && ${Me.ItemReady[${Cauldron}]}) {
 		/call core_cast "${Cauldron}" item
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	}
 	:exit
 	/call create_timer timer_caldron_use ${tCauldron_use}
@@ -116,18 +115,18 @@ sub use_cauldron()
  *  NOTE: 
  ***|
 sub check_rods()
-	DEBUG ${cbug}check_rods()\ax 
+	DEBUGCLASS ${cbug}check_rods()\ax 
 	/doevents
 	ISDEAD
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	CHECKTIE
 	| self only mod rod
 	/if (${Bool[${SelfRodName}]} && !${FindItem[${SelfRodName}].ID} && !${Cursor.Name.Equal[${SelfRodName}]} && ${Me.CurrentMana} >= ${Spell[${SelfRodSpell}].Mana}) {
 		/call core_cast "${SelfRodSpell}" ${buffGem} 0
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${SelfRodName}]}
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	}
 	
 	| AE mod rod
@@ -136,22 +135,22 @@ sub check_rods()
 		/call core_cast "${ModRodSpell}" alt 0
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${ModRodName}]}
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	} else /if (${Bool[${ParadoxRodName}]} && !${Bool[${FindItem[${ParadoxRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ParadoxSpell}].Mana}) {
 		/call core_cast  "${ParadoxSpell}" ${buffGem} ${Me.ID}
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]}
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	} else /if (${Bool[${OrbName}]} && !${Bool[${FindItem[${OrbName}]}]} && !${Bool[${Cursor.Name.Equal[${OrbName}]}]} && ${Me.CurrentMana} >= ${Spell[${OrbSpell}].Mana}) {
 		/call core_cast "${OrbSpell}" ${buffGem} 0
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Bool[${Cursor.Name.Equal[${OrbName}]}]}
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	} else /if (${Bool[${ElementRodName}]} && !${Bool[${FindItem[${ElementRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ElementRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ElementRodSpell}].Mana}) {
 		/call core_cast "${ElementRodSpell}" ${buffGem} 0
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Bool[${Cursor.Name.Equal[${ElementRodName}]}]}
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	}
 	CHECKTIE
 
@@ -179,11 +178,11 @@ sub check_rods()
  *  NOTE: this is filler DPS. cast on thenb move on to something else to compensate for global cooldown
  ***|
 sub click_DPS_MAG()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	/doevents
 	ISDEAD
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	CHECKTIE
 	/call is_target_dead
 	/if (!${Macro.Return}) /goto :exit
@@ -198,7 +197,7 @@ sub click_DPS_MAG()
 		/call MQ2Cast "${OrbName}" item -targetid|${Target2Kill}
 		/goto :exit
 	}
-	/if (${usePet} && ${Me.ItemReady[${ElementRodName}]} && ${Target.PctHPs} > 20) {
+	/if (${switchPcPet} && ${Me.ItemReady[${ElementRodName}]} && ${Target.PctHPs} > 20) {
 		/call MQ2Cast "${ElementRodName}" item -targetid|${Target2Kill}
 		/goto :exit
 	}
@@ -238,14 +237,14 @@ sub Event_CoH(string line, string _sender)
  *  NOTE: 
  ***|
 sub cast_nuke_salvo()
-	DEBUG ${cbug}cast_nuke_salvo()\ax
+	DEBUGCLASS ${cbug}cast_nuke_salvo()\ax
 	ISDEAD
 	/doevents
 	CHECKTIE
 	CHECKEXIT
 	/call is_target_dead
-	/if (!${Macro.Return}) /goto :exit
-	/if (${usePet} && ${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${NukeSalvo}]} && ${Me.CurrentMana} >= ${Spell[${NukeSalvo}].Mana} && ${Spawn[${Target.ID}].NearestSpawn[3,pet radius 30]}) {
+	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${switchPcPet} && ${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${NukeSalvo}]} && ${Me.CurrentMana} >= ${Spell[${NukeSalvo}].Mana} && ${Spawn[${Target.ID}].NearestSpawn[3,pet radius 30]}) {
 		/call core_cast "${NukeSalvo}" 0 ${Target2Kill}
 	}
 	:exit
@@ -260,11 +259,11 @@ sub cast_nuke_salvo()
  *  NOTE: 
  ***|
 sub petHeal_MAG()
-	DEBUG ${cbug}petHeal_MAG()${citem}
+	DEBUGCLASS ${cbug}petHeal_MAG()${citem}
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return} || !${usePet}) /goto :exit
+	/if (${Macro.Return} || !${switchPcPet}) /goto :exit
 	CHECKTIE
 	/if (${Pet.PctHPs} < 40 && ${Me.AltAbilityReady[${PetAAHeal}]}) /call core_cast "${PetAAHeal}" alt ${Me.Pet.ID}
 	/if (${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) /call core_cast "${PetHealSpell}" ${PetHealType} ${Me.Pet.ID}
@@ -280,12 +279,13 @@ sub petHeal_MAG()
  *	INI: 
  *  NOTE: 
  ***|
-sub cast_rods()
-	DEBUG ${cbug}cast_rods()${citem}
+#bind Bind_cast_rods /rods
+sub Bind_cast_rods()
+	DEBUGCLASS ${cbug}Bind_cast_rods()${citem}
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	CHECKTIE
 	/if (${Bool[${FindItem[${ParadoxRodName}]}]} && ${FindItem[${ParadoxRodName}].Charges} < 5) {
 		VOUT ${citem}${ParadoxRodName}\ax has ${FindItem[${ParadoxRodName}].Charges} ${If[${FindItem[${ParadoxRodName}].Charges}==1,charge,charges]} ${sep} ${odestroy}
@@ -312,7 +312,7 @@ sub cast_rods()
 		/if (${Cursor.Name.Equal[${ModRodName}]}) /destroy
 	}
 	/delay 5
-	/call check_rods
+	/if (${switchBuffItem}) /call check_rods
 	:exit
 /return
 
@@ -325,12 +325,11 @@ sub cast_rods()
  *  NOTE: 
  ***|
 sub patch_heal_MAG()
-	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	CHECKTIE
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0
 	:exit
 /return

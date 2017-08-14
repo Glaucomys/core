@@ -122,7 +122,6 @@ sub synergy_core()
 	/call DeclareCoreIniVar ROGspire3							string	Synergy "Fundament: Third Spire of the Rake"
 	/call DeclareCoreIniVar ROGsynergyAA					string	Synergy "Blackguard's Synergy"
 
-
 	:exit	
 /return
 	
@@ -142,7 +141,6 @@ sub synergy_click_Circle()
 	/if (${Macro.Return}) /goto :exit	
 	
 	| make sure we have an open aura slot
-	| /if ((${Select[${Me.Class.ShortName},RNG,WAR,WIZ,SHM,SHD,ROG,BST,NEC,BER,DRU,MAG,PAL,BRD,MON]} && ${Bool[${Me.Aura[1]}]}) || (${Select[${Me.Class.ShortName},CLR,ENC]} && ${Bool[${Me.Aura[1]}]} && ${Bool[${Me.Aura[2]}]})) /goto :exit
 
 	| circle of power
 	/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].Stacks}) {
@@ -547,9 +545,65 @@ sub synergy_WIZ()
 	/call use_glyph	
 	/call synergy_click_Circle
 	/if (${doclickItemToast}) /call click_item_toast
+	
+	
+	
 	:exit	
 /return
 	
+
+frostbound alliance - XXXX
+- dichotomic fire
+- ethereal fuse
+- cloudburst stormstrike
+- ethereal skyblaze
+- claw of the flameweaver
+ethereal rimblast
+- twincast
+chaos scintillation
+ethereal hoarfrost XXXXX
+shield of consequence
+- quintescent harvest/gambit
+
+
+
+1211 - Focus of Arcanum
+759 - Fury of Kerafyrm
+840 - Arcane Fury
+1351 - second spire
+515 - Improved Twincast
+
+500 - Silent Casting
+
+759 - Fury of Kerafyrm  -- still on cooldown
+1152 - Fury of Ro
+7019- Glyph of Destruction II
+
+
+1265 - Arcane Distruction
+308 - Frenzied Devastation
+1152 - Fury of Ro
+
+1152 - Fury of Ro
+7019 - Glyph of Destruction II
+
+
+1154 - Force of Will
+1266 - Force of Flame
+1267 - Force of Ice
+577 - concussive intuition
+15073 - banestrike
+
+
+
+
+
+
+
+
+
+
+
  
  
  |***

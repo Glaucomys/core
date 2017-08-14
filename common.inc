@@ -7,10 +7,11 @@
 
 
 
+
 |***
  *	DES: Checks EQBCS connection and channel
  *	USE: /call check_one_mind
- *	INI: 
+ *	INI: core.ini
  *  NOTE: 
  ***| 
 sub check_one_mind()
@@ -27,7 +28,7 @@ sub check_one_mind()
 |***
  *	DES: checks to make sure all needed plugins are loaded.
  *	USE: /call check_plugin
- *	INI: 
+ *	INI: core.ini
  *  NOTE: 
  ***|
 sub check_plugin()
@@ -49,60 +50,110 @@ sub check_plugin()
 
 |***
  *	DES: echos misc stuff to EQBC
- *	USE: /call echos [type] "desc text" [VARIABLE] [Target ID] [FORCED]
+ *	USE: /call echos [type] "desc text" [VARIABLE] [Target ID] ["text2"]
  *	INI: 
  *  NOTE: 
  ***|
-sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, bool _forced)
-	DEBUG ${cbug}echos(type ${_type}, verbage: ${_verbage})\ax
+sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string _verbage2)
+	DEBUG ${cbug}echos(type ${_type}, verbage: ${_verbage}, tmp var: ${_tmpVariable})\ax
 
+	| on/off switch echos
 	/if (${_type.Equal[switch]}) {
-		| on/off switch echos
 		NOUT ${_verbage} ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+	| variable %s
 	} else /if (${_type.Equal[number]}) {
-		| variable %s
 		NOUT ${_verbage} ${sep} ${cinfo}${_tmpVariable}\ax
+
+	| core startup
 	} else /if (${_type.Equal[startup]}) {
-		| core startup
 		NOUT Initializing Core: ${cinfo}${versionCore}\ax ${sep} ${Me.Class} ${cinfo}${version${Me.Class.ShortName}}\ax
+
+	| zone initialization
 	} else /if (${_type.Equal[zone]}) {
-		| zone initialization
 		/if (${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {
 			NOUT Setting Zone ${sep} ${cinfo}${Zone.Name}\ax
 		} else {
 			NOUT Creating Zone ${sep} ${cinfo}${Zone.Name}\ax
 		}
-	} else /if (${_type.Equal[help]}) {
-		| help command
-		| NOUT Use ${cinfo}/info\ax to list '${cinfo}/\ax' commands.
+
+	| ending macro
 	} else /if (${_type.Equal[ending]}) {
-		| ending macro
 		NOUT ${owarning} ${sep} ${cbad}ENDING\ax Core ${cinfo}${versionCore}\ax
+
+	| need target
 	} else /if (${_type.Equal[needtarget]}) {
-		| need target
 		NOUT ${onotice} ${sep} You need a target.
+
+	| need cursor item
 	} else /if (${_type.Equal[needcursor]}) {
-		| need cursor item
 		NOUT ${onotice} ${sep} need something on cursor.
+
+	| cursor item
+	} else /if (${_type.Equal[cursor]}) {
+		NOUT Cursor ${sep} ${cinfo}${_verbage}\ax ${sep} ${_tmpVariable}
+
+	| hunt
 	} else /if (${_type.Equal[hunt]}) {
-		| hunt
 		NOUT Hunt ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax] ${sep} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}${Int[${Spawn[${_tmpID}].Distance}]}\ax,${cbad}${Int[${Spawn[${_tmpID}].Distance}]}\ax]}
+
+	| mode switches
 	} else /if (${_type.Equal[mode]}) {
-		| mode echos...
 		NOUT Mode ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
-	} else /if (${_type.Equal[listexists]}) {
-		| exists in zone.ini lists already
-		NOUT ${onotice} ${sep} ${cinfo}${Target.DisplayName}\ax is already in list ${sep} [${ctar}${_verbage}\ax]
+
+	| debug switches
+	} else /if (${_type.Equal[debug]}) {
+		NOUT DeBug ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+	| petfarm
 	} else /if (${_type.Equal[petfarm]}) {
-		| petfarm
 		VOUT Pet ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Spawn[${Target2Kill}].Distance}\ax,${cbad}${Spawn[${Target2Kill}].Distance}\ax]}
-		| ${sep} ${sepO}${ctar}${_tmpVariable}\ax${sepC} ${If[${${_tmpVariable}} == 1,target,targets]}
+
+	| pull
 	} else /if (${_type.Equal[pull]} && ${Target2Kill}) {
-		| pull
 		NOUT Pull ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target}].LineOfSight},${cgood}${Int[${Target.Distance}]}\ax,${cbad}${Int[${Target.Distance}]}\ax]}
+
+	| you suck
 	} else /if (${_type.Equal[failboat]}) {
 		NOUT My daughter says you're a nooblet.
+
+	| info
+	} else /if (${_type.Equal[info]}) {
+		NOUT Instructions ${sep} ${cinfo}https://github.com/exspes007/core/wiki\ax
+
+	| override switches
+	}	else /if (${_type.Equal[override]}) {
+		NOUT Override ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+	| debuff switches
+	}	else /if (${_type.Equal[debuff]}) {
+		NOUT deBuff ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+	| heal switches
+	}	else /if (${_type.Equal[heal]}) {
+		NOUT Heal ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+	| buff echos
+	}	else /if (${_type.Equal[buff]}) {
+		NOUT Buff ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+	| rez echos
+	}	else /if (${_type.Equal[rez]}) {
+		NOUT Rez ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+	| arg list echos
+	} else /if (${_type.Equal[listtype]}) {
+		/declare _listout string local
+		/declare _sep bool local
+		/declare _count int local
+		/for _count 1 to ${${_tmpVariable}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},-,]} ${cinfo}${${_tmpVariable}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_verbage.Lower} [${_listout}] ${If[${Bool[${_verbage2}]},[${cinfo}${_verbage2.Upper}\ax],]}
 	}
+	
+	
 /return
 
 
@@ -123,8 +174,8 @@ sub check_engaged()
 	/if (${Bool[${Me.Casting}]} || ${Me.Casting.ID}) /varset _isEngaged TRUE
 	/if (${Me.Moving} || ${Stick.Active}) /varset _isEngaged TRUE
 	/if (${Me.Combat} || ${Me.AutoFire}) /varset _isEngaged TRUE
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]} && !${combatBuff}) /varset _isEngaged TRUE
-	/if (((${setPullMode} && ${setAgroMode}) || ${GroupMainAssist} || ${GroupMainTank}) && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${CombatDistance}*2 playerstate 4]}) /varset _isEngaged TRUE
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} && !${combatBuff}) /varset _isEngaged TRUE
+	/if (((${switchPullMode} && ${switchAgroMode}) || ${GroupMainAssist} || ${GroupMainTank}) && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /varset _isEngaged TRUE
 	:exit
 /return ${_isEngaged}
 
@@ -141,20 +192,19 @@ sub check_engaged()
  *	NOTE: lots of debug here. this is a problem child function.
  ***|
 sub wait_for_rez()
-	SDEBUG ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead})\ax
-	SDEBUG call Flag:${flagCallNeedRez}\ax
-	SDEBUG events flushed\ax
+	DEBUGREZ ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead})\ax
+	DEBUGREZ call Flag:${flagCallNeedRez}\ax
+	DEBUGREZ events flushed\ax
 	/doevents flush
-	SDEBUG into rez, clear event marker\ax
+	DEBUGREZ into rez, clear event marker\ax
 	/if (!${Me.State.Equal[HOVER]} && !${Me.Hovering} && !${Me.Dead} && !${markerDead} && !${flagCallNeedRez}) /goto :exit
-	SDEBUG update death count\ax
+	DEBUGREZ update death count\ax
 	/ini "${INICore}" "deathcount" "${Me.DisplayName}" "${Int[${Math.Calc[${Ini[${INICore},deathcount,${Me.DisplayName}]}+1]}]}"
-	SDEBUG update MQ LOG\ax
+	DEBUGREZ update MQ LOG\ax
 	| MQLOG Death ${Ini[${INICore},deathcount,${Me.DisplayName}]}
 	| /if (!${flagCallNeedRez} && ${Bool[${Ini[${INICore},bitch]}]}) ECHOCHANNEL ${Ini[${INICore},bitch,${Int[${Math.Calc[${Math.Rand[${Ini[${INICore},bitch,count]}]}+1]}]}]}
 
-	SDEBUG stop movement\ax
-	/ini "${INIFile}" "Movement" "SetTie" "FALSE"
+	DEBUGREZ stop movement\ax
 	/varset SetTie FALSE
 	/if (${Stick.Active}) /squelch /stick off
 	/if (${tempsnapstuck}) /varset tempsnapstuck FALSE
@@ -164,20 +214,20 @@ sub wait_for_rez()
 	/if (${Me.Combat}) /squelch /attack off
 	| SDEBUG stop casting\ax
 	/if (${Me.Casting.ID}) /stopcast
-	SDEBUG clear targets\ax
+	DEBUGREZ clear targets\ax
 	/varset Target2Kill 0
 	/varset isValidTarget FALSE
 	/if (${Target.ID}) /squelch /target clear
 	
-	SDEBUG update HUD tmpMode variable\ax
+	DEBUGREZ update HUD tmpMode variable\ax
 	/varset tmpMode "DEAD: ${Time}"
 	/delay 3s
 	:loopwaitforrezbox
-	SDEBUG start wait for rez\ax
+	DEBUGREZ start wait for rez\ax
 		/delay 10s ${Window[ConfirmationDialogBox].Open}
 		/delay 1s
 		/if (!${Window[ConfirmationDialogBox].Open}) /goto :loopwaitforrezbox
-		SDEBUG we have a rez box\ax
+		DEBUGREZ we have a rez box\ax
 		/if (${Window[ConfirmationDialogBox].Open}) {
 			/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(0 percent)"]}]}) {
 				/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
@@ -204,47 +254,47 @@ sub wait_for_rez()
 				/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
 				/goto :loopwaitforrezbox
 			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(96 percent)"]}]}) {
-				SDEBUG found 96 rez\ax
+				DEBUGREZ found 96 rez\ax
 				/varset flagCallNeedRez FALSE
 				/goto :acceptresbox
 			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(100 percent)"]}]}) {
-				SDEBUG found 100 rez\ax
+				DEBUGREZ found 100 rez\ax
 				/varset flagCallNeedRez FALSE
 				/goto :acceptresbox
 			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["you will still be able to get a resurrection later"]}]}) {
-				SDEBUG found call to corpse. setting flagCallNeedRez\ax
+				DEBUGREZ found call to corpse. setting flagCallNeedRez\ax
 				/varset flagCallNeedRez TRUE
 				/goto :acceptresbox
 			} 
-			SDEBUG :loopwaitforrez\ax
+			DEBUGREZ :loopwaitforrez\ax
 			/goto :loopwaitforrezbox
 		}
 
 	:acceptresbox	
-	SDEBUG yes we want a rez\ax	
+	DEBUGREZ yes we want a rez\ax	
 	/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
 	/delay 5
-	SDEBUG sorting rez selection window\ax	
+	DEBUGREZ sorting rez selection window\ax	
 	/if (${Window[RespawnWnd].Open}) {
 		/if (${Zone.ShortName.Equal[Powar]}) {
 			/nomodkey /notify RespawnWnd RW_OptionsList listselect 1
 		} else {
-			SDEBUG option 2 in respawn window\ax
+			DEBUG option 2 in respawn window\ax
 			/nomodkey /notify RespawnWnd RW_OptionsList listselect 2 
 		}
 	}
 	/delay 1s
-	SDEBUG click RW_SelectButton
+	DEBUGREZ click RW_SelectButton
 	/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
 	:cleardeadmarkers
-		SDEBUG delays for rez status to clear\ax
+		DEBUGREZ delays for rez status to clear\ax
 		| /call set_stop
 		/delay 2s !${Me.State.Equal[HOVER]}
 		/delay 2s !${Me.Hovering}
 		/delay 2s !${Me.Dead}
-		SDEBUG clear HUD tmpMode variable\ax
+		DEBUGREZ clear HUD tmpMode variable\ax
 		/varset tmpMode FALSE
-		SDEBUG Exit rez, clear event marker\ax
+		DEBUGREZ Exit rez, clear event marker\ax
 		/varset markerDead FALSE
 		/if (${markerDead} || ${tmpMode}) {
 			| /call create_timer clear_dead_event_marker 1s
@@ -253,8 +303,8 @@ sub wait_for_rez()
 		}
 
   :exit
-	SDEBUG ${cgood}EXIT\ax ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${rezAuto} || ${markerDead})\ax
-	SDEBUG call flagCallNeedRez: ${flagCallNeedRez}\ax
+	DEBUGREZ ${cgood}EXIT\ax ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead})\ax
+	DEBUGREZ call flagCallNeedRez: ${flagCallNeedRez}\ax
 /return 
 
 
@@ -297,25 +347,25 @@ sub give_to_pet()
  *  NOTE: 
  ***|
 sub cast_summon_pet()
-	DEBUG ${cbug}cast_summon_pet()\ax
+	DEBUGCAST ${cbug}cast_summon_pet()\ax
 	ISDEAD
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/doevents
-	/if (${AutoBot} && ${usePet} && ${Me.AltAbilityReady[Suspended Minion]}) {
+	/if (${AutoBot} && ${switchPcPet} && ${Me.AltAbilityReady[Suspended Minion]}) {
 		/call core_cast "Suspended Minion" alt 0
 		/delay 5s ${Me.Pet.ID}
 	}
-	/if (${usePet} && !${Me.Pet.ID})  {
+	/if (${switchPcPet} && !${Me.Pet.ID})  {
 		VOUT Building ${sep} ${csp}${PetTypeSpell}\ax
 		/call core_cast "${PetTypeSpell}" ${buffGem} 0 
 		/call create_timer timer_check_pet_buffs 20
 		/delay 20s !${Me.Casting.ID}
 		/pet hold on
 		/pet ghold on
-		/if (${usePet} && ${Bool[${PetTank}]} && ${AutoBot}) { 
+		/if (${switchPcPet} && ${Bool[${PetTank}]} && ${AutoBot}) { 
 			/pet taunt on
-		} else /if (${usePet} && !${Bool[${PetTank}]} && ${AutoBot}) { 
+		} else /if (${switchPcPet} && !${Bool[${PetTank}]} && ${AutoBot}) { 
 			/pet taunt off
 		}
 		/call send_pet
@@ -333,7 +383,7 @@ sub cast_summon_pet()
  *  NOTE: 
  ***|
 sub cast_shrink_pet()
-	DEBUG ${cbug}cast_shrink_pet()\ax
+	DEBUGCAST ${cbug}cast_shrink_pet()\ax
 	ISDEAD
 	/doevents
 	CHECKEXIT
@@ -377,12 +427,12 @@ sub check_pet()
 	/call check_engaged
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${Me.Pet.ID} && ${useSummonWeps} && (!${Bool[${Me.Pet.Equipment[primary]}]} || ${Me.Pet.Equipment[primary]} == 10855) && (${Bool[${FindItem[${summonedWepClosedBag}]}]} || ${Bool[${FindItem[Pouch of Quellious]}]})) {
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 		/if (${Bool[${FindItem[${summonedWepClosedBag}]}]} || ${Bool[${FindItem[Pouch of Quellious]}]}) /call cast_summon_weapons
 	}
 		
 	:exit
-	/if (${BuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
+	/if (${switchBuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
 /return
 
 
@@ -394,36 +444,35 @@ sub check_pet()
  *  NOTE: MAG,ENG,BST,NEC
  ***|
 sub cast_summon_weapons()
-	DEBUG ${cbug}cast_summon_weapons()\ax
+	DEBUGCAST ${cbug}cast_summon_weapons()\ax
 	ISDEAD
 	/doevents
 	/declare _count int local
 	
 	/if (!${Bool[${Me.Pet.ID}]}) /goto :exit
 	/if (${Select[${Me.Class.ShortName},MAG]} && !${FindItem[${summonedWepClosedBag}].ID} && !${FindItem[${summonedWepName}].ID}) {
-		DEBUG mage needs bag
+		DEBUGCAST mage needs bag
 		/call core_cast "${summonedWepSpell}" ${buffGem} ${Me.ID}
 		/delay 20s !${Me.Casting.ID}
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	}
 	/delay 5
 	
 	/if (${FindItem[${summonedWepClosedBag}].ID}) {
-		DEBUG have a bag. best not in hands
-		CLEARCURSOR TRUE
-		| /delay 2s !${Cursor.ID}
+		DEBUGCAST have a bag. best not in hands
+		/call sort_cursor TRUE
+		/delay 2s !${Cursor.ID}
 		/squelch /exchange ${FindItem[${summonedWepClosedBag}].ID} pack${PetBagSlotNumber}
-		CLEARCURSOR TRUE
-		| /delay 2s !${Cursor.ID}
+		/delay 2s !${Cursor.ID}
 		/nomodkey /itemnotify ${FindItem[${summonedWepClosedBag}].InvSlot} rightmouseup
-		DEBUG open the dumb bag
+		DEBUGCAST open the dumb bag
 		/delay 3s !${Me.Casting.ID}
 		/delay 2s
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	}
 
 	/if (${Bool[${FindItem[Pouch of Quellious].InvSlot}]}) {
-		DEBUG give the demannding pet his shit
+		DEBUGCAST give the demannding pet his shit
 		/nomodkey /itemnotify ${FindItem[Pouch of Quellious].InvSlot} rightmouseup
 		/delay 1s
 		/for _count 1 to 2
@@ -475,16 +524,16 @@ sub auto_adjust_EXP()
 	
 	| set EXP cause we deaded too much
 	/if (${Me.Level} < ${MaxLevel} || (${Me.Level} == ${MaxLevel} && ${Me.PctExp} <= ${MaintExpLvl})) {
-		VOUT ${ocaution} ${sep} ${sepO}${cinfo}${Me.PctExp}%\ax${sepC} below Maintain EXP ${sepO}${cinfo}${MaintExpLvl}%\ax${sepC}
+		VOUT ${ocaution} ${sep} ${cinfo}${Me.PctExp}%\ax below Maintain EXP ${cinfo}${MaintExpLvl}%\ax
 		/alternateadv off
 	| set to AA cause the cleric rules	
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && (${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int})) {
-		VOUT Maintain EXP ${sep} ${sepO}${cinfo}${MaintExpLvl}%\ax${sepC}. AA: ${sepO}${cinfo}${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}\ax${sepC}. 
-		VOUT Adjusting EXP ${sep} Setting to full AA.
+		VOUT Maintain EXP ${sep} ${cinfo}${MaintExpLvl}%\ax. AA:${cinfo}${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}\ax 
+		| VOUT Adjusting EXP ${sep} Setting to full AA.
 		/alternateadv on 100
 	| set back to exp cause nothing else to buy
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && (${Me.AAPoints} == ${Float[${Math.Calc[${Me.Level}*2]}].Int})) {
-		VOUT MAX EXP/Level/AA. Setting EXP to normal.
+		| VOUT MAX EXP/Level/AA. Setting EXP to normal.
 		/alternateadv off
 	}
 	:exit
@@ -506,7 +555,8 @@ sub check_aura()
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
-	| /if (${SpawnCount[radius ${combatRange} playerstate 4 targetable]}) /goto :exit
+
+	
 	UPDATEHUD "CHECK: Aura"
 	
 	| Aura: berzerker, monk
@@ -537,20 +587,46 @@ sub check_aura()
 		/goto :exit
 	}
 
+
+	/declare _count int local
+	/declare _aura int local
+	/declare _found bool false
+
+
+	/for _aura 1 to 2
+		/if (${Bool[${Aura${_aura}Spell}]}) {
+			/for _count 1 to 2	
+				/if (${Bool[${Aura${_aura}Buff}]}) {
+					/if (${Bool[${Me.Aura[${_count}].Equal[${Aura${_aura}Buff}]}]}) /varset _found TRUE
+					/if (${Bool[${Me.Aura[${_count}].Equal[${Aura${_aura}Spell}]}]}) /varset _found TRUE
+					/if (${Bool[${Me.Aura[${_count}].Equal[${Ini[${INIFile},Aura,Aura${_aura}Spell]}]}]}) /varset _found TRUE
+					/if (${Bool[${Me.Aura[${_count}].Equal[${Ini[${INIFile},Aura,Aura${_aura}Buff]}]}]}) /varset _found TRUE
+				}
+			/next _count
+			/if (!${_found}) {
+				/call core_cast "${Aura${_aura}Spell}" ${buffGem} ${Me.ID}
+			} else /if (${_found}) {
+				/varset _found FALSE
+			}
+		}
+	/next _aura
+
+
+
 	| Aura: all others
-	/if (${Bool[${Aura1Buff}]}) {
-		/if (!${Bool[${Me.Aura[1].Equal[${Aura1Buff}]}]} && !${Bool[${Me.Aura[2].Equal[${Aura1Buff}]}]}) /call core_cast "${Aura1Spell}" ${buffGem} ${Me.ID}
-	}
-	/if (${Bool[${Aura2Buff}]}) {
-		/if (!${Bool[${Me.Aura[1].Equal[${Aura2Buff}]}]} && !${Bool[${Me.Aura[2].Equal[${Aura2Buff}]}]}) /call core_cast "${Aura2Spell}" ${buffGem} ${Me.ID}
-	}	
+	| /if (${Bool[${Aura1Buff}]}) {
+	| 	/if (!${Bool[${Me.Aura[1].Equal[${Aura1Buff}]}]} && !${Bool[${Me.Aura[2].Equal[${Aura1Buff}]}]} && !${Bool[${Me.Aura[1].Equal[${Aura1Spell}]}]} && !${Bool[${Me.Aura[2].Equal[${Aura1Spell}]}]}) /call core_cast "${Aura1Spell}" ${buffGem} ${Me.ID}
+	| }
+	| /if (${Bool[${Aura2Buff}]}) {
+	| 	/if (!${Bool[${Me.Aura[1].Equal[${Aura2Buff}]}]} && !${Bool[${Me.Aura[2].Equal[${Aura2Buff}]}]} && !${Bool[${Me.Aura[1].Equal[${Aura2Spell}]}]} && !${Bool[${Me.Aura[2].Equal[${Aura2Spell}]}]}) /call core_cast "${Aura2Spell}" ${buffGem} ${Me.ID}
+	| }	
 	
 	:exit
 	/call create_timer timer_check_aura ${tCheck_Aura}
 	UPDATEHUD
 /return
 
-
+${Ini[${INIFile},Aura,Aura1Spell]}
 
 sub intialize_item_buffs()
 	DEBUG ${cbug}intialize_item_buffs()\ax
@@ -653,7 +729,7 @@ sub check_buffs_item()
 
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
  	
-	/if (${Bool[${SelfBuffRemove}]}) /call remove_unwanted_buffs	
+	/if (${Bool[${BuffRemove}]}) /call remove_unwanted_buffs	
 	/if (${AutoBot} && ${setAutoShrink}) /call check_shrink
 	/if (${AutoBot}) /call create_timer timer_check_buffs_item ${tItem_Buff}
 	:exit
@@ -665,7 +741,7 @@ sub check_buffs_item()
 |***
  *	DES: Checks current buffs. NOT SONGS. IF one is found to match the INI listing per character, it is removed.
  *	USE: /call remove_unwanted_buffs
- *	INI: toon -> [SelfBuff] -> SelfBuffRemove
+ *	INI: toon -> [SelfBuff] -> BuffRemove
  *  NOTE: 
 ***|
 sub remove_unwanted_buffs()
@@ -673,7 +749,7 @@ sub remove_unwanted_buffs()
 	ISDEAD
 	/doevents
 	/declare _count int local
-	/declare _remove string local ${SelfBuffRemove}
+	/declare _remove string local ${BuffRemove}
 	/for _count 1 to ${_remove.Count[|]}
 		/doevents
 		ISDEAD
@@ -696,22 +772,22 @@ sub remove_unwanted_buffs()
 sub check_buffs_self()
 	DEBUG ${cbug}check_buffs_self()\ax
 	UPDATEHUD "BUFF: Self"
-	/if (${AutoBot} && !${BuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /goto :exit
+	/if (${AutoBot} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /goto :exit
 
 	/declare _count int local
-	/for _count 1 to ${SelfBuffCount}
+	/for _count 1 to 15
+		/if (!${Bool[${Buff${_count}self}]} || !${Bool[${Buff${_count}}]}) /next _count
 		UPDATEHUD "BUFF: Self"
 		/doevents
 		ISDEAD
 		CHECKTIE
-		| /call check1offBuffs
 		CHECKEXIT
-		/if (!${Bool[${Me.Buff[${SelfBuff${_count}chk}].Duration}]} && ${Spell[${SelfBuff${_count}}].Stacks}) {
-			/if (!${Me.SpellReady[${SelfBuff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
+		/if (!${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]} && ${Spell[${Buff${_count}}].Stacks}) {
+			/if (!${Me.SpellReady[${Buff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
  		  :loopretrycast
-	 		  /if (${Me.Book[${SelfBuff${_count}}]} && ${Me.CurrentMana} > ${Spell[${SelfBuff${_count}}].Mana}) /call core_cast "${SelfBuff${_count}}" ${buffGem} ${Me.ID}
-				/if (${Me.AltAbility[${SelfBuff${_count}}].ID}) /call core_cast "${SelfBuff${_count}}" alt 0
-				/if (${Me.ItemReady[${SelfBuff${_count}}]}) /call core_cast "${SelfBuff${_count}}" item ${Me.ID}
+	 		  /if (${Me.Book[${Buff${_count}}]} && ${Me.CurrentMana} > ${Spell[${Buff${_count}}].Mana}) /call core_cast "${Buff${_count}}" ${buffGem} ${Me.ID}
+				/if (${Me.AltAbility[${Buff${_count}}].ID}) /call core_cast "${Buff${_count}}" alt 0
+				/if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID}
 				/if (${Select[${castReturn},CAST_FIZZLE]}) {
 					/delay 1s
 					/goto :loopretrycast
@@ -720,7 +796,7 @@ sub check_buffs_self()
 	/next _count
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
 	/if (${AutoBot} && ${setAutoShrink}) /call check_shrink
-	/if (${Bool[${SelfBuffRemove}]}) /call remove_unwanted_buffs	
+	/if (${Bool[${BuffRemove}]}) /call remove_unwanted_buffs	
 	/if ((${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
 	/if (${AutoBot}) /call create_timer timer_check_buffs_self ${tSelf_Buff}
 	/if (${Target.ID}) /squelch /target clear
@@ -739,7 +815,7 @@ sub check_buffs_self()
 sub check_pet_buffs()
 	DEBUG ${cbug}check_pet_buffs()\ax
 	/if (!${Me.Pet.ID}) /goto :exit
-	/if (${AutoBot} && (!${BuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]})) /goto :exit
+	/if (${AutoBot} && (!${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]})) /goto :exit
 	UPDATEHUD "BUFF: Pet"
 
 	/declare _count int local
@@ -815,7 +891,7 @@ sub check_no_cast_buffs()
  ***|
 sub click_horn_of_unity()
 	DEBUG ${cbug}click_horn_of_unity()\ax
-	/if (!${Bool[${HornofUnity}]} || ${SafeZone} || ${Bool[${timer_zone_pause}]}) /goto :exit
+	/if (!${Bool[${HornofUnity}]} || ${SafeZone} && !${switchOverrideSafezone} || ${Bool[${timer_zone_pause}]}) /goto :exit
 	/if (${Me.ItemReady[Miniature Horn of Unity]} && !${Bool[${Me.Song[Blessing of Unity]}]} && (${Me.PctHPs} < 95*.${tmpHealOverride} || ${Me.PctMana} < 95*.${tmpHealOverride})) {
 		/call core_cast "Miniature Horn of Unity" item 0 
 	}
@@ -832,12 +908,11 @@ sub click_horn_of_unity()
   ***|
 sub check_buffs_BC()
 	DEBUG ${cbug}check_buffs_BC()\ax
-	/if (!${BuffBC}) /goto :exit
 	ISDEAD
 	/doevents
 	CHECKEXIT
 	UPDATEHUD "BUFF: BC"
-	/if (${AutoBot} && (!${BuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]})) /goto :exit
+	/if (${AutoBot} && (!${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]})) /goto :exit
 
 	/declare _x int local 
 	/declare _b int local 
@@ -846,9 +921,9 @@ sub check_buffs_BC()
 		/doevents
 		/if (!${NetBots[${NetBots.Client[${_x}]}].InZone} || ${NetBots[${NetBots.Client[${_x}]}].Dead}) /goto :skipbcspawn
 		DEBUG [${_x}]:${NetBots.Client[${_x}]}
-		/for _b 1 to ${BuffCount} 	
+		/for _b 1 to 15
+			/if (!${Bool[${BCBuff${_b}Class}]} || !${Bool[${Buff${_b}}]}) /next _b    
 			/if (${Spawn[pc ${NetBots.Client[${_x}]}].Distance} > ${Spell[${Buff${_b}}].MyRange}) /goto :skipbcspell
-			| /call check1offBuffs
 			/doevents
 			ISDEAD
 			/if (!${Bool[${Buff${_b}}]} || !${Bool[${Buff${_b}chk}]} || !${Bool[${BCBuff${_b}Class}]} || (${Raid.Members} && ${Buff${_b}noBCinRaid}) || (!${Me.SpellReady[${Buff${_b}}]} && ${Me.Gem[${Buff${_b}}]}) || !${NetBots[${NetBots.Client[${_x}]}].Stacks[${Spell[${Buff${_b}chk}].ID}]}) /goto :skipBCspell
@@ -908,7 +983,7 @@ sub check_ammo()
  *  NOTE: no, i don't know why the mage will not shrink.
  ***|
 sub check_shrink()
-	DEBUG ${cbug}check_shrink()\ax
+	DEBUGCAST ${cbug}check_shrink()\ax
 	ISDEAD
 	/doevents
 	CHECKEXIT
@@ -952,14 +1027,14 @@ sub do_rest()
 	/declare _needrest bool local FALSE
 	
 	/if (${HomeSet} && !${SpawnCount[npc radius ${CombatDistance}*2 playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX}))) {
-		/if (${setPullMode}) /makecamp upause
+		/if (${switchPullMode}) /makecamp upause
 		/makecamp return
 		/delay 3s ((${Me.Y} == ${MakeCamp.AnchorY}) && (${Me.X} == ${MakeCamp.AnchorX}))
 	}
 	
 	:loopneedmorerest
 	CHECKREZ
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]} || !${AutoBot}) {
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} || !${AutoBot}) {
 		/if (${Me.State.NotEqual[STAND]}) /stand
 		/goto :exit
 	}
@@ -972,13 +1047,13 @@ sub do_rest()
 	| check self click buffs
 	/if (!${Me.Invis}) {
 		/call check_engaged
-		/if (!${Bool[${Macro.Return}]} && ${BuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
-		/if (${BuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
+		/if (!${Bool[${Macro.Return}]} && ${switchBuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
+		/if (${switchBuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
 	}
 
 	/if (${AutoBot} && (${Bool[${Group.Members}]} && ${Group.MasterLooter.ID}==${Me.ID}) && ${Me.UseAdvancedLooting} && !${AdvLoot.LootInProgress} && !${Stick.Active}) /call do_loot
 	/varset _needrest FALSE
-	/if (${Bool[${autoRest}]} && !${Me.Casting.ID} && !${Me.Moving} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) {
+	/if (${Bool[${autoRest}]} && !${Me.Casting.ID} && !${Me.Moving} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]}) {
 			
 		| Hybrid: RNG,BRD,SHD,BST,PAL
 		/if (${MeleeList.Find[${Me.Class.ShortName}]} && ${CastList.Find[${Me.Class.ShortName}]}) {
@@ -990,11 +1065,11 @@ sub do_rest()
 			/if (${Select[${Me.Class.ShortName},PAL]}) {
 				/if (${useMG} && !${timer_check_MG}) /call cast_AA_marrs_gift
 			} else /if (${Select[${Me.Class.ShortName},SHD]}) {
-				/if (${usePet}) /call check_pet
+				/if (${switchPcPet}) /call check_pet
 			} else /if (${Select[${Me.Class.ShortName},RNG]}) {
 			} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			} else /if (${Select[${Me.Class.ShortName},BRD]}) {
-				/if (${usePet}) /call check_pet
+				/if (${switchPcPet}) /call check_pet
 			}
 		}
 		
@@ -1028,9 +1103,9 @@ sub do_rest()
 			} else /if (${Select[${Me.Class.ShortName},ENC]}) {
 			} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
 			} else /if (${Select[${Me.Class.ShortName},NEC]}) {
-				/if (${usePet}) /call check_pet
+				/if (${switchPcPet}) /call check_pet
 			} else /if (${Select[${Me.Class.ShortName},MAG]}) {
-				/if (${usePet}) /call check_pet
+				/if (${switchPcPet}) /call check_pet
 			}
 		} 			
 	}
@@ -1060,7 +1135,7 @@ sub do_rest()
 sub set_home()
 	DEBUG ${cbug}set_home(\ax${HomeSet}${cbug})\ax
 	/if (${HomeSet}) {
-		/call Event_SetVar NA SetTie Movement FALSE
+		/varset SetTie FALSE
 		NOUT Radius: ${cinfo}${HomeRadius}\ax ${sep} Leash: ${cinfo}${HomeLeash}\ax
 		NOUT ${cgood}Camp\ax established. Y: ${cinfo}${Me.Y}\ax ${sep} X: ${cinfo}${Me.X}\ax 
 		/squelch /makecamp on radius ${HomeRadius} leash ${HomeLeash} mindelay ${HomeDelayMin} maxdelay ${HomeDelayMax}		
@@ -1092,7 +1167,7 @@ sub set_stop(bool _noecho)
 		| stop sticking to stuff
 		/if (${Stick.Active}) /squelch /stick off
 		/if (${Bool[${tempsnapstuck}]}) /varset tempsnapstuck FALSE
-		/if (${Bool[${SetTie}]}) /call Event_SetVar NA SetTie Movement FALSE
+		/if (${Bool[${SetTie}]}) /varset SetTie FALSE
 		
 		| stop advanced path
 		/if (${AdvPath.Following}) /squelch /afollow off
@@ -1105,7 +1180,7 @@ sub set_stop(bool _noecho)
  	| /if (${Stick.Active} || ${AdvPath.Following} || ${Bool[${tempsnapstuck}]} || ${Bool[${SetTie}]}) /goto :loopkillstick 	
  	 	
 	| /call clear_combat
-	/if (${Bool[${usePet}]} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
+	/if (${Bool[${switchPcPet}]} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
 	/doevents flush
 	/if (${Bool[${tempHomeSet}]}) {
 		/call Event_SetVar NA HomeSet Movement TRUE 
@@ -1125,10 +1200,10 @@ sub set_stop(bool _noecho)
  *  NOTE: 
  ***|
 sub click_item(bool _clickEpic)
-	DEBUG ${cbug}click_item()\ax
+	DEBUGCAST ${cbug}click_item()\ax
 	/call check_exit
 	/if (${Bool[${Macro.Return}]} || ${Spawn[${Target.ID}].PctHPs} < 15*.${tmpHealOverride}) /goto :exit
-	/if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0
+	/if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0
 
 	/declare _count int local
 	/for _count 1 to ${doclickItem}
@@ -1193,7 +1268,7 @@ sub sort_cursor(bool _ignoreTimer)
  *  NOTE: for healers its /healxtarget
  ***|
 sub set_xtarget()
-	DEBUG ${cbug}setXTarget()\ax 
+	DEBUG ${cbug}set_xtarget()\ax 
 	VOUT Sorting XTargets ${sep} ${cinfo}${tXHeal}\ax
 	/declare _x 				int 		local 
 	/declare _b 				int 		local 0
@@ -1508,7 +1583,7 @@ sub get_assist_target()
 		
 		| smart assist raid 1		
 		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssist1}]}) {
-			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${ignoreEngageAt}) {
+			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
 				/varset Target2Kill ${Me.XTarget[1].ID}
 				/delay 1
 				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
@@ -1517,7 +1592,7 @@ sub get_assist_target()
 		}
 		| smart assist raid 2
 		/if (${Bool[${Spawn[${Me.XTarget[2].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssist2}]}) {
-			/if (${Me.XTarget[2].PctHPs} <= ${smartengageAt} || ${ignoreEngageAt}) {
+			/if (${Me.XTarget[2].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
 				/varset Target2Kill ${Me.XTarget[2].ID}
 				/delay 1
 				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
@@ -1526,7 +1601,7 @@ sub get_assist_target()
 		}
 		| smart assist group
 		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssistG}]}) {
-			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${ignoreEngageAt} || (${Select[${Me.Class.ShortName},ENC]} && ${Select[${combat},DUAL]}) ) {
+			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat} || (${Select[${Me.Class.ShortName},ENC]} && ${Select[${combat},DUAL]}) ) {
 				/varset Target2Kill ${Me.XTarget[1].ID}
 				/delay 1
 				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
@@ -1555,7 +1630,7 @@ sub get_assist_target()
 		/doevents
 		ISDEAD
 		/if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
-			/if (${Target.PctHPs} > ${engageAt} && !${ignoreEngageAt}) {
+			/if (${Target.PctHPs} > ${engageAt} && !${switchOverrideEngageat}) {
 			DEBUG get_assist_target() Waiting to ENGAGE
 				/delay 3
 				/goto :getassistma1
@@ -1582,7 +1657,7 @@ sub get_assist_target()
 		/doevents
 		ISDEAD
 		/if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
-			/if (${Target.PctHPs} > ${engageAt} && !${ignoreEngageAt}) {
+			/if (${Target.PctHPs} > ${engageAt} && !${switchOverrideEngageat}) {
 				/delay 3
 				/goto :getassistma1
 			} 
@@ -1607,24 +1682,24 @@ sub is_target_valid(int _tmpID)
 	DEBUG ${cbug}is_target_valid(\ax${_tmpID}${cbug})\ax checking: [${cinfo}${Spawn[${_tmpID}].DisplayName}\ax]
 	ISDEAD
 	/doevents
-	/if (!${Target.ID} || (${SafeZone} && ${AutoBot})) {
+	/if (!${Target.ID} || (${SafeZone} && !${switchOverrideSafezone} && ${AutoBot})) {
 		/varset isValidTarget FALSE
 		/goto :exit
 	}
 	/varset isValidTarget TRUE
 	/if (!${AutoBot}) /goto :exit
-	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${setPullMode} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && !${ignoreEngageAt}) {
+	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${switchPullMode} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && !${switchOverrideEngageat}) {
 		/delay 1
 		/varset isValidTarget FALSE
 		/goto :exit
-	} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && !${setPullMode} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) && !${ignoreEngageAt} ) {
+	} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && !${switchPullMode} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) && !${switchOverrideEngageat} ) {
 		/delay 1
 		/varset isValidTarget FALSE
 		/goto :exit
 	}
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /varset isValidTarget FALSE
-	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${setPullMode}) /varset isValidTarget FALSE
-	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${setIgnoreLOS}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro} ) /varset isValidTarget FALSE
+	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPullMode}) /varset isValidTarget FALSE
+	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro} ) /varset isValidTarget FALSE
 	/if (${Spawn[${_tmpID}].Type.Equal[PC]}) /varset isValidTarget FALSE
 	/if (${Spawn[${Target.ID}].Type.Equal[PC]}) /varset isValidTarget FALSE
 	/if (${_tmpID} == ${Me.ID} || ${_tmpID} == ${Me.Pet.ID}) /varset isValidTarget FALSE
@@ -1750,7 +1825,7 @@ sub clear_timer(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_DOT()
-	DEBUG ${cbug}cast_DOT(count ${DoDoT})\ax
+	DEBUGCAST ${cbug}cast_DOT(count ${DoDoT})\ax
 	/declare _count int local
 	/for _count 1 to ${DoDoT}
 		ISDEAD
@@ -1776,7 +1851,7 @@ sub cast_DOT()
  *  NOTE: "I say we take off and nuke the entire site from orbit." --Ripley
  ***|
 sub cast_nuke()
-	DEBUG ${cbug}cast_nuke()\ax
+	DEBUGCAST ${cbug}cast_nuke()\ax
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoNuke}
@@ -1802,7 +1877,7 @@ sub cast_nuke()
  *  NOTE: I'd suggest not using this. though it is kind of fun to watch
  ***|
 sub cast_nuke_rain()
-	DEBUG ${cbug}cast_nuke_rain()${cinfo}
+	DEBUGCAST ${cbug}cast_nuke_rain()${cinfo}
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${doRainNuke}
@@ -1828,7 +1903,7 @@ sub cast_nuke_rain()
  *  NOTE: 
  ***|
 sub cast_malo_tash(int _tmpID)
-	DEBUG ${cbug}cast_malo_tash(\ax${cinfo}${_tmpID}\ax${cbug})\ax
+	DEBUGCAST ${cbug}cast_malo_tash(\ax${cinfo}${_tmpID}\ax${cbug})\ax
 	ISDEAD
 	/doevents
 	/if (!${switchdeBuffMalo} && !${switchdeBuffTash} || !${Target.ID}) /goto :exit
@@ -1839,7 +1914,7 @@ sub cast_malo_tash(int _tmpID)
 	UPDATEHUD "Malo / Tash"
 	/if (${switchdeBuffMalo} && ${Bool[${MaloSpell}]} && !${timer_malo_${_tmpID}} && !${Target.Maloed.ID} && ${Spawn[${_tmpID}].LineOfSight} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${MaloSpell}].MyRange}) {
 		/if (${Me.AltAbilityReady[${MaloSpell}]}) {
-			/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]} > 2 && ${Select[${Me.Class.ShortName},MAG]}) {
+			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} > 2 && ${Select[${Me.Class.ShortName},MAG]}) {
 				/call core_cast "Wind of Malosinete" alt ${_tmpID}
 			} else {
 				/call core_cast "${MaloSpell}" alt ${_tmpID}
@@ -1872,7 +1947,7 @@ sub cast_malo_tash(int _tmpID)
  *  NOTE: slap all the mobs
  ***|
 sub cast_AA_banestrike(int _tmpID)
-	DEBUG ${cbug}cast_AA_banestrike(ID:${_tmpID})\ax
+	DEBUGCAST ${cbug}cast_AA_banestrike(ID:${_tmpID})\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -1922,7 +1997,7 @@ sub get_target_2kill()
  *  NOTE: 
  ***|
 sub cast_eradicate_magic(int _tmpID)
-	DEBUG ${cbug}cast_eradicate_magic()\ax
+	DEBUGCAST ${cbug}cast_eradicate_magic()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -1949,21 +2024,21 @@ sub cast_eradicate_magic(int _tmpID)
 
 |***
  *	DES: Uses class specific AA snares
- *	USE: /call cast_AA_snare [target ID] & /debuffsnare [toggle]
+ *	USE: /call cast_AA_snare [target ID] & /debuff snare
  *	INI: na
  *  NOTE: did I mention this is for classes with AA snares..
  ***|
 sub cast_AA_snare(int _tmpID)
-	DEBUG ${cbug}cast_AA_snare()\ax
+	DEBUGCAST ${cbug}cast_AA_snare()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]} || ${timer_snare_${_tmpID}} || !${Target.ID}) /goto :exit
 
-	/if (!${Select[${Me.Class.ShortName},ENC,MAG,NEC,WIZ,RNG,DRU]}) {
+	/if (!${Select[${Me.Class.ShortName},RNG,DRU,WAR,ROG,NEC,SHD,WIZ,MNK]}) {
 		VOUT ${onotice} ${sep} Not an AA snaring class. Please come back later.
 		/call Event_SetVar NA switchdeBuffSnare Common FALSE  
-		/call echos switch "deBuff Snare" switchdeBuffSnare	
+		/call echos debuff "Snare" switchdeBuffSnare	
 		/goto :exit
 	}
 	
@@ -1997,7 +2072,7 @@ sub cast_AA_snare(int _tmpID)
  *  NOTE: 
  ***|
 sub click_BP()
-	DEBUG ${cbug}click_BP(${cinfo}${Breastplate1}, ${Breastplate2}\ax${cbug})\ax
+	DEBUGCAST ${cbug}click_BP(${cinfo}${Breastplate1}, ${Breastplate2}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	/call check_exit
@@ -2021,7 +2096,7 @@ sub click_BP()
  *  NOTE: listed all i could think of. dont want to keep up with this in an INI.
  ***|
 sub use_mod_rod()
-	DEBUG ${cbug}use_mod_rod()\ax 
+	DEBUGCAST ${cbug}use_mod_rod()\ax 
 	/if (${Select[${Me.Class.ShortName},ROG,BER,WAR,MNK,BRD]}) /goto :exit
 	/doevents
 	ISDEAD
@@ -2059,7 +2134,7 @@ sub use_mod_rod()
  ***| 
 sub send_pet(int _tmpID)
 	DEBUG ${cbug}send_pet()${cinfo}
-	/if (!${usePetSwarm} && !${usePet}) /goto :exit
+	/if (!${switchPcSwarm} && !${switchPcPet}) /goto :exit
 	ISDEAD
 	/doevents
 	CHECKEXIT
@@ -2073,13 +2148,13 @@ sub send_pet(int _tmpID)
 	
 	/target ID ${Target2Kill}
 		
-	/if (${usePet} && ${Me.Pet.ID} &&  (${Target.PctHPs} <= ${sendPetPerc} || ${ignoreEngageAt}) && !${Bool[${Me.Pet.Target}]}) {
+	/if (${switchPcPet} && ${Me.Pet.ID} &&  (${Target.PctHPs} <= ${PcPetengageat} || ${switchOverrideEngageat}) && !${Bool[${Me.Pet.Target}]}) {
 		/call echos petfarm "filler" ${Target2Kill}
 		/pet attack
 	}
 	
 	| send in the swarm
-	/if (${usePetSwarm} && (${Target.PctHPs} <= ${sendPetSwarmPerc} || ${ignoreEngageAt})) /pet swarm
+	/if (${switchPcSwarm} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /pet swarm
 
 	:exit
 /return
@@ -2093,7 +2168,7 @@ sub send_pet(int _tmpID)
  *  NOTE: 
  ***|
 sub use_glyph()
-	DEBUG ${cbug}use_glyph()\ax
+	DEBUGCAST ${cbug}use_glyph(${useGlyph})\ax
 	ISDEAD
 	/if (!${Bool[${useGlyph}]} || !${Raid.Members}) /goto :exit
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
@@ -2113,7 +2188,7 @@ sub use_glyph()
  *  NOTE2: How about we quit making changes to this....
  ***|
 sub core_cast(string _spell, string _type, int _tmpID, string _sub)
-	DEBUG ${cbug}core_cast(\ax${cinfo}SPELL:${_spell}, TYPE:${_type}, ID:${_tmpID}, SUB:${_sub}\ax${cbug})\ax
+	DEBUGCAST ${cbug}core_cast(\ax${cinfo}SPELL:${_spell}, TYPE:${_type}, ID:${_tmpID}, SUB:${_sub}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	/declare _bail string local FALSE
@@ -2123,7 +2198,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	
 	| make sure we have our target 
 	/if (${Bool[${_tmpID}]} && ${Target.ID} != ${_tmpID}) {
-		DEBUG fixing target to ID:${_tmpID} ${sep} ${Spawn[ID ${_tmpID}].DisplayName}
+		DEBUGCAST fixing target to ID:${_tmpID} ${sep} ${Spawn[ID ${_tmpID}].DisplayName}
 		/tar id ${_tmpID}
 		/delay 1s ${Target.ID} == ${_tmpID}
 	}
@@ -2131,7 +2206,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| used to let /call core_cast "whatever" NULL NULL
 	| figure out what the toon has and use that.
 	/if (${_type.Equal[NULL]} && !${Bool[${_tmpID}]}) {
-		DEBUG fixing cast type and target id NULL/NULL
+		DEBUGCAST fixing cast type and target id NULL/NULL
 		| /varset _tmpID 0
 		/if (${Bool[${Me.Book[${_spell}]}]}) {
 			/varset _type ${buffGem}
@@ -2154,7 +2229,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| spell casting?
 	/if (!${Select[${_type},alt,item,disc]} && ${Me.Casting.ID}) /varset _bail im_casting_spell
 	| line of site valid?
-	/if (${_tmpID} != 0 && !${setIgnoreLOS} && !${Target.LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /varset _bail bad_LoS
+	/if (${_tmpID} != 0 && !${switchOverrideLos} && !${Target.LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /varset _bail bad_LoS
 	| target in range?
 	/if (!${Select[${_type},item]} && ${_tmpID} != 0 && (${Target.Distance} > ${Spell[${_spell}].MyRange} || ${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range})) /varset _bail out_of_range
 	| enough mana?
@@ -2176,7 +2251,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 
 	| /if (${Bool[${_bail}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} || ${_tmpID})) {
 	/if (${Bool[${_bail}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) {
-		DEBUG ${owarning} ${sep} _bail = ${_bail} for ${_spell}
+		DEBUGCAST ${owarning} ${sep} _bail = ${_bail} for ${_spell}
 		| /varset castReturn CAST_NOTREADY
 		/goto :cooldown
 	}
@@ -2213,7 +2288,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 
 	| bailing on this spell. its either out of range, immune or something..
 	/if (${Bool[${_bail}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} || ${_tmpID})) {
-		DEBUG ${owarning} ${sep} _bail = ${_bail} immune too ${_spell}
+		DEBUGCAST ${owarning} ${sep} _bail = ${_bail} immune too ${_spell}
 		| /varset castReturn CAST_NOTREADY
 		/goto :cooldown
 	}
@@ -2222,10 +2297,10 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 | ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]}
 	:notarget
 	ISDEAD
-	DEBUG ${cbug}(\ax\awSPELL:${_spell}, TYPE:${_type}, ID:${_tmpID}, SUB:${_sub}\ax${cbug})\ax
+	DEBUGCAST ${cbug}(\ax\awSPELL:${_spell}, TYPE:${_type}, ID:${_tmpID}, SUB:${_sub}\ax${cbug})\ax
 
 	| Passed all checks. lets cast some shits..
-	DEBUG passed all checks
+	DEBUGCAST passed all checks
 
 	| Spell
 	/if (!${Select[${_type},alt,item,disc]}) {
@@ -2234,7 +2309,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
 		} else /if (${_tmpID} != 0 && ${Target.ID}) {
 			/if (${Me.Song[Gift of Mana (${GoMLevel})].ID}) /call cast_nuke_GoM ${_tmpID}
-			DEBUG MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
+			DEBUGCAST MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
 			VOUT Spell ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} ${If[${Bool[${_sub}]},${_sub},]} -targetid|${_tmpID}
 		}
@@ -2274,7 +2349,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 		/goto :cooldown
 	}
 
-	DEBUG ${csp}${_spell}\ax ${sep}${sep}${sep}${sep} ${sepO}${castReturn}${sepC}
+	DEBUGCAST ${csp}${_spell}\ax ${sep}${sep}${sep}${sep} ${sepO}${castReturn}${sepC}
 
 	:cooldown
 	ISDEAD
@@ -2301,7 +2376,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
  *  NOTE: this is checked on most spell casts. prevents doing stupid shit.
  ***|
 sub cast_break()
-	DEBUG ${cbug}cast_break()\ax
+	DEBUGCAST ${cbug}cast_break()\ax
 	ISDEAD
 	/doevents 
 	/if (${Spell[${Me.Casting.ID}].Category.Equal[Transport]}) /goto :exit
@@ -2325,7 +2400,7 @@ sub cast_break()
  *  NOTE: 
  ***|
 sub cast_cure()
-	DEBUG ${cbug}cast_cure()\ax
+	DEBUGCAST ${cbug}cast_cure()\ax
 	ISDEAD
 	/doevents
 	UPDATEHUD "CURE"
@@ -2420,7 +2495,7 @@ sub cast_cure()
  *  NOTE: i could never get this to work right...
  ***|
 sub cast_free_target(string _tmpSpell, int _tmpID)
-	DEBUG ${cbug}cast_free_target()\ax
+	DEBUGCAST ${cbug}cast_free_target()\ax
 
 	/call core_cast "${_tmpSpell}" 0 ${_tmpID}
 	/squelch /face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
@@ -2449,7 +2524,7 @@ sub use_skill_melee()
 	/if (${Target.ID} && ${Select[${combat},MELEE,RANGE]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 
 	| taunt /setagro
-	/if (${Bool[${taunt}]} && ${Bool[${setAgroMode}]} && ${Me.AbilityReady[Taunt]} && ${Spawn[${Target2Kill}].Distance} <= 18 && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+	/if (${Bool[${taunt}]} && ${switchAgroMode} && ${Me.AbilityReady[Taunt]} && ${Spawn[${Target2Kill}].Distance} <= 18 && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
 		VOUT Melee ${sep} ${csp}Taunting\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 		/if (${Target.ID}) /doability Taunt
 	}
@@ -2522,11 +2597,11 @@ sub use_skill_melee()
  *  NOTE: 
  ***|
 sub cast_nuke_servant()
-	DEBUG ${cbug}cast_nuke_servant()\ax
+	DEBUGCAST ${cbug}cast_nuke_servant()\ax
 	ISDEAD
 	/doevents
 	CHECKEXIT
-	/if (${usePetSwarm} && ${Spawn[${Target2Kill}].LineOfSight} && (${Me.SpellReady[${ServantNuke}]} || ${Me.AltAbilityReady[${ServantNuke}]}) && ${Me.CurrentMana} >= ${Spell[${ServantNuke}].Mana} && ${Spawn[${Target2Kill}].Distance} < ${MobAgro}) {
+	/if (${switchPcSwarm} && ${Spawn[${Target2Kill}].LineOfSight} && (${Me.SpellReady[${ServantNuke}]} || ${Me.AltAbilityReady[${ServantNuke}]}) && ${Me.CurrentMana} >= ${Spell[${ServantNuke}].Mana} && ${Spawn[${Target2Kill}].Distance} < ${MobAgro}) {
 		/if (${Me.SpellReady[${ServantNuke}]}) /call core_cast "${ServantNuke}" 0 ${Target2Kill} cast_break
 		/if (${Me.AltAbilityReady[${ServantNuke}]}) /call core_cast "${ServantNuke}" alt ${Target2Kill}
 	}
@@ -2566,7 +2641,7 @@ sub set_combat(str _mode)
 		}		
 	} else /if (${Select[${_mode},RANGE]}) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
-		/if ((${Spawn[${Target2Kill}].LineOfSight} && !${setIgnoreLOS}) && !${Me.AutoFire}) /squelch /autofire on
+		/if ((${Spawn[${Target2Kill}].LineOfSight} && !${switchOverrideLos}) && !${Me.AutoFire}) /squelch /autofire on
 	} else /if (${Select[${_mode},NUKE]}) {
 	} else /if (${Select[${_mode},HEAL]}) {
 	}
@@ -2583,7 +2658,7 @@ sub set_combat(str _mode)
  *  NOTE: 
  ***|
 sub cast_nuke_GoM(int _tmpID)
-	DEBUG ${cbug}cast_nuke_GoM(ID: ${_tmpID})\ax
+	DEBUGCAST ${cbug}cast_nuke_GoM(ID: ${_tmpID})\ax
 	ISDEAD
 	/if (!${Select[${Me.Class.ShortName},CLR]}) {
 		/call check_exit
@@ -2637,12 +2712,13 @@ sub check_buffs_raid()
 	/if (${Raid.Members} && ${Me.PctMana} > 10 && !${Me.Casting.ID}) {
 		/for _i 1 to ${SpawnCount[raid radius ${MobAgro}]}
 			DEBUG Checking Raid Buffs on [${cinfo}${Raid.Member[${_i}].DisplayName}\ax]
-			/for _x 1 to ${BuffCount}
+			/for _x 1 to 15
+				/if (!${Bool[${RaidBuff${_x}Class}]} || !${Bool[${Buff${_x}}]}) /next _x
 				ISDEAD
 				/doevents
 				CHECKTIE
 				CLEARCURSOR TRUE
-				/if (!${Bool[${timer_Raid_Buffs${Spell[${Buff${_x}}].ID}${Raid.Member[${_i}].ID}}]} && ${RaidBuff${x}Class.Find[${Spawn[${Raid.Member[${_i}].ID}].Class.ShortName}]} && ${Spawn[${Raid.Member[${_i}].ID}].Type.Equal[pc]} && ${Spawn[${Raid.Member[${_i}].ID}].Distance} < ${MobAgro} && ${Me.PctMana} >= 20) {
+				/if (!${Bool[${timer_Raid_Buffs${Spell[${Buff${_x}}].ID}${Raid.Member[${_i}].ID}}]} && ${RaidBuff${_x}Class.Find[${Spawn[${Raid.Member[${_i}].ID}].Class.ShortName}]} && ${Spawn[${Raid.Member[${_i}].ID}].Type.Equal[pc]} && ${Spawn[${Raid.Member[${_i}].ID}].Distance} < ${MobAgro} && ${Me.PctMana} >= 20) {
 					/if (${Stick.Active}) /squelch /stick off
 					/target ID ${Raid.Member[${_i}].ID}
 					/delay 1s ${Target.ID} == ${Raid.Member[${_i}].ID}
@@ -2659,7 +2735,7 @@ sub check_buffs_raid()
 					/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
 						CLEARCURSOR TRUE
 						VOUT Raid Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${Raid.Member[${_i}].DisplayName}\ax]
-						/call MQ2Cast "${Buff${x}}" ${buffGem} -targetid|${Raid.Member[${_i}].ID} 
+						/call MQ2Cast "${Buff${_x}}" ${buffGem} -targetid|${Raid.Member[${_i}].ID} 
 					}
 					/call create_timer timer_Raid_Buffs${Spell[${Buff${_x}chk}].ID}${Raid.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
 				}
@@ -2681,7 +2757,7 @@ sub check_buffs_raid()
  *  NOTE: need to remome the pet crap someday...
  ***|
 sub cast_buffs_queue(string _sender, string _verbage)
-	DEBUG ${cbug}cast_buffs_queue()\ax
+	DEBUGCAST ${cbug}cast_buffs_queue()\ax
 
   /declare _a        int local
   /declare _i        int local
@@ -2695,7 +2771,7 @@ sub cast_buffs_queue(string _sender, string _verbage)
           VOUT Buffing ${sep} ${cpc}${_sender}'s\ax Pet.
           /call queue_buff_add ${Spawn[pc ${_sender}].Pet.ID} ${_i}
         } else {
-          DEBUG ${_sender} requested ${cinfo}${Buff${_i}}\ax
+          DEBUGCAST ${_sender} requested ${cinfo}${Buff${_i}}\ax
           /call queue_buff_add ${Spawn[pc ${_sender}].ID} ${_i}
         }
       }
@@ -2858,7 +2934,7 @@ sub check_free_ingame_cash()
  *  NOTE: good for poisons, foods, whatevers.
 ***|
 sub odds_and_ends()
-	DEBUG ${cbug}odds_and_ends(${doclickOdds})\ax
+	DEBUGCAST ${cbug}odds_and_ends(${doclickOdds})\ax
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/declare _count int local
@@ -2882,7 +2958,7 @@ sub odds_and_ends()
  *  NOTE: All reasons to not attack a target..
  ***|
 sub check_exit(bool _mobs)
-	| DEBUG ${cbug}check_exit(\ax${cinfo}${If[${Bool[${_mobs}]},TRUE,FALSE]}\ax${cbug})\ax
+	DEBUG ${cbug}check_exit(\ax${cinfo}${If[${Bool[${_mobs}]},TRUE,FALSE]}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	/declare _exit 			bool 		local FALSE
@@ -2939,7 +3015,7 @@ sub check_exit(bool _mobs)
 	/if (${Bool[${_mobs}]}) {
 		| TARGET BUFFS 
 		/if (${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) /varset _exit TRUE 
-		/if (${AutoBot} && ${Bool[${Target.Mezzed}]} && !${setPullMode}) /varset _exit TRUE 	
+		/if (${AutoBot} && ${Bool[${Target.Mezzed}]} && !${switchPullMode}) /varset _exit TRUE 	
 		
 		| TARGET DEAD
 		| /if (${Bool[${Spawn[${Target.ID}].Type.Equal[CORPSE]}]}) /varset _exit TRUE
@@ -2980,7 +3056,7 @@ sub update_HUD_notices(string _mode)
 	}
 
 	| ** Notices for bottom of HUD	
-	| DEBUG HUD: Bottom Notices
+	DEBUG HUD: Bottom Notices
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} ${songList}
 		/varset _sep TRUE
@@ -3020,36 +3096,36 @@ sub update_HUD_notices(string _mode)
 		
 	
 	| Mode Notice
-	| DEBUG HUD: Mode Notice
-	/if (${Bool[${setModeHunt}]}) {
+	DEBUG HUD: Mode Notice
+	/if (${Bool[${switchModeHunt}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Hunt[${If[${setModeAgro},${setModeAgro},Zone]}]
 		/varset _sep TRUE
 	}		
-	/if (${Bool[${setModeScorch}]}) {
+	/if (${Bool[${switchModeScorch}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Scorch[${If[${setModeAgro},${setModeAgro},Zone]}]
 		/varset _sep TRUE
 	}		
-	/if (${Bool[${setModeHarvest}]}) {
+	/if (${Bool[${switchModeHarvest}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Harvest[${If[${setModeAgro},${setModeAgro},Zone]}]
 		/varset _sep TRUE
 	}	
-	/if (${Bool[${setModeDrag}]}) {
+	/if (${Bool[${switchModeDrag}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Drag
 		/varset _sep TRUE
 	}
-	/if (${Bool[${setModeForage}]}) {
+	/if (${Bool[${switchModeForage}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Forage
 		/varset _sep TRUE
 	}
-	/if (${Bool[${setModeFish}]}) {
+	/if (${Bool[${switchModeFish}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Fish
 		/varset _sep TRUE
 	}
-	/if (${Bool[${setModePetFarm}]}) {
+	/if (${Bool[${switchModePetFarm}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Pet Farm
 		/varset _sep TRUE
 	}
-	/if (${Bool[${setModeSkill}]}) {
+	/if (${Bool[${switchModeSkill}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Skill Trainer
 		/varset _sep TRUE
 	}		
@@ -3057,21 +3133,14 @@ sub update_HUD_notices(string _mode)
 		
 	
 	| WARNINGS FOR TOP OF HUD.. USE THIS SPARINGLY
-	| DEBUG HUD: WARNING
-	/if (${Bool[${debug}]}) {
-		/varset hudWarning ${hudWarning} * D E B U G * 
-		/goto :exitWARNING
-	}	
+	DEBUG HUD: WARNING
 	/if (${Bool[${flagCallNeedRez}]}) {
 		/varset hudWarning ${hudWarning} * STILL NEED A REZ * 
 		/goto :exitWARNING
 	}
 	
 	| check for invis
-	| still missing some
 	/varset _sep FALSE
-	| /varset _haveIV FALSE
-	| /varset _haveIVU FALSE
 	
 	/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Group Perfected Spirit Walk Invisibility|Perfected Invisibility
 	/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Shauri's Sonorous Clouding|Gather Umbra|Invisibility Cloak
@@ -3099,11 +3168,19 @@ sub update_HUD_notices(string _mode)
 			/next _index	
 	/next _count
 
+	| override warnings
+	/for _count 1 to ${overrideType.Count[|]}
+		/if (${switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}}) {
+			/varset hudWarning ${hudWarning} ${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower} 
+			/varset _sep TRUE			
+		}
+	/next _count
 
-	/if (${Bool[${setIgnoreLOS}]}) {
-		/varset hudWarning ${hudWarning} LoS 
-		/varset _sep TRUE
-	}	
+
+	| /if (${Bool[${switchOverrideLos}]}) {
+	| 	/varset hudWarning ${hudWarning} LoS 
+	| 	/varset _sep TRUE
+	| }	
 
 	:exitWARNING
 
@@ -3153,7 +3230,7 @@ sub update_HUD_notices(string _mode)
  *  NOTE: 
  ***|
 sub cast_AA_slow(int _tmpID, string _tmpSpell)
-	DEBUG ${cbug}cast_AA_slow(${_tmpID}, ${_tmpSpell})\ax
+	DEBUGCAST ${cbug}cast_AA_slow(${_tmpID}, ${_tmpSpell})\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
@@ -3196,12 +3273,12 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
  *  NOTE: 
  ***|
 sub cast_temp_pet(int _tmpID, string _tmpSpell)
-	DEBUG ${cbug}cast_temp_pet(${_tmpID}, ${_tmpSpell})\ax
+	DEBUGCAST ${cbug}cast_temp_pet(ID:${_tmpID}, Spell:${_tmpSpell})\ax
 	ISDEAD
 	/doevents
 	CHECKTIE
 	/call check_exit
-	/if (${Bool[${Macro.Return}]} || !${usePet} || ${Me.Pet.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${switchPcPet} || ${Me.Pet.ID}) /goto :exit
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${Spawn[${_tmpID}].Distance} < ${MobAgro} && ${Spawn[${_tmpID}].PctHPs} <= ${sendPetPerc}) {
@@ -3220,7 +3297,7 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
  *  NOTE: if doYaulp is TRUE, will use at 98% manna or less.
  ***|
 sub cast_AA_yaulp()
-	DEBUG ${cbug}cast_AA_yaulp()\ax
+	DEBUGCAST ${cbug}cast_AA_yaulp()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -3331,11 +3408,11 @@ sub set_crew(string _crewNumber)
  *  NOTE: 
  ***|
 sub cast_disc_breather()
- 	DEBUG ${cbug}cast_disc_breather(${Me.CombatAbilityReady[${DiscRest}]})\ax
+ 	DEBUGCAST ${cbug}cast_disc_breather(${Me.CombatAbilityReady[${DiscRest}]})\ax
 	ISDEAD
 	/doevents
 
- 	/if (${SafeZone} || !${Me.CombatAbilityReady[${DiscRest}]}) /goto :exit
+ 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.CombatAbilityReady[${DiscRest}]}) /goto :exit
 	
  	/declare _endurancePoint		int local 0
 	/if (${Me.CombatAbility[Breather Rk. III]}) /varset _endurancePoint 29
@@ -3358,7 +3435,7 @@ sub cast_disc_breather()
  *  NOTE:
  ***|
 sub fix_gem_id(string _spellGem)
-	DEBUG ${cbug}fix_gem_id(fix: ${_spellGem})\ax
+	DEBUGCAST ${cbug}fix_gem_id(fix: ${_spellGem})\ax
 	/declare _gem int local 0
 	/if (${_spellGem.Length} == 1) /varset _gem ${_spellGem.Right[1]}
 	/if (${_spellGem.Length} == 2) /varset _gem ${_spellGem.Right[2]} 
@@ -3376,7 +3453,7 @@ sub fix_gem_id(string _spellGem)
  *  NOTE:
  ***|
 sub scribe(string _spellname, string _spellgem, bool _wait)
- 	DEBUG ${cbug}scribe(${_spellname}, ${_spellgem}, ${_wait})\ax
+ 	DEBUGCAST ${cbug}scribe(${_spellname}, ${_spellgem}, ${_wait})\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -3393,7 +3470,7 @@ sub scribe(string _spellname, string _spellgem, bool _wait)
 
 	/if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /goto :exit
 	VOUT Scribe ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
-	DEBUG ${_gem} "${Spell[${_spellname}].RankName}"
+	DEBUGCAST ${_gem} "${Spell[${_spellname}].RankName}"
 	/memspell ${_gem} "${Spell[${_spellname}].RankName}"
 	/if (${_wait}) {
 		:waitforgem
@@ -3427,7 +3504,8 @@ sub tell_resident_mage(string _request)
 	| cycle through the mages
 	/for _count 1 to ${ResidentMage.Count[|]}
 
-		/if (${Spawn[pc ${ResidentMage.Arg[${_count},|]}].ID} && ${Spawn[pc ${ResidentMage.Arg[${_count},|]}].Distance} < 150) {
+		/if (${Spawn[pc ${ResidentMage.Arg[${_count},|]} zradius 150 radius 150].ID}) {
+		 | && ${Spawn[pc ${ResidentMage.Arg[${_count},|]}].3dDistance} < 150) {
 
 			| ask for weapons
 			/if (${_request.Equal[weapons]} && !${Bool[${timer_ask_for_weapons${Spawn[pc ${ResidentMage.Arg[${_count},|]}].ID}}]} && !${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
@@ -3457,10 +3535,10 @@ sub tell_resident_mage(string _request)
  *  NOTE: looks for corpses.. rez them
  ***|
 sub check_for_corpse()
-	DEBUG ${cbug}check_for_corpse()\ax
+	DEBUGREZ ${cbug}check_for_corpse()\ax
 	ISDEAD
-	/if (${Me.PctMana} < 12) /goto :exit
-	/if (${rezEmergency} && (!${Me.ItemReady[Token of Resurrection]} || ${Spawn[pc cleric radius 110].ID} || ${SafeZone})) /goto :exit
+	/if (${Me.PctMana} < 8) /goto :exit
+	/if (${switchRezEmergency} && (!${Me.ItemReady[Token of Resurrection]} || ${Spawn[pc cleric radius 110].ID} || ${SafeZone} && !${switchOverrideSafezone})) /goto :exit
 	
 	| ${RezerList.Find[${Target.DisplayName}]}
 	
@@ -3476,13 +3554,13 @@ sub check_for_corpse()
 	| work in druid Rejuvenation of spirit. OOC 20 sec recast 96% rez
 
 	| do we want to rez
-	/if ((${rezAuto} || ${rezEmergency}) && ${SpawnCount[pccorpse radius 110]}) {
-		/if (${Bool[${rezCombat}]} || ${rezEmergency}) {
-			/if (${rezEmergency} || ${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) /goto :checkforcorpses
-		} else /if (!${Bool[${rezCombat}]} && !${SpawnCount[npc radius ${combatRadius} playerstate 4]}) {
+	/if ((${switchRezGive} || ${switchRezEmergency}) && ${SpawnCount[pccorpse radius 110]}) {
+		/if (${Bool[${switchRezCombat}]} || ${switchRezEmergency}) {
+			/if (${switchRezEmergency} || ${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) /goto :checkforcorpses
+		} else /if (!${Bool[${switchRezCombat}]} && !${SpawnCount[npc radius ${combatRadius} playerstate 4]}) {
 			/if (${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) /goto :checkforcorpses
 		} 
-	} else /if ((!${rezAuto} && !${rezEmergency}) || !${SpawnCount[pccorpse radius 110]}) {
+	} else /if ((!${switchRezGive} && !${switchRezEmergency}) || !${SpawnCount[pccorpse radius 110]}) {
 		/goto :exit
 	}
 
@@ -3498,7 +3576,7 @@ sub check_for_corpse()
 				/call cast_rez ${_tmpID} ${_divinerezCLR}		
 			} else /if (${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
-			} else /if (${rezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+			} else /if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			}
 		}
@@ -3511,7 +3589,7 @@ sub check_for_corpse()
 		ISDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse radius 110 ${toonControl}].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count},pccorpse radius 110 ${toonControl}].ID}
-			/if (${rezEmergency}) {
+			/if (${switchRezEmergency}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			} else {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
@@ -3526,7 +3604,7 @@ sub check_for_corpse()
 		ISDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse raid radius 110 tank].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count},pccorpse raid radius 110 tank].ID}
-			/if (${rezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			} else {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
@@ -3541,7 +3619,7 @@ sub check_for_corpse()
 		ISDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse raid radius 110].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count},pccorpse raid radius 110].ID}
-			/if (${rezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			} else {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
@@ -3556,7 +3634,7 @@ sub check_for_corpse()
 		ISDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse  radius 110 guild].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count}, pccorpse radius 110 guild].ID}
-			/if (${rezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			} else {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
@@ -3571,7 +3649,7 @@ sub check_for_corpse()
 		ISDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse  radius 110 group].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count}, pccorpse radius 110 group].ID}
-			/if (${rezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			} else {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
@@ -3581,13 +3659,13 @@ sub check_for_corpse()
 	}	
 
 	| outside guild and raid
-	| needs /rezeveryone switch to be true
-	/if (${SpawnCount[pccorpse radius 110]} && ${Bool[${rezEveryone}]}) {
+	| needs /rez everyone switch to be true
+	/if (${SpawnCount[pccorpse radius 110]} && ${switchRezEveryone}) {
 		/for _count 1 to ${SpawnCount[pccorpse radius 110]}
 		ISDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse radius 110].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count}, pccorpse radius 110].ID}
-			/if (${rezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			} else {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
@@ -3609,18 +3687,19 @@ sub check_for_corpse()
  *  NOTE: 
  ***|
 sub cast_rez(int _tmpID, string _rezAA)
-	DEBUG ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
+	DEBUGCAST ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
+	DEBUGREZ ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
 	ISDEAD
 	/squelch /target ID ${_tmpID} 
 	/if (${Bool[${forcesafelist}]} && !${safelist.Find[${Target.DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM]}) /delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
 	/if (${Target.Distance} > 25 && ${Target.Distance} <= 110) /squelch /corpse
-	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[${_rezAA}]} && ${rezEmergency})) {	
+	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[${_rezAA}]} && ${switchRezEmergency})) {	
 		/if (${Select[${Me.Class.ShortName},CLR,PAL]}) NOUT Rezzing: ${cpc}${Spawn[${_tmpID}].DisplayName}\ax
 		/if (${Select[${Me.Class.ShortName},DRU,SHM]}) NOUT Calling: ${cpc}${Spawn[${_tmpID}].DisplayName}\ax
-		/if (${rezEmergency} && ${Target.ID}) NOUT ${owarning} ${sep} PANIC REZZ: ${cpc}${Spawn[${_tmpID}].DisplayName}\ax
+		/if (${switchRezEmergency} && ${Target.ID}) NOUT ${owarning} ${sep} PANIC REZZ: ${cpc}${Spawn[${_tmpID}].DisplayName}\ax
 		/if (${Target.ID}) ECHOCHANNEL Rezzing: ${Spawn[${_tmpID}].DisplayName}
-		/if (!${rezEmergency}) /call MQ2Cast "${_rezAA}" alt -targetid|${_tmpID} -maxtries|3 
-		/if (${rezEmergency}) {
+		/if (!${switchRezEmergency}) /call MQ2Cast "${_rezAA}" alt -targetid|${_tmpID} -maxtries|3 
+		/if (${switchRezEmergency}) {
 			/squelch /target ID ${_tmpID} 
 			/delay 1s ${Target.ID} == ${_tmpID}
 			/call MQ2Cast "${_rezAA}" item -targetid|${_tmpID} -maxtries|3 
@@ -3656,16 +3735,16 @@ sub set_combat_here()
 	/doevents flush
 
 	| clear all other modes
-	/call mode_clear_all
+	/call switch_clear_mode
 	
 	| reset timers for safety
-	/if (${Bool[${BuffItem}]}) /call create_timer timer_check_buffs_item ${defaultTimerDelay}
-	/if (${Bool[${BuffSelf}]}) /call create_timer timer_check_buffs_self ${defaultTimerDelay}
-	/if (${Bool[${BuffRaid}]}) /call create_timer timer_check_buffs_raid ${defaultTimerDelay}
-	/if (${Bool[${BuffBC}]}) /call create_timer timer_check_buffs_BC ${defaultTimerDelay}
-	/if (${Bool[${BuffPet}]}) /call create_timer timer_check_pet_buffs ${defaultTimerDelay}
+	/if (${Bool[${switchBuffItem}]}) /call create_timer timer_check_buffs_item ${defaultTimerDelay}
+	/if (${Bool[${switchBuffSelf}]}) /call create_timer timer_check_buffs_self ${defaultTimerDelay}
+	/if (${Bool[${switchBuffRaid}]}) /call create_timer timer_check_buffs_raid ${defaultTimerDelay}
+	/if (${Bool[${switchBuffBC}]}) /call create_timer timer_check_buffs_BC ${defaultTimerDelay}
+	/if (${Bool[${switchBuffPet}]}) /call create_timer timer_check_pet_buffs ${defaultTimerDelay}
 	/if (${Bool[${${Bool[${Aura1Buff}]} || ${Bool[${Aura2Buff}]}}]}) /call create_timer timer_check_aura ${defaultTimerDelay}
-	/if (${Bool[${BuffTell}]}) /call create_timer timer_check_buffs_tell ${defaultTimerDelay}
+	/if (${Bool[${switchBuffTell}]}) /call create_timer timer_check_buffs_tell ${defaultTimerDelay}
 	/if (${Me.Class.ShortName.Equal[CLR]}) /call create_timer timer_heal_ward ${tHealWard}
 
 	/if (${Me.Casting.ID}) {
@@ -3679,7 +3758,7 @@ sub set_combat_here()
 		| stop sticking to stuff
 		/if (${Stick.Active}) /squelch /stick off
 		/if (${tempsnapstuck}) /varset tempsnapstuck FALSE
-		/if (${SetTie}) /call Event_SetVar NA SetTie Movement FALSE
+		/if (${SetTie}) /varset SetTie FALSE
 		
 		| stop advanced path
 		/if (${AdvPath.Following}) /squelch /afollow off
@@ -3692,7 +3771,7 @@ sub set_combat_here()
  	| /if (${Stick.Active} || ${Me.Moving} || ${AdvPath.Following} || ${tempsnapstuck} || ${SetTie}) /goto :loopkillstick 	
  	
 	| /call clear_combat
-	/if (${usePet} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
+	/if (${switchPcPet} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
 
 	| make us visible 
 	/if (${makeVisible} && ${Me.Invis}) /makemevisible
@@ -3713,21 +3792,21 @@ sub set_combat_here()
 			/call set_home
 		}
 		| cut the agro way down for safety
-		/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro}]} > 2) {
+		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro}]} > 2) {
 			/if (${baseAgroRange} && ${MobAgro} > ${baseAgroRange}) /agro ${baseAgroRange}
 		}	
-		/call Event_SetVar NA setAgroMode Common TRUE 
-		/call Event_SetVar NA setPullMode Common TRUE 
-		/call Event_SetVar NA setPullMode Common TRUE 
+		/call Event_SetVar NA switchAgroMode Common TRUE 
+		/call Event_SetVar NA switchPullMode Common TRUE 
+		| /call Event_SetVar NA switchPullMode Common TRUE 
 		/zradius ${hereZRadius}	
 	} 
 	
 	| set assists
-	/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${setPullMode}) {
+	/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${switchPullMode}) {
 		/smartma G
- 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${setPullMode}) {
+ 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPullMode}) {
 		/smartma 1
-	}	else /if (${Select[${Me.Class.ShortName},CLR]} || ${setPullMode}) {
+	}	else /if (${Select[${Me.Class.ShortName},CLR]} || ${switchPullMode}) {
 		/smartma X
 	}
 	
@@ -3754,11 +3833,11 @@ sub set_combat_here()
  ***|
 sub list_add(string _listName, string _tmpID)
 	/declare _exit int local 0
-	DEBUG ${cbug}list_add(list: ${_listName}, ID:${_tmpID})\ax
+	DEBUGARRAY ${cbug}list_add(list: ${_listName}, ID:${_tmpID})\ax
 	/if (!${Bool[${${_listName}.Find[${_tmpID}]}]}) {
 		/varset ${_listName} ${${_listName}}|${_tmpID}
 		/varset _exit 1
-		DEBUG addlist#:${addList.Count[|]} - List:${addList}
+		DEBUGARRAY addlist#:${addList.Count[|]} - List:${addList}
 	}
 	:exit
 /return ${_exit}
@@ -3772,7 +3851,7 @@ sub list_add(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_delete(string _listName, string _tmpID)
-	DEBUG ${cbug}list_delete(list: ${_listName}, ID:${_tmpID})\ax
+	DEBUGARRAY ${cbug}list_delete(list: ${_listName}, ID:${_tmpID})\ax
 	/if (${${_listName}.Equal[NULL]} || ${${_tmpID}.Equal[NULL]} || !${${_listName}.Find[${_tmpID}]}) /goto :exit
 
 	/varset _tmpID |${_tmpID}
@@ -3798,7 +3877,7 @@ sub list_delete(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_update(string _listName, string _tmpID)
-	DEBUG ${cbug}list_update(list: ${_listName}, ID:${_tmpID})\ax
+	DEBUGARRAY ${cbug}list_update(list: ${_listName}, ID:${_tmpID})\ax
 	/declare _found bool local TRUE 
 
 	/if (${${_listName}.Find[|]}) {
@@ -3824,11 +3903,12 @@ sub list_update(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub check_for_adds()
-/declare _tmpID				string	local
-/declare _numMobs			int			local 1
-:loopnextmob
+	DEBUGARRAY ${cbug}check_for_adds\ax
+	/declare _tmpID				string	local
+	/declare _numMobs			int			local 1
+	:loopnextmob
 	/if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los playerstate 4].ID}) {
-		/varset _tmpID ${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable ${If[${setIgnoreLOS},,los]} playerstate 4].ID}
+		/varset _tmpID ${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable ${If[${switchOverrideLos},,los]} playerstate 4].ID}
 		| /if (${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Distance}<=${MobAgro} && ${Spawn[id ${_tmpID}].LineOfSight} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[${_tmpID}].DisplayName.Length}>1 && ${Spawn[${_tmpID}].Type.NotEqual[Untargetable]}) {
 		/if (${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Distance}<=${MobAgro} && ${Spawn[id ${_tmpID}].LineOfSight} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Untargetable]}) {
 			/if (!${timer_mez_${_tmpID}}) {
@@ -3859,9 +3939,9 @@ sub check_for_adds()
  *	USE: 
  *	INI: 
  *  NOTE: 
- ***|
+
 sub queue_buff()
-	DEBUG ${cbug}queue_buff()\ax
+	DEBUGARRAY ${cbug}queue_buff()\ax
 	ISDEAD
   /declare _count int local
 	/if (${BCBuffCount}) {
@@ -3873,7 +3953,7 @@ sub queue_buff()
 		/next _count
 	}
 /return
-
+ ***|
 
 
 |***
@@ -3883,7 +3963,7 @@ sub queue_buff()
  *  NOTE: 
  ***|
 sub queue_buff_add(int _buffee, int _buffnumber)
-	DEBUG ${cbug}queue_buff_add(${_buffee}, ${_buffnumber})\ax
+	DEBUGARRAY ${cbug}queue_buff_add(${_buffee}, ${_buffnumber})\ax
   /declare _count				int local
   /declare _compare			int local
 	ISDEAD
@@ -3918,7 +3998,7 @@ sub queue_buff_add(int _buffee, int _buffnumber)
  *  NOTE: 
  ***|
 sub queue_buff_delete(int _buffee, int _buffnumber)
-	DEBUG ${cbug}queue_buff_delete(${_buffee}, ${_buffnumber})\ax
+	DEBUGARRAY ${cbug}queue_buff_delete(${_buffee}, ${_buffnumber})\ax
 	/declare _count 			int local
 	/for _count 1 to ${queueCountMax}
 		/if (((${Spawn[${queueList[${_count},1]}].State.Equal["DEAD"]} || !${Spawn[${queueList[${_count},1]}].ID}) || ((${queueList[${_count},1]}==${_buffee} || (!${_buffee} && (${Group.Member[${Spawn[${queueList[${_count},1]}].DisplayName}].ID} || ${Group.Member[${Spawn[${queueList[${_count},1]}].Master.DisplayName}].ID}))) && (${queueBuffID[${queueList[${_count},2]}]}==${_buffnumber} || ${queueList[${_count},2]}==${_buffnumber}))) && ${queueList[${_count},1]}) {
@@ -3939,7 +4019,7 @@ sub queue_buff_delete(int _buffee, int _buffnumber)
  *  NOTE: 
  ***|
 sub check_buffs_tell()
-	DEBUG ${cbug}check_buffs_tell()\ax
+	DEBUGARRAY ${cbug}check_buffs_tell()\ax
 	ISDEAD
 	UPDATEHUD "BUFF: Tell"
 	/doevents
@@ -3948,9 +4028,9 @@ sub check_buffs_tell()
 	/declare _tmpID					int local 0
 
 	/for _count 1 to ${queueCount}
+		DEBUGARRAY queue count: ${queueCount}
 		ISDEAD
 		/doevents
-		| /call check1offBuffs
 		CHECKEXIT
 		/if (${queueList[${_count},2]} < ${_tmpVAR} && ${Spawn[${queueList[${_count},1]}].ID} && !${Spawn[${queueList[${_count},1]}].Dead} && (${Spawn[${queueList[${_count},1]}].Distance} <  ${Spell[${Buff${queueList[${_count},2]}}].MyRange} || ${Spawn[${queueList[${_count},1]}].Distance} < ${Spell[${Buff${queueList[${_count},2]}}].AERange}) && ${Me.CurrentMana} > ${Spell[${Buff${_tmpVAR}}].Mana}) {
 			/varset _tmpID ${queueList[${_count},1]}
@@ -3985,6 +4065,7 @@ sub check_buffs_tell()
  *  NOTE: this only works for your group and on the same computer. it shares the settings in core.ini
  ***|
 sub broadcast_status()
+	DEBUG ${cbug}broadcast_status()\ax
 	/declare _count 			int 		local
 	/declare _build				string 	local 
 
@@ -4054,6 +4135,9 @@ sub do_loot()
 		/goto :permissiontoloot
 	} else /if (${Me.UseAdvancedLooting} && !${Raid.Members} && !${Group.Members}) {
 		/goto :permissiontoloot
+	| } else /if (${Me.UseAdvancedLooting} && ${Raid.Members} && !${Bool[${Raid.MasterLooter.ID}]} && ${switchOverrideLoot}) {
+	} else /if (${Me.UseAdvancedLooting} && ${switchOverrideLoot}) {
+		/goto :permissiontoloot
 	} else {
 		/goto :exit
 	}
@@ -4117,6 +4201,7 @@ sub do_loot()
 		/for _pcount ${AdvLoot.PCount} downto 1
 			/varset _advlItem ${AdvLoot.PList[${_pcount}].Name}
 			/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
+			DEBUG ADVL: ${_advlItem} - ${ctar}${_advlChoice}\ax
 			
 			/if (${AdvLoot.PList[${_pcount}].ID} && !${Select[${_advlChoice},Leave,Keep,Destroy,Sell,Announce,Ignore]}) {
 				/if (${Select[${_advlChoice},Announce]}) {
@@ -4138,27 +4223,32 @@ sub do_loot()
 			/if (${Select[${_advlChoice},Destroy]}) {
 				/delay 1s !${AdvLoot.LootInProgress}
 				/advloot personal ${_pcount} loot
+				DEBUG ADVL looting: ${_advlItem}
 				/delay 1s !${AdvLoot.LootInProgress}
 				/delay 5
 				/if (${FindItem[${_advlItem}].ID}) {
-| evil delete code. had to change this. like > 9000 times
+					
+| evil delete code. had to change this. like > 9000 times 
 					:loopfind_advlItem
 					/delay 5
 					| /nomodkey /shift /itemnotify ${FindItem[=${_advlItem}].InvSlot} leftmouseup
 					/nomodkey /shift /itemnotify in Pack${Math.Calc[${FindItem[=${_advlItem}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${_advlItem}].ItemSlot2}+1]} leftmouseup
-					/delay 1s ${Cursor.Name.Equal[${_advlItem}]}
-					/delay 5
+					DEBUG ADVL finding: Pack${Math.Calc[${FindItem[=${_advlItem}].ItemSlot}-22]} - ${ctar}${_advlItem}\ax
+					| /delay 1s ${Cursor.Name.Equal[${_advlItem}]}
+					| /delay 5
 					
-					VOUT Cursor ${sep} ${odestroy} ${sep} ${cinfo}${_advlItem}\ax
-					/if (${Cursor.Name.Equal[${_advlItem}]}) /destroy
-					/delay 1
-					 /if (${Window[ConfirmationDialogBox].Open}) {
-					 	/delay 1
-					 	/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
-					 }
+					| VOUT Cursor ${sep} ${odestroy} ${sep} ${cinfo}${_advlItem}\ax
+					| /if (${Cursor.Name.Equal[${_advlItem}]}) /destroy
+					| /delay 1
+					/call sort_cursor TRUE
+					/if (${Window[ConfirmationDialogBox].Open}) {
+						/delay 1
+						/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
+					}
 					/delay 3 !${Cursor.ID}
 					/if (${FindItem[=${_advlItem}].ID}) /goto :loopfind_advlItem
 | evil delete code end...
+
 				}          
 			} else /if (${Select[${_advlChoice},Leave,Announce]} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
 				/if (${Select[${_advlChoice},Announce]}) ECHOCHANNEL Loot: Leaving ${_advlItem}
@@ -4192,6 +4282,7 @@ sub do_loot()
  *  NOTE: you have to open the merchants window. this works on the loyalty vendor in PoK as well.
  ***|
 sub vendor_buy(string _itemtoBuy, int _buyAmount)
+	DEBUG ${cbug}vendor_buy(Buy: ${_itemtoBuy}, #:${_buyAmount})\ax
 	/if (!${Select[${Target.Type},npc,pet]} || !${Target.ID} || ${Target.Type.Equal[pet]} && !${Target.DisplayName.Find[familiar]}) /return
 	/declare _count int local
 
@@ -4272,7 +4363,7 @@ sub vendor_buy(string _itemtoBuy, int _buyAmount)
  *  NOTE: 
  ***|
 sub vendor_sell(string _itemtoSell)
-	DEBUG ${cbug}vendor_sell(${_itemtoSell})}\ax
+	DEBUG ${cbug}vendor_sell(sell: ${_itemtoSell})}\ax
 	/declare _pack 					int local
 	/declare _slot 					int local
 	/declare _lootItem 			string local
@@ -4320,7 +4411,7 @@ sub vendor_sell(string _itemtoSell)
  *  NOTE: 
  ***|
 sub vendor_sell_item(string _itemtoSell)
-	DEBUG ${cbug}vendor_sell_item(${_itemtoSell})}\ax
+	DEBUG ${cbug}vendor_sell_item(item: ${_itemtoSell})\ax
   /if (!${Window[MerchantWnd].Open}) /goto :exit
 
 	:loopsell
@@ -4407,7 +4498,7 @@ sub check_disc_now()
  ***|
 sub get_target()
 	DEBUG ${cbug}get_target()\ax
-	/if (!${setPullMode}) /goto :exit
+	/if (!${switchPullMode}) /goto :exit
 	ISDEAD
 	/declare _tmpID int local
 	/declare _count int local
@@ -4415,11 +4506,11 @@ sub get_target()
 	/declare _priorityMob bool local FALSE
 
 	| search local ${combatRadius} range for mob	acquisition
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
 		DEBUG Mob is close. Within:${combatRadius} 
-		/for _count 1 to ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}
+		/for _count 1 to ${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}
 			ISDEAD
-			/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable].ID}
+			/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable].ID}
 	
 			/if (!${_priorityMob} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].PctHPs} <= ${_mobHP} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1 || ${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
 				/varset Target2Kill ${_tmpID}
@@ -4433,23 +4524,23 @@ sub get_target()
 		/next _count
 
 	| search full ${MobAgro} range for mob acquisition
-	} else /if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${Me.Buff[Resurrection Sickness].ID}) {
+	} else /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${Me.Buff[Resurrection Sickness].ID}) {
 		DEBUG Mob is not close. Within:${MobAgro}
-		/for _count 1 to ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]}
+		/for _count 1 to ${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]}
 			ISDEAD
-			/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable].ID}
+			/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable].ID}
 			
-			/if (${Spawn[id ${_tmpID}].Distance} < ${MobAgro} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && (${Spawn[id ${_tmpID}].LineOfSight} && !${setIgnoreLOS}) && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1) {
+			/if (${Spawn[id ${_tmpID}].Distance} < ${MobAgro} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && (${Spawn[id ${_tmpID}].LineOfSight} && !${switchOverrideLos}) && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1) {
 				/varset Target2Kill ${_tmpID}
  			}
 		/next _count	
 		
 	| lastly, kill all the evil pets. if the owner is dead.
-	} else /if (${SpawnCount[pet ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
+	} else /if (${SpawnCount[pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
 		DEBUG A pet is close. Within:${MobAgro}
-		/for _count 1 to ${SpawnCount[pet ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]}
+		/for _count 1 to ${SpawnCount[pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]}
 			ISDEAD
-			/varset _tmpID ${NearestSpawn[${_count}, pet ${If[${setIgnoreLOS},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable].ID}
+			/varset _tmpID ${NearestSpawn[${_count}, pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable].ID}
 			/if (${Spawn[${Spawn[${_tmpID}].Master}].Type.Equal[Corpse]} || !${Spawn[${Spawn[${_tmpID}].Master}].ID}) /varset Target2Kill ${_tmpID}
 		/next _count	
 	}
@@ -4462,7 +4553,7 @@ sub get_target()
 	UPDATEHUD "PULL"
 
 	DEBUG Disable /camp for pull
-	/if (${setPullMode} && ${HomeSet}) /makecamp pause
+	/if (${switchPullMode} && ${HomeSet}) /makecamp pause
 
 	:looppull
 	/if (${FindItemCount[${RangeItemSummon}]} < 5 && ${Bool[${RangeItemSummon}]}) /call check_ammo
@@ -4471,10 +4562,11 @@ sub get_target()
 	/if (${Spawn[id ${Target2Kill}].Distance} > 31 && !${Select[${Me.Class.ShortName},MAG,NEC,BST,ENC]}) {
 		DEBUG use arrow to pull mob over 31
 		/target ID ${Target2Kill}
-		/if (${Target.ID} && (${Select[${combat},MELEE,RANGE]})) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+		DEBUG ID ${Target2Kill}
+		/if (${Target.ID} && (${Select[${combat},MELEE,RANGE]})) /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 
 		/if (${Target.ID}) {
-			/if (!${Spawn[${Target}].LineOfSight} && !${setIgnoreLOS}) {
+			/if (!${Spawn[${Target}].LineOfSight} && !${switchOverrideLos}) {
 				/delay 2s ${Spawn[${Target}].LineOfSight}
 				/if (!${Spawn[${Target}].LineOfSight}) {
 					/call clear_combat
@@ -4482,9 +4574,9 @@ sub get_target()
 				}
 			}
 			/doevents
-			/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} targetable]} && ${Me.State.NotEqual[STAND]}) /stand
+			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]} && ${Me.State.NotEqual[STAND]}) /stand
 			/if (${Me.Stunned}) /goto :exit
-			| /if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${CombatDistance} targetable playerstate 4]}) /goto :exit
+			| /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance} targetable playerstate 4]}) /goto :exit
 			/if (${Select[${Me.Class.ShortName},SHD]} && ${Me.AltAbilityReady[Hate's Attraction]}) {
 				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} < ${Spell[Hate's Attraction].MyRange}) /call core_cast "Hate's Attraction" alt ${Target2Kill}
 			} else /if (${Select[${Me.Class.ShortName},PAL]} && ${Me.AltAbilityReady[Divine Call]}) {
@@ -4593,6 +4685,7 @@ sub hand_in(string _sender, string _verbage)
  *  NOTE: recursive of augments in items in bags.
  ***|
 sub echo_augments()
+	DEBUG ${cbug}echo_augments()\ax
 	/declare _slot 			int local
 	/declare _augslot 	int local
 	/declare _bagslot 	int local
@@ -4650,6 +4743,7 @@ sub echo_augments()
  *  NOTE: resets on start
  ***|
 sub check_watch_spawn()
+	DEBUG ${cbug}check_watch_spawn(spawn: ${watchSpawn})\ax
 	| this maths dont work..
 	| /declare _correctWatchCount int local ${Float[${Math.Calc[${SpawnCount[npc ${watchSpawn}]} - ${SpawnCount[npccorpse ${watchSpawn}]}]}].Int}
 	
@@ -4670,77 +4764,13 @@ sub check_watch_spawn()
 
 
 |***
- *	DES: finds an item. all BC toons will report back to ECHOCHANNEL item and location of they have it.
- *	USE: /whohas [ITEM] | /bc whohas [ITEM]
- *	INI: 
- *  NOTE: 
- ***|
-sub check_who_has(string _sender, string _verbage)
-	/declare _slot 			int local
-	/declare _augslot 	int local
-	/declare _bagslot 	int local
-
-	| /if (${Me.DisplayName.Equal[${_sender}]}) /goto :exit
-	/if (!${Bool[${echoChannel}]}) /goto :exit
-
-
-	/if (${FindItem[=${_verbage}].ID} && !${FindItem[=${_verbage}].Type.Equal[Augmentation]}) {
-		ECHOCHANNEL ${FindItem[=${_verbage}]}: Item Inventory
-	} else /if (${FindItemBank[=${_verbage}].ID} && !${FindItemBank[=${_verbage}].Type.Equal[Augmentation]}) {
-		ECHOCHANNEL ${FindItemBank[=${_verbage}]}: Item Bank
-	}
-
-	| augment search	
-	| worn inventory skip powersource (21) unless your powersource does something mine doesn't?
-	/for _slot 0 to 22
-		/if (${_slot} == 21) /goto :noWornItemAug
-		/for _augslot 0 to ${Me.Inventory[${_slot}].Augs}
-			/if (${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) ECHOCHANNEL ${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name}: Worn Augment in ${Me.Inventory[${_slot}].Name} 
-		/next _augslot
-		:noWornItemAug
-	/next _slot	
-		
-		
-	| bag inventory
-	/for _slot 23 to 32
-		| top slot augs
-		/if (${Me.Inventory[${_slot}].Name.Equal[${_verbage}]}) ECHOCHANNEL ${Me.Inventory[${_slot}].Name}: Inventory Augment in ${Me.Inventory[${_slot}].Name}
-
-		| top slot item	with augs
-		/if (${Me.Inventory[${_slot}].Augs}) {
-			/for _augslot 0 to ${Me.Inventory[${_slot}].Augs}
-				/if (${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) ECHOCHANNEL ${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name}: Inventory Item Augment in ${Me.Inventory[${_slot}].Name} 
-			/next _augslot
-		}
-
-		| inside bags
-		/if (${InvSlot[${_slot}].Item.Container}) {
-			/for _bagslot 1 to ${InvSlot[${_slot}].Item.Container}
-				/if (${Me.Inventory[${_slot}].Item[${_bagslot}].Name.Equal[${_verbage}]}) ECHOCHANNEL ${Me.Inventory[${_slot}].Item[${_bagslot}].Name}: Inventory Item in ${Me.Inventory[${_slot}].Name}
-
-				| in items inside bags
-				/if (${Me.Inventory[${_slot}].Item[${_bagslot}].Augs}) {
-					/for _augslot 0 to ${Me.Inventory[${_slot}].Item[${_bagslot}].Augs}
-						/if (${Me.Inventory[${_slot}].Item[${_bagslot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) ECHOCHANNEL ${Me.Inventory[${_slot}].Item[${_bagslot}].AugSlot[${_augslot}].Name}: Inventory Item Augment in ${Me.Inventory[${_slot}].Item[${_bagslot}].Name}
-					/next _augslot	
-				}
-			/next _bagslot
-		}
-	/next _slot
-	
-	:exit
-/return
-
-
-
-|***
  *	DES: Simply gives cash to an NPC. 
  *	USE: /givecoin [ammount] [stacks] [plat|gold|copper|silver]
  *	INI: NA
  *  NOTE: It's not dumb if it works.
  ***|
 sub give_coin(int _ammount, int _stacks, string _coin)
-	DEBUG ${cbug}give_coin(${_ammount}, ${_stacks}, ${ _coin})\ax
+	DEBUG ${cbug}give_coin(${_ammount}, ${_stacks}, ${_coin})\ax
 	| NOUT /givecoin [ammount] [stacks] [plat|gold|copper|silver]
 
 	/declare _count 			int local 
@@ -4797,11 +4827,12 @@ sub give_coin(int _ammount, int _stacks, string _coin)
  *  NOTE: 103 spell EoK spell
  ***|
 sub check_harmonious()
-	DEBUG ${cbug}check_harmonious()\ax
+	DEBUGCAST ${cbug}check_harmonious()\ax
+	/if (!${AutoBot} && !${switchMode${setModeType}}) /goto :exit
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Bool[${Macro.Return}]} || ${SafeZone} || ${Me.Level} < 103) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${SafeZone} && !${switchOverrideSafezone} || ${Me.Level} < 103) /goto :exit
 	/if (!${Bool[${Me.Buff[${Harmonious}]}]} && ${Me.PctMana} > 10) {
 		/call core_cast "${Harmonious}" 0 0
 	}
@@ -4838,7 +4869,7 @@ sub prep_combat()
 	} else /if (!${AutoBot}) {
 		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
 		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /varset _gokillstuff FALSE
-		/if (${setToastMode}) /call synergy_${Me.Class.ShortName}
+		/if (${switchToastMode}) /call synergy_${Me.Class.ShortName}
 	}
 
 	:exit
@@ -4856,7 +4887,7 @@ sub is_toast_time()
 	DEBUG ${cbug}is_toast_time()\ax
 	/doevents
 	ISDEAD
-	/if (${SafeZone} && ${AutoBot}) /goto :exit
+	/if (${SafeZone} && !${switchOverrideSafezone} && ${AutoBot}) /goto :exit
 
 	/declare _toast 				bool 		local FALSE
 	/declare _mobcount			int 		local 0
@@ -4864,13 +4895,13 @@ sub is_toast_time()
 	/declare _mobID 				int 		local 0
 	
 	| if always set to toast, always toast while in combat
-	/if (${AutoBot} && ${setToastMode} && ${Me.Combat}) /varset _toast TRUE
+	/if (${AutoBot} && ${switchToastMode} && ${Me.Combat}) /varset _toast TRUE
 	
 	| if the current target is a namer
-	/if (${AutoBot} && ${AutoToast} && ${Bool[${Target2Kill}]} && ${Spawn[${Target2Kill}].PctHPs} <= ${whentoToast} && ${NameList.Find[${Target.DisplayName}]}) /varset _toast TRUE
+	/if (${AutoBot} && ${AutoToast} && ${Bool[${Target2Kill}]} && ${Spawn[${Target2Kill}].PctHPs} <= ${whentoToast} && (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName})) /varset _toast TRUE
 
 	| if number of mobs in the local area reaches the /toastmobcount threashold
-	/if (${AutoBot} && ${Bool[${toastMobCount}]} && ${SpawnCount[npc radius ${MobAgro} ${If[${setIgnoreLOS},,los]} targetable playerstate 4]} >= ${toastMobCount}) /varset _toast TRUE
+	/if (${AutoBot} && ${Bool[${toastMobCount}]} && ${SpawnCount[npc radius ${MobAgro} ${If[${switchOverrideLos},,los]} targetable playerstate 4]} >= ${toastMobCount}) /varset _toast TRUE
 
 	| healers mezers, and off combat routines simply check for a named in the local area to start a toast. no direct target of a named is required. simply be in the area.
 	/if (${Select[${combat},HEAL,DUAL]}) {
@@ -4879,8 +4910,8 @@ sub is_toast_time()
 			/doevents
 			ISDEAD
 			/varset _mobID ${NearestSpawn[${_count}, npc radius ${MobAgro}].ID}
-			/if (${AutoToast} && ${NameList.Find[${Spawn[id ${_mobID} radius ${MobAgro}].DisplayName}]}) /varset _toast TRUE
-			/if (${Bool[${toastMobCount}]} && ${SpawnCount[${If[${setIgnoreLOS},,los]} npc radius ${MobAgro} targetable playerstate 4]} >= ${toastMobCount}) /varset _toast TRUE
+			/if (${AutoToast} && ${NameList.Find[${Spawn[id ${_mobID} radius ${MobAgro}].DisplayName}]} && !${switchOverrideName}) /varset _toast TRUE
+			/if (${Bool[${toastMobCount}]} && ${SpawnCount[npc radius ${MobAgro} ${If[${switchOverrideLos},,los]} targetable playerstate 4]} >= ${toastMobCount}) /varset _toast TRUE
 		/next _count 	
 	}
 	:exit
@@ -4964,16 +4995,136 @@ sub check_buff_routines(bool _force)
 	/doevents
 	ISDEAD
 	/if (!${Me.Invis}) {
-	  /if (${BuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
+	  /if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
+	  /if (${switchBuffSelf} && ${Select[${Me.Class.ShortName},SHD,PAL]}) /call check_harmonious
+	  /if (${switchBuffSelf} && !${timer_check_runes} && ${Select[${Me.Class.ShortName},WIZ,ENC]}) /call check_rune_${Me.Class.ShortName}
+	  /if (${switchBuffItem} && ${Select[${Me.Class.ShortName},MAG]}) /call check_rods
 		/call check_engaged
 		/if (!${Bool[${Macro.Return}]}) {
-			/if (${BuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
-			/if (${BuffSelf} && ${Bool[${SelfBuffCount}]} && !${timer_check_buffs_self}) /call check_buffs_self
-		  /if (${BuffRaid} && ${Bool[${BuffCount}]} && !${timer_check_buffs_raid}) /call check_buffs_raid
-			/if (${BuffBC} && ${Bool[${BuffCount}]} && !${timer_check_buffs_BC}) /call check_buffs_BC
-			/if (${BuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
-			/if ((${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
+			/if (${switchBuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
+			/if (${switchBuffSelf} && !${timer_check_buffs_self}) /call check_buffs_self
+		  /if (${switchBuffRaid} && !${timer_check_buffs_raid}) /call check_buffs_raid
+			/if (${switchBuffBc}  && !${timer_check_buffs_BC}) /call check_buffs_BC
+			/if (${switchBuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
+			/if (${switchBuffSelf} && (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
+			/if (${switchBuffItem} && ${Select[${Me.Class.ShortName},ENC]}) /call check_crystals
+
 		}
 	}
 	:exit
 /return
+
+
+
+|***
+ *	DES: finds an item
+ *	USE: /call check_for_item "ITEM NAME"  .. use quotes
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_for_item(string _verbage)
+	DEBUG ${cbug}check_for_item(verbage: ${_verbage})\ax
+	/declare _slot 			int local
+	/declare _augslot 	int local
+	/declare _bagslot 	int local
+	/declare _found			bool FALSE
+
+	VOUT Searching ${sep} ${cinfo}${_verbage}\ax
+
+| check bank for shits
+	/for _slot 1 to 28
+	| -- search top bank containers
+		/if (${Me.Bank[${_slot}].Container}) {
+			/for _bagslot 1 to ${Me.Bank[${_slot}].Container}
+	| -- ITEMS: search inside bank containers top slots
+				/if (${Me.Bank[${_slot}].Item[${_bagslot}].Name.Equal[${_verbage}]}) {
+					/varset _found TRUE
+					VOUT Bank Bag:${cinfo}${_slot}\ax ${sep} Bag Slot:${cinfo}${_bagslot}\ax ${If[${Me.Bank[${_slot}].Item[${_bagslot}].Stack} > 1,${sep} Stack:${cgood}${Me.Bank[${_slot}].Item[${_bagslot}].Stack}\ax,]}	
+				}
+	| -- AUG: search aug slots in items in bags Augments in items inside bags
+				/if (${Me.Bank[${_slot}].Item[${_bagslot}].Augs}) {
+					/for _augslot 0 to ${Me.Bank[${_slot}].Item[${_bagslot}].Augs}
+						/if (${Me.Bank[${_slot}].Item[${_bagslot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) {
+							/varset _found TRUE
+							VOUT Bank Bag:${cinfo}${_slot}\ax ${sep} Slot:${cinfo}${_bagslot}\ax ${sep} Aug:${cinfo}${Int[${Math.Calc[${_augslot}+1]}]}\ax
+						}
+					/next _augslot	
+				}
+			/next _bagslot
+	| -- AUG/ITEM: search top bank slots
+		} else /if (!${Me.Bank[${_slot}].Container}) {
+			/if (${Me.Bank[${_slot}].Name.Equal[${_verbage}]}) {
+				/varset _found TRUE
+				VOUT Bank Slot:${cinfo}${_slot}\ax ${If[${Me.Bank[${_slot}].Stack} > 1,${sep} Stack:${cgood}${Me.Bank[${_slot}].Stack}\ax,]}	
+			}		
+	| -- AUG: search top bank slot items with aug slots
+			/if (${Me.Bank[${_slot}].Augs}) {
+				/for _augslot 0 to ${Me.Bank[${_slot}].Augs}
+					/if (${Me.Bank[${_slot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) {
+						/varset _found TRUE
+						VOUT Bank Slot:${cinfo}${_slot}\ax ${sep} Aug:${cinfo}${Int[${Math.Calc[${_augslot}+1]}]}\ax
+					}
+				/next _augslot
+			}				
+		}
+	/next _slot	
+	
+| Augment search worn items (skip powersource)
+	/for _slot 0 to 22
+		/if (${_slot} == 21) /next _slot
+		/for _augslot 0 to ${Me.Inventory[${_slot}].Augs}
+			/if (${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) {
+				/varset _found TRUE
+				VOUT ${cinfo}${Me.Inventory[${_slot}].Name}\ax ${sep} Aug:${cinfo}${Int[${Math.Calc[${_augslot}+1]}]}\ax
+			}
+		/next _augslot
+	/next _slot	
+	
+		
+| Check Inventory
+	| -- search top inventory slots
+	/for _slot 23 to 32
+	| -- search inside bags top slots
+		/if (${InvSlot[${_slot}].Item.Container}) {
+			/for _bagslot 1 to ${InvSlot[${_slot}].Item.Container}
+				/if (${Me.Inventory[${_slot}].Item[${_bagslot}].Name.Equal[${_verbage}]}) {
+					/varset _found TRUE
+					VOUT Inventory Bag:${cinfo}${Int[${Math.Calc[${_slot}-22]}]}\ax ${sep} Slot:${cinfo}${_bagslot}\ax ${If[${Me.Inventory[${_slot}].Item[${_bagslot}].Stack} > 1,${sep} Stack:${cgood}${Me.Inventory[${_slot}].Item[${_bagslot}].Stack}\ax,]}	
+				}
+	| -- search aug slots in items in bags
+				/if (${Me.Inventory[${_slot}].Item[${_bagslot}].Augs}) {
+					/for _augslot 0 to ${Me.Inventory[${_slot}].Item[${_bagslot}].Augs}
+						/if (${Me.Inventory[${_slot}].Item[${_bagslot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) {
+							/varset _found TRUE
+							VOUT Inventory Bag:${cinfo}${Int[${Math.Calc[${_slot}-22]}]}\ax ${sep} Slot:${cinfo}${_bagslot}\ax ${sep} Aug:${cinfo}${Int[${Math.Calc[${_augslot}+1]}]}\ax
+						}
+					/next _augslot	
+				}
+			/next _bagslot
+		} else /if (!${InvSlot[${_slot}].Item.Container}) {
+	| -- search top inventory slots
+			/if (${Me.Inventory[${_slot}].Name.Equal[${_verbage}]}) {
+				/varset _found TRUE
+				VOUT Inventory Slot:${cinfo}${Int[${Math.Calc[${_slot}-22]}]}\ax ${If[${Me.Inventory[${_slot}].Stack} > 1,${sep} Stack:${cgood}${Me.Inventory[${_slot}].Stack}\ax,]}	
+			}
+	| -- search top slot items with aug slots
+			/if (${Me.Inventory[${_slot}].Augs}) {
+				/for _augslot 0 to ${Me.Inventory[${_slot}].Augs}
+					/if (${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name.Equal[${_verbage}]}) {
+						/varset _found TRUE
+						VOUT Inventory Slot:${cinfo}${Int[${Math.Calc[${_slot}-22]}]}\ax ${sep} Aug:${cinfo}${Int[${Math.Calc[${_augslot}+1]}]}\ax
+					}
+				/next _augslot
+			}
+		}
+	/next _slot
+	
+	/if (!${_found}) VOUT ${cbad}Not Found\ax ${sep} ${cinfo}${_verbage}\ax
+	
+	:exit
+/return
+
+
+
+
+

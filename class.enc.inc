@@ -14,21 +14,19 @@
  *  NOTE: 
  ***|
 sub core_ENC()
-	DEBUG Loop start: ${cbug}core_ENC()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
 	
 	/if (${AutoBot} && !${Me.Invis}) {
 		/call check_engaged
-		/if (!${Macro.Return} && ${usePet}) /call check_pet
-		/if (!${Macro.Return}) /call check_crystals
-		/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
+		/if (!${Bool[${Macro.Return}]} && ${switchPcPet}) /call check_pet
 	}
 
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -80,17 +78,17 @@ sub core_ENC()
 		}
 		/call click_BP
 		/if (${doclickItem}) /call click_item
-		/if (${BuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
+		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 	/call use_mod_rod
-	/call check_crystals
+	/if (${switchBuffItem}) /call check_crystals
 	/if (${AutoBot}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 	:exit
 /return
@@ -127,7 +125,7 @@ sub debuff_mobs
 			/if (${addList.Count[|]}) /goto :exit
 		}
 		/if (${switchdeBuffSlow} && !${timer_slow_${_tmpID}}) {
-			DEBUG SLOWING ID ${_tmpID}
+			DEBUGCLASS SLOWING ID ${_tmpID}
 			/call cast_slow ${_tmpID}
 			/call check_for_adds
 			/if (${addList.Count[|]}) /goto :exit
@@ -158,11 +156,11 @@ sub debuff_mobs
  *  NOTE: 
  ***|
 sub check_rune_ENC()
-	DEBUG ${cbug}check_rune_ENC()\aw
+	DEBUGCLASS ${cbug}check_rune_ENC()\aw
 	ISDEAD
 	CHECKEXIT
 	| /if (${timer_check_runes}) /goto :exit
-	UPDATEHUD "BUFF: Runes"
+	UPDATEHUD "BUFF: Rune"
 	/if (${Me.AltAbilityReady[${runeVeil}]} && !${Bool[${Me.Buff[Veil of Mindshadow]}]}) /call core_cast "${runeVeil}" alt 0
 	/if (${Me.AltAbilityReady[${runeEldritch}]} && !${Bool[${Me.Buff[Eldritch Rune]}]}) /call core_cast "${runeEldritch}" alt 0
 	/if (${Me.AltAbilityReady[${runeSpray}]}) /call core_cast "${runeSpray}" alt 0
@@ -178,6 +176,8 @@ sub check_rune_ENC()
 	/if (${Bool[${runePoly}]} && !${Bool[${Me.Buff[${runePoly}]}]} && ${Me.CurrentMana} >= ${Spell[${runePoly}].Mana}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID}
 	/if (${Bool[${runeBrimstone}]} && !${Bool[${Me.Buff[${runeBrimstone}]}]} && ${Me.CurrentMana} >= ${Spell[${runeBrimstone}].Mana}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID}
 
+	/if (${Bool[${runeShieldofFate}]} && !${Bool[${Me.Buff[${runeShieldofFate}]}]} && ${Me.CurrentMana} >= ${Spell[${runeShieldofFate}].Mana}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
+
 	UPDATEHUD
 	/call create_timer timer_check_runes ${tCheck_Runes}
 	:exit
@@ -192,12 +192,12 @@ sub check_rune_ENC()
  *  NOTE: 
  ***|
 sub check_rune_auspice()
-	DEBUG ${cbug}check_rune_auspice()\ax
+	DEBUGCLASS ${cbug}check_rune_auspice()\ax
 	ISDEAD
 	/doevents
 	CHECKTIE
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call check1offBuffs
 	
 	/declare _runeAuspiceID int local ${Spell[${runeAuspice}].ID}
@@ -211,7 +211,7 @@ sub check_rune_auspice()
 		/doevents
 		/if (${Bool[${Spawn[id ${NetBots[${_toon.Arg[${_count},|]}].ID}]}]} && ${Spawn[id ${NetBots[${_AuspiceToon}].ID}].Distance} < ${Spell[${runeWard}].MyRange} && ${Me.SpellReady[${runeWard}]}) {
 			/varset _AuspiceToon ${_toon.Arg[${_count},|]}
-			DEBUG  ${_count}: ${_toon.Count[|]}, ${_toon.Arg[${_count},|]}, ${Bool[${Spawn[id ${NetBots[${_toon.Arg[${_count},|]}].ID}]}]}, found: ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]}
+			DEBUGCLASS  ${_count}: ${_toon.Count[|]}, ${_toon.Arg[${_count},|]}, ${Bool[${Spawn[id ${NetBots[${_toon.Arg[${_count},|]}].ID}]}]}, found: ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]}
 			/goto :buff
 		}
 	/next _count	
@@ -219,7 +219,7 @@ sub check_rune_auspice()
 	:buff
 	/if (!${Bool[${Spawn[${_AuspiceToon}]}]} || !${Me.SpellReady[${runeAuspice}]} || ${Me.CurrentMana} > ${Spell[${runeAuspice}].Mana} || ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]} || ${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /goto :exit
 	UPDATEHUD "BUFF: BC Ward"
-  DEBUG BC Buffing: ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
+  DEBUGCLASS BC Buffing: ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
 	:loopretry
 	/call core_cast "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
 	/if (${Macro.Return.Equal[CAST_FIZZLE]}) /goto :loopretry
@@ -236,7 +236,7 @@ sub check_rune_auspice()
  *  NOTE: 
  ***|
 sub disc_ENC()
-	DEBUG ${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	CHECKEXIT
@@ -244,7 +244,7 @@ sub disc_ENC()
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
 	/if (${Me.AltAbilityReady[Crippling Aurora]} ) /call core_cast "Crippling Aurora" alt 0
-	/if (${Me.AltAbilityReady[Phantasmal Opponent]} && ${usePetSwarm} && (${Target.PctHPs} <= ${sendPetSwarmPerc} || ${ignoreEngageAt})) /call core_cast "Phantasmal Opponent" alt 0
+	/if (${Me.AltAbilityReady[Phantasmal Opponent]} && ${switchPcSwarm} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /call core_cast "Phantasmal Opponent" alt 0
 	/if (${Me.AltAbilityReady[Chromatic Haze]}) /call core_cast "Chromatic Haze" alt 0
 	
 	:exit
@@ -259,7 +259,7 @@ sub disc_ENC()
  *  NOTE: 
  ***|
 sub check_crystals()
-	DEBUG ${cbug}check_crystals()\ax
+	DEBUGCLASS ${cbug}check_crystals()\ax
 	/doevents
 	ISDEAD
 	CHECKEXIT
@@ -295,12 +295,12 @@ sub check_crystals()
  *  NOTE: 
  ***|
 sub click_DPS_ENC()
-	DEBUG ${cbug}clickDPS_ENC()\ax
+	DEBUGCLASS ${cbug}clickDPS_ENC()\ax
 	/doevents
 	ISDEAD
 	CHECKEXIT
 	CHECKTIE
-	/if (${Bool[${HornofUnity}]}) /call click_horn_of_unity
+	/call click_horn_of_unity
 	:exit
 /return
 
@@ -325,7 +325,7 @@ sub petHeal_ENC()
  *  NOTE: 
  ***|
 sub patch_heal_ENC()
-	DEBUG ${cbug}patch_heal_ENC_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_ENC_${Me.Class.ShortName}()\ax
 	ISDEAD
 	CHECKTIE
 	/declare _count int local
@@ -371,7 +371,7 @@ sub patch_heal_ENC()
  *  NOTE: 
  ***|
 sub mez_adds()
-	DEBUG ${cbug}mez_adds()\ax
+	DEBUGCLASS ${cbug}mez_adds()\ax
 	ISDEAD
 	/doevents
 	/declare _tmpID string local
@@ -421,7 +421,7 @@ sub mez_adds()
 		}
 		/call list_delete addList ${_tmpID}
 		| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
-		/if (!${addList.Count[|]} && ${BuffSelf} && !${timer_check_runes}) /call Bind_check_rune
+		/if (!${addList.Count[|]} && ${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 		/goto :loopmezzadds
 	}
 	:exit
@@ -497,7 +497,7 @@ sub cast_tash(int _tmpID)
 	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /goto :exit
 
 	/if (${Target.Tashed.Duration} && !${Target.Buff[Bite of Tashani].ID}) {
-		DEBUG ${Target.DisplayName} already has ${Target.Tashed}
+		DEBUGCLASS ${Target.DisplayName} already has ${Target.Tashed}
 		/goto :exit
 	}
 	
@@ -521,7 +521,7 @@ sub cast_tash(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_slow(int _tmpID)
-	DEBUG ${cbug}cast_slow(int ${_tmpID})\ax
+	DEBUGCLASS ${cbug}cast_slow(int ${_tmpID})\ax
 	ISDEAD
 	/doevents
 	/declare _tmpSlow string local ${Target.Slowed}
@@ -529,11 +529,11 @@ sub cast_slow(int _tmpID)
 	/if (${Target.Crippled.Duration}) /call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
 
 	/if (${ExcludeList.Find[${Target.DisplayName}]} || ${Target.Type.Equal[corpse]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /goto :exit
-	DEBUG passed bail checks
+	DEBUGCLASS passed bail checks
 	
 	
 	/if (${Target.Slowed.Duration}) {
-		DEBUG already slowed ffs.. ${Target.Slowed}
+		DEBUGCLASS already slowed ffs.. ${Target.Slowed}
 		/if (${_tmpSlow.Find[helix]}) {
 			/call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
 			/goto :exit
@@ -546,7 +546,7 @@ sub cast_slow(int _tmpID)
 
 	/declare _resistCount int local 0
 	:loopslow
-	DEBUG :loopslow
+	DEBUGCLASS :loopslow
 	ISDEAD
 	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${spellSlow}].MyRange}) {
 		/delay 2.25s ${Me.SpellReady[${spellSlow}]}
@@ -579,7 +579,7 @@ sub cast_cripple(int _tmpID)
 	ISDEAD
 	/declare _resistCount int local
 	/call check_exit
-	/if (${Macro.Return} || !${Spawn[${_tmpID}].ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${Spawn[${_tmpID}].ID}) /goto :exit
 
 	/if (${Target.Crippled.Duration}) {
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
@@ -686,7 +686,7 @@ sub is_attacking(int _tmpID)
 	/declare _ani int local
 	/declare _isAttacking FALSE
 	/varset _ani ${Spawn[${_tmpID}].Animation}
-	DEBUG Animation #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name}).
+	DEBUGCLASS Animation #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name}).
 	/if (${_ani} == 5) /varset _isAttacking TRUE
 	/if (${_ani} == 7) /varset _isAttacking TRUE
 	/if (${_ani} == 8) /varset _isAttacking TRUE
@@ -714,9 +714,10 @@ sub is_attacking(int _tmpID)
 	/if (${_ani} == 129) /varset _isAttacking TRUE
 	/if (${_ani} == 144) /varset _isAttacking TRUE
 	/if (${_ani} == 146) /varset _isAttacking FALSE
-	DEBUG ${cbad}Unknown Animation\ax #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name}).
+	DEBUGCLASS ${cbad}Unknown Animation\ax #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name}).
 	:exit
 /return ${_isAttacking}	
+
 
 
  |***
@@ -724,10 +725,10 @@ sub is_attacking(int _tmpID)
  *	USE: uses /ma1-2 or assists
  *	INI: 
  *  NOTE: 
- *	----work this out of the system. use get_assist_target instead..
+ *	----Need to work this out of the system. use get_assist_target instead..
  ***|
 sub get_target_ENC()
-	DEBUG ${cbug}get_target_ENC()\ax
+	DEBUGCLASS ${cbug}get_target_ENC()\ax
 	/if (${Me.Moving}) /goto :exit
 	/call get_assist_target
 	/if (${ExcludeList.Find[${Target.DisplayName}]}) /goto :notgood

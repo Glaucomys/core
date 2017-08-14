@@ -17,12 +17,12 @@
  ***|
 #bind mode /mode
 sub Bind_mode(string _modeType)
-	DEBUG ${cbug}Bind_mode(${_modeType})\ax
-	/if (${Bool[${modeTypes.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
+	DEBUG ${cbug}Bind_mode(Mode:${_modeType}, Num:${_modeCount})\ax
+	/if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
 		/varset setModeType ${_modeType.Left[1].Upper}${_modeType.Right[-1].Lower}
-		/if (${Defined[setMode${setModeType}]}) {
-			/varset setMode${setModeType} ${If[${setMode${setModeType}},FALSE,TRUE]}
-			/call echos mode "${setModeType}" setMode${setModeType}
+		/if (${Defined[switchMode${setModeType}]}) {
+			/varset switchMode${setModeType} ${If[${switchMode${setModeType}},FALSE,TRUE]}
+			/call echos mode "${setModeType}" switchMode${setModeType}
 			/if ((${_modeType.Equal[hunt]} || ${_modeType.Equal[scorch]}) && ${Bool[${setModeType}]}) {
 				/call set_stop TRUE
 				/call clear_combat
@@ -30,15 +30,21 @@ sub Bind_mode(string _modeType)
 		} else {
 			/goto :namefail
 		}
-	} else /if (${Bool[${modeTypes.Find[${_modeType}]}]} && ${_modeType.Equal[stop]} && ${Bool[${setModeType}]}) {
-		/call mode_clear_all
+	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.Equal[stop]} && ${Bool[${setModeType}]}) {
+		/call switch_clear_mode
 		/call set_stop TRUE
 		/call clear_combat
-	} else /if (!${Bool[${modeTypes.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
+	} else /if (!${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
 		:namefail
-		VOUT ${onotice} ${sep} Invalid Non-Standard Mode Type
-		VOUT /mode [${cinfo}${modeTypes}\ax]
+		/call echos listtype mode mode
+	} else {
+		/goto :namefail
 	}
+	
+	/varset switchOverrideLos ${Ini[${INIFile},"Override","switchOverrideLos"]}
+	/varset switchOverrideEngageat ${Ini[${INIFile},"Override","switchOverrideEngageat"]}
+	/varset switchAutoCursor ${Ini[${INIFile},"Common","switchAutoCursor"]}
+
 /return
 
 
@@ -51,15 +57,29 @@ sub Bind_mode(string _modeType)
  ***| 	
 #bind setModeAgro /setmodeagro
 sub Bind_setModeAgro(int _ModeAgro)
-	/if (${Range.Between[1,9999:${_ModeAgro}]}) {
+	/if (${Range.Between[1,99999:${_ModeAgro}]}) {
 		/call Event_SetVar NA setModeAgro Common ${_ModeAgro} 
 		/call echos number "Mode Agro Range" ${_ModeAgro}
-	} else /if (${_ModeAgro} == 0) {
-		/call Event_SetVar NA setModeAgro Common FALSE
-		/call echos number "Mode Agro Range" ZONE
 	} else {
-		NOUT /setmodeagro [${cinfo}##\ax] allowable range is ${cinfo}1 - 9999\ax
-		NOUT /setmodeagro [${cinfo}NULL|0\ax] for the whole zone.
+		NOUT /setmodeagro [${cinfo}##\ax] allowable range is ${cinfo}1 - 99999\ax
+	}
+/return
+
+
+
+|***
+ *	DES: set max for quantities on modes
+ *	USE: /setmodecount [1,99999]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind setModeCount /setmodecount
+sub Bind_setModeCount(int _ModeCount)
+	/if (${Range.Between[1,99999:${_ModeCount}]}) {
+		/call Event_SetVar NA setModeCount Common ${_ModeCount} 
+		/call echos number "Mode Max Count" ${setModeCount}
+	} else {
+		NOUT /setmodecount [${cinfo}##\ax] allowable range is ${cinfo}1 - 99999\ax
 	}
 /return
 
@@ -67,48 +87,26 @@ sub Bind_setModeAgro(int _ModeAgro)
 
 |***
  *	DES: stop all non standard modes
- *	USE: /call mode_clear_all
+ *	USE: /call switch_clear_mode
  *	INI: NA
  *  NOTE: 
  ***|
-sub mode_clear_all()
+sub switch_clear_mode()
+	/declare _count int local
 	/if (${setMode}) /varset setMode FALSE
-	/if (${setModeDrag}) {
-		/varset setModeDrag FALSE 
-		/call echos switch "Mode ${cinfo}Drag\ax" setModeDrag
-	}
-	/if (${setModeForage}) {
-		/varset setModeForage FALSE 
-		/call echos switch "Mode ${cinfo}Forage\ax" setModeForage
-	}
-	/if (${setModeFish}) {
-		/varset setModeFish FALSE 
-		/call echos switch "Mode ${cinfo}Fish\ax" setModeFish
-	}
-	/if (${setModeSkill}) {
-		/varset setModeSkill FALSE 
-		/call echos switch "Mode ${cinfo}Skills\ax" setModeSkill
-	}
-	/if (${setModePetfarm}) {
-		/varset setModePetfarm FALSE 
-		/call echos switch "Mode ${cinfo}Pet Farm\ax" setModePetfarm
-		/if (${ignoreEngageAt}) /varset ignoreEngageAt FALSE
-		/if (${setIgnoreLOS} && !${Select[${Me.Class.ShortName},ROG]}) /varset setIgnoreLOS FALSE
-	}
-	/if (${setModeScorch}) {
-		/varset setModeScorch FALSE 
-		/call echos mode "Scorched Earth" setModeScorch
-		/if (${ignoreEngageAt}) /varset ignoreEngageAt FALSE
-		/if (${setIgnoreLOS} && !${Select[${Me.Class.ShortName},ROG]}) /varset setIgnoreLOS FALSE
-	}
-	/if (${setModeHunt}) {
-		/varset setModeHunt FALSE
-		/call echos mode "Hunter" setModeHunt
-	}
-	/if (${setModeHarvest}) {
-		/varset setModeHarvest FALSE
-		/call echos mode "Harvest" setModeHarvest
-	}
+
+	/for _count 1 to ${modeType.Count[|]}
+		/if (${switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}}) {
+			
+			/varset switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower} FALSE  
+			/call echos mode "${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}" switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}
+		}
+	/next _count	
+	
+	/varset switchOverrideLos ${Ini[${INIFile},"Override","switchOverrideLos"]}
+	/varset switchOverrideEngageat ${Ini[${INIFile},"Override","switchOverrideEngageat"]}
+	/varset switchAutoCursor ${Ini[${INIFile},"Common","switchAutoCursor"]}
+
 /return
 
 
@@ -124,13 +122,14 @@ sub do_mode()
 	ISDEAD
 	CLEARCURSOR TRUE
 	/doevents
-	/if (${setModeDrag}) /call mode_drag
-	/if (${setModeForage} && ${Me.AbilityReady[forage]}) /call mode_forage
-	/if (${setModeFish} && ${Me.AbilityReady[fish]}) /call mode_fish
-	/if (${setModePetfarm} && !${timer_Petfarm_delay}) /call mode_petfarm
-	/if (${setModeHunt} && !${timer_wait_for_mob_to_kill}) /call mode_hunt
-	/if (${setModeScorch} && !${timer_ScorchedEarth_delay}) /call mode_scorched_earth
-	/if (${setModeHarvest} && !${timer_Harvest_delay}) /call mode_harvest
+	/if (${switchModeDrag}) /call mode_drag
+	/if (${switchModeForage} && ${Me.AbilityReady[forage]}) /call mode_forage
+	/if (${switchModeFish} && ${Me.AbilityReady[fish]}) /call mode_fish
+	/if (${switchModePetfarm} && !${timer_Petfarm_delay}) /call mode_petfarm
+	/if (${switchModeHunt} && !${timer_wait_for_mob_to_kill}) /call mode_hunt
+	/if (${switchModeScorch} && !${timer_ScorchedEarth_delay}) /call mode_scorched_earth
+	/if (${switchModeHarvest} && !${timer_Harvest_delay}) /call mode_harvest
+	/if (${switchModeTradeskill}) /call mode_tradeskill
 	:exit
 /return
 
@@ -257,11 +256,9 @@ sub mode_fish()
 sub mode_forage()
 	DEBUG ${cbug}mode_forage()\ax
 	UPDATEHUD "Forage"
-	CLEARCURSOR TRUE
+	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	/if (!${Me.Standing}) /stand
-	/call check_buff_routines TRUE
 	/doability forage
-	CLEARCURSOR TRUE
 	/doevents
 	UPDATEHUD
 /return
@@ -298,9 +295,6 @@ sub mode_drag()
 
 
 
-
-
-
 |***
  *	DES: turns the toon into a hunter of things.
  *	USE: /hunt
@@ -316,7 +310,7 @@ sub mode_hunt()
 	CLEARCURSOR TRUE
 	
 	/for _count 1 to ${HuntMobList.Count[|]}
-		/if (${Spawn[npc ${HuntMobList.Arg[${_count},|]}].ID} ${If[${setModeAgro},radius ${setModeAgro},]}) {
+		/if (${Spawn[npc ${HuntMobList.Arg[${_count},|]} radius ${setModeAgro} targetable].ID}) {
 			/varset Target2Kill ${NearestSpawn[npc ${HuntMobList.Arg[${_count},|]}].ID}
 			/call echos hunt 0 0 ${Target2Kill}
 			/call Event_SetVar NA watchSpawn Common "${Spawn[${Target2Kill}].DisplayName}"
@@ -360,23 +354,22 @@ sub mode_petfarm()
 	/declare _resetCount		int local 0
 	/declare _nameloop			int local 1
 
-	/varset ignoreEngageAt TRUE
-	/varset setIgnoreLOS TRUE
+	/varset switchOverrideEngageat TRUE
+	/varset switchOverrideLos TRUE
 	
 	UPDATEHUD "Pet Farm"
 	:loopfindmob
 	/doevents
-	/if (!${setModePetfarm}) /goto :exit
-	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST,SHD,SHM,RNG,DRU]} || ${SafeZone}) {
+	/if (!${switchModePetfarm}) /goto :exit
+	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST,SHD,SHM,RNG,DRU]} || (${SafeZone} && !${switchOverrideSafezone})) {
 		/call echos failboat
 		/call mode_clear_all
 		/goto :exit
 	}
 	/call check_watch_spawn
-	| /call check_buff_routines TRUE
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} zradius ${zradius} targetable]}) {
-		/varset _spawnCount ${SpawnCount[npccorpse ${If[${setIgnoreLOS},,los]} radius ${MobAgro} zradius ${zradius}]}	
-		/varset Target2Kill ${Spawn[${NearestSpawn[1, ${If[${setIgnoreLOS},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius} targetable]}) {
+		/varset _spawnCount ${SpawnCount[npccorpse ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius}]}	
+		/varset Target2Kill ${Spawn[${NearestSpawn[1, ${If[${switchOverrideLos},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}
 
 		| skip excluded mobs
 		:loopnamedmob
@@ -384,7 +377,7 @@ sub mode_petfarm()
 			DEBUG name:${Spawn[id ${Target2Kill}].DisplayName} ID:${_tmpID} EXCLUDELIST .. loop:${_nameloop}
 			/varcalc _nameloop ${_nameloop}+1
 			/if (${_spawnCount} > 1) {
-				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, ${If[${setIgnoreLOS},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}
+				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, ${If[${switchOverrideLos},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}
 
 				/goto :loopnamedmob
 			} else {
@@ -398,6 +391,7 @@ sub mode_petfarm()
 		/varset _resetCount 0
 	} else {
 		:nomob
+		DEBUG :nomob RESET the numbers
 		/doevents
 		/varset _resetCount 0
 		/varset _spawnCount 0
@@ -413,6 +407,7 @@ sub mode_petfarm()
 	}
 	
 	:gettarget
+	DEBUG :gettarget ID ${Target2Kill}
 	/doevents
 	/target ID ${Target2Kill}
 	/if (!${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]}) {
@@ -431,6 +426,7 @@ sub mode_petfarm()
 	}		
 		
 	:loopwaittilldead
+	DEBUG :loopwaittilldead
 	/delay 1s
 	/doevents
 	/if (${Spawn[${Target2Kill}].Type.Equal[CORPSE]} || !${Spawn[${_tmpID}].ID}) /goto :loopfindmob
@@ -450,7 +446,7 @@ sub mode_petfarm()
  *	DES: Scorched Earth Mode
  *	USE: /call mode_scorched_earth 
  *	INI: 
- *  NOTE: This will kill everything in a zone
+ *  NOTE: This will kill everything in a zone. or at least try /shrug
  ***|
 sub mode_scorched_earth()
 	DEBUG ${cbug}mode_scorched_earth()\ax
@@ -458,15 +454,15 @@ sub mode_scorched_earth()
 	/declare _resetCount		int local 0
 	/declare _nameloop			int local 1
 
-	/varset ignoreEngageAt TRUE
-	/varset setIgnoreLOS TRUE
+	/varset switchOverrideEngageat TRUE
+	/varset switchOverrideLos TRUE
 	/call clear_combat
 	
 	:loopfindmob
 	UPDATEHUD "Scorched Earth"
 	/doevents
-	/if (!${setModeScorch}) /goto :exit
-	/if (${SafeZone}) {
+	/if (!${switchModeScorch}) /goto :exit
+	/if (${SafeZone} && !${switchOverrideSafezone}) {
 		/call echos failboat
 		/call mode_clear_all
 		/goto :exit
@@ -474,9 +470,9 @@ sub mode_scorched_earth()
 	/call check_watch_spawn
 	/call check_buff_routines TRUE
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
-	/if (${SpawnCount[npc ${If[${setIgnoreLOS},,los]} ${If[${setModeAgro},radius ${setModeAgro},]} targetable]}) {
-		/varset _spawnCount ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} ${If[${setModeAgro},radius ${setModeAgro},]} targetable]}	
-		/varset Target2Kill ${Spawn[${NearestSpawn[1, npc ${If[${setIgnoreLOS},,los]} ${If[${setModeAgro},radius ${setModeAgro},]} targetable]}].ID}
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}) {
+		/varset _spawnCount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}	
+		/varset Target2Kill ${Spawn[${NearestSpawn[1, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
 		/call create_timer timer_scorched_earth_fail ${tScorchedEarth_fail}
 
 		DEBUG SpawnCount: ${_spawnCount} ${sep} Target2Kill:${Target2Kill}
@@ -487,7 +483,7 @@ sub mode_scorched_earth()
 			DEBUG name:${Spawn[id ${Target2Kill}].DisplayName} ID:${Target2Kill} EXCLUDELIST .. loop:${_nameloop}
 			/varcalc _nameloop ${_nameloop}+1
 			/if (${_spawnCount} > 1) {
-				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, npc ${If[${setIgnoreLOS},,los]} ${If[${setModeAgro},radius ${setModeAgro},]} targetable]}].ID}
+				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
 				/goto :loopignoreddmob
 			} else {
 				/varset Target2Kill 0
@@ -557,9 +553,9 @@ sub mode_scorched_earth()
 sub mode_harvest()
 	DEBUG ${cbug}mode_harvest()\ax
 	/declare _count int local
-	
-	
-	/call check_buff_routines TRUE
+	UPDATEHUD "Harvest"
+	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
+
 	/if (${Cursor.ID}) /call sort_cursor TRUE
 	/for _count 1 to ${HarvestList.Count[|]}
 		/if (${GroundItemCount[${HarvestList.Arg[${_count},|]}]}) {
@@ -569,12 +565,14 @@ sub mode_harvest()
 		}
 	/next _count	
 
+	UPDATEHUD
 	:exit
 /return
 
 
+
 |***
- *	DES: moves tot he ground item and picks it up
+ *	DES: moves to the ground item and picks it up
  *	USE: /call get_ground_harvest "ITEM NAME"
  *	INI: 
  *  NOTE: 
@@ -603,4 +601,43 @@ sub get_ground_harvest(string _tmpItem)
 	}
 /return
 
+
+
+|***
+ *	DES: Tradeskill combind
+ *	USE: /call mode_tradeskill 
+ *	INI: NA
+ *  NOTE: 
+ ***|
+#event mode_CombineError "#*#There was no place to put that#*#"
+#event mode_CombineError "#*#You cannot combine these items in this container type!#*#"
+#event mode_CombineError "#*#did not accept these items#*#"
+#event mode_CombineError "#*#Sorry, but you don't have everything you need for this recipe in your general inventory.#*#"
+sub Event_mode_CombineError(string _line)
+	/varset switchModeTradeskill FALSE
+	/call echos mode "Tradeskill" switchModeTradeskil
+	/call echos failboat
+	/varset switchAutoCursor ${Ini[${INIFile},"Common","switchAutoCursor"]}
+/return
+
+
+sub mode_tradeskill()
+	DEBUG ${cbug}mode_tradeskill()\ax
+	
+	/if (!${Window[TradeskillWnd].Open}) {
+		NOUT Tradeskill window must be open.
+		NOUT Make All option must be deselected.
+		/varset switchModeTradeskill FALSE
+		/goto :exit
+	}
+	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
+	UPDATEHUD "Tradeskill"
+
+	/nomodkey /notify TradeskillWnd CombineButton leftmouseup
+	/delay 1.5s ${Cursor.ID}
+	/doevents
+	
+	:exit
+	UPDATEHUD
+/return
 

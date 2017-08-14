@@ -15,28 +15,26 @@
  *  NOTE: 
  ***|
 sub core_SHD()
-	DEBUG Loop start: ${cbug}core_SHD()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
 	
 	/if (${AutoBot}) {
 		/call check_engaged
-		/if (!${Macro.Return} && ${usePet}) /call check_pet
+		/if (!${Bool[${Macro.Return}]} && ${switchPcPet}) /call check_pet
 	}	
-	
-	/call check_harmonious
 	
 	:killtarget
 	/call prep_combat
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
 		/call use_skill_melee
-		/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
+		/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 		/if (${switchdeBuffCripple}) /call cast_cripple_${Me.Class.ShortName} ${Target.ID}
@@ -46,7 +44,7 @@ sub core_SHD()
 		/if (${DoDoT}) /call cast_DOT
 		/call use_skill_melee
 		/if (${DoNuke}) /call cast_nuke
-		/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
+		/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 		/call stick_to_target
 		/call use_skill_melee
 		/if (${doclickItem}) /call click_item TRUE
@@ -57,14 +55,14 @@ sub core_SHD()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/call use_mod_rod
-	/call check_harmonious
+	/if (${BuffSelf}) /call check_harmonious
 	/if (${AutoBot}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
 	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 	:exit
 /return
@@ -78,15 +76,15 @@ sub core_SHD()
  *  NOTE: 
  ***|
 sub disc_SHD()
-	DEBUG ${cbug}disc_SHD()\ax
+	DEBUGCLASS ${cbug}disc_SHD()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${Target.ID}) /goto :exit
 	CHECKTIE
-	/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
+	/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${Withstand}]} && ${Me.CurrentEndurance} > ${Spell[${Withstand}].EnduranceCost}) /call core_cast "${Withstand}" disc 0
 	/if (${Me.AltAbilityReady[Thought Leech]} &&  ${Me.PctMana} <= 60*.${tmpHealOverride}) /call core_cast "Thought Leech" alt ${Target2Kill}
@@ -111,15 +109,15 @@ sub disc_SHD()
  *  NOTE: 
  ***|
 sub get_agro_SHD()
-	DEBUG ${cbug}get_agro_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call use_skill_melee
-	/if (${usePet}) /call send_pet
+	/if (${switchPcPet}) /call send_pet
 
 	| single hate
 	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${Me.AltAbilityReady[Stream of Hatred]}) /call core_cast "Stream of Hatred" alt ${Target2Kill}
@@ -146,8 +144,8 @@ sub get_agro_SHD()
 	| fake hate
 	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill}
 	| named fake hate
-	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mindless Hatred]} && ${Target.Level} <= 110) /call core_cast "Mindless Hatred" alt ${Target2Kill}
-	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscFakeHate}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFakeHate}].EnduranceCost}) /disc ${DiscFakeHate}
+	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName}) && ${Me.AltAbilityReady[Mindless Hatred]} && ${Target.Level} <= 110) /call core_cast "Mindless Hatred" alt ${Target2Kill}
+	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName}) && ${Me.CombatAbilityReady[${DiscFakeHate}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFakeHate}].EnduranceCost}) /disc ${DiscFakeHate}
 
 	:exit
 /return
@@ -161,11 +159,11 @@ sub get_agro_SHD()
  *  NOTE: 
  ***|
 sub click_DPS_SHD()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call use_skill_melee
-	/if (${usePet}) /call send_pet
+	/if (${switchPcPet}) /call send_pet
 	/call click_horn_of_unity 	
 	:exit
 /return
@@ -179,10 +177,10 @@ sub click_DPS_SHD()
  *  NOTE: 
  ***|
 sub patch_heal_SHD()
-	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/call check_exit
-	/if (${Macro.Return} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
 
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
@@ -198,15 +196,15 @@ sub patch_heal_SHD()
  *  NOTE: 
  ***|
 sub cast_cripple_SHD(int _tmpID)
-	DEBUG ${cbug}cast_cripple_SHD()\ax
+	DEBUGCLASS ${cbug}cast_cripple_SHD()\ax
 	| /declare _slowString string local
 	/doevents
 	ISDEAD
 	/declare _resistCount int local
 	/call check_exit
-	/if (${Macro.Return} || ${timer_cripple_${_tmpID}} || !${_tmpID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${timer_cripple_${_tmpID}} || !${_tmpID}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${Target.ID}) /goto :exit
 	
 	/if (${Target.Crippled.Duration}) {
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s

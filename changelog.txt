@@ -8,6 +8,257 @@
  ***|
 
 
+20170814
+Core Version 3.8.2
+- class.wiz.inc
+  -- AA Lower Element now works of /debuf cripple switch
+	-- added in some exit protection for subs
+- /tie changes
+  -- delete #bind /tietoon, /tietime, /tiedistance
+  -- SetTie removed from Toon INI [Movement]
+  -- /tc [name|distance|time]
+	  -- /tc [name] - 
+	  -- /tc [distance] - 
+	  -- /tc [time] - 
+	-- /tie - enable/disable tie to toonname if they are in the same zone. otherwise does nothing
+- adjusted some echos for auto EXP/AA
+- HUD changes
+	-- delete #bind /hudbroadcast, /hudtime, /hudupdate
+  -- /hud [time|update|broadcast]
+    -- /hud [time] - Toggles the HUD clock between real life time and in game time
+    -- /hud [update] - forces the MQ Hud INI to be updated
+    -- /hud [broadcast] - enable/disable hud broadcasting toons name
+- added boolean wrappers to all ${Macro.Return}s to all of Core
+
+
+20170812
+Core Version 3.8.1
+Core Wiz 1.8.2
+HUDUPDATE
+- looting disabled in safezones. seriously, whats the point?
+- pet weapon casting/equiping adjusted to core.loot.ini. should not do dumb shit anymore
+- changes to rez ! ! ! !
+  -- /rez [stop|take|give|everyone|combat|emergency]
+  -- /rez [stop] - disables all rez taking/giving. shuts it down
+  -- /rez [take] - enables/disables taking of reses cast on you. regardless of cast source
+  -- /rez [give] - enables/disables casting of resses. if you cannot rez someone, delete and reroll a cleric
+	-- /rez [everyone] - enables/disbales rezzing regardles targets guild or raid status. you will rez any corpse you can get your grubby fingers on
+	-- /rez [combat] - enable/disable casting rez while you are on a hate list and a hostile mob is in the fake combat range  
+	-- /rez [emergency] - enable/disable the use or Loyalty Vendor Rez tokens on what ever class you have specified in. it will rez whatever class you have listed
+		-- rez token list moved from core.ini to toon.ini files.
+	  -- Toon INI [Heal]->RezTokenList=|WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU 
+  -- rez checks will happen more often for all classes
+- Lots of debugs changed
+- debug switches are stored in the toons INI under [debug]
+- debugs are persistent  
+- /debug [stop|core|class|cast|rez|array]
+	-- /debug [stop] - disables all debugging
+	-- /debug [core] - echos all things
+	-- /debug [class] - echos all class specific routines
+	-- /debug [cast] - echos all Casting Routines
+	-- /debug [rez] - debug for all rez routines
+	-- /debug [array] - debug for arrays (buff/debugg queuing, mezz arrays)
+- debug notice removed from the hud
+- Pets
+  -- deleted #bind: /buildpet, /pb, /companionpet, /companionswarm, /petswarmengageat, /petengageat
+  -- deleted alias: /pettank, /pettype
+  -- /pc [pet|swarm|tank|type|build|bag]
+	-- /pc [pet] - enable/disable using pets
+	-- /pc [pet ##] - sets pet engage at %
+	-- /pc [swarm] - enables/disables using pet swarms
+	-- /pc [swarm ##] - sets swarm engage at %
+	--* /pc [tank] - turns pet into a tank ** not written in yet **
+	--* /pc [type] - will adjust the spel casted for pet type. ** not written in yet **
+	-- /pc [build] - forces pet evaluation. will: make if dead, give weapons and buff
+	-- /pc [bag ##] - sets bag slot # for use with pet weapons swap/cast
+- class.bst.inc
+  -- no longer cast paragon automatically while in manual mode
+- removed a lot more old INI entries	
+
+
+20170810
+WHITEWASH
+MAG Version 2.0.3
+- /override [name] - ignores named mobs for toast checks.
+- do_loot() delete portion now feeds of sort_cursor()
+- class.mag.inc
+  -- cauldron summoned items are now sorted through core.loot.ini
+  -- rods are sorted through core.loot.ini
+  -- removed CauldronDestroy List from MAG INIs
+  -- deleted alias /rods
+  -- #bind /rods will force mage to delete all non max rod charge counts and resummon them
+
+
+20170809
+- toons check zradius now before asking residentmage for rods. 150' sphere
+- lowered cleric res manna requirement from 12 to 8
+- /override [loot]
+  -- loot - overrides loot settings requirements for Group/Raid Masterlooter.
+- advloot now works when not in auto and /override loot is enabled
+
+
+20170808
+WHITEWASH
+- core.zone.ini list controlls
+ -- alias delete 
+   -- /listremove, /listexclude, /listnamed, /listnomezz, /listnocast, /listnomelee, /listrange, /listnomagic
+   -- /listnodisease, /listnofire, /listnopoison, /listnocold, /listnocorruption, /listhuntmob
+ -- bind delete /safezone
+ -- /lc [safe|remove|exclude|name|nomezz|nocast|range|nomelee|nomagic|nodisease|nofire|nopoison|nocold|nocorruption|huntmob]
+   -- safe - enabel/disable safezone
+   -- remove - removes target from ALL lists for that zone
+  
+
+20170807
+Core Version 3.8.0
+ENC Version 1.4.3
+HUDUPDATE
+WHITEWASH
+- welcome to /override
+  -- overrides are persistant 
+  -- Toon INI [Override] ->
+  -- /override [stop|pve|safezone|los|exclude|named|engage]
+  -- /override stop will disable all overrides
+  -- los has been written in
+  -- safezone has been written in
+- delete #bind /ignorelos
+- mode
+  -- modes will properly reset los, engageat and autoCursor when ended
+  -- adapted /mode command pattern to match heal, debuff, buff
+- starting process of renaming all boolean variables to a prefix of "switch".. this will probably break shit
+  -- setModeHunt, setmodeForage, setModeDrag, setModefish, setModePetfarm, setModeHarvest, setModeTradeskill
+  -- BuffSelf, BuffItem, BuffCombat, BuffBC, BuffRaid, BuffTell, BuffPet  
+  -- setRaidInvite, setAgroMode, setPullMode, setToastMode
+  -- rezAuto, rezEnable, rezEveryone, rezCombat, rezemergency
+- /setpuller logic issue
+  -- will only turn off assist (ALL OF THEM) if any of them are set
+- rewrite to the deBuff switches
+  -- /debuff [stop|mezz|malo|tash|cripple|slow|eradicate|snare]
+  -- deleted #bind /debuffsnare, /debuffmezz, /debuffmalo, /debufftash, /debuffcripple, /debuffslow, /debufferadicate
+  -- /debuff stop disables all debuffing
+    -- sepcific debuffs to some classes
+  -- all debuffs moved under Toon INI [Buffs] ->
+  -- you will need to re-enable the ones you want
+- check_buffs_raid() math error.. dont count by NULL :(  
+- buff changes (not pets)
+  -- increased buffs to a flat 15 count. do not need buff cycle numbers anymore. it will go through all 15
+  -- merging selfbuffs and buffs for toon INI
+  -- [Buffs] -> Buff##Self=TRUE will treat the buff as self. FALSE will not cast as a self Buff
+  -- SelfBuffRemove= is now BuffRemove= under Toon INI [Buffs]
+- class.enc.inc
+  -- added Rune of Fate line to rune buff checks 
+- old INI entries deleted
+  -- UseBanestrike, ModeNuke, AutoDeleteItem, CombatBuff, BalanceHP, DoDebuff, Mount
+- rewrite to Heal switches
+  -- deleted #bind /healaggressive, /healself, /healgroup, /healpet, /healcure, /healxtarget
+  -- /heal [stop|aggressive|xtarget|group|self|cure|pet|override] [##]
+  -- stop will disable all healing except override
+  -- override [0,99] overrides healing % cap
+  -- aggressive - cleric only, lead withj passive heals or nuke heals
+  -- xtarget - enable/disable extended target healing
+  -- group - enable/disable group healing
+  -- self - enable/disable self only healing. (not avaiable to cleric, druid, shaman)
+  -- cure - enable/disable curing
+  -- pet - enable/disable pet healing
+ - deleted sub queue_buff(). dont think we need it anymore
+- auras.. again. fuck these things
+  -- aura checking (spells) is a 2^2 step recursive boolean check
+    -- we look for
+      -- book spell name
+      -- worn aura spell name
+      -- raw toon INI spelling for the buff name and the spell name
+  -- if this shit dont work, gonna retire my chanter
+- rewrite to Buff switches
+  -- deleted #bind /buffitem, /buffself, /buffcombat, /buffbc, /buffraid, /buffpet, /bufftell
+  -- /buff [stop|item|self|combat|bc|raid|tell|pet] 
+  -- /buff stop will disable all buffing
+	** How to work Toon INI [Buffs]
+		- SETTING things to FALSE will disable them
+		- Buff##=FALSE will disable all forms of that buff
+		- BCBuff##=FALSE will disable BC buffing for that buff
+		- Buff##Self=FALSE will disable self buffing for that buff
+		- RaidBuff##Class=FALSE will disable raid buffing 
+		- Buff##noBCinRaid=TRUE will disable BC buffing for that buff while in raids only
+	-- Buff Queue priorities work off Item, Book, AA
+- rewrite of /loot .. it's now /cursor
+  -- /cursor [auto|what|sell|keep|destroy|leave|announce|ignore] 
+    -- auto - enables/disables automatic inventory of anything on cursor
+    -- what - tells you how the item is listed in the core.loot.ini
+    -- sell - marks item as sell
+    -- keep - keeps the item. we like to hoard
+    -- destory - will destroy the item and mark it as get bent
+    -- leave - leaves the item on the corpse
+    -- announce - announce the item in the echochannel and leaves it on corpse
+    -- ignore - simply ignores the item on the cursor. does nothing with it
+- rewrite or rez switches    
+  -- delete #bind  
+  -- /rez [stop|auto|enable|everyone|combat|emergency]
+    -- stop
+    -- auto
+    -- enable
+    -- everyone
+    -- combat
+    -- emergency
+- aliases removed
+	-- /lootkeep, /lootsell, /lootignore, /lootdestory, /lootannounce, /lootwhat, /lootleave
+  -- /healoverride
+- HUD
+  -- deleted ${CombatCall}. i have no idea why that was in there
+
+
+20170803
+Core Version 3.7.7
+SHD Version 1.9.3
+PAL Version 1.0.3
+ENC Version 1.4.2
+WIZ Version 1.8.1
+MAG Version 2.0.2
+- SHD harmonius moved to check_buff_routines(). enable/disable with /buffself
+- PAL harmonius moved to check_buff_routines(). enable/disable with /buffself
+- ENC runes moved to check_buff_routines(). enable/disable with /buffself
+- ENC crystals moved to check_buff_routines(). enable/disable with /buffitem
+- WIZ runes moved to check_buff_routines(). enable/disable with /buffself
+- MAG rods/nuke clickies moved to check_buff_routines(). enable/disable with /buffitem
+- /sb
+  -- will now check runes for WIZ/ENC
+  -- will check PAL/SHD harmonious
+- deleted #bind /rb
+- /ib
+  -- forces check of ENC crystals
+  -- forces check of MAG rods/nuke clickies
+- auto_adjust_EXP() display changes
+- class.enc.inc fixed crash in rune checking
+
+
+20170802
+Core Version 3.7.6
+WHITEWASH
+- delete alias /whohas
+- delete /bc whohas
+- rename () -> check_for_item()
+- #bind
+  -- /findathing ["NAME"]
+    -- searches Bank and inventory for "NAME" items.
+    -- correct spelling is require. no partial names
+    -- will search for augments: in bags, in items, in armor
+ 
+
+20170731
+Core Version 3.7.5
+- auras now fall under /buffself in order to enable/disable casting them. 
+- mode
+  -- /setmodeagro changed to 99999 max
+  -- /mode hunt, scorch and harvest now REQUIRE /setmodeagro [1,99999]. ZONE/0 is not longer an option
+  -- /mode harvest, drag, forage, tradeskill do not watch buffs
+  -- /mode harvest, forage, tradeskill enable /cursor by default
+	-- /mode tradeskill added. 
+	-- /setmodecount [1,99999] limit number of tradeskill created items in inventory
+- class.shd.inc
+  -- shadowknights will no longer keep Harmonious buff up while in manual. only Auto and when modes are active
+- class.pal.inc
+  -- paladins will no longer keep Harmonious buff up while in manual. only Auto and when modes are active
+
+
 20170730
 Core Version 3.7.4
 HUDUPDATE
@@ -19,7 +270,7 @@ HUDUPDATE
 - HUD - the word Mode is now GREEN for auto cursor inventory and RED for dont inventory shit
 - do_loot()
   -- visual changes to output
-  -- keeping an item will also echo how many of that item you have on you
+  -- keeping an item will also echo how many of that item you have on you (not including whats in your hand)
 - lot of other echo visual changes
 - /crew will no longer uses /bcaa. it is specfic to people in the list ONLY for all joining and disbanding purposes
 

@@ -14,7 +14,7 @@
  *  NOTE: 
  ***|
 sub core_PAL()
-	DEBUG Loop start: ${cbug}core_PAL()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
 	CHECKTIE
@@ -50,7 +50,7 @@ sub core_PAL()
 	} else /if (${Select[${combat},DUAL]}) {
 	} 
 	/call use_mod_rod
-	/call check_harmonious
+	/if (${switchBuffSelf}) /call check_harmonious
 	/if (${useMG} && !${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	/if (${AutoBot}) {	
 		/if (${switchHealCure}) /call cast_cure
@@ -73,7 +73,7 @@ sub core_PAL()
  *  NOTE: 
  ***|
 sub disc_PAL()
-	DEBUG	${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
@@ -81,7 +81,7 @@ sub disc_PAL()
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/if (${doYaulp}) /call cast_AA_yaulp
-	/if (${setAgroMode}) /call get_agro_${Me.Class.ShortName}
+	/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscFastRune}]} && ${Bool[${DiscFastRune}]}) /call core_cast "${DiscFastRune}" disc 0
 
@@ -120,7 +120,7 @@ sub disc_PAL()
  *  NOTE: 
  ***|
 sub get_agro_PAL()
-	DEBUG ${cbug}get_agro_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -162,11 +162,11 @@ sub get_agro_PAL()
  *  NOTE: 
  ***|
 sub click_DPS_PAL()
-	DEBUG ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
 	:exit
 /return
@@ -180,7 +180,7 @@ sub click_DPS_PAL()
  *  NOTE: 
  ***|
 sub patch_heal_PAL()
-	DEBUG ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}  || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
 	
@@ -205,7 +205,7 @@ sub patch_heal_PAL()
  *  NOTE: 
  ***|
 sub check_heal_group_PAL()
-	DEBUG ${cbug}check_heal_group_PAL()\ax
+	DEBUGCLASS ${cbug}check_heal_group_PAL()\ax
 	CHECKEXIT
 	/declare _count						int	local
 	
@@ -286,7 +286,7 @@ sub check_heal_group_PAL()
  *  NOTE: 
  ***|
 sub cast_AA_marrs_gift()
-	DEBUG ${cbug}cast_AA_marrs_gift()\aw
+	DEBUGCLASS ${cbug}cast_AA_marrs_gift()\aw
 	ISDEAD
 	/doevents
 	/call check_exit
