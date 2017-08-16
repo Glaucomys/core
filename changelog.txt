@@ -4,8 +4,40 @@
  *  Timestamp: YYYYMMDD
  *
  *  WHITEWASH means a /whitewash needs to be run to update the aliases
- *  HUDUPDATE means you need to do a /hudupdate to make needed changes to the hud.ini
+ *  HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
  ***|
+
+
+
+20170815
+Core Version 4.0.0
+HUDUPDATE
+WHITEWASH
+- say goodby to toast
+- delete #bind /toastauto, /toastengageat, /toastmobcount, /toastnow, /toastforce
+- introducing /burn 
+  -- /burn [auto|count|engageat|force]
+  -- /burn [auto] - enable/disable burn automatic routines on named targets.
+  -- /burn [count ##] - # of mobs in immediate agro range to triger burn routines
+  -- /burn [engageat ##] - target health % to start using burns with /burn auto enabled
+  -- /burn [force] - enable/disable forced constant burning
+- delete #bind /verbose, /combatnuke, /combatrange, /combatmelee, /resetcore
+- delete alias /killcode
+- changes to /core
+  -- /core [auto|verbose|melee|range|nuke|killcode] [TEXT]
+  -- /core [auto] - enable/disable automatic mode for Core
+  -- /core [verbose] - enable/disable majority of EQBC echos
+  -- /core [melee] - engage toons melee routine while in manual
+  -- /core [range] - engage toons range routine while in manual
+  -- /core [nuke] - engage toons nuke/dot routine while in manual
+  -- /core [killcode "TEXT"] - adjust the remote Core termination code
+  -- /core [reset] - reloads all settings/INIs
+- logic error in AA eradicate debuf casting
+- added protection for all /declare instances
+- rename of AutoBot -> coreAuto
+- Toon INI ClickItemToast= are now ClickItemBurn.. go fix ur shit
+
+
 
 
 20170814
@@ -29,6 +61,7 @@ Core Version 3.8.2
     -- /hud [update] - forces the MQ Hud INI to be updated
     -- /hud [broadcast] - enable/disable hud broadcasting toons name
 - added boolean wrappers to all ${Macro.Return}s to all of Core
+- loot checks added to /modes hunt and petfarm
 
 
 20170812

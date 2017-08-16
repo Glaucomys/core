@@ -65,10 +65,10 @@ sub core_BRD()
 		}
 
 	}
-	/if (${AutoBot}) {	
+	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 	}
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}

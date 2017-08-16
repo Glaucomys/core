@@ -19,7 +19,7 @@ sub core_BST()
 	ISDEAD
 	CHECKTIE
 
-	/if (${AutoBot} && !${Me.Invis}) {
+	/if (${coreAuto} && !${Me.Invis}) {
 		/call cast_AA_focused_paragon
 		/call check_engaged
 		/if (!${Bool[${Macro.Return}]} && ${switchPcPet}) /call check_pet
@@ -58,12 +58,12 @@ sub core_BST()
 	} else /if (${Select[${combat},HEAL]}) {
 	}	else /if (${Select[${combat},DUAL]}) {
 	}
-	/if (${AutoBot}) {	
+	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 	}
 	/call use_mod_rod
-	/if (${AutoBot} && ${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && ${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
@@ -116,7 +116,7 @@ sub cast_AA_focused_paragon()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Bool[${Macro.Return}]} || !${AutoBot}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${coreAuto}) /goto :exit
 	/declare _cout 							int 	local
 	/declare _tmpID 						int 	local 0
 	/declare _tmpTarget2Kill		int		local 

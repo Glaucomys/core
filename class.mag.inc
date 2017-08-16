@@ -19,7 +19,7 @@ sub core_MAG()
 	ISDEAD
 	CHECKTIE
 
-	/if (${AutoBot} && !${Me.Invis}) {
+	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_engaged
 		/if (!${Bool[${Macro.Return}]}) {
 			/if (${switchPcPet}) /call check_pet
@@ -36,7 +36,7 @@ sub core_MAG()
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
-		/if (${switchPcPet} && !${Pet.ID} && ${AutoBot}) /call check_pet
+		/if (${switchPcPet} && !${Pet.ID} && ${coreAuto}) /call check_pet
 		/call send_pet
 		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
@@ -49,11 +49,11 @@ sub core_MAG()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
-	/if (${AutoBot}) {	
+	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Macro.Return}) /goto :killtarget
 	}

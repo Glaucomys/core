@@ -9,7 +9,7 @@
 
 |***
  *	DES: Controlls for the HUD
- *	USE: /hud [time|update]
+ *	USE: /hc [time|update|broadcast]
  *	INI: 
  *  NOTE:
  ***| 
@@ -31,7 +31,7 @@ sub Bind_hud(string _hcType)
 	} else /if (${Bool[${_hcType.Find[broadcast]}]}) {
 		/call Event_SetVar NA setBroadcast Common ${If[${Bool[${setBroadcast}]},FALSE,TRUE]}
 		/if (${setBroadcast.Equal[FALSE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "DISABLED"
-		/if (${setBroadcast.Equal[TRUE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "${AutoBot}"
+		/if (${setBroadcast.Equal[TRUE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "${coreAuto}"
 		/call echos switch "Adjusting Broadcast Status" setBroadcast
 	} else {
 		
@@ -41,24 +41,16 @@ sub Bind_hud(string _hcType)
 
 
 
-
-
-
-
-
-
-
-
-
 |***
  *	DES: HUD adjustment
  *	USE: 
  *	INI: 
+ 
  *  NOTE:
  ***|
-sub HUDUpdate(string Line)
-   
-	NOUT This will only take a second \at...\ax
+sub HUDUpdate()
+	DEBUG ${cbug}HUDUpdate()\ax
+	NOUT This will only take a second ${sep}
 	/ini ".\..\MQ2HUD.ini" "core" NULL NULL
 	/delay 1s
 	
@@ -121,16 +113,16 @@ sub HUDUpdate(string Line)
 
 	| combat modes
 	/noparse /ini HUDPATH "bot1" "3,140,13,100,149,237,[              ][    ][     ]"
-	/noparse /ini HUDPATH "bot2" "3,145,14,0,255,0,${If[${AutoBot} && ${combat.Equal[MELEE]},M,]}"
-	/noparse /ini HUDPATH "bot3" "3,145,14,25,25,25,${If[!${AutoBot} || (!${AutoBot} && !${combat.Equal[MELEE]}) || (${AutoBot} && !${combat.Equal[MELEE]}),M,]}"
-	/noparse /ini HUDPATH "bot4" "3,153,14,0,255,0,${If[${AutoBot} && ${combat.Equal[RANGE]},R,]}"
-	/noparse /ini HUDPATH "bot5" "3,153,14,25,25,25,${If[!${AutoBot} || (!${AutoBot} && !${combat.Equal[RANGE]}) || (${AutoBot} && !${combat.Equal[RANGE]}),R,]}"
-	/noparse /ini HUDPATH "bot6" "3,161,14,0,255,0,${If[${AutoBot} && ${combat.Equal[HEAL]},H,]}"
-	/noparse /ini HUDPATH "bot7" "3,161,14,25,25,25,${If[!${AutoBot} || (!${AutoBot} && !${combat.Equal[HEAL]}) || (${AutoBot} && !${combat.Equal[HEAL]}),H,]}"
-	/noparse /ini HUDPATH "bot8" "3,169,14,0,255,0,${If[${AutoBot} && ${combat.Equal[NUKE]},N,]}"
-	/noparse /ini HUDPATH "bot9" "3,169,14,25,25,25,${If[!${AutoBot} || (!${AutoBot} && !${combat.Equal[NUKE]}) || (${AutoBot} && !${combat.Equal[NUKE]}),N,]}"
-	/noparse /ini HUDPATH "bot10" "3,177,14,0,255,0,${If[${AutoBot} && ${combat.Equal[DUAL]},D,]}"
-	/noparse /ini HUDPATH "bot11" "3,177,14,25,25,25,${If[!${AutoBot} || (!${AutoBot} && !${combat.Equal[DUAL]}) || (${AutoBot} && !${combat.Equal[DUAL]}),D,]}"
+	/noparse /ini HUDPATH "bot2" "3,145,14,0,255,0,${If[${coreAuto} && ${combat.Equal[MELEE]},M,]}"
+	/noparse /ini HUDPATH "bot3" "3,145,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[MELEE]}) || (${coreAuto} && !${combat.Equal[MELEE]}),M,]}"
+	/noparse /ini HUDPATH "bot4" "3,153,14,0,255,0,${If[${coreAuto} && ${combat.Equal[RANGE]},R,]}"
+	/noparse /ini HUDPATH "bot5" "3,153,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[RANGE]}) || (${coreAuto} && !${combat.Equal[RANGE]}),R,]}"
+	/noparse /ini HUDPATH "bot6" "3,161,14,0,255,0,${If[${coreAuto} && ${combat.Equal[HEAL]},H,]}"
+	/noparse /ini HUDPATH "bot7" "3,161,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[HEAL]}) || (${coreAuto} && !${combat.Equal[HEAL]}),H,]}"
+	/noparse /ini HUDPATH "bot8" "3,169,14,0,255,0,${If[${coreAuto} && ${combat.Equal[NUKE]},N,]}"
+	/noparse /ini HUDPATH "bot9" "3,169,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[NUKE]}) || (${coreAuto} && !${combat.Equal[NUKE]}),N,]}"
+	/noparse /ini HUDPATH "bot10" "3,177,14,0,255,0,${If[${coreAuto} && ${combat.Equal[DUAL]},D,]}"
+	/noparse /ini HUDPATH "bot11" "3,177,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[DUAL]}) || (${coreAuto} && !${combat.Equal[DUAL]}),D,]}"
 	
 	| combat distance
 	/noparse /ini HUDPATH "CD1" "3,191,14,255,255,255,${CombatDistance}"
@@ -161,15 +153,15 @@ sub HUDUpdate(string Line)
 	/noparse /ini HUDPATH "tie8" "3,201,38,255,0,0,${If[${Bool[${SetTieToon}]},${If[!${Bool[${Spawn[${SetTieToon}]}]},${If[${Bool[${SetTieToon}]},${SetTieToon},]},]},]}"
 	/noparse /ini HUDPATH "tie9" "3,201,38,25,25,25,${If[${Bool[${SetTieToon}]},,NONE]}"
 
-	| toasting preferences
-	/noparse /ini HUDPATH "toast1" "3,140,50,0,255,0,${If[${AutoToast} && !${switchToastMode},Toast,]}"
-	/noparse /ini HUDPATH "toast2" "3,140,50,255,255,0,${If[${switchToastMode},Toast,]}"
-	/noparse /ini HUDPATH "toast3" "3,140,50,255,0,0,${If[${switchToastMode},,Toast]}"
-	/noparse /ini HUDPATH "toast4" "3,170,49,100,149,237,[     ][     ]"
-	/noparse /ini HUDPATH "toast5" "3,175,50,255,255,255,${If[${toastMobCount},${toastMobCount},]}"
-	/noparse /ini HUDPATH "toast6" "3,175,50,25,25,25,${If[${toastMobCount},,##]}"
-	/noparse /ini HUDPATH "toast7" "3,196,50,255,255,255,${If[${whentoToast},${whentoToast},]}"
-	/noparse /ini HUDPATH "toast8" "3,196,50,25,25,25,${If[${whentoToast},,##]}"
+	| burn preferences
+	/noparse /ini HUDPATH "burn1" "3,140,50,0,255,0,${If[${burnAuto} && !${burnSwitch},Burn,]}"
+	/noparse /ini HUDPATH "burn2" "3,140,50,255,255,0,${If[${burnSwitch},Burn,]}"
+	/noparse /ini HUDPATH "burn3" "3,140,50,255,0,0,${If[${burnSwitch},,Burn]}"
+	/noparse /ini HUDPATH "burn4" "3,170,49,100,149,237,[     ][     ]"
+	/noparse /ini HUDPATH "burn5" "3,175,50,255,255,255,${If[${burnCount},${burnCount},]}"
+	/noparse /ini HUDPATH "burn6" "3,175,50,25,25,25,${If[${burnCount},,##]}"
+	/noparse /ini HUDPATH "burn7" "3,196,50,255,255,255,${If[${burnEngageat},${burnEngageat},]}"
+	/noparse /ini HUDPATH "burn8" "3,196,50,25,25,25,${If[${burnEngageat},,##]}"
 		
 	| rez
 	/noparse /ini HUDPATH "rez1" "3,140,62,100,149,237,Rez"

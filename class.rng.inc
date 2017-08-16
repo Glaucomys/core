@@ -74,11 +74,11 @@ sub core_RNG()
 		/call click_DPS_${Me.Class.ShortName}
 	} 
 	/call use_mod_rod
-	/if (${AutoBot}) {	
+	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}

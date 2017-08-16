@@ -17,7 +17,7 @@ sub core_CLR()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
 	/doevents
 	ISDEAD
-	| /if (${AutoBot} && !${timer_auto_toon_control} && ${autoControl} && ${Raid.Members}) /call auto_control_swap
+	| /if (${coreAuto} && !${timer_auto_toon_control} && ${autoControl} && ${Raid.Members}) /call auto_control_swap
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 	CHECKTIE
 
@@ -27,7 +27,7 @@ sub core_CLR()
   }	
 	
 	CHECKREZ
-	/if (${AutoBot} && !${Me.Invis}) {
+	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
 		/if (${Me.PctMana} < 60*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez}) /call core_cast "Veturika's Perseverance" alt 0
 		/if (${useQM} && !${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
@@ -58,7 +58,7 @@ sub core_CLR()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/call use_mod_rod
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
@@ -717,7 +717,7 @@ sub check_heal_ward()
 		:nextcount
 	/next _count	
 	:exit
-	/if (${AutoBot}) /call create_timer timer_heal_ward ${tHealWard}
+	/if (${coreAuto}) /call create_timer timer_heal_ward ${tHealWard}
 /return
 
 

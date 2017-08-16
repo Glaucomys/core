@@ -12,7 +12,7 @@
 
 sub SpeakLine()
 	/if (${Spawn[${Param0}].Distance} > 50) /bc I need to Move Closer To ${Param0}
-	/if (!${AutoBot}) /goto :exitSpeakLine
+	/if (!${coreAuto}) /goto :exitSpeakLine
 	:speakloop
 		/if (${Me.Combat}) /attack off
 		/if (${Stick.Status.Equal[ON]}) /stick off
@@ -137,7 +137,7 @@ sub Event_16stein6(string line)
 #Event hatchet1 "#*#Hatchet hefts a weighted throwing axe in his offhand#*#"
 Sub event_hatchet1
   /bc I NEED TO RUN AWAY
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /declare running 						int 		local
   /declare distanceNow 				float 	local
   /declare distanceBefore 		float 	local
@@ -198,7 +198,7 @@ Sub event_hatchet1
 #Event hatchet2 "#*#Hatchet lifts his axe high#*#"
 Sub event_hatchet2
   /bc I NEED TO RUN BETWEEN HIS LEGS
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /declare running 		int 	local
   /declare distanceNow 		float 	local
   /declare distanceBefore 	float 	local
@@ -260,7 +260,7 @@ Sub event_hatchet2
 #Event hatchet3 "#*#Breakneck hoists an arm back#*#"
 Sub event_hatchet3
   /bc I NEED TO DUCK
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /if (${Me.Class.Name.Equal[BARD]}) /twist off
  :TopDuck
   /if (${Me.State.NotEqual[DUCK]}) /keypress DUCK
@@ -479,7 +479,7 @@ sub Event_Back
 #Event QueenAE 	"#*#Queen Malarian anchors her feet to the ground and prepares to unleash a wave of burning acid#*#"
 sub Event_QueenAE
   /bc Getting away from Queen
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /if (${Spawn[Queen Malarian].Distance}>30) /return
   /return
   /target clear
@@ -494,7 +494,7 @@ sub Event_QueenAE
 #Event QueenAdd "#*#You see the queen glare at you#*#"
 sub Event_QueenAdd
   /bc I NEED to RUN AWAY!
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /target clear
   /play QueenAdd smart
   /delay 1s ${Me.Moving}
@@ -540,7 +540,7 @@ sub Event_Mindblight(Line, Direction)
   /if (${Direction.Equal[southwest]}) {
     /if (${Spawn[npc =The Mindblight].ID}) /return
     /bc Moving NE
-    /if (!${AutoBot}) /return
+    /if (!${coreAuto}) /return
     /moveto loc 201 -79
     /delay 2s ${MoveTo.Moving}
     /delay 20s !${MoveTo.Moving}
@@ -549,7 +549,7 @@ sub Event_Mindblight(Line, Direction)
   /if (${Direction.Equal[northwest]}) {
     /if (${Spawn[npc =The Mindblight].ID}) /return
     /bc Moving SE
-    /if (!${AutoBot}) /return
+    /if (!${coreAuto}) /return
     /moveto loc 94 -86
     /delay 2s ${MoveTo.Moving}
     /delay 20s !${MoveTo.Moving}
@@ -558,7 +558,7 @@ sub Event_Mindblight(Line, Direction)
   /if (${Direction.Equal[southeast]}) {
     /if (${Spawn[npc =The Mindblight].ID}) /return
     /bc Moving NW
-    /if (!${AutoBot}) /return
+    /if (!${coreAuto}) /return
     /moveto loc 215 71
     /delay 2s ${MoveTo.Moving}
     /delay 20s !${MoveTo.Moving}
@@ -567,7 +567,7 @@ sub Event_Mindblight(Line, Direction)
   /if (${Direction.Equal[northeast]}) {
     /if (${Spawn[npc =The Mindblight].ID}) /return
     /bc Moving SW
-    /if (!${AutoBot}) /return
+    /if (!${coreAuto}) /return
     /moveto loc 92 82
     /delay 2s ${MoveTo.Moving}
     /delay 20s !${MoveTo.Moving}
@@ -594,7 +594,7 @@ sub Event_mindshear
 sub Event_CV2Corrupt(string Line, string Name)
   /if (!${Name.Find[${Me.Name}]}) /return
   /bc I NEED to RUN AWAY!
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /target clear
   /play SeethCorrupt smart
   /delay 1s ${Me.Moving}
@@ -620,7 +620,7 @@ sub Event_CV2Corrupt(string Line, string Name)
 sub Event_Beast(line, person)
   /if (${person.Equal[${Me}]}) {
     /bc say I got beast ONE!!
-    /if (!${AutoBot}) /return
+    /if (!${coreAuto}) /return
     /target clear
     /play path1 smart
     /delay 1s ${Me.Moving}
@@ -638,7 +638,7 @@ sub Event_Beast(line, person)
 #Event LCWhip "#*#A whip wraps around your limbs!#*#"
 sub Event_LCWhip
   /bc I NEED to RUN AWAY!
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /target clear
   /play LCWhip smart
   /delay 1s ${Me.Moving}
@@ -690,7 +690,7 @@ sub Event_CVSisterRun(string Line, string Name)
 
 #Event GolemAEArg "#*#prepares for a massive strike at anyone not hidden from sight#*#"
 sub Event_GolemAEArg
-  /if (!${AutoBot}) /return
+  /if (!${coreAuto}) /return
   /if (!${Spawn[Avatar of Steel].LineOfSight}) /return
   /bc I NEED to RUN AWAY!
   /target clear
@@ -757,7 +757,7 @@ sub Event_RTSludge
 | ** Kael Raid
 #Event DainBanish	"#*#Dain Frostreaver IV shouts 'You will be banished, #1#, #2#, and #3#!#*#"
 sub Event_DainBanish(string Line, string PersonOne, string PersonTwo, string PersonThree)
-   /if (!${AutoBot}) /goto :exit
+   /if (!${coreAuto}) /goto :exit
   /declare sPersonOne 		string local ${PersonOne}
   /declare sPersonTwo 		string local ${PersonTwo}
   /declare sPersonThree 	string local ${PersonThree}
@@ -777,7 +777,7 @@ sub Event_DainBanish(string Line, string PersonOne, string PersonTwo, string Per
 | ** Crystal Caverns Raid
 #Event danela "#*#A Ry`Gorr miner throws a barrel of dynamite at#1##*#"
 sub Event_danela(string Line, string Person, string Person2)
-   /if (!${AutoBot}) /goto :exit
+   /if (!${coreAuto}) /goto :exit
   /if (${Line.Find[${Me.CleanName}]}) {
     /echo I GOT BARREL!!
     /play Danela smart
@@ -794,7 +794,7 @@ sub Event_danela(string Line, string Person, string Person2)
 | ** Chapterhouse Raid .. fuck this place
 |#Event chapterhouse "Your bones are burning#*#"
 sub Event_chapterhouse()
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
   /bc I NEED to RUN AWAY!
   /target clear
   /echo running to pool
@@ -818,14 +818,14 @@ sub Event_chapterhouse()
 
 #Event ChaptDoT		"#*##1# begins to burn!#*#"
 sub Event_ChaptDot(string line, string Name)
-  /if (!${AutoBot}) /echo ${Name} got the DoT!
+  /if (!${coreAuto}) /echo ${Name} got the DoT!
 /return
 
 
 | ** Breeding Grounds Raid Events
 #Event zalikor "#*#You have been corrupted by the fear crystal#*#"
 sub Event_Zalikor()
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
   /if (!${Zone.ShortName.Equal[breedinggrounds_raid]}) /goto :exit
   /bc I need to RUN!!!
   /if (${Me.Casting.ID}) /call Interrupt
@@ -842,7 +842,7 @@ sub Event_Zalikor()
 #Event AuraNuke "#*#Zalikor directs his fiery breath toward the aura of #1#."
 sub Event_AuraNuke((string line, string AuraName)
 	/echo ${AuraName}
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
 	/declare RunAway string local FALSE
 	/if (${AuraName.Equal[fire]} && ${Math.Distance[1109,-570]}<=50) {
 		/echo I have to run!!
@@ -869,7 +869,7 @@ sub Event_eggs()
   /if (!${Zone.ShortName.Equal[breedinggrounds_raid]}) /goto :exit
   /varset DoLeash 0
   /bc I need to up top!!!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /if (${Me.Casting.ID}) /call Interrupt
   :TopOfEggs
    /play eggs smart slow normal
@@ -885,7 +885,7 @@ sub Event_eggs()
 #Event FindleFireBall1 "#*#You feel an inner warmth as Findlewill points at you#*#"
 sub Event_FindleFireBall1()
   /bc I NEED to RUN! Have Fireball!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /target clear
   :TopOfFireBallSub
    /echo running south
@@ -924,7 +924,7 @@ sub Event_FindleFireBall1()
 sub Event_FindleFireBall2(string Line, string Name)
   /if (${Spawn[Findlewill].Distance}>40) /goto :exit
   /bc I NEED to run away from Findle!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /target clear
   /echo Running away from Findle
   /play RunFromFindle smart
@@ -941,7 +941,7 @@ sub Event_FindleFireBall2(string Line, string Name)
 #Event XorbbEye "#*#You are consumed by a sense of power watching and hating you#*#"
 sub Event_XorbbEye()
   /bc I NEED to RUN! Have Fire Emote!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /target clear
   /echo Breaking LoS
   /play XorbbEye smart
@@ -964,7 +964,7 @@ sub Event_XorbbEye()
 #Event Xorbb3 "King Xorbb shouts '|${Me.CleanName}|'"
 sub Event_Xorbb3()
   /bc I need to face away from him for a bit
-|  /if (!${AutoBot}) /goto :exit
+|  /if (!${coreAuto}) /goto :exit
   /beep
   /stop
   /stop
@@ -992,7 +992,7 @@ sub Event_ChelsMove(string Line, string Area)
 sub Event_KilsevRage(string Line, string Person)
   /if (${Person.Equal[${Me.CleanName}]}) {
     /bc I HAVE TO KITE!!!
-		/if (!${AutoBot}) /goto :exit
+		/if (!${coreAuto}) /goto :exit
     /if (!${Defined[KilsevRaged]}) {
       /declare KilsevRaged int outer 1
     } else {
@@ -1023,7 +1023,7 @@ sub Event_KilsevRageOff()
 
 #Event VyzhAE		"#*#Vyzh`dra draws power from the crowd's energy#*#"
 sub Event_VyzhAE()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /if (!${Defined[VyzhClose]}) {
     /declare VyzhClose int outer 0
   } else {
@@ -1045,7 +1045,7 @@ sub Event_VyzhAE()
 #Event VyzhGetClose	"#*#Vyzh`dra commands his tigers to attack#*#"
 sub Event_VyzhGetClose()
   /echo Oh shit move back!1
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /moveto loc ${Spawn[Vyzh`dra the Godslayer].Y} ${Spawn[Vyzh`dra the Godslayer].X}
   /if (!${Defined[VyzhClose]}) {
     /declare VyzhClose int outer 1
@@ -1075,7 +1075,7 @@ sub Event_AaryonarGaze()
   /declare CasterClasses string local "|DRU|CLR|SHM|ENC|NEC|MAG|WIZ|"
   
   /bc OH SHIT HE BE LOOKIN AT ME
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /if (${Target.CleanName.Equal[Aaryonar]}) {
     /melee off
     /stick off
@@ -1110,7 +1110,7 @@ sub Event_AaryonarGazeOff()
 #Event ZlaAE "You are covered in filth#*#"
 sub Event_ZlaAE()
   /bc I NEED to RUN AWAY!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /target clear
   /echo running away
   /play ZlaxRun smart
@@ -1159,7 +1159,7 @@ sub Event_PrimeCloud(string Line, string Person)
 |  /if (${Line.Find[Mayax]}) /echo I needs to KITE!!
   /if (${Line.Find[${Me.CleanName}]}) {
     /bc I HAVE TO KITE!!!
-    /if (!${AutoBot}) /goto :exit
+    /if (!${coreAuto}) /goto :exit
     /if(${DoLeash}) /varset DoLeash 0
 
     /if (!${Defined[PrimeCloud]}) {
@@ -1222,7 +1222,7 @@ sub Event_BurningPrison()
 #Event NeriakShock "#*#The golem glows and begins to hum, turning its head toward you.#*#"
 sub Event_NeriakShock()
   /bc I need to run away from the raid shock emote
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /if (${DoLeash}) /leash off
   /play shock smart
   /delay 10s ${AdvPath.Waypoints} < 1
@@ -1237,7 +1237,7 @@ sub Event_NeriakShock()
 sub Event_NeriakChill(string line)
   /if (${line.Find[${Me}]}) {
     /bc I need to run away from the raid got essense emote
-    /if (!${AutoBot}) /goto :exit
+    /if (!${coreAuto}) /goto :exit
     /if (${DoLeash}) /leash off
     /play shock smart
     /delay 10s ${AdvPath.Waypoints} < 1
@@ -1251,7 +1251,7 @@ sub Event_NeriakChill(string line)
 
 #Event NeriakCold "#*#Sooo cooooold#*#"
 sub Event_NeriakCold()
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
   /if (${MeleeList.Find[${Me.Class.Name}]}) {
     /bc moving back!
     /squelch /stick 120 moveback
@@ -1265,7 +1265,7 @@ sub Event_NeriakCold()
 #Event NeriakPulse "#*#An energy pulse moves toward you.#*#"
 sub Event_NeriakPulse()
   /bc I need to run away from the raid from pulse!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /if (${DoLeash}) /leash off
   /play pulse smart
   /delay 15s ${AdvPath.Waypoints} < 1
@@ -1282,7 +1282,7 @@ sub Event_NeriakPulse()
 
 #Event NeriakSpear "#*#you are pinned to the ground with a spear#*#"
 sub Event_NeriakSpear()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /stand
   /moveto loc 440.50 -668
   /delay 1s
@@ -1300,7 +1300,7 @@ sub Event_NeriakSpear()
 | ** Bixie Raids
 #Event Bixie2Red "#*#red cloud forms above#*#"
 sub Event_Bixie2Red(string line)
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
   /if (${line.Find[${Me}]}) {
     /declare tempx float local ${Me.X}
     /declare tempy float local ${Me.Y}
@@ -1318,7 +1318,7 @@ sub Event_Bixie2Red(string line)
 
 #Event Bixie2Yellow "#*#yellow cloud forms above#*#"
 sub Event_Bixie2Yellow(string line)
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
   /if (${line.Find[${Me}]}) {
     /declare tempx float local ${Me.X}
     /declare tempy float local ${Me.Y}
@@ -1364,7 +1364,7 @@ sub Event_SlaveThokStand()
 #Event DSOn "#*#The mark of Nife flashes before your eyes#*#"
 #Event DSOn "#*#Warchanter Neezzee begins to cast a spell. <Chaotic Rune>#*#"
 sub Event_DSOn()
-/if (!${AutoBot}) /goto :exit
+/if (!${coreAuto}) /goto :exit
 	/bc I have DS on
 	/if (${MeleeList.Find[${Me.Class.Name}]} || ${MeleeList.Find[${Me.Class.ShortName}]}) {
 		/target myself
@@ -1381,7 +1381,7 @@ sub Event_DSOn()
 #Event DSOff "#*#beats on the drum#*#"
 #Event DSOff "#*#The mystic symbol fades#*#"
 sub Event_DSOff()
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
 	/bc DS Gone!
 	/if (${MeleeList.Find[${Me.Class.Name}]} || ${MeleeList.Find[${Me.Class.ShortName}]}) /target clear
 	:exit
@@ -1391,7 +1391,7 @@ sub Event_DSOff()
 | ** Tower of Rot Raid
 #Event ToRClay "#*#Lord Kyle Bayle raises his ancient claymore high overhead#*#"
 sub Event_ToRClay()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
 
 	/if (${MeleeList.Find[${Me.Class.Name}]} || ${MeleeList.Find[${Me.Class.ShortName}]}) {
 		/target myself
@@ -1445,7 +1445,7 @@ sub Event_ToRWither()
 sub Event_AM4()
 	/if (!${Zone.ShortName.Equal[arxmentis_raid]}) /goto :exit
 	/bc I have to run away from raid!!!
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
 	| =/moveto loc 104 1.06
@@ -1467,7 +1467,7 @@ sub Event_AM4()
 #Event AM1 "#*#You feel faint claws scratching#*#"
 #Event AM1 "#*#Fire begins to form around your feet."
 sub Event_AM1()
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
 	/if (!${Zone.ShortName.Equal[arxmentis_raid]}) /goto :exit
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
@@ -1493,7 +1493,7 @@ sub Event_AM1Safe()
 
 #Event VitioWeapon "#*#weapons out to his sides#*#"
 sub Event_VitioWeapon()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
 	/call create_timer VitioWeaponTimer 15s
@@ -1510,7 +1510,7 @@ sub Event_VitioWeapon()
 #Event VitioClose		"#*#begins to focus the power of the citadel#*#"
 sub Event_VitioClose()
   /bc Get close to him!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
 	/call create_timer VitioWeaponTimer 10s
@@ -1534,7 +1534,7 @@ sub Event_AMGolemLT()
 #Event AMRunAwayBlob "#*#a phasma frigasia points a bony finger at you!#*#"
 sub Event_AMRunAwayBlob()
   /bc Got Blob emote!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /if (${Spawn[Principal Ex-Vicarum Nomia].Distance}>150) /goto :exit
   /target clear
   /play runfromboss3 smart
@@ -1549,7 +1549,7 @@ sub Event_AMRunAwayBlob()
 #Event AMRunAwayFive "#*#Heads up, |${Me.CleanName}|!#*#"
 sub Event_AMRunAwayFive()
   /bc Got Heads up Emote!!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /declare tempx float local ${Me.X}
   /declare tempy float local ${Me.Y}
   /target clear
@@ -1565,7 +1565,7 @@ sub Event_AMRunAwayFive()
 #Event AMRunAwayFiveOne "#*#You feel energy gathering. Only motion can set if free#*#"
 sub Event_AMRunAwayFiveOne()
   /bc Got Gathering Emote!!
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /declare tempx float local ${Me.X}
   /declare tempy float local ${Me.Y}
   /target clear
@@ -1589,7 +1589,7 @@ sub Event_AMRunAwayFiveOne()
 
 #Event CureAkkapanDot "#*#Terrible fumes engulf you. Run from it#*#"
 sub Event_CureAkkapanDot()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /declare _rnd int local 0
  	/declare _tempTie bool local ${SetTie}
 
@@ -1624,7 +1624,7 @@ sub Event_CureAkkapanDot()
 | ** ONE OFF
 | #Event CurePyroignitionDot "#*#Flames erupt where you stand#*#"
 sub Event_CurePyroignitionDot()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /declare _rnd int local 0
  	/declare _tempTie bool local ${SetTie}
 
@@ -1658,7 +1658,7 @@ sub Event_CurePyroignitionDot()
 | ** Wither and Decay Raid
 #Event DecayRaid "#*#Decay spews a pile of living vomit in |${Me.CleanName}|'s direction.#*#"
 sub Event_DecayRaid()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
 	/moveto loc -84.35 -88.09
@@ -1675,7 +1675,7 @@ sub Event_DecayRaid()
 | ** Plane of Hate Revisted Raid
 #Event InnyDT "#*#You feel a sense of doom upon you#*#"
 sub Event_InnyDT()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   /bc Got Inny DT emote!
   /if (${Spawn[Innoruuk].Distance}>150) /goto :exit
   /play CureInnyDT
@@ -1701,7 +1701,7 @@ sub Event_InnyDT()
 | **  Demiplane of Life Raid
 | #Event AnashtiSulDT "#*#The power of Sul runs through you, sparking in your hands.#*#"
 | sub Event_AnashtiSulDT()
-|  /if (!${AutoBot}) /goto :Event_AnashtiSulDT
+|  /if (!${coreAuto}) /goto :Event_AnashtiSulDT
 |  /bc Got DT emote!
 |  :Event_AnashtiSulDT
 | /return
@@ -1713,7 +1713,7 @@ sub Event_InnyDT()
 | ** Anashti Raid
 | ** ONE OFF
 sub cure_Anashti_DT()
-	/if (!${AutoBot}) /goto :exit
+	/if (!${coreAuto}) /goto :exit
 	/if (${MeleeList.Find[${Me.Class.ShortName}]} && ${Me.Buff[Holistic Health].Duration.TotalSeconds} > 15) /goto :exit
   /call set_stop
   /declare tempx float local ${Me.X}
@@ -1807,7 +1807,7 @@ sub MoveToSpot()
  *	Tank classes If they get Withering Physicality XIII they need to use Distillate of Immunization XIII
  ***|
 sub CureDamselofDecay()
-  /if (!${AutoBot}) /goto :exit
+  /if (!${coreAuto}) /goto :exit
   ISDEAD
 	| DPS classes BST,RNG,MON,ROG,ENC,WIZ,MAG,NEC,SHD,PAL,BRD,BST
 	/if (${Select[${Me.Class.ShortName},BST,RNG,MON,ROG,ENC,WIZ,MAG,NEC,SHD,PAL,BRD,BST]} && (${Me.Buff[Withering Physicality XIII].ID} || ${Me.Buff[Withering Limbs XIII].ID})) {

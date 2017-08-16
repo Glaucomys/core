@@ -27,14 +27,14 @@
 	- common.inc								All common use functions.
 	- events.inc								Contains responses to EQ generated changes (environment).
 	- hud.inc										Sets the hud.
-	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias'.
+	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias, binds'.
 	- test.inc									empty. testing purposes.
 	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
 	- misc stuff.txt						Just helpful info. old code. A forgotten attic of old stuff.
 	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
 	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell
 	- blurb.inc									Expansion specific raid announcements. A lazy way to send raid instructions to all in RS.
-	- toast.inc									All class toast routines.
+	- burn.inc									All class toast routines.
 	- mode.inc									All Non-Standard Mode controlls.
 	- core.SERVER.CLS.NAME.ini	Character specific INI settings.
 	- core.augmentdump.ini			list of all augments by toon.
@@ -52,7 +52,7 @@
 	
 		
 	Common Used Variables:
-	AutoBot							bool			automatic or manual Mode
+	coreAuto							bool			automatic or manual Mode
 	Target2Kill					int				the ID of the mob that should be the focus of your wanton destruction
 	isValidTarget				bool			is ths a valid Target
 	timer_???						string		Prefix for running timers. [Timers] in the Toon INI(s) will hold most base set times.
@@ -86,7 +86,6 @@
 #define DEBUGREZ "/if (${switchDebugRez} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define SDEBUG "/echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
-| #define LDEBUG " /mqlog [${Me.Class.ShortName}:${Macro.CurLine}]: " 
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
 #define NOUT "/echo ${c-}-\ax"
 #define HUDPATH ".\..\MQ2HUD.ini core"
@@ -94,11 +93,9 @@
 #define ISDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
 #define CHECKEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]}) /goto :exit"
 #define CHECKTIE "/if (${SetTie} && !${Bool[${timer_check_Tie}]}) /call set_tie"
-#define CHECKREZ "/if (${AutoBot} && !${switchPullMode} && !${Me.Invis} && ((${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} && ${switchRezGive}) || ${switchRezEmergency})) /call check_for_corpse"
+#define CHECKREZ "/if (${coreAuto} && !${switchPullMode} && !${Me.Invis} && ((${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} && ${switchRezGive}) || ${switchRezEmergency})) /call check_for_corpse"
 #define CHECKSAFELIST "/if (${Bool[${forcesafelist}]} && !${safelist.Find[${_sender}]}) /goto :exit"
 #define UPDATEHUD "/call update_HUD_notices"
-| #define CLEARCURSOR "/if (${Cursor.ID} && (${AutoBot} && !${Bool[${timer_clear_cursor}]} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]})) /call sort_cursor"
-| #define CLEARCURSOR "/if (((${AutoBot} || ${switchModeForage}) && ${Cursor.ID}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
@@ -126,7 +123,7 @@ autoCursor
 #include TC\class.shm.inc
 #include TC\class.war.inc
 #include TC\class.wiz.inc
-#include TC\toast.inc
+#include TC\burn.inc
 
 
 
@@ -139,8 +136,8 @@ autoCursor
 sub main()
 	/mqclear
 	/call check_versions
- 	/declare INICore string outer tc\core.ini
- 	/declare INIFile string outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
+ 	/call DeclareVar INICore string outer tc\core.ini
+ 	/call DeclareVar INIFile string outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
 	/call declare_base
 	/call check_plugin
 	/call echos startup
@@ -164,19 +161,19 @@ sub main()
   	DEBUG ${cbug}:loopmain (core ver: ${versionCore}\ax
 	  ISDEAD  
 		/if (!${Bool[${timer_check_EQCB}]}) /call check_one_mind
-		/varset combat ${If[${AutoBot},${Ini[${INIFile},Common,combat]},FALSE]}
+		/varset combat ${If[${coreAuto},${Ini[${INIFile},Common,combat]},FALSE]}
 		CHECKREZ	
 	  UPDATEHUD	
 	 	/doevents
 
-		/if (!${AutoBot}) {
+		/if (!${coreAuto}) {
 			/if (${HomeSet}) /makecamp off
 		}
 
 		CLEARCURSOR
 
 		| check all buff types, rest and auras
-		/if (${AutoBot}) {
+		/if (${coreAuto}) {
 			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
 			/call check1offBuffs
 			ISDEAD
@@ -185,15 +182,15 @@ sub main()
 		}
 
 		| check to see if someone needs a doctor?
-		/if (${AutoBot} && !${timer_check_cast_cure} && ${switchHealCure}) /call cast_cure
+		/if (${coreAuto} && !${timer_check_cast_cure} && ${switchHealCure}) /call cast_cure
 		| fix exp
-		/if (${AutoBot} && !${timer_check_EXP} && !${SafeZone} && !${switchOverrideSafezone}) /call auto_adjust_EXP
+		/if (${coreAuto} && !${timer_check_EXP} && !${SafeZone} && !${switchOverrideSafezone}) /call auto_adjust_EXP
 		| watch for spawn
 		/if (${Bool[${watchSpawn}]} && !${timer_check_watch_spawn}) /call check_watch_spawn
 		| guns need ammo
 		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
 		| fix ur pet!
-		/if (${AutoBot} && !${timer_Check_Familiar}) /call sort_familiar
+		/if (${coreAuto} && !${timer_Check_Familiar}) /call sort_familiar
 		/if (${FamiliarLeave} && ${Me.Pet.Name.Find[familiar]}) /pet get lost
 		| food/drink
 		/if (${Bool[${clickFoodDispenser}]} && !${timer_click_food}) /call click_summon_food
@@ -205,7 +202,7 @@ sub main()
 		/if (${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && !${SafeZone} && !${switchOverrideSafezone}) /makecamp return
 
 		| looter stuffs
-		 /if ((${AutoBot} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
+		 /if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
 
 		/doevents		
 		
@@ -216,12 +213,12 @@ sub main()
 		/if (${doclickOdds} && !${timer_check_odds_and_ends}) /call odds_and_ends
 
 		| check constant AA buffs
-		/if (${AutoBot} && (${Bool[${AANow1}]} || ${Bool[${AANow2}]})) /call check_AA_now
+		/if (${coreAuto} && (${Bool[${AANow1}]} || ${Bool[${AANow2}]})) /call check_AA_now
 		| check constant Disc buffs
-		/if (${AutoBot} && (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]})) /call check_Disc_now
+		/if (${coreAuto} && (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]})) /call check_Disc_now
 
 		| do we pull or assist		
-		/if (${AutoBot} && !${Me.Invis} && !${SafeZone} && !${switchOverrideSafezone}) {
+		/if (${coreAuto} && !${Me.Invis} && !${SafeZone} && !${switchOverrideSafezone}) {
 			/if (!${switchPullMode}) {
 				/call get_assist_target	
 			} else /if (${switchPullMode} && !${Target2Kill}) {	
@@ -283,7 +280,7 @@ sub base_preperation()
 	/if (${Bool[${Plugin[mq2netbots]}]}) /squelch /netbots ON send=ON grab=ON	
 	
 	| turn off forced burn routines if there still on
-	/if (${Bool[${switchToastMode}]}) /call Event_SetVar NA switchToastMode Common FALSE
+	| /if (${Bool[${burnForce}]}) /varset burnForce FALSE
 
 	| turn off rez non guildies/group if it is still on. 'cause fuck everyone else.
 	/if (${switchRezEveryone}) /call Event_SetVar NA switchRezEveryone Heal FALSE

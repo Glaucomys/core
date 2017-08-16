@@ -259,7 +259,6 @@ sub mode_forage()
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	/if (!${Me.Standing}) /stand
 	/doability forage
-	/doevents
 	UPDATEHUD
 /return
 
@@ -325,6 +324,7 @@ sub mode_hunt()
 	}
 
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
+	/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
 	/if (${Spawn[${Target2Kill}].ID}) {
 		/call mode_get_mob
 	} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
@@ -367,6 +367,8 @@ sub mode_petfarm()
 		/goto :exit
 	}
 	/call check_watch_spawn
+	/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
+
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius} targetable]}) {
 		/varset _spawnCount ${SpawnCount[npccorpse ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius}]}	
 		/varset Target2Kill ${Spawn[${NearestSpawn[1, ${If[${switchOverrideLos},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}

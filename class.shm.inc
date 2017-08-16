@@ -25,7 +25,7 @@ sub core_SHM()
     /call create_timer timer_set_xtarget ${tXHeal}
   }	
 
-	/if (${AutoBot} && !${Me.Invis}) {
+	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_cani
 	}	
 	
@@ -56,12 +56,12 @@ sub core_SHM()
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call check_pet
 	} else /if (${Select[${combat},DUAL]}) {
 	}
-	/if (${AutoBot}) {	
+	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 	}
 	/call check_cani
 	/call use_mod_rod
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}

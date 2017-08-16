@@ -1,6 +1,6 @@
 |***
- *	toast.inc
- *	Class synergy toast routines
+ *	burn.inc
+ *	Class synergy burn routines
  *
  *
  *
@@ -13,7 +13,7 @@
  
  
 |***
- *	DES: Group/AE toast effects by class
+ *	DES: Group/AE burn effects by class
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: This is for class skills that touch group or raid.
@@ -138,7 +138,7 @@ sub synergy_click_Circle()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit	
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	| make sure we have an open aura slot
 
@@ -171,20 +171,20 @@ sub synergy_click_Circle()
 |***
  *	DES: Clicks usefull 1 off items during a Burn
  *	USE: 
- *	INI: set [doclickItemToast] to 0 to disable
+ *	INI: set [doclickItemBurn] to 0 to disable
  *  NOTE: 
  ***|
-sub click_item_toast()
-	DEBUG ${cbug}click_item_toast()\ax
+sub click_item_burn()
+	DEBUG ${cbug}click_item_burn()\ax
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
-	/declare _count int local
-	/for _count 1 to ${doclickItemToast}
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
+	/if (!${Defined[_count]}) /declare _count int local
+	/for _count 1 to ${doclickItemBurn}
 		/doevents
 		ISDEAD
 		/call is_target_dead
 		/if (!${Macro.Return}) /goto :exit
-		/if (${Me.ItemReady[${clickItemToast${_count}}]}) /call core_cast "${clickItemToast${_count}}" item 0
+		/if (${Me.ItemReady[${clickItemBurn${_count}}]}) /call core_cast "${clickItemBurn${_count}}" item 0
 	/next _count
 	:exit
 /return  
@@ -192,7 +192,7 @@ sub click_item_toast()
 
  
  |***
- *	DES: Cleric toast routines
+ *	DES: Cleric burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -202,19 +202,19 @@ sub synergy_CLR()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
  	:exit	
 /return
 	
  
  
  |***
- *	DES: Druid toast routines
+ *	DES: Druid burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -224,7 +224,7 @@ sub synergy_DRU()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	| swarm pets
 	/if (${Me.AltAbilityReady[Natures Guardian]}) /call core_cast "Natures Guardian" alt ${Target2Kill}
@@ -254,14 +254,14 @@ sub synergy_DRU()
 	/if (${useGroupHeal} && ${Me.AltAbilityReady[Nature's Boon]}) /call core_cast "Nature's Boon" alt 0
 
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 	
  
  
  |***
- *	DES: Shaman toast routines
+ *	DES: Shaman burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -271,19 +271,19 @@ sub synergy_SHM()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 	
  
  
  |***
- *	DES: Warrior toast routines
+ *	DES: Warrior burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -293,7 +293,7 @@ sub synergy_WAR()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	
 	/if (${Me.CombatAbilityReady[${DiscAttention}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAttention}].EnduranceCost}) /call core_cast "${DiscAttention}" disc ${Target2Kill}
@@ -312,14 +312,14 @@ sub synergy_WAR()
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 	
  
  
  |***
- *	DES: Shadowknight toast routines
+ *	DES: Shadowknight burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -329,7 +329,7 @@ sub synergy_SHD()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 
 	| tap disc
 	/if (${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscRancor}]}) /call core_cast "${DiscRancor}" disc ${Target2Kill}
@@ -366,14 +366,14 @@ sub synergy_SHD()
 
 	/call use_glyph	
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 
 
  
  |***
- *	DES: Paladin toast routines
+ *	DES: Paladin burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -383,7 +383,7 @@ sub synergy_PAL()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 
 	| defensive	
 	/if (${Me.CombatAbilityReady[${DiscArmor}]} && ${Me.CurrentEndurance} > ${Spell[${DiscArmor}].EnduranceCost}) {
@@ -404,14 +404,14 @@ sub synergy_PAL()
 	
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 	
 
  
  |***
- *	DES: Magician toast routines
+ *	DES: Magician burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -421,7 +421,7 @@ sub synergy_MAG()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 
 	/if (${Me.AltAbilityReady[Elemental Ward]}) /call core_cast "Elemental Ward" alt 0
 	
@@ -457,14 +457,14 @@ sub synergy_MAG()
 	/if (${usePetSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill}
 
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 	
  
  
  |***
- *	DES: Enchanter toast routines
+ *	DES: Enchanter burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -474,7 +474,7 @@ sub synergy_ENC()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	/if (${Me.AltAbilityReady[${ENCIoG}]}) /call core_cast "${ENCIoG}" alt 0
 	/if (${Me.AltAbilityReady[${ENCspire3}]} && ${Spell[${ENCspire3}].Stacks}) /call core_cast "${ENCspire3}" alt 0
@@ -483,14 +483,14 @@ sub synergy_ENC()
 	
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 	
 
  
  |***
- *	DES: Wizard toast routines
+ *	DES: Wizard burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -500,7 +500,7 @@ sub synergy_WIZ()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	| shhhhh..
 	/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0
@@ -544,7 +544,7 @@ sub synergy_WIZ()
 
 	/call use_glyph	
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	
 	
 	
@@ -607,7 +607,7 @@ shield of consequence
  
  
  |***
- *	DES: Necromancer toast routines
+ *	DES: Necromancer burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -617,19 +617,19 @@ sub synergy_NEC()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
  
   
  
  |***
- *	DES: Ranger toast routines
+ *	DES: Ranger burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -639,7 +639,7 @@ sub synergy_RNG()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	| mele disc
 	/if (${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
@@ -687,14 +687,14 @@ sub synergy_RNG()
 	
 		
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
  	:exit
  /return
  	
  
  
  |***
- *	DES: Bard toast routines
+ *	DES: Bard burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -704,7 +704,7 @@ sub synergy_BRD()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
  	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0
  	/if (${Me.CombatAbilityReady[Thousand Blades]}) /call core_cast "Thousand Blades" disc 0	
@@ -715,14 +715,14 @@ sub synergy_BRD()
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast	
+	/if (${doclickItemBurn}) /call click_item_burn	
  	:exit	
 /return
 	
  
  
  |***
- *	DES: Monk toast routines
+ *	DES: Monk burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -732,7 +732,7 @@ sub synergy_MNK()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	
 	| AA Zan Fi's Whistle - DPS increase
@@ -744,14 +744,14 @@ sub synergy_MNK()
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 	
  
  
  |***
- *	DES: Beast toast routines
+ *	DES: Beast burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -761,7 +761,7 @@ sub synergy_BST()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	| /if (${Me.AltAbilityReady[Bloodlust]}) /call core_cast "Bloodlust" alt 0
 	/if (${Me.AltAbilityReady[Bestial Alignment]}) /call core_cast "Bestial Alignment" alt 0
 	/if (${Me.AltAbilityReady[Frenzied Swipes]}) /call core_cast "Frenzied Swipes" alt 0
@@ -782,14 +782,14 @@ sub synergy_BST()
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast	
+	/if (${doclickItemBurn}) /call click_item_burn	
 	:exit	
 /return
 	
  
  
  |***
- *	DES: Berzerker toast routines
+ *	DES: Berzerker burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -799,7 +799,7 @@ sub synergy_BER()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
 	/if (${Me.AltAbilityReady[desperation]} && ${Me.PctHPs} < 90) /call core_cast "Desperation" alt 0
 	/if (${Me.CombatAbilityReady[${DiscScream}]} && ${Me.CurrentEndurance} > ${Spell[${DiscScream}].EnduranceCost}) /disc ${DiscScream}
@@ -836,14 +836,14 @@ sub synergy_BER()
 	
 	
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast	
+	/if (${doclickItemBurn}) /call click_item_burn	
 	:exit	
 /return
 	
  
  
  |***
- *	DES: Rogue toast routines
+ *	DES: Rogue burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
  *	NOTE: 
@@ -853,7 +853,7 @@ sub synergy_ROG()
 	ISDEAD
 	/doevents
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
 
 	/if (${Me.ActiveDisc.Name.Equal[${DiscPlay}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) {
 		:loopmakestop
@@ -880,7 +880,7 @@ sub synergy_ROG()
   /if (${Me.CombatAbilityReady[${DiscRazor}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRazor}" disc 0
 
 	/call synergy_click_Circle
-	/if (${doclickItemToast}) /call click_item_toast
+	/if (${doclickItemBurn}) /call click_item_burn
 	:exit	
 /return
 

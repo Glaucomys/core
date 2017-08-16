@@ -43,7 +43,7 @@ sub core_MNK()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}

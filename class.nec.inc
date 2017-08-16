@@ -24,7 +24,7 @@ sub core_NEC()
 	ISDEAD
 	CHECKTIE
 
-	/if (${AutoBot} && !${Me.Invis}) {
+	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_engaged
 		/if (!${Macro.Return} && ${usePet}) /call check_pet
 	}
@@ -40,11 +40,11 @@ sub core_NEC()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/call use_mod_rod
-	/if (${AutoBot}) {	
+	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
@@ -76,7 +76,7 @@ sub disc_NEC()
 	DEBUGCLASS \atdisc.${Me.Class.ShortName}()\ax 
 	/doevents
 	ISDEAD
-	/if ((${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
+	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
 	/call get_assist_target
 	/if (${useBanestrike} && ${Me.AltAbilityReady[Banestrike]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Banestrike].MyRange}) /call MQ2Cast "Banestrike" alt breakCast -targetid|${Spawn[${Target2Kill}].ID}
 |	/if (${Me.AltAbilityReady[Force of Elements]} && ${Spawn[${Target2Kill}].Distance} <= 200) /call MQ2Cast "Force of Elements" alt breakCast -targetid|${Spawn[${Target2Kill}].ID}
@@ -96,7 +96,7 @@ sub clickDPS_NEC()
 	DEBUGCLASS \atclickDPS.NEC()\ax 
 	/doevents
 	ISDEAD
-	/if ((${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
+	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
 	/if (${Bool[${HornofUnity}]} && !${Bool[${Me.Song[Blessing of Unity]}]} && !${FindItem[Miniature Horn of Unity].Timer}) {
 		/call click_horn_of_unity 	
 		/goto :exit
@@ -117,7 +117,7 @@ sub castNecroDot()
 	/doevents
 	ISDEAD
 	/if (!${Bool[${dotR${set}-${gem}}]}) /goto :exitcastNecroDot
-	/if ((${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exitcastNecroDot2
+	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exitcastNecroDot2
 
 	/if (${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${dotR${set}-${gem}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${dotR${set}-${gem}}].Mana}) {
 		/if ((${Target.BuffDuration[${dotR${set}-${gem}}]} <= 6 && ${Spawn[${Target.Buff[${dotR${set}-${gem}}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${dotR${set}-${gem}}].ID}) {
@@ -168,7 +168,7 @@ sub mem_spell_set()
 sub cast_Call_for_Blood()
 	ISDEAD
 	/doevents
-	/if ((${AutoBot} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]} || ${Bool[${Me.Song[Chaotic Power]}]}) /goto :exit
+	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]} || ${Bool[${Me.Song[Chaotic Power]}]}) /goto :exit
 	/if (${Spawn[${Target2Kill}].Distance} < ${Spell[${CallforBlood}].MyRange} && ${Me.CurrentMana} > ${Spell[${CallforBlood}].Mana} && !${Bool[${Me.Song[Chaotic Power]}]}) {
 		VOUT Casting \a-r${CallforBlood}\ax on [\a-w${Spawn[${Target2Kill}].CleanName}\ax].
 		/call MQ2Cast "${CallforBlood}" -targetid|${Target2Kill}		
@@ -213,7 +213,7 @@ sub sac_toon()
 sub dotCycle()
 	DEBUGCLASS \atdotCycle()\ax 
 	/doevents
-	/if (${AutoBot} && (${Bool[${NoCastList.Find[${Target.DisplayName}]}]} || ${Me.Moving} || ${Bool[${Target.Mezzed}]})) /goto :exitdotCycle
+	/if (${coreAuto} && (${Bool[${NoCastList.Find[${Target.DisplayName}]}]} || ${Me.Moving} || ${Bool[${Target.Mezzed}]})) /goto :exitdotCycle
 	ISDEAD
 	/declare x int local
 	/declare y int local

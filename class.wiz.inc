@@ -19,7 +19,7 @@ sub core_WIZ()
 	ISDEAD
 	CHECKTIE
 	
-	/if (${AutoBot}) {
+	/if (${coreAuto}) {
 		/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_harvest
 		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
@@ -52,11 +52,11 @@ sub core_WIZ()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/call use_mod_rod
-	/if (${AutoBot}) {	
+	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 		| /if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
-	/if (${AutoBot} && !${Spawn[${Target2Kill}].ID} || !${AutoBot} && ${Target.ID} && ${Bool[${combat}]}) {
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
