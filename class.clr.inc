@@ -182,13 +182,6 @@ sub cast_AA_quiet_miracle()
 	/call create_timer timer_check_QM ${tcheck_QM}
 /return	
 
-${Group.Member[Airavas].Distance} ${Group.Member[Airavas].PctMana}
-
-
-
-
-
-
 
 |***
  *	DES: cleric main heal sub
