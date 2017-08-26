@@ -41,17 +41,20 @@ sub core_MAG()
 		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
+		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchPcSwarm}) /call cast_nuke_servant
 		/if (${useRain}) /call cast_nuke_rain		
 		/if (${doclickItem}) /call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
+		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
@@ -76,7 +79,7 @@ sub disc_MAG()
 	ISDEAD
 	CHECKTIE
 	/call is_target_dead
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.AltAbilityReady[Force of Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Force of Elements].MyRange}) /call core_cast "Force of Elements" alt ${Target2Kill}
 
@@ -185,7 +188,7 @@ sub click_DPS_MAG()
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	CHECKTIE
 	/call is_target_dead
-	/if (!${Macro.Return}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
 	
 	| click summon rods. DPS fillers....
@@ -253,17 +256,17 @@ sub cast_nuke_salvo()
 
 
 |***
- *	DES: 
- *	USE: 
+ *	DES: Pet heal routines
+ *	USE: /call petHeal_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: 
  ***|
-sub petHeal_MAG()
-	DEBUGCLASS ${cbug}petHeal_MAG()${citem}
+sub pet_heal__MAG()
+	DEBUGCLASS ${cbug}pet_heal_${Me.Class.ShortName}()${citem}
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return} || !${switchPcPet}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${switchPcPet}) /goto :exit
 	CHECKTIE
 	/if (${Pet.PctHPs} < 40 && ${Me.AltAbilityReady[${PetAAHeal}]}) /call core_cast "${PetAAHeal}" alt ${Me.Pet.ID}
 	/if (${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) /call core_cast "${PetHealSpell}" ${PetHealType} ${Me.Pet.ID}
@@ -331,5 +334,32 @@ sub patch_heal_MAG()
 	CHECKTIE
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /mag []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setMAG /mag
+sub Bind_setMAG(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setMAG(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},MAG]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return

@@ -3,7 +3,7 @@
 	Core Rogue Include
 
 ***|
-
+ 
 
 
 |***
@@ -20,7 +20,7 @@ sub core_ROG()
 	
 	| /if (!${Me.Combat} && !${SpawnCount[npc xtarget]} && !${Me.Invis}) /call do_SoS TRUE
 	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
-	/if (!${timer_click_poison}) /call Bind_click_poison
+	/if (!${timer_click_poison}) /call click_poison
 	
 
 	:killtarget
@@ -180,13 +180,12 @@ ${Me.AbilityReady[Hide]}
 
 |***
  *	DES: 
- *	USE: /call Bind_click_poison OR /poison
+ *	USE: /call click_poison OR /poison
  *	INI: 
  *  NOTE: 
  ***|
-#bind click_poison /poison
-sub Bind_click_poison()
-	DEBUGCLASS ${cbug}Bind_click_poison(${FindItemCount[${clickPoisonItem}]} <= ${clickPoisonCount})\ax
+sub click_poison()
+	DEBUGCLASS ${cbug}click_poison(${FindItemCount[${clickPoisonItem}]} <= ${clickPoisonCount})\ax
 	ISDEAD
 	CHECKTIE
 	/call check_exit
@@ -205,6 +204,52 @@ sub Bind_click_poison()
 	/call create_timer timer_click_poison ${tClick_Poison}
 	:exit
 /return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /rog []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setROG /rog
+sub Bind_setROG(string _classType, string _classVerbage)
+	DEBUGCLASS ${cbug}Bind_setROG(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},ROG]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	|
+	/if (${Bool[${_classType.Find[poison]}]}) {
+		/declare _num int local ${_classVerbage}
+		
+		| set max num of poison to keep
+		/if (${Bool[${_num}]} && ${Range.Between[1,100:${_num}]}) {
+			/call Event_SetVar NA clickPoisonCount Poison ${_num}
+			VOUT Rogue Poison Keep ${sep} ${cinfo}${_num}\ax
+		} else /if (${Bool[${_num}]} && !${Range.Between[1,100:${_num}]}) {
+			NOUT /rog poison [${cinfo}##\ax] of poison to keep ${cinfo}1 - 100\ax
+		}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##
+	} 
+	:exit
+/return
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -58,7 +58,7 @@ sub core_PAL()
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
 
 	:exit
@@ -327,3 +327,31 @@ sub Bind_useMGPct(int _useMGPct)
 		NOUT /mgpct [${cinfo}##\ax] range ${cinfo}1 - 99\ax
 	}		
 /return	
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /pal []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setPAL /pal
+sub Bind_setPAL(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setPAL(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},PAL]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
+	:exit
+/return
+

@@ -5,7 +5,7 @@
  * 
  ***|
 
-
+ 
 
 |***
  *	DES: Main Enchanter Routine
@@ -106,7 +106,7 @@ sub debuff_mobs
 	ISDEAD
 	CHECKTIE
 	/call check_exit
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/declare _count 				int local
 	/declare _tmpID 				string local
 	
@@ -341,7 +341,7 @@ sub patch_heal_ENC()
 		/delay 1
 		/if (${Me.TargetOfTarget.ID} == ${Me.ID} && ${Target.ID} && ${Target.ID} != ${Me.ID} && (!${NoMezzList.Find[${Target.DisplayName}]} || ${timer_mez_${Target.ID}} > 0)) {
 			/call is_attacking ${NearestSpawn[${_count},npc radius 15].ID}
-			/if (${Macro.Return}) {
+			/if (${Bool[${Macro.Return}]}) {
 				| /if (${Me.SpellReady[${spellStun}]}) /call core_cast "${stunSpell}" 0 0
 				/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.AltAbilityReady[Color Shock]}) /call core_cast "Color Shock" alt
 				/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Doppelganger]}) /call core_cast "Doppelganger" alt
@@ -741,5 +741,32 @@ sub get_target_ENC()
 		:notgood
 		/varset isValidTarget FALSE
 	}
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /enc []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setENC /enc
+sub Bind_setENC(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},ENC]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return

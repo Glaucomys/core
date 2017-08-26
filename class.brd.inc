@@ -121,7 +121,6 @@ sub click_DPS_BRD()
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call stick_to_target
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
 	:exit
 /return
 
@@ -134,7 +133,7 @@ sub click_DPS_BRD()
  *  NOTE: send in ALL THE PETS
  ***|
 sub cast_servant_swarm(int _tmpID)
-	DEBUGCLASS ${cbug}cast_servant_swarm()\ax
+	DEBUGCLASS ${cbug}cast_servant_swarm(target: ${_tmpID})\ax
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
@@ -168,7 +167,7 @@ sub cast_servant_swarm(int _tmpID)
  *  NOTE: send in ALL THE PETS
  ***|
 sub mem_song_set(string _group)
- 	DEBUGCLASS ${cbug}mem_song_set(${_group})\ax
+ 	DEBUGCLASS ${cbug}mem_song_set(group: ${_group})\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -202,6 +201,8 @@ sub mem_song_set(string _group)
  *  NOTE:
  ***|
  sub pulse()
+ 	DEBUGCLASS ${cbug}pulse()\ax
+
 	/declare _pulseSong			bool local FALSE
 	/declare _count 				int local
 	/declare _index 				int local	
@@ -220,7 +221,7 @@ sub mem_song_set(string _group)
 			/call stick_to_target
 			| /if (${Me.Casting.ID}) /stopcast
 			/call pulse_valid ${_index}
-			/if (${Macro.Return}) /call core_sing ${_index}
+			/if (${Bool[${Macro.Return}]}) /call core_sing ${_index}
 		/next _index	
 	/next _count	
 
@@ -237,6 +238,7 @@ sub mem_song_set(string _group)
  *  NOTE:
  ***|
 sub pulse_valid(_gem)
+	DEBUGCLASS ${cbug}pulse_valid(gem: ${_gem})\ax
 	/declare _pulseSong			bool local TRUE
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /varset _pulseSong FALSE
 	/if (${Me.Buff[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
@@ -245,7 +247,7 @@ sub pulse_valid(_gem)
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
 	:exit
 	DEBUGCLASS VALID CAST: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
-/return ${_pulseSong}
+/return ${Bool[${_pulseSong}]}
 
 
 
@@ -277,6 +279,7 @@ sub pulse_stop()
  *  NOTE:
  ***|
 sub core_sing(_spellgem)
+	DEBUGCLASS ${cbug}core_sing(gem: ${_spellgem})\ax
 	ISDEAD
 	/doevents
 	/call check_exit
@@ -289,7 +292,7 @@ sub core_sing(_spellgem)
 		| /call Interrupt
 		/stopcast
 	}
-	VOUT Pulse: ${csp}${Me.Gem[${_gem}].Name}\ax
+	VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
 	/melody ${_gem}
 	| /delay 25
 	/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
@@ -310,7 +313,7 @@ sub core_sing(_spellgem)
  *  NOTE: 
  ***|
 sub bard_nuke()
-	DEBUGCLASS ${cbug}bard_nuke()\ex
+	DEBUGCLASS ${cbug}bard_nuke()\ax
 	ISDEAD
 	/doevents 
 	/call get_assist_target
@@ -382,7 +385,7 @@ sub mez_adds_BRD()
  *  NOTE: 
  ***|
 sub cast_mez_BRD(int _tmpID)
-	DEBUGCLASS cast_mez_BRD(${_tmpID})
+	DEBUGCLASS ${cbug}cast_mez_BRD(${_tmpID})\ax
 	/doevents
 	ISDEAD
 	:loopmez
@@ -419,14 +422,68 @@ sub cast_mez_BRD(int _tmpID)
 
 
 |***
- *	DES: uses harmony blade frome HH Old Seb.
+ *	DES: uses harmony blade from HH Old Seb.
  *	USE: /call item_harmony_blade
  *	INI: 
  *  NOTE: 
  ***|
 sub item_harmony_blade()
-	/if (${ItemReady[Darkened Breath of Harmony]} || !${Me.Song[Doben's Spyre Sonata Rk. II]}) {
+	DEBUGCLASS ${cbug}item_harmony_blade()\ax
+	/if (${Me.ItemReady[Darkened Breath of Harmony]} || !${Me.Song[Doben's Spry Sonata Rk. II].ID}) {
 		/call core_cast "Darkened Breath of Harmony" item 0
 	}
 /return
 
+
+
+|***
+ *	DES: Bard AA version of Breather
+ *	USE: /call cast_AA_Rallying
+ *	INI: 
+ *  NOTE: 
+ *  AA - Rallying Call
+ *  Song - Rallying Call Azia V
+ ***|
+sub cast_AA_Rallying()
+ 	DEBUGCAST ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Call]})\ax
+	ISDEAD
+	/doevents
+
+ 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Call]}) /goto :exit
+	
+ 	/if (!${Defined[_endurancePoint]}) /declare _endurancePoint		int local 30
+ 	/if (!${Defined[_manaPoint]}) /declare _manaPoint		int local 30
+
+ 	/if (((${Me.PctEndurance} < ${_endurancePoint}) || (${Me.PctMana} < ${_manaPoint})) && ${Select[${Me.CombatState},RESTING]}) {
+		/call core_cast "Rallying Call" alt ${Me.ID}
+	}
+
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /brd []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setBRD /brd
+sub Bind_setBRD(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setBRD(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},BRD]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
+	:exit
+/return

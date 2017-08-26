@@ -85,6 +85,7 @@
 #define DEBUGCLASS "/if (${switchDebugClass} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define DEBUGREZ "/if (${switchDebugRez} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
+#define DEBUGMODE "/if (${switchDebugMode} || ${switchDebugCore}) /echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define SDEBUG "/echo ${cbad}[\ax${cinfo}${Time.Second}\ax : ${cinfo}${Macro.CurLine}\ax${cbad}]\ax"
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
 #define NOUT "/echo ${c-}-\ax"
@@ -93,13 +94,13 @@
 #define ISDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
 #define CHECKEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]}) /goto :exit"
 #define CHECKTIE "/if (${SetTie} && !${Bool[${timer_check_Tie}]}) /call set_tie"
-#define CHECKREZ "/if (${coreAuto} && !${switchPullMode} && !${Me.Invis} && ((${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} && ${switchRezGive}) || ${switchRezEmergency})) /call check_for_corpse"
-#define CHECKSAFELIST "/if (${Bool[${forcesafelist}]} && !${safelist.Find[${_sender}]}) /goto :exit"
+#define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ((${Select[${Me.Class.ShortName},CLR,SHM,PAL,DRU]} && ${switchRezGive}) || ${switchRezEmergency})) /call check_for_corpse"
+#define CHECKSAFELIST "/if (!${safelist.Find[${_sender}]} && !${switchOverrideSafelist}) /goto :exit"
 #define UPDATEHUD "/call update_HUD_notices"
-#define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
+#define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) && !${timer_auto_cursor_pause}) /call sort_cursor"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
-autoCursor
+
 #include TC\declare.inc
 #include TC\common.inc
 #include TC\MQ2Cast_Spell_Routines.inc
@@ -177,7 +178,7 @@ sub main()
 			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
 			/call check1offBuffs
 			ISDEAD
-			/if (${autoRest} && !${switchPullMode} || ${autoRest} && ${switchPullMode} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) /call do_rest
+			/if (${autoRest} && !${switchPull} || ${autoRest} && ${switchPull} && !${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4]}) /call do_rest
 			/call check_buff_routines
 		}
 
@@ -219,9 +220,9 @@ sub main()
 
 		| do we pull or assist		
 		/if (${coreAuto} && !${Me.Invis} && !${SafeZone} && !${switchOverrideSafezone}) {
-			/if (!${switchPullMode}) {
+			/if (!${switchPull}) {
 				/call get_assist_target	
-			} else /if (${switchPullMode} && !${Target2Kill}) {	
+			} else /if (${switchPull} && !${Target2Kill}) {	
 				DEBUG get target <= ${MobAgro} = ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} targetable]}		
 				/call get_target
 			}

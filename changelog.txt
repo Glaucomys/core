@@ -3,10 +3,83 @@
  *	Core Change Log
  *  Timestamp: YYYYMMDD
  *
- *  WHITEWASH means a /whitewash needs to be run to update the aliases
+ *  WHITEWASH means a '/core whitewash' needs to be run to reset the aliases
  *  HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
  ***|
 
+
+20170825
+Ranger Version 2.3.0
+Cleric Version 2.2.0
+Rogue Version 1.6.0
+WHITEWASH
+- /debug [mode] - enable/disable mode specific debugs
+- adjustment to do_rest to force bard into hybrid class selection
+- class specific / commands
+	-- core.rng.inc
+	  -- delete alias /spice
+    -- /rng [summer|spice]
+    -- /rng [summer] enable/disable Summer's line of spells
+    -- /rng [spice] force cast of MGB and Auspice
+  
+  -- core.clr.inc
+    -- delete #bind /qm, /qmpct
+    -- delete alias /yaulp
+    -- /clr [aggressive|yaulp|qm] [##]
+    -- /clr [yaulp] - enable/disable cleric yaulp [Donal's Helm (priority) or AA]
+    -- /clr [aggressive] enable/disable cleric leading with introventions (moved from /heal command)
+    -- /clr [qm] - enable/disable cleric use of Quiet Miracle
+    -- /clr [qm ##] - [1,99] set QM %
+    
+  -- class.rog.inc
+    -- delete #bind /poison
+    -- /rog [poison ##] - [1,100] set the amount of summoned poison to keep on hand 
+    
+- class.wiz.inc
+  - typo in sunderock springs port  
+- mode.inc
+  -- delete #bind /setmodeagro
+  -- /mode [agro ##] - [1,99999] set moge agro range 
+  -- fixed typeo in fishing ability check
+- delete #bind /autorest
+- /core [rest] - disable auto rest % (sets it to 0)
+- /core [rest ##] - [1,99] set auto rest %
+  
+    
+
+
+
+20170821
+WHITEWASH /core whitewash
+HUDUPDATE /hc update
+- removed Gnoll Totem from item buff clickies
+- /cursor [pause] [##] will work on toon INI [Common]->AutoInventory= List now
+- /override [safelist] allows the safelist (toons you trust) check to be bypassed
+- introducing /onoff for single non-associated switches
+  -- /onoff [agro|pull|banestrike|horn]
+  -- /onoff [agro] - enable/disable fight for mob attention
+  -- /onoff [pull] - enable/disable pulling of mobs
+  -- /onoff [banestrike] - enable/disable use of AA banestrike
+  -- /onoff [horn] - enable/disable anniversary Minature Horn of Unity
+- /info
+- /core [whitewash|ma1|ma2] [NAME]
+  -- /core [whitewash] - delete all established Core aliases and force end macro
+  -- /core [ma1] [NAME] - adjusts out of group MA1 to NAME. FALSE to disable
+  -- /core [ma2] [NAME] - adjusts out of group MA2 to NAME. FALSE to disable
+- delete alias /ma1, /ma2
+- built in remainder of spell resist checks vs mob names in core.zone.ini. SPELLS ONLY
+- adjusted some logic to clearing the cursor
+- adjusted the hud for the engage override ##
+- /ts [movebank|movehouse]
+  -- /ts [movebank] - will move any 1000 stackable item in the top 4 inventory containers to your bank
+  -- /ts [movehouse] - ** work in progress **....
+- adjusted check_aura() to match adjustments to MQ [17 Aug 2017 patch] ${Aura members
+- class.mag.inc, class.bst.inc
+  -- added more pet heals cause some gurls complaining...
+- more adjustments to /tie. there's still a bug
+- removed [SelfBuff] from all toon INIs
+  
+  
 
 
 20170815

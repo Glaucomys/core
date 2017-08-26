@@ -4,7 +4,7 @@
  *
  *	
  ***|
-
+ 
 
 
 |***
@@ -188,5 +188,32 @@ sub check_rune_WIZ()
 	/if (!${Me.Buff[${runeGuard}].ID} && ${Spell[${runeGuard}].Stacks}) /call core_cast "${runeWard}" ${buffGem} 0
 	UPDATEHUD
 	/call create_timer timer_check_runes ${tCheck_Runes}
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /wiz []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setWIZ /wiz
+sub Bind_setWIZ(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},WIZ]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| 
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return

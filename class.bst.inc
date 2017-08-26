@@ -4,7 +4,7 @@
  *
  *
  ***|
-
+ 
 
 
 |***
@@ -43,6 +43,7 @@ sub core_BST()
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/call cast_AA_focused_paragon
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
@@ -55,6 +56,7 @@ sub core_BST()
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/call cast_AA_focused_paragon
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	} else /if (${Select[${combat},HEAL]}) {
 	}	else /if (${Select[${combat},DUAL]}) {
 	}
@@ -63,6 +65,7 @@ sub core_BST()
 	}
 	/call use_mod_rod
 	/if (${coreAuto} && ${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+	/if (${coreAuto} && ${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
@@ -251,3 +254,28 @@ sub click_DPS_BST()
 /return
 
 
+
+|***
+ *	DES: Class controls
+ *	USE: /brd []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setBST /bst
+sub Bind_setBST(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setBST(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},BST]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
+	:exit
+/return

@@ -124,7 +124,6 @@ sub patch_heal_BER()
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Blood Sustenance]}) /call core_cast "Blood Sustenance" alt 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Bool[${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	/if (${SpawnCount[npc los radius 60 playerstate 4 targetable]} >= 5 && ${Me.ItemReady[Signet of Gannar]} && !${Bool[${Me.Song[Circle of Life]}]}) /call core_cast "Signet of Gannar" item 0
 	:exit
 /return
 
@@ -143,5 +142,32 @@ sub click_DPS_BER()
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /ber []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setBER /ber
+sub Bind_setBER(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setBER(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},BER]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return

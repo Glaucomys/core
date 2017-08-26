@@ -4,7 +4,7 @@
  *
  *
  ***|
-
+ 
 
 
 
@@ -33,7 +33,7 @@ sub core_RNG()
 		/call use_skill_melee
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
-		/if (${Bool[${NukeSummer}]} && !${Bool[${timer_cast_nuke_summer}]}) /call cast_nuke_summer ${Target2Kill}
+		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${Bool[${timer_cast_nuke_summer}]}) /call cast_nuke_summer ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call stick_to_target
@@ -48,7 +48,7 @@ sub core_RNG()
 		/call click_BP
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
-		/if (${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
+		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -58,13 +58,13 @@ sub core_RNG()
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
-		/if (${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
+		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 		/call set_combat MELEE
 		/call use_skill_melee
-		/if (${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
+		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}
@@ -120,18 +120,10 @@ sub disc_RNG()
 
 |***
  *	DES: MGB ranger Auspice if both AAs are ready
- *	USE: /bc spice, /spice
+ *	USE: 
  *	INI: 
  *  NOTE: Will not cast spice if the buff is present or if your name is Norbert.
  ***|
-#bind cast_AA_auspice /spice
-sub Bind_cast_AA_auspice()
-	/if (${Select[${Me.Class.ShortName},RNG]}) {
-		/delay 2s !${Me.Casting.ID}
-		/call cast_AA_auspice
-	}
-/return
-
 sub cast_AA_auspice()
 	DEBUGCLASS ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
 	ISDEAD
@@ -275,9 +267,44 @@ sub cast_nuke_summer(int _tmpID)
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /goto :exit		
 	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit	
+	/if (${Bool[${Macro.Return}]} || !${switchNukeSummer}) /goto :exit	
 	/call core_cast "${NukeSummer}" 0 ${_tmpID}
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
 	:exit
 /return
+
+
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /RNG []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setRNG /rng
+sub Bind_setRNG(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},RNG]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[summer]}]}) {
+		/call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+	| mgb spice
+	} else /if (${Bool[${_classType.Find[spice]}]}) {
+		/delay 2s !${Me.Casting.ID}
+		/call cast_AA_auspice
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
+	:exit
+/return
+
+
 

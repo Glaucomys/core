@@ -16,9 +16,20 @@
  *  NOTE: starts/ends non-standard modes
  ***|
 #bind mode /mode
-sub Bind_mode(string _modeType)
-	DEBUG ${cbug}Bind_mode(Mode:${_modeType}, Num:${_modeCount})\ax
-	/if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
+sub Bind_mode(string _modeType, int _modeCount)
+	DEBUGMODE ${cbug}Bind_mode(Mode:${_modeType}, Num:${_modeCount})\ax
+	
+	| agro range
+	/if (${Bool[${_modeType.Equal[agro]}]} && ${Bool[${_modeCount}]}) {
+		/if (${Range.Between[1,99999:${_modeCount}]}) {
+			/call Event_SetVar NA setModeAgro Common ${_modeCount} 
+			/call echos number "Mode Agro Range" ${_modeCount}
+		} else {
+			NOUT /mode agro [${cinfo}##\ax] allowable range is ${cinfo}1 - 99999\ax
+		}
+		
+	| all switches except stop
+	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
 		/varset setModeType ${_modeType.Left[1].Upper}${_modeType.Right[-1].Lower}
 		/if (${Defined[switchMode${setModeType}]}) {
 			/varset switchMode${setModeType} ${If[${switchMode${setModeType}},FALSE,TRUE]}
@@ -30,6 +41,7 @@ sub Bind_mode(string _modeType)
 		} else {
 			/goto :namefail
 		}
+	| clear all modes
 	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.Equal[stop]} && ${Bool[${setModeType}]}) {
 		/call switch_clear_mode
 		/call set_stop TRUE
@@ -50,29 +62,10 @@ sub Bind_mode(string _modeType)
 
 
 |***
- *	DES: will force some modes to only work in a specified range
- *	USE: /modeagro [##]
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setModeAgro /setmodeagro
-sub Bind_setModeAgro(int _ModeAgro)
-	/if (${Range.Between[1,99999:${_ModeAgro}]}) {
-		/call Event_SetVar NA setModeAgro Common ${_ModeAgro} 
-		/call echos number "Mode Agro Range" ${_ModeAgro}
-	} else {
-		NOUT /setmodeagro [${cinfo}##\ax] allowable range is ${cinfo}1 - 99999\ax
-	}
-/return
-
-
-
-|***
  *	DES: set max for quantities on modes
  *	USE: /setmodecount [1,99999]
  *	INI: 
  *  NOTE:
- ***| 	
 #bind setModeCount /setmodecount
 sub Bind_setModeCount(int _ModeCount)
 	/if (${Range.Between[1,99999:${_ModeCount}]}) {
@@ -82,6 +75,7 @@ sub Bind_setModeCount(int _ModeCount)
 		NOUT /setmodecount [${cinfo}##\ax] allowable range is ${cinfo}1 - 99999\ax
 	}
 /return
+ ***| 	
 
 
 
@@ -92,6 +86,7 @@ sub Bind_setModeCount(int _ModeCount)
  *  NOTE: 
  ***|
 sub switch_clear_mode()
+	DEBUGMODE ${cbug}switch_clear_mode()\ax
 	/declare _count int local
 	/if (${setMode}) /varset setMode FALSE
 
@@ -118,13 +113,13 @@ sub switch_clear_mode()
  *  NOTE: 
  ***|
 sub do_mode()
-	DEBUG ${cbug}do_mode()\ax
+	DEBUGMODE ${cbug}do_mode()\ax
 	ISDEAD
 	CLEARCURSOR TRUE
 	/doevents
 	/if (${switchModeDrag}) /call mode_drag
 	/if (${switchModeForage} && ${Me.AbilityReady[forage]}) /call mode_forage
-	/if (${switchModeFish} && ${Me.AbilityReady[fish]}) /call mode_fish
+	/if (${switchModeFish} && ${Me.AbilityReady[fishing]}) /call mode_fish
 	/if (${switchModePetfarm} && !${timer_Petfarm_delay}) /call mode_petfarm
 	/if (${switchModeHunt} && !${timer_wait_for_mob_to_kill}) /call mode_hunt
 	/if (${switchModeScorch} && !${timer_ScorchedEarth_delay}) /call mode_scorched_earth
@@ -142,7 +137,7 @@ sub do_mode()
  *  NOTE: 
  ***|
 sub mode_get_mob()
-	DEBUG ${cbug}mode_get_mob(${Target2Kill})\ax
+	DEBUGMODE ${cbug}mode_get_mob(${Target2Kill})\ax
 	:movetomob
 	/doevents
 	ISDEAD
@@ -199,7 +194,7 @@ sub mode_get_mob()
  *  NOTE: This is not working yet...
  ***|
 sub mode_skill_train()
-	DEBUG ${cbug}mode_skill_train()\ax
+	DEBUGMODE ${cbug}mode_skill_train()\ax
 	UPDATEHUD "TRAINING"
 	:looptrainingskills
 	/doevents
@@ -229,11 +224,11 @@ sub mode_skill_train()
  *  NOTE: 
  ***|
 sub mode_fish()
-	DEBUG ${cbug}mode_fish()\ax
+	DEBUGMODE ${cbug}mode_fish()\ax
 	UPDATEHUD "Fish"
 	/if (!${Me.Standing}) /stand
-	/call check_buff_routines TRUE
-	/if (!${Me.ItemReady[Brell's Fishin' Pole]}) {
+	/if (${Me.ItemReady[Fisherman's Companion]} && !${Me.ItemReady[Brell's Fishin' Pole]}) {
+		DEBUGMODE Pole broke. Learn to play with your things better..
 		/if (${Me.Invis}) /docommand /makemevisable
 		/call core_cast "Fisherman's Companion" item ${Me.ID}
 		CLEARCURSOR TRUE
@@ -254,11 +249,12 @@ sub mode_fish()
  *  NOTE: 
  ***|
 sub mode_forage()
-	DEBUG ${cbug}mode_forage()\ax
+	DEBUGMODE ${cbug}mode_forage()\ax
 	UPDATEHUD "Forage"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	/if (!${Me.Standing}) /stand
 	/doability forage
+	/call sort_cursor TRUE
 	UPDATEHUD
 /return
 
@@ -266,12 +262,12 @@ sub mode_forage()
 
 |***
  *	DES: Kill people then drag them around like trophys!!! Win Win...
- *	USE: /call set_drag_mode or /drag
+ *	USE: /call set_drag_mode or /mode drag
  *	INI: na
  *  NOTE: 
  ***|
 sub mode_drag()
-	DEBUG ${cbug}mode_drag()\ax
+	DEBUGMODE ${cbug}mode_drag()\ax
 	/declare _count 		int local
 	/declare _corpseID 	int local
 	UPDATEHUD "Drag Corpse"
@@ -296,12 +292,12 @@ sub mode_drag()
 
 |***
  *	DES: turns the toon into a hunter of things.
- *	USE: /hunt
+ *	USE: /mode hunt
  *	INI: core.zone.ini [zoneshortname] -> huntmob:|MOB1|MOB2
  *  NOTE: works better in open zones. don't say i didn't wan you.
  ***|
 sub mode_hunt()
-	DEBUG ${cbug}mode_hunt()\ax
+	DEBUGMODE ${cbug}mode_hunt()\ax
 	/declare _count 									int 	local 0
 	/doevents
 	ISDEAD
@@ -342,12 +338,12 @@ sub mode_hunt()
 
 |***
  *	DES: Pet Farm Mode
- *	USE: /call do_pet_farm_mode | /petfarm
+ *	USE: /call do_pet_farm_mode | /mode petfarm
  *	INI: 
  *  NOTE: Use with caution. For static pet classes only.
  ***|
 sub mode_petfarm()
-	DEBUG ${cbug}mode_petfarm()\ax
+	DEBUGMODE ${cbug}mode_petfarm()\ax
 
 	/declare _tmpID					int local 0
 	/declare _spawnCount 		int local 0
@@ -376,7 +372,7 @@ sub mode_petfarm()
 		| skip excluded mobs
 		:loopnamedmob
 		/if (${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]})	{
-			DEBUG name:${Spawn[id ${Target2Kill}].DisplayName} ID:${_tmpID} EXCLUDELIST .. loop:${_nameloop}
+			DEBUGMODE name:${Spawn[id ${Target2Kill}].DisplayName} ID:${_tmpID} EXCLUDELIST .. loop:${_nameloop}
 			/varcalc _nameloop ${_nameloop}+1
 			/if (${_spawnCount} > 1) {
 				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, ${If[${switchOverrideLos},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}
@@ -386,14 +382,14 @@ sub mode_petfarm()
 				/varset Target2Kill 0
 				/varset _nameloop 1
 			}
-			DEBUG _tmpID:${_tmpID}
+			DEBUGMODE _tmpID:${_tmpID}
 		}
 				
 		/if (!${Target2Kill}) /goto :nomob
 		/varset _resetCount 0
 	} else {
 		:nomob
-		DEBUG :nomob RESET the numbers
+		DEBUGMODE :nomob RESET the numbers
 		/doevents
 		/varset _resetCount 0
 		/varset _spawnCount 0
@@ -409,7 +405,7 @@ sub mode_petfarm()
 	}
 	
 	:gettarget
-	DEBUG :gettarget ID ${Target2Kill}
+	DEBUGMODE :gettarget ID ${Target2Kill}
 	/doevents
 	/target ID ${Target2Kill}
 	/if (!${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]}) {
@@ -446,12 +442,12 @@ sub mode_petfarm()
 
 |***
  *	DES: Scorched Earth Mode
- *	USE: /call mode_scorched_earth 
+ *	USE: /call mode_scorched_earth | /mode scorch
  *	INI: 
  *  NOTE: This will kill everything in a zone. or at least try /shrug
  ***|
 sub mode_scorched_earth()
-	DEBUG ${cbug}mode_scorched_earth()\ax
+	DEBUGMODE ${cbug}mode_scorched_earth()\ax
 	/declare _spawnCount 		int local 0
 	/declare _resetCount		int local 0
 	/declare _nameloop			int local 1
@@ -477,12 +473,12 @@ sub mode_scorched_earth()
 		/varset Target2Kill ${Spawn[${NearestSpawn[1, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
 		/call create_timer timer_scorched_earth_fail ${tScorchedEarth_fail}
 
-		DEBUG SpawnCount: ${_spawnCount} ${sep} Target2Kill:${Target2Kill}
+		DEBUGMODE SpawnCount: ${_spawnCount} ${sep} Target2Kill:${Target2Kill}
 
 		:loopignoreddmob
 		
 		/if (${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]})	{
-			DEBUG name:${Spawn[id ${Target2Kill}].DisplayName} ID:${Target2Kill} EXCLUDELIST .. loop:${_nameloop}
+			DEBUGMODE name:${Spawn[id ${Target2Kill}].DisplayName} ID:${Target2Kill} EXCLUDELIST .. loop:${_nameloop}
 			/varcalc _nameloop ${_nameloop}+1
 			/if (${_spawnCount} > 1) {
 				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
@@ -516,7 +512,7 @@ sub mode_scorched_earth()
 			/call mode_get_mob
 		} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
 			/if (!${timer_scorched_earth_fail}) /call create_timer timer_scorched_earth_ignore_${Target2Kill} ${tScorchedEarth_ignore} 
-			DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
+			DEBUGMODE DEAD: ${Spawn[${Target2Kill}].Dead}
 			/call set_stop TRUE
 			/call clear_combat
 		}
@@ -548,17 +544,17 @@ sub mode_scorched_earth()
 
 |***
  *	DES: Harvest Mode
- *	USE: /call mode_Harvest
+ *	USE: /call mode_Harvest | /mode harvest
  *	INI: core.zone.ini [zone]->HarvestList=
  *  NOTE: Will run around and pick up shit off the ground
  ***|
 sub mode_harvest()
-	DEBUG ${cbug}mode_harvest()\ax
+	DEBUGMODE ${cbug}mode_harvest()\ax
 	/declare _count int local
 	UPDATEHUD "Harvest"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 
-	/if (${Cursor.ID}) /call sort_cursor TRUE
+	CLEARCURSOR TRUE
 	/for _count 1 to ${HarvestList.Count[|]}
 		/if (${GroundItemCount[${HarvestList.Arg[${_count},|]}]}) {
 			/call get_ground_harvest "${HarvestList.Arg[${_count},|]}"
@@ -580,7 +576,7 @@ sub mode_harvest()
  *  NOTE: 
  ***|
 sub get_ground_harvest(string _tmpItem)
-	DEBUG ${cbug}get_ground_harvest(Harvest: ${_tmpItem})\ax
+	DEBUGMODE ${cbug}get_ground_harvest(Harvest: ${_tmpItem})\ax
 	/squelch /itemtarget ${_tmpItem}
 	/delay 2s ${Bool[${Ground.ID}]}
 	/if (${Bool[${Ground.ID}]}) {
@@ -624,7 +620,7 @@ sub Event_mode_CombineError(string _line)
 
 
 sub mode_tradeskill()
-	DEBUG ${cbug}mode_tradeskill()\ax
+	DEBUGMODE ${cbug}mode_tradeskill()\ax
 	
 	/if (!${Window[TradeskillWnd].Open}) {
 		NOUT Tradeskill window must be open.
@@ -642,4 +638,7 @@ sub mode_tradeskill()
 	:exit
 	UPDATEHUD
 /return
+
+
+
 

@@ -4,7 +4,7 @@
  *
  * 
  ***| 
-
+ 
 
 
 |***
@@ -47,7 +47,7 @@ sub core_CLR()
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/if (${Bool[${doYaulp}]}) /call check_yaulp
+		/if (${Bool[${doYaulp}]}) /call cast_AA_yaulp
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
@@ -97,7 +97,7 @@ sub disc_CLR()
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
-	/if (${Bool[${doYaulp}]}) /call check_yaulp
+	/if (${Bool[${doYaulp}]}) /call cast_AA_yaulp
 	/call is_target_valid ${Target2Kill}
 	/if (${isValidTarget}) {
 		/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
@@ -164,7 +164,6 @@ sub cast_AA_quiet_miracle()
 
 		/if (${Spawn[pc ID ${Group.Member[${_count}].ID}].ID} && ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange} && ${Group.Member[${_count}].PctMana} < ${WorstManaPct}) {
 		DEBUGCLASS (Spawn: ${Spawn[pc ID ${Group.Member[${_count}].ID}].ID}, Distance: ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange}
-			| /if (!${Target.Buff[Shroud of the Miracle].WillStack}) /goto :nextcount
 			/varset WorstManaID ${Group.Member[${_count}].ID}
 			/varset WorstManaPct ${Group.Member[${_count}].PctMana}
 		} 
@@ -173,7 +172,6 @@ sub cast_AA_quiet_miracle()
 
 	/if (${WorstManaPct} < ${useQMPct}) {
 		/target ID ${WorstManaID}
-		| ECHOCHANNEL  WorstManaID ${WorstManaID}
 		/delay 5 ${Target.ID} == ${WorstManaID}
 		ECHOCHANNEL Quiet Miracle ... ${Target.DisplayName}
 		/call core_cast "Quiet Miracle" alt ${WorstManaID}
@@ -181,12 +179,6 @@ sub cast_AA_quiet_miracle()
 	:exit
 	/call create_timer timer_check_QM ${tcheck_QM}
 /return	
-
-${Group.Member[Airavas].Distance} ${Group.Member[Airavas].PctMana}
-
-
-
-
 
 
 
@@ -416,7 +408,7 @@ sub check_heal_group_CLR()
   | check for group debuffs
 	/if (${switchHealCure} && ${Group.Members} && ${Math.Calc[${MajorHurt}+${MinorHurt}]} <= 1) /call cast_cure()
 	
-	/if (${Bool[${doYaulp}]}) /call check_yaulp  
+	/if (${Bool[${doYaulp}]}) /call cast_AA_yaulp  
 	:exit
 	UPDATEHUD
 /return
@@ -756,53 +748,48 @@ sub auto_control_swap()
 
 
 |***
- *	DES: 
- *	USE: /qm
+ *	DES: Class controls
+ *	USE: /clr [] [##]
  *	INI: 
  *  NOTE:
- ***| 	
-#bind useQM /qm
-sub Bind_useQM()
-	DEBUGCLASS ${cbug}Bind_useQM()\ax
-	/call Event_SetVar NA useQM SelfBuff ${If[${useQM},FALSE,TRUE]}  
-	/call echos switch "Use Quiet Miracle" useQM
-/return
-
-	
-	
-|***
- *	DES: 
- *	USE: /qmpct [##]
- *	INI: 
- *  NOTE:
- ***| 	
-#bind useQMPct /qmpct
-sub Bind_useQMPct(int _useQMPct)
-	DEBUGCLASS ${cbug}Bind_useQMPct(%: ${_useQMPct})\ax
-	/if (${Range.Between[1,100:${_useQMPct}]}) /call Event_SetVar NA useQMPct SelfBuff ${_useQMPct} 
-	/call echos number "Quiet Miracle At" ${If[${_useQMPct},${_useQMPct},${useQMPct}]} 
-/return	
-
-
-
-|***
- *	DES: which Yaulp do we want to use?
- *	USE: /check_yaulp
- *	INI: cleric [Selfbuff] -> doYaulp
- *  NOTE: Seb HH cleric only item from Commander camp
- ***| 
-sub check_yaulp()
-	DEBUGCLASS ${cbug}check_yaulp()\ax
-	CHECKEXIT
-	ISDEAD
-	/doevents
-	/if (${doYaulp.Equal["HELM"]}) {
-		/if (${Me.ItemReady[Darkened Donal's Helm of Mourning]}) {
-			/if (!${Spell[Yaulp XIV Rk. II].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /goto :exit
-			/if (${Me.PctMana} < 98*.${tmpHealOverride}) /call core_cast "Darkened Donal's Helm of Mourning" item 0
-		}
-	} else /if (${doYaulp.NotEqual["HELM"]} && ${Bool[${doYaulp}]}) {
-		/call cast_AA_yaulp
+ ***|
+#bind setCLR /clr
+sub Bind_setCLR(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},CLR]}) {
+		/call echo_bitch EQBC
+		/goto :exit
 	}
+
+	| enable/disable lead with aggerssive heals
+	/if (${Bool[${_classType.Find[aggressive]}]}) {
+		/call Event_SetVar NA switchHealAggressive Spells ${If[${switchHealAggressive},FALSE,TRUE]}
+		/call echos heal "Aggressive" switchHealAggressive
+
+	| mgb celestial regen
+	} else /if (${Bool[${_classType.Find[regen]}]}) {
+		/delay 2s !${Me.Casting.ID}
+		/call cast_celest_regen
+		
+	| Yaulp		
+	 } else /if (${Bool[${_classType.Find[yaulp]}]}) {
+	 	/call Event_SetVar NA doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
+	 	/call echos switch "Yaulp" doYaulp
+	
+	| Quiet Miracle	Control	
+	} else /if (${Bool[${_classType.Find[qm]}]}) {
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${_classVerbage}]}) {
+			/call Event_SetVar NA useQMPct Buffs ${_classVerbage} 
+			/call echos number "Quiet Miracle at" ${_classVerbage}		
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${_classVerbage}]}) {
+			NOUT /clr qm [${cinfo}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}	else /if (!${Bool[${_classVerbage}]}) {
+			/call Event_SetVar NA useQM Buffs ${If[${useQM},FALSE,TRUE]}  
+			/call echos switch "Quiet Miracle ${useQMPct}%" useQM
+		}	
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return
+

@@ -338,7 +338,7 @@ sub cast_surge_heal()
 	
 	| /call get_assist_target
 	| /call is_target_valid ${Target2Kill}
-	| /if (!${Macro.Return}) /goto :exit
+	| /if (!${Bool[${Macro.Return}]}) /goto :exit
 	
 	
 	| target the main assist to trigger.
@@ -351,7 +351,7 @@ sub cast_surge_heal()
 	} else /if (${useSmartAssist2}) {
 	| /call get_assist_target
 	| /call is_target_valid ${Target2Kill}
-	| /if (!${Macro.Return}) /goto :exit
+	| /if (!${Bool[${Macro.Return}]}) /goto :exit
 
 	} else /if (${Bool[${MA1}]} && ${Bool[${Spawn[pc ${MA1}].ID}]} && !${Bool[${Spawn[pc ${MA1}].Dead}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG}) {
 		/varset _tmpTarget ${Spawn[pc ${MA1}].ID}
@@ -458,5 +458,32 @@ sub cast_cripple_SHM(int _tmpID)
 			}
 		}
 	}
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /shm []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setSHM /shm
+sub Bind_setSHM(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setSHM(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},SHM]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return

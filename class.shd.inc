@@ -82,7 +82,7 @@ sub disc_SHD()
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Bool[${Macro.Return}]} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	CHECKTIE
 	/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
@@ -228,5 +228,32 @@ sub cast_cripple_SHD(int _tmpID)
 			}
 		}
 	}
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /shd []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setSHD /shd
+sub Bind_setSHD(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setSHD(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},SHD]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return

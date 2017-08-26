@@ -26,7 +26,7 @@ sub core_NEC()
 
 	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_engaged
-		/if (!${Macro.Return} && ${usePet}) /call check_pet
+		/if (!${Bool[${Macro.Return}]} && ${usePet}) /call check_pet
 	}
 
 	:killtarget
@@ -43,6 +43,7 @@ sub core_NEC()
 	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
@@ -122,7 +123,7 @@ sub castNecroDot()
 	/if (${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${dotR${set}-${gem}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${dotR${set}-${gem}}].Mana}) {
 		/if ((${Target.BuffDuration[${dotR${set}-${gem}}]} <= 6 && ${Spawn[${Target.Buff[${dotR${set}-${gem}}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${dotR${set}-${gem}}].ID}) {
 			/call isTargetDead
-			/if (${Macro.Return}) /goto :exitcastNecroDot
+			/if (${Bool[${Macro.Return}]}) /goto :exitcastNecroDot
 			VOUT Casting \a-r${dotR${set}-${gem}}\ax on [\a-w${Spawn[${Target2Kill}].CleanName}\ax] \ag${set}\ax\aw:\ax\ag${gem}
 			/call MQ2Cast "${dotR${set}-${gem}}" gem${gem} 5s breakCast -targetid|${Target2Kill}
 		}
@@ -220,7 +221,7 @@ sub dotCycle()
 	/for x 1 to ${SpellSets}
 		/delay 1
 		/call isTargetDead
-		/if (${Macro.Return}) /goto :exitdotCycle
+		/if (${Bool[${Macro.Return}]}) /goto :exitdotCycle
 		/for y 1 to 12
 			/if (!${Bool[${dotR${x}-${y}}]}) /goto :skipdot
 			/delay 5s !${Me.SpellInCooldown}
@@ -239,3 +240,28 @@ sub dotCycle()
 /return
 
 
+
+|***
+ *	DES: Class controls
+ *	USE: /nec []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setNEC /nec
+sub Bind_setNEC(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setNEC(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},NEC]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
+	:exit
+/return

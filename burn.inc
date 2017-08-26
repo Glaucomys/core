@@ -358,7 +358,7 @@ sub synergy_SHD()
 	}
 
 	| swarm pets
-	/if (${usePetSwarm} && ${Me.AltAbilityReady[Chattering Bones]}) /call core_cast "Chattering Bones" alt ${Target2Kill}
+	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Chattering Bones]}) /call core_cast "Chattering Bones" alt ${Target2Kill}
 	
 	| epic 2.0
 	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0
@@ -454,7 +454,7 @@ sub synergy_MAG()
 		/if (${Me.AltAbilityReady[Servant of Ro]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Servant of Ro].MyRange}) /call core_cast "Servant of Ro" alt ${Target2Kill} 
 		/if (${Me.AltAbilityReady[Frenzied Burnout]}) /call core_cast "Frenzied Burnout" alt ${Me.Pet.ID}
 	}
-	/if (${usePetSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill}
+	/if (${switchPcSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill}
 
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn
@@ -513,9 +513,9 @@ sub synergy_WIZ()
 
 	| alternate twincast
 	/if (${Me.AltAbilityReady[Improved Twincast]} && !${Me.Buff[${TwincastSpell}].ID}) {
-		/call core_cast "Improved Twincast" alt ${Me.ID}
+		/call core_cast "Improved Twincast" alt 0
 	} else /if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID}) {
-		/call core_cast "${TwincastSpell}" 0 ${Me.ID}
+		/call core_cast "${TwincastSpell}" 0 0
 	}
 	
 	/if (${Me.AltAbilityReady[${WIZspire2}]}) /call core_cast "${WIZspire2}" alt 0
@@ -530,10 +530,10 @@ sub synergy_WIZ()
 	/if (${Me.AltAbilityReady[Arcane Fury]}) /call core_cast "Arcane Fury" alt 0
 	
 	| aww baby
-	/if (${Me.AltAbilityReady[Mana Burn]}) /call core_cast "Mana Burn" alt 0
+	/if (${Me.AltAbilityReady[Mana Burn]} && (${Target.ID} != ${Me.ID})) /call core_cast "Mana Burn" alt ${Target2Kill}
 
 	| swarm pet
-	/if (${usePetSwarm} && ${Me.AltAbilityReady[Call of Xuzl]}) /call core_cast "Call of Xuzl" alt ${Target2Kill}    
+	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Call of Xuzl]}) /call core_cast "Call of Xuzl" alt ${Target2Kill}    
 
 	| ditch agrgro on named
 	/if (${Me.PctAggro} > 80 && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mind Crash]}) /call core_cast "Mind Crash" alt ${Target2Kill}
@@ -541,12 +541,9 @@ sub synergy_WIZ()
 	| epic 2.0
 	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0
 
-
 	/call use_glyph	
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn
-	
-	
 	
 	:exit	
 /return
@@ -680,7 +677,7 @@ sub synergy_RNG()
 	}
 		
 	| swarm
-	/if (${usePetSwarm} && ${Me.AltAbilityReady[Pack Hunt]}) /call core_cast "Pack Hunt" alt ${Target2Kill}    
+	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Pack Hunt]}) /call core_cast "Pack Hunt" alt ${Target2Kill}    
 	
 	| ae regen 
 	/if (!${Bool[${DiscHeal}]} && !${Bool[${Me.Song[Bladespur Reflection]}]} && ${Me.CombatAbilityReady[${DiscHeal}]}) /call core_cast "${DiscHeal}" disc ${Target2Kill}

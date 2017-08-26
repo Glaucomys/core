@@ -97,9 +97,9 @@ sub disc_DRU()
 	ISDEAD
 	/doevents
 	/call check_exit TRUE
-	/if (${Macro.Return}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || !${Target.ID}) /goto :exit
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
@@ -392,5 +392,32 @@ sub cast_AA_spirit_wood()
 	} else /if (${Bool[${Me.Song[Spirit of the Wood]}]}) {
 		NOUT ${owarning} ${sep} trying to cast Spirit of the Wood while its running.	
 	}		
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /dru []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setDRU /dru
+sub Bind_setDRU(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setDRU(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},DRU]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return

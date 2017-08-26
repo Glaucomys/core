@@ -4,7 +4,7 @@
  *
  *
  ***|
-
+ 
 
 
 |***
@@ -131,5 +131,32 @@ sub get_agro_MNK()
 	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	ISDEAD
 
+	:exit
+/return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /mnk []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setMNK /mnk
+sub Bind_setMNK(string _classType, string _classVerbage)
+	DEBUG ${cbug}Bind_setMNK(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${Select[${Me.Class.ShortName},MNK]}) {
+		/call echo_bitch EQBC
+		/goto :exit
+	}
+	
+	| enable/disable summer line of spells
+	/if (${Bool[${_classType.Find[TEST]}]}) {
+		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+
+	} else {
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+	} 
 	:exit
 /return
