@@ -180,7 +180,10 @@ sub cast_AA_quiet_miracle()
 	/call create_timer timer_check_QM ${tcheck_QM}
 /return	
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/master
 
 |***
  *	DES: cleric main heal sub
