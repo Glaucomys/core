@@ -14,9 +14,10 @@
  *  NOTE: 
  ***|
 sub core_MAG()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	CHECKTIE
 
 	/if (${coreAuto} && !${Me.Invis}) {
@@ -30,14 +31,14 @@ sub core_MAG()
 
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
-		/if (${switchPcPet} && !${Pet.ID} && ${coreAuto}) /call check_pet
-		/call send_pet
+		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
+		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
 		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
@@ -48,6 +49,7 @@ sub core_MAG()
 		/call disc_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
@@ -60,7 +62,6 @@ sub core_MAG()
 		/call is_target_dead
 		/if (!${Macro.Return}) /goto :killtarget
 	}
-	:exit
 /return
 
 
@@ -73,17 +74,12 @@ sub core_MAG()
  ***|
 sub disc_MAG()
 	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax 
-	/doevents
-	/call check_exit TRUE
-	/if (${Bool[${Macro.Return}]}) /goto :exit
-	ISDEAD
+	CHECKEXIT
 	CHECKTIE
 	/call is_target_dead
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.AltAbilityReady[Force of Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Force of Elements].MyRange}) /call core_cast "Force of Elements" alt ${Target2Kill}
-
-	:exit
 /return
 
 
@@ -96,80 +92,14 @@ sub disc_MAG()
  ***|
 sub use_cauldron()
 	DEBUGCLASS ${cbug}use_cauldron()\ax 
-	/doevents
-	ISDEAD
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	CHECKEXIT
 	CHECKTIE
+	/call create_timer timer_caldron_use ${tCauldron_use}
+
 	/if (${Bool[${Cauldron}]} && ${Me.ItemReady[${Cauldron}]}) {
 		/call core_cast "${Cauldron}" item
 		/call sort_cursor TRUE
 	}
-	:exit
-	/call create_timer timer_caldron_use ${tCauldron_use}
-/return
-
-
-
-|***
- *	DES: Check and resummon rods when missing
- *	USE: auto
- *	INI: 
- *  NOTE: 
- ***|
-sub check_rods()
-	DEBUGCLASS ${cbug}check_rods()\ax 
-	/doevents
-	ISDEAD
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
-	CHECKTIE
-	| self only mod rod
-	/if (${Bool[${SelfRodName}]} && !${FindItem[${SelfRodName}].ID} && !${Cursor.Name.Equal[${SelfRodName}]} && ${Me.CurrentMana} >= ${Spell[${SelfRodSpell}].Mana}) {
-		/call core_cast "${SelfRodSpell}" ${buffGem} 0
-		/delay 20s !${Me.Casting.ID}
-		/delay 2s ${Cursor.Name.Equal[${SelfRodName}]}
-		/call sort_cursor TRUE
-	}
-	
-	| AE mod rod
-	/if (${Bool[${ModRodName}]} && !${FindItem[${ModRodName}].ID} && !${Cursor.Name.Equal[${ModRodName}]}) {
-		/target ID ${Me.ID}
-		/call core_cast "${ModRodSpell}" alt 0
-		/delay 20s !${Me.Casting.ID}
-		/delay 2s ${Cursor.Name.Equal[${ModRodName}]}
-		/call sort_cursor TRUE
-	} else /if (${Bool[${ParadoxRodName}]} && !${Bool[${FindItem[${ParadoxRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ParadoxSpell}].Mana}) {
-		/call core_cast  "${ParadoxSpell}" ${buffGem} ${Me.ID}
-		/delay 20s !${Me.Casting.ID}
-		/delay 2s ${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]}
-		/call sort_cursor TRUE
-	} else /if (${Bool[${OrbName}]} && !${Bool[${FindItem[${OrbName}]}]} && !${Bool[${Cursor.Name.Equal[${OrbName}]}]} && ${Me.CurrentMana} >= ${Spell[${OrbSpell}].Mana}) {
-		/call core_cast "${OrbSpell}" ${buffGem} 0
-		/delay 20s !${Me.Casting.ID}
-		/delay 2s ${Bool[${Cursor.Name.Equal[${OrbName}]}]}
-		/call sort_cursor TRUE
-	} else /if (${Bool[${ElementRodName}]} && !${Bool[${FindItem[${ElementRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ElementRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ElementRodSpell}].Mana}) {
-		/call core_cast "${ElementRodSpell}" ${buffGem} 0
-		/delay 20s !${Me.Casting.ID}
-		/delay 2s ${Bool[${Cursor.Name.Equal[${ElementRodName}]}]}
-		/call sort_cursor TRUE
-	}
-	CHECKTIE
-
-	/if (${Bool[${SelfRodName}]} && ${Me.ItemReady[${SelfRodName}]} && ${Me.PctHPs} > 50*.${tmpHealOverride} && ${Me.PctMana} < 80*.${tmpHealOverride}) /call core_cast "${SelfRodName}" item 0
-	/if (${Bool[${ModRodName}]} && ${Me.ItemReady[${ModRodName}]} && ${Me.PctHPs} > 50*.${tmpHealOverride} && ${Me.PctMana} < 90*.${tmpHealOverride}) /call core_cast "${ModRodName}" item 0
-	/if (${Me.AltAbilityReady[Mana Reserve]} && ${Me.PctMana} <= 19*.${tmpHealOverride}) /call core_cast "Mana Reserve" alt 0
-	
-	:checkgather
-  /if (${Bool[${GatherSpell}]} && ${Me.SpellReady[${GatherSpell}]} && ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call core_cast "${GatherSpell}" 0 0
-  
-	/if (${Me.AltAbilityReady[Forceful Rejuvenation]} && ${Me.PctMana} < 50*.${tmpHealOverride} && !${Me.SpellReady[${GatherSpell}]}) {
-		/call core_cast "Forceful Rejuvenation" alt
-		/delay 5
-		/goto :checkgather
-	}
-	:exit
 /return
 
 
@@ -178,34 +108,28 @@ sub check_rods()
  *	DES: click dps thingies on bad guys
  *	USE: 
  *	INI: 
- *  NOTE: this is filler DPS. cast on thenb move on to something else to compensate for global cooldown
+ *  NOTE: this is filler DPS; compensate for global cooldown
  ***|
 sub click_DPS_MAG()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	AMIDEAD
+	CHECKEXIT
 	/doevents
-	ISDEAD
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
-	CHECKTIE
-	/call is_target_dead
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
 	
 	| click summon rods. DPS fillers....
 	/if (${Me.ItemReady[${ParadoxRodName}]}) {
 		/call MQ2Cast "${ParadoxRodName}" item -targetid|${Target2Kill}
-		/goto :exit
+		/return
 	}
 	/if (${Me.ItemReady[${OrbName}]}) {
 		/call MQ2Cast "${OrbName}" item -targetid|${Target2Kill}
-		/goto :exit
+		/return
 	}
 	/if (${switchPcPet} && ${Me.ItemReady[${ElementRodName}]} && ${Target.PctHPs} > 20) {
 		/call MQ2Cast "${ElementRodName}" item -targetid|${Target2Kill}
-		/goto :exit
+		/return
 	}
-
-	:exit
 /return
 
 
@@ -228,7 +152,6 @@ sub Event_CoH(string line, string _sender)
 	  ECHOCHANNEL Calling ... ${_sender}
 	 	/call core_cast "Call of the Hero" alt ${Spawn[pc ${_sender}].ID}
 	}
-	:exit
 /return
 
 
@@ -241,16 +164,11 @@ sub Event_CoH(string line, string _sender)
  ***|
 sub cast_nuke_salvo()
 	DEBUGCLASS ${cbug}cast_nuke_salvo()\ax
-	ISDEAD
-	/doevents
-	CHECKTIE
 	CHECKEXIT
-	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	CHECKTIE
 	/if (${switchPcPet} && ${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${NukeSalvo}]} && ${Me.CurrentMana} >= ${Spell[${NukeSalvo}].Mana} && ${Spawn[${Target.ID}].NearestSpawn[3,pet radius 30]}) {
 		/call core_cast "${NukeSalvo}" 0 ${Target2Kill}
 	}
-	:exit
 /return
 
 
@@ -261,62 +179,13 @@ sub cast_nuke_salvo()
  *	INI: 
  *  NOTE: 
  ***|
-sub pet_heal__MAG()
+sub pet_heal_MAG()
 	DEBUGCLASS ${cbug}pet_heal_${Me.Class.ShortName}()${citem}
-	ISDEAD
-	/doevents
-	/call check_exit TRUE
-	/if (${Bool[${Macro.Return}]} || !${switchPcPet}) /goto :exit
+	CHECKEXIT
 	CHECKTIE
 	/if (${Pet.PctHPs} < 40 && ${Me.AltAbilityReady[${PetAAHeal}]}) /call core_cast "${PetAAHeal}" alt ${Me.Pet.ID}
 	/if (${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) /call core_cast "${PetHealSpell}" ${PetHealType} ${Me.Pet.ID}
 	/if (${Pet.PctHPs} < 80 && ${Me.SpellReady[${PetRenewalSpell}]}) /call core_cast "${PetRenewalSpell}" ${PetRenewalType} ${Me.Pet.ID}
-	:exit
-/return
-
-
-
-|***
- *	DES: forces recasting of rods not at max charge or missing
- *	USE: /rods
- *	INI: 
- *  NOTE: 
- ***|
-#bind Bind_cast_rods /rods
-sub Bind_cast_rods()
-	DEBUGCLASS ${cbug}Bind_cast_rods()${citem}
-	ISDEAD
-	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
-	CHECKTIE
-	/if (${Bool[${FindItem[${ParadoxRodName}]}]} && ${FindItem[${ParadoxRodName}].Charges} < 5) {
-		VOUT ${citem}${ParadoxRodName}\ax has ${FindItem[${ParadoxRodName}].Charges} ${If[${FindItem[${ParadoxRodName}].Charges}==1,charge,charges]} ${sep} ${odestroy}
-		/if (${Bool[${FindItem[${ParadoxRodName}]}]}) /nomodkey /itemnotify "${ParadoxRodName}" leftmouseup
-		/delay 5s ${Cursor.Name.Equal[${ParadoxRodName}]}
-		/if (${Cursor.Name.Equal[${ParadoxRodName}]}) /destroy
-	}
-	/if (${Bool[${FindItem[${OrbName}]}]} && ${FindItem[${OrbName}].Charges} < 10) {
-		VOUT ${citem}${OrbName}\ax has ${FindItem[${OrbName}].Charges} ${If[${FindItem[${OrbName}].Charges}==1,charge,charges]} ${sep} ${odestroy}
-		/if (${Bool[${FindItem[${OrbName}]}]}) /nomodkey /itemnotify "${OrbName}" leftmouseup
-		/delay 2s ${Cursor.Name.Equal[${OrbName}]}
-		/if (${Cursor.Name.Equal[${OrbName}]}) /destroy
-	}
-	/if (${Bool[${FindItem[${SelfRodName}]}]} && ${FindItem[${SelfRodName}].Charges} < 3) {
-		VOUT ${citem}${SelfRodName}\ax has ${FindItem[${SelfRodName}].Charges} ${If[${FindItem[${SelfRodName}].Charges}==1,charge,charges]} ${sep} ${odestroy}
-		/if (${Bool[${FindItem[${SelfRodName}]}]}) /nomodkey /itemnotify "${SelfRodName}" leftmouseup
-		/delay 2s ${Cursor.Name.Equal[${SelfRodName}]}
-		/if (${Cursor.Name.Equal[${SelfRodName}]}) /destroy
-	}
-	/if (${Bool[${FindItem[${ModRodName}]}]} && ${FindItem[${ModRodName}].Charges} < 3) {
-		VOUT ${citem}${ModRodName}\ax has ${FindItem[${ModRodName}].Charges} ${If[${FindItem[${ModRodName}].Charges}==1,charge,charges]} ${sep} ${odestroy}
-		/if (${Bool[${FindItem[${ModRodName}]}]}) /nomodkey /itemnotify "${ModRodName}" leftmouseup
-		/delay 2s ${Cursor.Name.Equal[${ModRodName}]}
-		/if (${Cursor.Name.Equal[${ModRodName}]}) /destroy
-	}
-	/delay 5
-	/if (${switchBuffItem}) /call check_rods
-	:exit
 /return
 
 
@@ -329,16 +198,63 @@ sub Bind_cast_rods()
  ***|
 sub patch_heal_MAG()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	CHECKEXIT
 	CHECKTIE
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	:exit
 /return
 
 
 
+ |***
+ *	DES: Magician burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_MAG()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	CHECKEXITs
+	CHECKTIE
+	/if (${Me.AltAbilityReady[Elemental Ward]}) /call core_cast "Elemental Ward" alt 0
+	
+	| twincast
+	/if (${Me.AltAbilityReady[Improved Twincast]} && !${Me.Buff[Twincast].ID}) {
+		/call core_cast "Improved Twincast" alt 0
+	} else /if (${Me.SpellReady[Twincast]} && !${Me.Buff[Improved Twincast].ID}) {
+		/call core_cast "Twincast" 0 0
+	}
+	
+	/if (${Me.AltAbilityReady[Focus of Arcanum]} && !${Bool[${Me.Buff[Focus of Arcanum]}]} && ${Target.PctHPs} > 20) /call core_cast "Focus of Arcanum" alt 0
+	
+	| direct damage bonus
+	/if (${Target.PctHPs} > 10) {
+		/if (${Me.AltAbilityReady[Heart of Flames]} && !${Bool[${Me.Buff[Elemental Union]}]}) {
+			/call core_cast "Heart of Flames" alt 0
+		} else /if (${Me.AltAbilityReady[Elemental Union]} && !${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Heart of Flames]}) {
+			/call core_cast "Elemental Union" alt 0
+		} else /if (!${Me.AltAbilityReady[Heart of Flames]} && !${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Elemental Union]} && !${Bool[${Me.Buff[Elemental Union]}]}) {
+			/call use_glyph
+		}
+	}
+
+	/call cast_AA_spire
+	/if (${Me.AltAbilityReady[${SilentCast}]}) /call core_cast "${SilentCast}" alt 0
+	/if (${Me.AltAbilityReady[Heart of Stone]}) /call core_cast "Heart of Stone" alt 0
+
+	| pet AAs
+	/if (${switchPcPet}) {
+		/if (${Me.AltAbilityReady[Servant of Ro]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Servant of Ro].MyRange}) /call core_cast "Servant of Ro" alt ${Target2Kill} 
+		/if (${Me.AltAbilityReady[Frenzied Burnout]}) /call core_cast "Frenzied Burnout" alt ${Me.Pet.ID}
+	}
+	/if (${switchPcSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill}
+
+	/call synergy_click_Circle
+	/if (${doclickItemBurn}) /call click_item_burn
+/return
+	
+	
+	
 |***
  *	DES: Class controls
  *	USE: /mag []
@@ -350,16 +266,75 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setMAG(type:${_classType}, verbage:${_classVerbage})\ax
 	/if (!${Select[${Me.Class.ShortName},MAG]}) {
 		/call echo_bitch EQBC
-		/goto :exit
+		/return
 	}
-	
-	| enable/disable summer line of spells
-	/if (${Bool[${_classType.Find[TEST]}]}) {
-		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+	/declare _count	int local 0
 
+	
+	| get rods.. cause things and stuff
+	/if (${Bool[${_classType.Equal[rods]}]}) {
+		| self mod rod
+		/if (${Bool[${SelfRodName}]} && !${FindItem[${SelfRodName}].ID} && !${Cursor.Name.Equal[${SelfRodName}]} && ${Me.CurrentMana} >= ${Spell[${SelfRodSpell}].Mana}) {
+			/call core_cast "${SelfRodSpell}" ${buffGem}
+			/call sort_cursor TRUE
+		}
+		| group mod rod
+		/if (${Bool[${ModRodName}]} && !${FindItem[${ModRodName}].ID} && !${Cursor.Name.Equal[${ModRodName}]}) {
+			/target ID ${Me.ID}
+			/call core_cast "${ModRodSpell}" alt
+			/call sort_cursor TRUE
+		}
+		| paradox rod	
+		/if (${Bool[${ParadoxRodName}]} && !${Bool[${FindItem[${ParadoxRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ParadoxSpell}].Mana}) {
+			/call core_cast  "${ParadoxSpell}" ${buffGem} ${Me.ID}
+			/call sort_cursor TRUE
+		}
+		| elemental orb
+		/if (${Bool[${OrbName}]} && !${Bool[${FindItem[${OrbName}]}]} && !${Bool[${Cursor.Name.Equal[${OrbName}]}]} && ${Me.CurrentMana} >= ${Spell[${OrbSpell}].Mana}) {
+			/call core_cast "${OrbSpell}" ${buffGem}
+			/call sort_cursor TRUE
+		}
+		| elemental rod
+		/if (${Bool[${ElementRodName}]} && !${Bool[${FindItem[${ElementRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ElementRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ElementRodSpell}].Mana}) {
+			/call core_cast "${ElementRodSpell}" ${buffGem}
+			/call sort_cursor TRUE
+		}
+
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		} 
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+
+	| get mana
+	} else /if (${Bool[${_classType.Equal[mana]}]}) {
+
+		/if (${Bool[${SelfRodName}]} && ${Me.ItemReady[${SelfRodName}]} && ${Me.PctHPs} > 50*.${tmpHealOverride} && ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call core_cast "${SelfRodName}" item 0
+		/if (${Bool[${ModRodName}]} && ${Me.ItemReady[${ModRodName}]} && ${Me.PctHPs} > 50*.${tmpHealOverride} && ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call core_cast "${ModRodName}" item 0
+		/if (${Me.AltAbilityReady[Mana Reserve]} && ${Me.PctMana} < 20*.${tmpHealOverride}) /call core_cast "Mana Reserve" alt 0
+		
+		:checkgather
+	  /if (${Bool[${GatherSpell}]} && ${Me.SpellReady[${GatherSpell}]} && ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call core_cast "${GatherSpell}" 0 0
+	  
+		/if (${Me.AltAbilityReady[Forceful Rejuvenation]} && ${Me.PctMana} < ${autoRest}*.${tmpHealOverride} && !${Me.SpellReady[${GatherSpell}]}) {
+			/call core_cast "Forceful Rejuvenation" alt
+			/goto :checkgather
+		}
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return
+
+
+
+
+

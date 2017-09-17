@@ -8,6 +8,8 @@
 /******************************************************************/
 
 #include "../MQ2Plugin.h"
+using namespace std;
+
 #include "../moveitem2.h"
 
 const char*  PLUGIN_NAME = "MQ2Exchange";

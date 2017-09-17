@@ -18,6 +18,8 @@
 //    Added   .StacksPet
 
 #define        PLUGIN_NAME "MQ2NetBots"
+using namespace std;
+
 #define        PLUGIN_DATE     20160808
 #define        PLUGIN_VERS        2.2
 

@@ -8,6 +8,307 @@
  ***|
 
 
+
+20170916
+12 Sep 2017 PATCH
+- ditching individual versioning for 1 build date as the increment number
+- #define ISDEAD is now dead. welcome your new overlord AMIDEAD
+- hud.inc
+  -- updated all core parsed lines for type 16 (tech 16+2+1)
+- rezing
+  -- necro 93% aa res added
+- class.nec.inc
+  -- will watch for corpses to rez if /rez give is enabled
+  -- now use their own DOT routine that lets them check for different named effects on the mobs
+- BC buffs
+  -- fixed logic error
+- removed burn.inc
+  -- all burns placed back into their respective classes
+  -- all synergy INI entries in core.ini are deleted and moved to memory
+- root class class control spiregroup and spireraid .. example:
+  -- /rng spiregroup [#] - [0,3] set group burn spire to #
+  -- /rng spireraid [#] - [0,3] set raid burn spire to #
+  -- 0 disables
+  -- can set them both the same if you have no clue what you want in life
+  -- NOTE: clerics have 3rd spire hardcoded into their healing. you can set the spire. but they tend to use 3rd a lot
+- tell_resident_mage()
+  -- timers pregenerated with mage names as suffix variable vice refreshed spawn ID
+- core_cast()
+  -- !${Spell[${_spell}].SpellType.Equal[Beneficial]} removed from all checks except spell ready. this could be a fuckup.. /shrug
+  -- 4 reses later...
+  -- i undid this.. it was a horrid idea. not sure what i was thinking
+- removing wrapper setvar(). switching everything to simple /declare
+- started process of removing :exit and all referencing /goto
+- check_for_corpse()
+  -- no rezing in safe zones with /core auto enabled. no matter the type of rez
+  -- no rezing at all with /rez give disabled. no matter the type of rez
+- check_exit()
+  -- should exit a lot faster on a positive reason to exit the current routine
+- rewriting all loops to exit using either /break /return or /continue, depending on need. no more /goto to break a loop
+- set_xtarget
+  -- looped the classes. 100 lines of code to 6
+- root class control xtheal [PAL|CLR|SHM|DRU]
+  -- /clr [xtheal ##] - [1,300] sets the range classes will be added to the XTarget Healing routines  
+- root class control xttime [PAL|CLR|SHM|DRU]
+  -- /clr [xttime ##] - [1,5] sets the duration in min for the refresh of the xtarget window  \
+ - corrected all classes for the Boolean wraps and use of :exit 
+- corrected logic error in is_target_valid()
+
+  
+
+
+20170911
+- rezzing
+	/rez [range ##] - [1,110] maximum range to check for corpses to rez
+- check_for_corpse()
+ -- pregenerate variables for corpses to account for 07 Sep 2017 PATCH
+- cast_rez()
+  -- some logic changes to help clean it up
+  -- adjust the timer creation for 07 Sep 2017 PATCH
+- prep_combat()
+  -- will now prep declares that are based off of target ids on engage of every target.
+- clear_timer()
+  -- will clear all the damn variables we keep making on death of a mob or correctly clearing a target 
+- set_xtarget()
+  -- let's just say it was broke. it's not anymore
+
+
+07 Sep 2017 PATCH
+Cleric Version 2.2.1
+Enchanter Version 1.5.1
+*shits all kinds of messed up
+- Timers fixed for Common, PAL, CLR, SHD, WIZ, BER, BRD, BST, DRU, ENC, MAG, ROG, SHM, WAR, MON, NEC
+
+- is_target_dead()
+  -- no longer requires a [TRUE|FALSE] variable
+- class.clr.inc
+  -- change they way groups hurt are checked. no more minor/major adjustmetns. you are either hurt according to your healpoint marker or you are not hurt.
+  -- should sort hurt groups faster
+  -- cleric will not yaulp while sitting (ikr), or when out of combat and Manna > rest%
+  -- corrections to HealOverride variable now that binds are fixed.
+ 
+- Timers (this sucked ass. and not in a good way)
+  -- /call declareTimer [NAME] [INT|BOOL|STRING|FLOAT] [INISECTION] [value] [timer_check_blah_blah]
+  -- timers fixed: see timer fix list Top..as in look up..
+- class.shd.inc
+  -- /shd [harmonious|skin|stance] 
+  -- /shd [harmonious] - enable/disable constant harmonious up
+  -- /shd [skin] - enable/disable constant skin up
+  -- /shd [stance] - enable/disable constant staunch up
+- class.dru.inc
+  -- logic error in xheal check
+- check_engaged()
+  -- added ${Group.MainAssist.Name.Equal[${Me.DisplayName}]} 
+  -- added ${Group.MainTank.Name.Equal[${Me.DisplayName}]}
+- auras...
+  -- everyone gets access to 2 auras now  
+- switchOverrideLos corected for: common, core, PAL, SHD, DRU, WAR.. fuck it.. all the classes...
+
+
+
+20170906
+Core Version 4.0.1
+Shadowknight Version 2.0.0
+- class.clr.inc
+  -- logic error in QM casting
+- /rez
+  -- /rez [pct] [10|20|35|50|60|75|90|96]
+  -- /rez [pct ##] - will set the minimum percentage resurrection you are willing to auto accept
+- wait_for_rez()
+  -- rewritten
+  -- will auto reject 0% rezes
+  -- will auto take 100% reses
+  -- will auto take call to corpse
+  -- establish the current res window % (if any) fisrt
+  -- accepts /rez [pct ##] and highter
+- adjust the output for some of the /commands
+
+- class.shd.inc
+  -- tied AA bold Attacks to agro
+  -- moved heal taps to discs
+  -- removed patch_heal_SHD(). dont need
+  -- /heal self must be enabled for SK to use any AA/Disc taps
+  -- /cc agro must be enabled for any AA/Disc that generates agro
+  -- /shd [groupheal|harmonions|skin|stance]  
+  -- /shd [harmonions] -  
+  -- /shd [skin] -  
+  -- /shd [stance] -  
+  
+- class.pal.inc
+  -- /heal self must be enabled for any self healing AA/Discs
+	-- reworked check_heal_group it is now check_spash_group
+	  -- no major/minor hurt for counts. you are either hurt or you are not
+    -- no severity adjustments at all. strictly healpoint markers to check for hurt 	  
+	  -- do not care about the control toon
+	  -- /heal group required
+	  -- group splashes are targetless
+	  -- splash group has 2 point blank AE splashes
+	    -- 1 for panic
+	    -- 1 for normal group healpoint %
+			-- AA Hand of Piety
+			-- panic splash will trigger if 1 or more person hits healpoint markers
+			-- normal group splash is 2 or more people reaching healpoint markers
+			-- AA Piety is 3 or more reaching healpoint markers
+
+- removed target requirements for AA Radient Cure
+- cast_AA_snare()
+  -- pally can snare either undead or living
+
+
+20170902
+Paladin Version 1.5.0
+WHITEWASH
+- fixed a bug in is_target_dead()
+- sped up /core whitewash a bit
+- adjusted a lot of NOUT to VOUT
+- disarm now requires agro to be on
+- removed MercWarPoint, MercCLRPoint, MercDPSpoint from healpoint calculations. mercs are treated as normal group members by class
+- adjusted /burn force to apply only while in combat and core auto is no longer necessary
+- class.dru.inc
+  -- /dru [groupheal|healpoint]
+  -- /dru [groupheal]
+  -- /dru [healpoint ##] - adjust the healing point for that targets class type or Pet
+- class.clr.inc
+  -- added /cc NUKE routines. you can now pretend to be a wizard
+  -- /clr [fade|healpoint]
+  -- /clr [healpoint ##] - adjust the healing point for that targets class type or Pet
+  -- /clr [fade ##] - % of health to use AA fade from combat
+  -- FADECOMBAT added
+- class.shm.inc
+  -- /shm [healpoint ##] - adjust the healing point for that targets class type or Pet
+- class.mag.inc
+  -- /mag [fade ##] - % of health to use AA fade from combat
+  -- FADECOMBAT added
+- class.shd.inc
+  -- /shd [harmonious] - enable/disable self harmonious buff
+- class.brd.inc
+  -- logic error in seb HH weapon  
+- delete #bind /combatradius, /zradius
+- /cc [saferadius|zradius]
+  -- /cc [saferadius ##] - [1,50] sets fake combat safe radius 
+  -- /cc [zradius ##] - [1,200]
+- delete #bind /invites, /checkcash, /ri
+- delete alias /echochannel, /autoadjustexp, /maxlevel, /maintainexplevel
+  -- /core [market|invite|raidinvite|echo|expadjust|expmaintain|explevel]  
+  -- /core [market] - check DB cash
+  -- /core [invite] - enable/disable taking invites for raid/group
+  -- /core [raidinvite] - enable/disable accepting requests for a raid invite
+  -- /core [echo ##] - [1,9] set the echo channel
+  -- /core [expadjust] - enable/disable auto adjusting EXP/AA  
+  -- /core [expmaintain ##] - [1,99] % of exp to maintain in your /core explevel 
+  -- /core [explevel ##] - [1,105] - level exp you wish to maintain
+- delete #bind /home, /stickbehind, /facefast
+- delete alias /homeleash, /homeradius
+- Movement Controls /movement
+  --/movement [arc|behind|fast|home|leash|radius]
+  --/movement [home] - enable/disable home camp
+  --/movement [radius ##] - [1,200]
+  --/movement [leash ##] - [1,200]
+  --/movement [behind] - enable/disable stick behind the target in combat
+  --/movement [fast] - enable/disable fast facing the target
+  --/movement [arc ##] - [1,45] fast facing arc buffer. no face movement if target is within that degree
+- class.pal.inc
+  -- /pal [healpoint|steel|stun|harmonions|stance]
+  -- /pal [healpoint ##] - adjust the healing point for that targets class type or Pet
+  -- /pal [steel] - enable/disable Reinvigorating Steel self Buff
+  -- /pal [harmonions] - enable/disable Harmonios Blessing self Buff
+  -- /pal [stance] - enable/disable Staunch Stance self Buff
+  -- /pal [stun] [stop|force|disruptive|divine]
+    -- sets chain stun AA
+    -- force - Force of Disruption AA
+    -- disruptive - Disruptive Persecution AA
+    -- divine - Divine Stun AA
+    -- stop - disable chin stuns
+  -- nukes now require agro to be on
+  -- will maintain yaulp while in combat
+  -- will maintain harmonious in combat
+  -- will maintain steel in combat
+  -- will maintain staunch stance in combat
+  -- undead cripple will only cast on undead mobs. dunno why it wont work on everyone /shrug
+  -- AA Bold Attacks disables when Agro is off.
+- cast_AA_snare()
+  -- added paladin snare for undead targets
+- added AAEradicateList=|RNG|DRU|NEC|WIZ|ENC|MAG
+- check_buff_routines()
+  -- added in class specific sections for engaged buff checks
+- mode.inc
+  -- /mode scorch will loot more linke /mode hunt
+- cast_AA_yaulp()
+  -- should no longer trigger while sitting
+
+
+20170828
+WHITEWASH
+- added 30 degree buffer arc check to facing target checks 
+  -- as long as the target is within 30 degrees of the toons first person facing field of view, core will not execute a facing movement
+  -- this should prevent roughly 20 face calls per second
+  -- is not applied to /tie
+- had all the logic backwords on the safezone override. should be better now
+- no more forced to home camp in manual
+- adjusted initial killcode warning for new installs. will no longer end mac. it will simply remind players each startup
+- rewrite of Event_SetINI() -> writeINI()
+  -- no longer tries to write FALSE (string) to INT base declares
+  -- will do nothing if the variable is not changed
+  -- no more forced TRUE,ON to TRUE or FALSE,OFF,0 to FALSE. take the variable at face value
+- check_aura()
+  -- adjustment to zerker/monk auras.
+- delete #bind /autoshrink
+- /onoff [horn|shrink]
+  -- /onoff [horn] - enable/disable using Minature Horn of Unity
+  -- /onoff [shrink] - enable/disable automatic shrinkage
+- class.clr.inc
+  -- /clr [grouphot] - enable/disable using group heal over time spells
+  -- /clr [groupheal] - enable/disable using group heals
+- class.shm.inc
+  -- /shm [grouphot] - enable/disable using group heal over time spells
+  -- /shm [groupheal] - enable/disable using group heals
+- class.pal.inc
+  -- /pal [groupheal] - enable/disable using group heals
+  -- /pal [mg] - enable/disable Marr's Gift
+  -- /pal [mg ##] - Marr's Gift % to use at
+  -- /pal [yaulp] - enable/disable paladin yaulp
+- delete alias /combat
+- delete #bind /smartengageat, /engageat
+- please welcome your bouncing baby brother Combat Control
+  -- will be moving all the combat realted stuff under here. may take a bit
+- added bind /cc for combat controls
+  -- /cc [melee|range|nuke|heal|dual|engage|smartengage|agro|pull|agro|ma1|ma2]
+  -- /cc [melee] - set auto combat mode to MELEE
+  -- /cc [range] - set auto combat mode to RANGE
+  -- /cc [nuke] - set auto combat mode to NUKE/DOT
+  -- /cc [heal] - set auto combat mode to HEAL
+  -- /cc [dual] - set auto combat mode to DUAL
+  -- /cc [engage ##] - [1,100] set % of mobs heralth to engage for /MA1 and /MA2
+  -- /cc [smartengage ##] - [1,100] set % of mos heralth to engage for /smartma [g|1|2]
+  -- /cc [agro] - enable/disable fight for agro (moved from /onoff)
+  -- /cc [agro ##] - [1,400] set agro range to engage mobs
+    -- /agro ## now redirects to /cc agro ##
+  -- /cc [MA1 NAME] - set MA1 name. FALSE to disable (moved from /core)
+  -- /cc [MA2 NAME] - set MA2 name. FALSE to disable (moved from /core)
+  -- /cc [pull] - enable/disable pulling mobs (moved from /onoff)
+  -- /cc force [melee|range|nuke]
+    -- /cc force [melee] - forces manual combat routines until a stop is issued or target dead
+    -- /cc force [range] - forces manual ranged attack routines until a stop is issued or target dead
+    -- /cc force [nuke] - forces manual nuke or dot routines until a stop is issued or target dead
+  -- /cc [combatdistance] - [1,50] set minimum melee combat range
+- delete alias /relay, /control
+- /core [relay|control] [name]
+  -- /core [relay NAME] - sets the /tell relay toon. any tells you get will be repated to that toon. this gets irritating after a while
+  -- /core [control NAME] - sets the control toon
+- delete /bc HEAL, MELEE, RANGE, NUKE, DUAL, issuance, spice, rods, switchRaidInvite, cr, 
+- class.mag.inc
+  -- delete #bind /rods
+  -- /mag [rods|mana]
+  -- /mag [rods] - make sure all sex toys are present and accounted for
+  -- /mag [mana] - get mana cause mages suck ad mana conservation
+- internalized all INI bitch responses
+- internalized all INNI port lists
+- /port [wizard|driud] [location] will tell Toon->INI->ResidentWizard/ResidentDruid, whichever to send you to that location
+- class.wiz.inc
+  -- added in support for /cc agro switch. Enabled, the wiz will not care about gaining agro
+
+
+
 20170825
 Ranger Version 2.3.0
 Cleric Version 2.2.0

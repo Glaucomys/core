@@ -14,13 +14,14 @@
  *  NOTE: 
  ***|
 sub core_SHM()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 	CHECKTIE
 
-  /if (!${timer_set_xtarget} && ${switchHealXTarget}) {
+  /if (!${Bool[${timer_set_xtarget}]} && ${switchHealXtarget}) {
     /call set_xtarget
     /call create_timer timer_set_xtarget ${tXHeal}
   }	
@@ -32,7 +33,7 @@ sub core_SHM()
 	
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -58,14 +59,13 @@ sub core_SHM()
 	}
 	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
+		/call check_cani
+		/call use_mod_rod
 	}
-	/call check_cani
-	/call use_mod_rod
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
+		/if (!${Macro.Return}) /goto :killtarget
 	}
-	:exit
 /return
 
 
@@ -78,12 +78,9 @@ sub core_SHM()
  ***|
 sub disc_SHM()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
-	ISDEAD
-	/doevents
 	CHECKEXIT
+	/doevents
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-
-	:exit
 /return
 
 
@@ -96,19 +93,12 @@ sub disc_SHM()
  ***|
 sub clickDPS_SHM()
 	DEBUGCLASS ${cbug}clickDPS.${Me.Class.ShortName}()\ax 
-	ISDEAD
-	/doevents
 	CHECKEXIT
+	/doevents
 	/call click_horn_of_unity 	
-
-	/if (${Me.ItemReady[${Epic}]} && !${Me.Song[Prophet's Gift of the Ruchu].ID} && ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 3) {
-		/call core_cast "${Epic}" item
-		/goto :exit
-	}
-	
-	:exit
+	/if (${Me.ItemReady[${Epic}]} && !${Me.Song[Prophet's Gift of the Ruchu].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 3)  /call core_cast "${Epic}" item
 /return
-
+	
 
 
 |***
@@ -119,23 +109,24 @@ sub clickDPS_SHM()
 
 sub cast_AA_slow_SHM(int _tmpID)
 	DEBUGCLASS ${cbug}cast_AA_slow_SHM(${_tmpID})\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/call check_exit TRUE
-	/if (${Bool[${Macro.Return}]} || ${timer_slow_${_tmpID}}) /goto :exit
+	/if (${Bool[${Macro.Return}]} || ${timer_slow_${_tmpID}}) /return
 
 	| check for overwrite slows
 	/declare _tmpSlow string local ${Target.Slowed}
 	/if (${Target.Slowed.Duration})
 		/if (${_tmpSlow.Find[Undermining]}) /call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
-		/goto :exit
+		/return
 	}
 
 	/declare _resistCount int local 0
 	:loopslow
-	ISDEAD
+	AMIDEAD
+
 	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[Turgur's Swarm].MyRange}) {
-		/delay 2.25s ${Me.AltAbilityReady[Turgur's Swarm]}
 		/call core_cast "Turgur's Swarm" alt ${Target2Kill}
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_slow_${_tmpID} ${Spell[Turgur's Swarm].Duration.TotalSeconds}s
@@ -148,7 +139,6 @@ sub cast_AA_slow_SHM(int _tmpID)
 			}
 		}
 	}
-	:exit
 
 /return
  ***|
@@ -162,9 +152,8 @@ sub cast_AA_slow_SHM(int _tmpID)
  ***|
 sub check_cani()
 	DEBUGCLASS ${cbug}check_cani()\ax
-	ISDEAD
-	/doevents
 	CHECKEXIT
+	/doevents
 	
 	/if (${Me.PctMana} < ${CaniPercent} && ${Me.SpellReady[${spellCannibalization}]}) {
 		/call core_cast "${spellCannibalization}" 0 0
@@ -172,7 +161,6 @@ sub check_cani()
 	/if (${Me.PctMana} < ${CaniPercent} && ${Me.AltAbilityReady[Cannibalization]}) {
 		/call core_cast "Cannibalization" alt 0
 	}
-	:exit
 /return
 
 
@@ -185,18 +173,17 @@ sub check_cani()
  ***|
 sub check_heal_group_SHM()
 	DEBUGCLASS ${cbug}checkHealGroup.SHM()\ax
-	CHECKEXIT
 
-	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
-	/declare _count	int	local
+	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
+	/declare _count	int	local 0
 
 	:loopheal
-	ISDEAD
+	CHECKEXIT
 	/doevents
 	CHECKTIE
 	/varset WorstHurt 				${Me.ID}
 	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset WorstClass 				SHM
+	/varset WorstClass 				${Me.Class.ShortName}
 	/varset MinorHurt 				0
 	/varset MajorHurt					0
 	
@@ -209,7 +196,8 @@ sub check_heal_group_SHM()
 	} 
 	
 	/for _count 0 to ${Group.Members}
-		ISDEAD
+		AMIDEAD
+
 		/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHp} && (${Group.Member[${_count}].Distance} <= ${Spell[${healMain}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healMain}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride})) {
 			/varset WorstHurt ${Group.Member[${_count}].ID}
 			/varset WorstHp ${Group.Member[${_count}].PctHPs}
@@ -233,7 +221,7 @@ sub check_heal_group_SHM()
 	}
   
 
-  /if ((!${MajorHurt} && !${MinorHurt}) || ${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]} ) /goto :exit
+  /if ((!${MajorHurt} && !${MinorHurt}) || ${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]} ) /return
 	/call check_no_cast_buffs
  
   /if (${Math.Calc[${MajorHurt}+${MinorHurt}]} >= 3 && ${Me.SpellReady[${healWholeGroup}]}) {
@@ -273,7 +261,6 @@ sub check_heal_group_SHM()
 		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) /call core_cast "Purified Spirits" alt ${Me.ID} 
 	}  
   
- 	:exit
  	
   /if ( ${Me.PctHPs} < ${SHMPoint}*.${tmpHealOverride} && !${Me.Song[${healGroupHot}].ID} && ${Me.SpellReady[${healGroupHot}]} ) {
     /call core_cast "${healGroupHot}" 0 ${Me.ID}
@@ -293,12 +280,14 @@ sub check_heal_group_SHM()
  ***|
 sub check_heal_XTarget_SHM()
 	DEBUGCLASS ${cbug}check_heal_XTarget_SHM()\ax
-	ISDEAD
-	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
-  /declare _count int local
+	AMIDEAD
+
+	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
+  /declare _count int local 0
 
   /for _count 1 to 13
-  	ISDEAD
+  	AMIDEAD
+
     /if (${Spawn[${Me.XTarget[${_count}].ID}].ID} && (${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} || ${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].CleanName}]}) && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
 			/if (${Spawn[${Me.XTarget[${_count}].ID}].Distance} <= ${Spell[${healMain}].MyRange} && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healMain}]} || ${Me.SpellReady[${healIntervention}]} && || ${Me.SpellReady[${healReckless}]})) {
         /if (${Me.SpellReady[${healMain}]}) {
@@ -310,10 +299,7 @@ sub check_heal_XTarget_SHM()
         }
       }
     }
-		:exitloop
   /next _count
-
-	:exit
 /return
 
 
@@ -326,19 +312,20 @@ sub check_heal_XTarget_SHM()
  ***|
 sub cast_surge_heal()
 	DEBUGCLASS ${cbug}cast_surge_heal()\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
-	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
+	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
 	/declare _tmpTarget int local
 	
 	
 	| nuke to engage twin heal proc
 	/if (${Target.ID} == ${Me.ID}) /squelch /target clear
-	/if (!${Me.SpellReady[${TC1}]} && !${Me.SpellReady[${TC2}]}) /goto :exit
+	/if (!${Me.SpellReady[${TC1}]} && !${Me.SpellReady[${TC2}]}) /return
 	
 	| /call get_assist_target
 	| /call is_target_valid ${Target2Kill}
-	| /if (!${Bool[${Macro.Return}]}) /goto :exit
+	| /if (!${Bool[${Macro.Return}]}) /return
 	
 	
 	| target the main assist to trigger.
@@ -351,7 +338,7 @@ sub cast_surge_heal()
 	} else /if (${useSmartAssist2}) {
 	| /call get_assist_target
 	| /call is_target_valid ${Target2Kill}
-	| /if (!${Bool[${Macro.Return}]}) /goto :exit
+	| /if (!${Bool[${Macro.Return}]}) /return
 
 	} else /if (${Bool[${MA1}]} && ${Bool[${Spawn[pc ${MA1}].ID}]} && !${Bool[${Spawn[pc ${MA1}].Dead}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG}) {
 		/varset _tmpTarget ${Spawn[pc ${MA1}].ID}
@@ -362,7 +349,7 @@ sub cast_surge_heal()
 	}
 	
 	:nuke
-	/if (!${Target.LineOfSight} || ${Target.Distance} > ${Spell[${TC1}].MyRange}) /goto :exit
+	/if (!${Target.LineOfSight} || ${Target.Distance} > ${Spell[${TC1}].MyRange}) /return
   /if (${Me.SpellReady[${TC1}]} && !${Me.Song[Healing Twincast].ID}) {
 		/call core_cast "${TC1}" 0 ${_tmpTarget} 
 	} else /if (${Me.SpellReady[${TC2}]} && !${Me.Song[Healing Twincast].ID}) {
@@ -374,7 +361,6 @@ sub cast_surge_heal()
 		/delay 2.25s ${Me.SpellReady[${healSurge}]}
 		/call core_cast "${healSurge}" 0 ${Me.ID}
 	}
-	:exit
 /return
 
 
@@ -391,11 +377,10 @@ sub checkHP.SHM()
  | VOUT Interrupting ${Me.Casting} because ${Target.CleanName} is safe now.
 		/stopcast
 		/delay 1s !${Me.Casting.ID}
-		/goto :exit
+		/return
 		}
 	}
 	/if (!${HealList.Find[${Me.Casting}]}) /call check_heal_group_${Me.Class.ShortName}
-	:exit
 /return
 
 
@@ -408,9 +393,10 @@ sub checkHP.SHM()
  ***|
 sub doAid()
 	DEBUGCLASS ${cbug}doAid()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},\agMGB\ax,\arMGB\ax]} ${If[${Me.AltAbilityReady[Ancestral Aid]},\agSpice\ax,\arSpice\ax]}
-	ISDEAD
+	AMIDEAD
+
 	/doevents
-	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /goto :exit
+	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Ancestral Aid]} && !${Bool[${Me.Song[Ancestral Aid]}]}) {
 		/call core_cast "Mass Group Buff" alt 0
 		/call core_cast "Ancestral Aid" alt 0
@@ -418,7 +404,6 @@ sub doAid()
 	} else /if (${Bool[${Me.Song[Ancestral Aid]}]}) {
 		NOUT ${cbad}Quit\ax trying to cast ${csp}Ancestral Aid\ax while its running.	
 	}		
-	:exit
 /return
 
 
@@ -431,19 +416,17 @@ sub doAid()
  ***|
 sub cast_cripple_SHM(int _tmpID)
 	/doevents
-	ISDEAD
-	/declare _resistCount int local
-	/call check_exit
-	/if (${Bool[${Macro.Return}]} || ${timer_cripple_${_tmpID}} || !${_tmpID}) /goto :exit
+	CHECKEXIT
+	/if (${timer_cripple_${_tmpID}} || !${_tmpID}) /return
+	/declare _resistCount int local 0
 	
 	/if (${Target.Crippled.Duration}) {
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
-		/goto :exit
+		/return
 	}
 
 	:loopcripple
 	/if (${Target.Distance} <= ${Spell[${spellCripple}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellCripple}].Mana} && ${Target.LineOfSight}) {
-		/delay 2.25s ${Me.SpellReady[${spellCripple}]}
 		/call core_cast "${spellCripple}" 0 ${_tmpID}
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
@@ -458,7 +441,25 @@ sub cast_cripple_SHM(int _tmpID)
 			}
 		}
 	}
-	:exit
+/return
+
+
+
+ |***
+ *	DES: Shaman burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_SHM()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	CHECKEXIT
+	/doevents
+	/call cast_AA_spire
+
+	/call use_glyph
+	/call synergy_click_Circle
+	/if (${doclickItemBurn}) /call click_item_burn
 /return
 
 
@@ -474,16 +475,67 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setSHM(type:${_classType}, verbage:${_classVerbage})\ax
 	/if (!${Select[${Me.Class.ShortName},SHM]}) {
 		/call echo_bitch EQBC
-		/goto :exit
+		/return
 	}
+	/declare _count int local 0
 	
-	| enable/disable summer line of spells
-	/if (${Bool[${_classType.Find[TEST]}]}) {
-		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+	| use group Heals
+	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
+		/call Event_SetVar NA useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
+	 	/call echos switch "Use Group Heal" useGroupHeal 0 0
+	
+	| use group Heal over Time	
+	} else /if (${Bool[${_classType.Equal[grouphot]}]}) {
+		/call Event_SetVar NA useGroupHoT Heal ${If[${useGroupHoT},FALSE,TRUE]} 	
+	 	/call echos switch "Use Group Heal over Time" useGroupHoT 0 0
+	 	
+	| set Class Heal Point	
+	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
+		/if (${Bool[${_classVerbage}]}) /declare _num int local ${_classVerbage}
+		/if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.NotEqual[Pet]}) {
+			/call writeINI ${Target.Class.ShortName}Point Heal ${_num}
+			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
+		} else /if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
+			/call writeINI PetPoint Heal ${_num}
+			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
+		} else {
+			VOUT /shm healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
+		}
 
+	| set XTar heal radius
+	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
+		/if (${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
+			/call writeINI XTHealRadius Heal ${_classVerbage}
+			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
+		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
+			NOUT /${Me.Class.ShortName.Lower} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+		}	
+
+	| set XT refresh list Time
+	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
+		/if (${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
+			/call writeINI tXHeal Timer ${_classVerbage}
+			/call echos number "XTarget refresh time" ${tXHeal} 0 0
+		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
+			NOUT /${Me.Class.ShortName.Lower} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+		}	
+
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		} 
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+	 	
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##
 	} 
-	:exit
 /return

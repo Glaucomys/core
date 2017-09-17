@@ -14,9 +14,10 @@
  *  NOTE: 
  ***|
 sub core_BRD()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	CHECKTIE
 		
 	:killtarget
@@ -42,7 +43,8 @@ sub core_BRD()
 		/goto :exit
 		:loop
 		/doevents
-		ISDEAD
+		AMIDEAD
+
 		CHECKTIE
 		/if (${Spawn[${Target2Kill}].Type.Equal[Corpse]}  || !${Target2Kill} || !${Target.ID} || ${Target.Type.Equal[corpse]} || !${Spawn[${Target2Kill}].ID}) /call get_assist_target
 		/call check_for_adds
@@ -86,7 +88,8 @@ sub core_BRD()
  ***|
 sub disc_BRD()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
@@ -115,7 +118,8 @@ sub disc_BRD()
  ***|
 sub click_DPS_BRD()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
@@ -134,7 +138,8 @@ sub click_DPS_BRD()
  ***|
 sub cast_servant_swarm(int _tmpID)
 	DEBUGCLASS ${cbug}cast_servant_swarm(target: ${_tmpID})\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/call check_exit TRUE
 	/if (${Bool[${Macro.Return}]} || !${usePetSwarm}) /goto :exit
@@ -168,7 +173,8 @@ sub cast_servant_swarm(int _tmpID)
  ***|
 sub mem_song_set(string _group)
  	DEBUGCLASS ${cbug}mem_song_set(group: ${_group})\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
@@ -212,7 +218,8 @@ sub mem_song_set(string _group)
 	
 	/for _count 1 to ${_list.Size}
 		/for _index 1 to ${_list[${_count}].Count[|]}
-			ISDEAD
+			AMIDEAD
+
 			/doevents
 			/call check_exit
 			/if (${Bool[${Macro.Return}]}) /goto :exit
@@ -280,7 +287,8 @@ sub pulse_stop()
  ***|
 sub core_sing(_spellgem)
 	DEBUGCLASS ${cbug}core_sing(gem: ${_spellgem})\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /goto :exit
@@ -314,12 +322,14 @@ sub core_sing(_spellgem)
  ***|
 sub bard_nuke()
 	DEBUGCLASS ${cbug}bard_nuke()\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents 
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoNuke}
-		ISDEAD
+		AMIDEAD
+
 		/doevents
 		/call check_exit TRUE
 		/if (${Bool[${Macro.Return}]}) /goto :exit	
@@ -343,7 +353,8 @@ sub bard_nuke()
  ***|
 sub mez_adds_BRD()
 	DEBUGCLASS ${cbug}mez_adds()\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/declare _tmpID string local
 
@@ -387,9 +398,11 @@ sub mez_adds_BRD()
 sub cast_mez_BRD(int _tmpID)
 	DEBUGCLASS ${cbug}cast_mez_BRD(${_tmpID})\ax
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	:loopmez
-	ISDEAD
+	AMIDEAD
+
 	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /goto :exit
 
 	| check for mez immune list mobs
@@ -429,7 +442,7 @@ sub cast_mez_BRD(int _tmpID)
  ***|
 sub item_harmony_blade()
 	DEBUGCLASS ${cbug}item_harmony_blade()\ax
-	/if (${Me.ItemReady[Darkened Breath of Harmony]} || !${Me.Song[Doben's Spry Sonata Rk. II].ID}) {
+	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) {
 		/call core_cast "Darkened Breath of Harmony" item 0
 	}
 /return
@@ -446,19 +459,49 @@ sub item_harmony_blade()
  ***|
 sub cast_AA_Rallying()
  	DEBUGCAST ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Call]})\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 
  	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Call]}) /goto :exit
 	
- 	/if (!${Defined[_endurancePoint]}) /declare _endurancePoint		int local 30
- 	/if (!${Defined[_manaPoint]}) /declare _manaPoint		int local 30
+ 	/declare _endurancePoint		int local 30
+ 	/declare _manaPoint		int local 30
 
  	/if (((${Me.PctEndurance} < ${_endurancePoint}) || (${Me.PctMana} < ${_manaPoint})) && ${Select[${Me.CombatState},RESTING]}) {
 		/call core_cast "Rallying Call" alt ${Me.ID}
 	}
 
 	:exit
+/return
+
+
+
+ |***
+ *	DES: Bard burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_BRD()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	AMIDEAD
+
+	/doevents
+	/call check_exit
+	/if (${Bool[${Macro.Return}]}) /goto :exit	
+	
+ 	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0
+ 	/if (${Me.CombatAbilityReady[Thousand Blades]}) /call core_cast "Thousand Blades" disc 0	
+	/if (${Me.AltAbilityReady[Fierce Eye]}) /call core_cast "Fierce Eye" alt 0
+	/call cast_AA_spire
+	/if (${Me.AltAbilityReady[Funeral Dirge]}) /call core_cast "Funeral Dirge" alt 0
+	/if (${Me.AltAbilityReady[Quick Time]} && !${Me.Song[Ruaabri's Fury].ID}) /call core_cast "Quick Time" alt 0
+
+	/call use_glyph
+	/call synergy_click_Circle
+	/if (${doclickItemBurn}) /call click_item_burn	
+ 	:exit	
 /return
 
 
@@ -476,14 +519,30 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 		/call echo_bitch EQBC
 		/goto :exit
 	}
+	/declare _count	int local 0
 	
 	| enable/disable summer line of spells
 	/if (${Bool[${_classType.Find[TEST]}]}) {
 		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
 
 
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		} 
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+
+
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
 	:exit
 /return

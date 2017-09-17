@@ -14,14 +14,15 @@
  *  NOTE: 
  ***|
 sub core_BER()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	CHECKTIE
 	
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/if (${isValidTarget}) /call stick_to_target
@@ -46,7 +47,6 @@ sub core_BER()
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
-	:exit
 /return
 
 
@@ -59,7 +59,8 @@ sub core_BER()
  ***|
 sub disc_BER()
 	DEBUGCLASS ${cbug}disc_BER()\ax
-	ISDEAD
+	AMIDEAD
+
 	/doevents
 	/if (${Me.CombatAbilityReady[${DiscOverwhelmingFrenzy}]}) /call core_cast "${DiscOverwhelmingFrenzy}" disc ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscEnduranceTap}]} && ${Me.CurrentEndurance} > ${Spell[${DiscEnduranceTap}].EnduranceCost} && ${Me.PctHPs} > 90) /call core_cast "${DiscEnduranceTap}" disc 0
@@ -117,9 +118,8 @@ sub get_agro_BER()
  ***|
 sub patch_heal_BER()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
-	/call check_exit
-	/if (${Bool[${Macro.Return}]} || ${Me.PctHPs} > 81*.${tmpHealOverride}) /goto :exit
-
+	CHECKEXIT
+	/if (${Me.PctHPs} > 81*.${tmpHealOverride}) /return
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Communion of Blood]}) /call core_cast "Uncanny Resilience" alt 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Blood Sustenance]}) /call core_cast "Blood Sustenance" alt 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
@@ -137,12 +137,60 @@ sub patch_heal_BER()
  ***|
 sub click_DPS_BER()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
-	ISDEAD
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
-	:exit
+/return
+
+
+
+ |***
+ *	DES: Berzerker burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_BER()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	CHECKEXIT
+	/doevents
+	
+	/if (${Me.AltAbilityReady[desperation]} && ${Me.PctHPs} < 90) /call core_cast "Desperation" alt 0
+	/if (${Me.CombatAbilityReady[${DiscScream}]} && ${Me.CurrentEndurance} > ${Spell[${DiscScream}].EnduranceCost}) /disc ${DiscScream}
+	/if (${Me.CombatAbilityReady[${CryOfChaos}]} && !${Me.Song[${CryOfChaos}].ID}) {
+		/delay ${Math.Rand[8]}s ${Me.Song[${CryOfChaos}].ID}
+		/if (!${Me.Song[${CryOfChaos}].ID}) {
+			/if (${Me.AltAbilityReady[Cry of Battle]} && ${Raid.Members}) /call core_cast "Cry of Battle" alt 0
+			/if (${Me.CurrentEndurance} > ${Spell[${CryOfChaos}].EnduranceCost}) /disc ${CryOfChaos}
+		}
+	} 
+	/if (${Me.AltAbilityReady[Savage Spirit]} && ${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]}) {
+		/if (${Me.CombatAbilityReady[${DiscOpenWound}]} && ${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscOpenWound}].EnduranceCost})  /call core_cast "${DiscOpenWound}" disc 0
+		/if (${Me.CurrentEndurance} > ${Spell[${DiscFrenzyResolve}].EnduranceCost}) /call core_cast "${DiscFrenzyResolve}" disc 0
+		/delay 3
+		/call core_cast "Savage Spirit" alt 0
+		/if (${Me.AltAbilityReady[Silent Strikes]}) /call core_cast "Silent Strikes" alt 0
+		/if (${Me.AltAbilityReady[${UntamedgRage}]}) /call core_cast "${UntamedgRage}" alt 0
+		/if (${Me.AltAbilityReady[${RecklessAbandon}]}) /call core_cast "${RecklessAbandon}" alt 0
+		/call cast_AA_spire
+		/if (${Me.AltAbilityReady[Blood Pact]}) /call core_cast "Blood Pact" alt 0
+	} else /if (${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && ${Me.CombatAbilityReady[${DiscBerserking}]} && ${Me.CurrentEndurance} > ${Spell[${DiscBerserking}].EnduranceCost}) {
+		/if (${Me.AltAbilityReady[Blinding Fury]} && !${Me.Song[Strike of Savagery].ID}) /call core_cast "Blinding Fury" alt 0
+		/if (${Me.Buff[Blinded by Fury].ID}) /call core_cast "${DiscBerserking}" disc 0
+		/if (${Me.AltAbilityReady[Juggernaut Surge]}) /call core_cast "Juggernaut Surge" alt 0
+		/if (!${Bool[${Me.ActiveDisc[${DiscMele}]}]} || !${Bool[${Me.Song[Empowered Blades]}]}) /call use_glyph
+		/if (${Me.AltAbilityReady[Intensity of the Resolute]} && !${Me.Song[Reckless Abandon].ID} && ${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0
+	} else /if (${Me.CombatAbilityReady[${DiscCleavingAnger}]} && ${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && ${Me.CurrentEndurance} > ${Spell[${DiscCleavingAnger}].EnduranceCost}) {
+		/disc ${DiscCleavingAnger}
+		/if (${Me.AltAbilityReady[Vehement Rage]} && !${Me.Song[Reckless Abandon].ID}) /call core_cast "Vehement Rage" alt 0
+	} else /if (${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && ${Me.CombatAbilityReady[${DiscVengeful}]} && ${Me.CurrentEndurance} > ${Spell[${DiscVengeful}].EnduranceCost}) {
+		/disc ${DiscVengeful}
+		/if (${Me.AltAbilityReady[Blood Pact]}) /call core_cast "Blood Pact" alt 0
+	}	
+	
+	
+	/call synergy_click_Circle
+	/if (${doclickItemBurn}) /call click_item_burn	
 /return
 
 
@@ -158,16 +206,31 @@ sub Bind_setBER(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setBER(type:${_classType}, verbage:${_classVerbage})\ax
 	/if (!${Select[${Me.Class.ShortName},BER]}) {
 		/call echo_bitch EQBC
-		/goto :exit
+		/return
 	}
+	/declare _count	int local 0
 	
 	| enable/disable summer line of spells
 	/if (${Bool[${_classType.Find[TEST]}]}) {
 		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
 
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		} 
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+
+
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return

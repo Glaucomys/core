@@ -33,6 +33,11 @@ sub Bind_hud(string _hcType)
 		/if (${setBroadcast.Equal[FALSE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "DISABLED"
 		/if (${setBroadcast.Equal[TRUE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "${coreAuto}"
 		/call echos switch "Adjusting Broadcast Status" setBroadcast
+
+	| delete the hud
+	} else /if (${Bool[${_hcType.Find[delete]}]}) {
+		NOUT Deleteing HUD ${sep}
+		/ini ".\..\MQ2HUD.ini" "core" NULL NULL
 	} else {
 		
 		/call echos listtype hc hud
@@ -54,29 +59,28 @@ sub HUDUpdate()
 	/ini ".\..\MQ2HUD.ini" "core" NULL NULL
 	/delay 1s
 	
-	/noparse /ini HUDPATH "core1" "3,5,26,255,255,255,Core"
-	/noparse /ini HUDPATH "core2" "3,44,26,100,149,237,${If[${versionCore},${versionCore},]}"
-	/noparse /ini HUDPATH "core3" "3,84,26,100,149,237,${If[${version${Me.Class.ShortName}},${version${Me.Class.ShortName}},]}"
-	/noparse /ini HUDPATH "core4" "3,44,26,255,0,0,${If[${versionCore},,OFF]}"
+	| Build
+	/noparse /ini HUDPATH "core1" "3,5,26,255,255,255,Build"
+	/noparse /ini HUDPATH "core2" "19,44,26,100,149,237,${coreBuild}"
 
 	| last tell
 	/noparse /ini HUDPATH "tell1" "3,5,38,255,255,255,Tell"
 	/noparse /ini HUDPATH "tell2" "3,44,38,100,149,237,${MacroQuest.LastTell}"
 
 	| control toon
-	/noparse /ini HUDPATH "control1" "3,5,50,255,255,255,${If[${Bool[${autoControl}]},,Control]}"
-	/noparse /ini HUDPATH "control2" "3,5,50,0,255,0,${If[${Bool[${autoControl}]},Control,]}"
-	/noparse /ini HUDPATH "control3" "3,44,50,100,149,237,${If[${Bool[${toonControl}]},${toonControl},]}"
+	/noparse /ini HUDPATH "control1" "19,5,50,255,255,255,${If[${Bool[${autoControl}]},,Control]}"
+	/noparse /ini HUDPATH "control2" "19,5,50,0,255,0,${If[${Bool[${autoControl}]},Control,]}"
+	/noparse /ini HUDPATH "control3" "19,44,50,100,149,237,${If[${Bool[${toonControl}]},${toonControl},]}"
 
 	| loc Y X Z
 	/noparse /ini HUDPATH "loc1" "3,5,62,255,255,255,LOC"
 	/noparse /ini HUDPATH "loc2" "3,44,62,100,149,237,${Int[${Me.Y}]}, ${Int[${Me.X}]}, ${Int[${Me.Z}]}"
 
 	| mode
-	/noparse /ini HUDPATH "mode0" "3,5,74,0,255,0,${If[${switchAutoCursor} && !${timer_auto_cursor_pause},Mode,]}"
-	/noparse /ini HUDPATH "mode1" "3,5,74,255,0,0,${If[!${switchAutoCursor} || (${switchAutoCursor} && ${timer_auto_cursor_pause}),Mode,]}"	
-	/noparse /ini HUDPATH "mode2" "3,44,74,255,255,0,${If[${Bool[${tmpMode}]},${tmpMode},]}"
-	/noparse /ini HUDPATH "mode3" "3,44,74,25,25,25,${If[${Bool[${tmpMode}]},,NONE]}"
+	/noparse /ini HUDPATH "mode0" "19,5,74,0,255,0,${If[${switchAutoCursor} && !${timer_auto_cursor_pause},Mode,]}"
+	/noparse /ini HUDPATH "mode1" "19,5,74,255,0,0,${If[!${switchAutoCursor} || (${switchAutoCursor} && ${timer_auto_cursor_pause}),Mode,]}"	
+	/noparse /ini HUDPATH "mode2" "19,44,74,255,255,0,${If[${Bool[${tmpMode}]},${tmpMode},]}"
+	/noparse /ini HUDPATH "mode3" "19,44,74,25,25,25,${If[${Bool[${tmpMode}]},,NONE]}"
 
 	| distance and LOS
 	/noparse /ini HUDPATH "LoS1" "3,5,86,255,255,255,LoS"
@@ -88,199 +92,197 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "target2" "3,103,97,100,149,237,${If[${Target.ID},[${Target.Class.ShortName} ${Target.Level}] ${Target.Name} ${If[${Bool[${Target.Guild}]},<${Target.Guild}>, ]}, ]}"
 	/noparse /ini HUDPATH "target3" "3,39,97,100,149,237,[     ][     ][     ]"
 
-
-
 	| engage ##
 	| MA
-	/noparse /ini HUDPATH "engage1" "3,44,98,255,255,255,${If[(!${switchOverrideEngageat} && ${coreAuto} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && (${Bool[${MA1}]} || ${Bool[${MA2}]}),${engageAt},]}"
+	/noparse /ini HUDPATH "engage1" "19,44,98,255,255,255,${If[(!${switchOverrideEngageat} && ${coreAuto} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && (${Bool[${MA1}]} || ${Bool[${MA2}]}),${engageAt},]}"
 	| smartma
-	/noparse /ini HUDPATH "engage2" "3,44,98,255,255,255,${If[!${switchOverrideEngageat} && ${coreAuto} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}),${smartengageAt},]}"
+	/noparse /ini HUDPATH "engage2" "19,44,98,255,255,255,${If[!${switchOverrideEngageat} && ${coreAuto} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}),${smartengageAt},]}"
 	| manual	
-	/noparse /ini HUDPATH "engage3" "3,44,98,25,25,25,${If[!${switchOverrideEngageat} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && (!${Bool[${MA1}]} || !${Bool[${Spawn[${MA1}].ID}]}) && (!${Bool[${MA2}]}|| !${Bool[${Spawn[${MA2}].ID}]}),##,]}"
+	/noparse /ini HUDPATH "engage3" "19,44,98,25,25,25,${If[!${switchOverrideEngageat} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && (!${Bool[${MA1}]} || !${Bool[${Spawn[${MA1}].ID}]}) && (!${Bool[${MA2}]}|| !${Bool[${Spawn[${MA2}].ID}]}),##,]}"
 	| override
-	/noparse /ini HUDPATH "engage4" "3,46,98,255,0,0,${If[(${switchOverrideEngageat},X,]}"
+	/noparse /ini HUDPATH "engage4" "19,46,98,255,0,0,${If[(${switchOverrideEngageat},X,]}"
 
 	| pet engage ##
-	/noparse /ini HUDPATH "pettarget1" "3,65,98,255,255,255,${If[!${switchOverrideEngageat} && ${switchPcPet},${PcPetengageat},]}"
-	/noparse /ini HUDPATH "pettarget2" "3,65,98,25,25,25,${If[!${switchOverrideEngageat} && !${switchPcPet},##,]}"
-	/noparse /ini HUDPATH "pettarget3" "3,67,98,255,0,0,${If[${switchOverrideEngageat},X,]}"
+	/noparse /ini HUDPATH "pettarget1" "19,65,98,255,255,255,${If[!${switchOverrideEngageat} && ${switchPcPet},${PcPetengageat},]}"
+	/noparse /ini HUDPATH "pettarget2" "19,67,98,255,0,0,${If[${switchOverrideEngageat},X,]}"
+	/noparse /ini HUDPATH "pettarget3" "19,65,98,25,25,25,${If[!${switchOverrideEngageat} && !${switchPcPet},##,]}"
 
 	| swarmpet engage ##
-	/noparse /ini HUDPATH "pettarget4" "3,86,98,255,255,255,${If[!${switchOverrideEngageat} && ${switchPcSwarm},${PcSwarmengageat},]}"
-	/noparse /ini HUDPATH "pettarget5" "3,86,98,25,25,25,${If[!${switchOverrideEngageat} && !${switchPcSwarm},##,]}"
-	/noparse /ini HUDPATH "pettarget6" "3,88,98,255,0,0,${If[${switchOverrideEngageat},X,]}"
+	/noparse /ini HUDPATH "pettarget4" "19,86,98,255,255,255,${If[!${switchOverrideEngageat} && ${switchPcSwarm},${PcSwarmengageat},]}"
+	/noparse /ini HUDPATH "pettarget5" "19,86,98,25,25,25,${If[!${switchOverrideEngageat} && !${switchPcSwarm},##,]}"
+	/noparse /ini HUDPATH "pettarget6" "19,88,98,255,0,0,${If[${switchOverrideEngageat},X,]}"
 
 	| target effect notice
 	/noparse /ini HUDPATH "tarnotice1" "3,39,109,100,149,237,[                                                                                                        ][       ]"
-	/noparse /ini HUDPATH "tarnotice2" "3,45,110,255,255,255,${hudTarNotice}"
-	/noparse /ini HUDPATH "watchspawn1" "3,362,110,0,255,0,${If[${Bool[${watchSpawn}]},${hudwatchspawn},]}"
-	/noparse /ini HUDPATH "watchspawn2" "3,362,110,25,25,25,${If[${Bool[${watchSpawn}]},,###]}"
+	/noparse /ini HUDPATH "tarnotice2" "19,45,110,255,255,255,${hudTarNotice}"
+	/noparse /ini HUDPATH "watchspawn1" "19,362,110,0,255,0,${If[${Bool[${watchSpawn}]},${hudwatchspawn},]}"
+	/noparse /ini HUDPATH "watchspawn2" "19,362,110,25,25,25,${If[${Bool[${watchSpawn}]},,###]}"
 
 	| combat modes
 	/noparse /ini HUDPATH "bot1" "3,140,13,100,149,237,[              ][    ][     ]"
-	/noparse /ini HUDPATH "bot2" "3,145,14,0,255,0,${If[${coreAuto} && ${combat.Equal[MELEE]},M,]}"
-	/noparse /ini HUDPATH "bot3" "3,145,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[MELEE]}) || (${coreAuto} && !${combat.Equal[MELEE]}),M,]}"
-	/noparse /ini HUDPATH "bot4" "3,153,14,0,255,0,${If[${coreAuto} && ${combat.Equal[RANGE]},R,]}"
-	/noparse /ini HUDPATH "bot5" "3,153,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[RANGE]}) || (${coreAuto} && !${combat.Equal[RANGE]}),R,]}"
-	/noparse /ini HUDPATH "bot6" "3,161,14,0,255,0,${If[${coreAuto} && ${combat.Equal[HEAL]},H,]}"
-	/noparse /ini HUDPATH "bot7" "3,161,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[HEAL]}) || (${coreAuto} && !${combat.Equal[HEAL]}),H,]}"
-	/noparse /ini HUDPATH "bot8" "3,169,14,0,255,0,${If[${coreAuto} && ${combat.Equal[NUKE]},N,]}"
-	/noparse /ini HUDPATH "bot9" "3,169,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[NUKE]}) || (${coreAuto} && !${combat.Equal[NUKE]}),N,]}"
-	/noparse /ini HUDPATH "bot10" "3,177,14,0,255,0,${If[${coreAuto} && ${combat.Equal[DUAL]},D,]}"
-	/noparse /ini HUDPATH "bot11" "3,177,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[DUAL]}) || (${coreAuto} && !${combat.Equal[DUAL]}),D,]}"
+	/noparse /ini HUDPATH "bot2" "19,145,14,0,255,0,${If[${coreAuto} && ${combat.Equal[MELEE]},M,]}"
+	/noparse /ini HUDPATH "bot3" "19,145,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[MELEE]}) || (${coreAuto} && !${combat.Equal[MELEE]}),M,]}"
+	/noparse /ini HUDPATH "bot4" "19,153,14,0,255,0,${If[${coreAuto} && ${combat.Equal[RANGE]},R,]}"
+	/noparse /ini HUDPATH "bot5" "19,153,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[RANGE]}) || (${coreAuto} && !${combat.Equal[RANGE]}),R,]}"
+	/noparse /ini HUDPATH "bot6" "19,161,14,0,255,0,${If[${coreAuto} && ${combat.Equal[HEAL]},H,]}"
+	/noparse /ini HUDPATH "bot7" "19,161,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[HEAL]}) || (${coreAuto} && !${combat.Equal[HEAL]}),H,]}"
+	/noparse /ini HUDPATH "bot8" "19,169,14,0,255,0,${If[${coreAuto} && ${combat.Equal[NUKE]},N,]}"
+	/noparse /ini HUDPATH "bot9" "19,169,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[NUKE]}) || (${coreAuto} && !${combat.Equal[NUKE]}),N,]}"
+	/noparse /ini HUDPATH "bot10" "19,177,14,0,255,0,${If[${coreAuto} && ${combat.Equal[DUAL]},D,]}"
+	/noparse /ini HUDPATH "bot11" "19,177,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[DUAL]}) || (${coreAuto} && !${combat.Equal[DUAL]}),D,]}"
 	
 	| combat distance
-	/noparse /ini HUDPATH "CD1" "3,191,14,255,255,255,${CombatDistance}"
+	/noparse /ini HUDPATH "CD1" "19,191,14,255,255,255,${CombatDistance}"
 	
 	| stick behind
-	/noparse /ini HUDPATH "stickback1" "3,210,14,0,255,0,${If[${SetStickBehind},B,]}"
-	/noparse /ini HUDPATH "stickback2" "3,210,14,25,25,25,${If[${SetStickBehind},,B]}"
+	/noparse /ini HUDPATH "stickback1" "19,210,14,0,255,0,${If[${SetStickBehind},B,]}"
+	/noparse /ini HUDPATH "stickback2" "19,210,14,25,25,25,${If[${SetStickBehind},,B]}"
 	
 	| face fast
-	/noparse /ini HUDPATH "facefast1" "3,218,14,0,255,0,${If[${SetFaceFast},F,]}"
-	/noparse /ini HUDPATH "facefast2" "3,218,14,25,25,25,${If[${SetFaceFast},,F]}"
+	/noparse /ini HUDPATH "facefast1" "19,218,14,0,255,0,${If[${SetFaceFast},F,]}"
+	/noparse /ini HUDPATH "facefast2" "19,218,14,25,25,25,${If[${SetFaceFast},,F]}"
 
 	| stuff for camp status
 	/noparse /ini HUDPATH "camp1" "3,140,26,100,149,237,R          L"
 	/noparse /ini HUDPATH "camp2" "3,150,25,100,149,237,[     ]     [     ]"
-	/noparse /ini HUDPATH "camp3" "3,155,26,0,255,0,${If[${HomeSet},${HomeRadius},]}"
-	/noparse /ini HUDPATH "camp4" "3,190,26,0,255,0,${If[${HomeSet},${HomeLeash},]}"
-	/noparse /ini HUDPATH "camp5" "3,155,26,25,25,25,${If[${HomeSet},,##        ##]}"
+	/noparse /ini HUDPATH "camp3" "19,155,26,0,255,0,${If[${HomeSet},${HomeRadius},]}"
+	/noparse /ini HUDPATH "camp4" "19,190,26,0,255,0,${If[${HomeSet},${HomeLeash},]}"
+	/noparse /ini HUDPATH "camp5" "19,155,26,25,25,25,${If[${HomeSet},,##        ##]}"
 
 	| tie info
 	/noparse /ini HUDPATH "tie1" "3,140,38,100,149,237,Tie"
 	/noparse /ini HUDPATH "tie2" "3,157,37,100,149,237,[     ][     ]"
-	/noparse /ini HUDPATH "tie3" "3,162,38,255,255,255,${If[${SetTie},${SetTieDistance},]}"
-	/noparse /ini HUDPATH "tie4" "3,183,38,255,255,255,${If[${SetTie},${tCheck_Tie},]}"
-	/noparse /ini HUDPATH "tie5" "3,183,38,25,25,25,${If[${SetTie},,##]}"
-	/noparse /ini HUDPATH "tie6" "3,162,38,25,25,25,${If[${SetTie},,##]}"
-	/noparse /ini HUDPATH "tie7" "3,201,38,0,255,0,${If[${Bool[${SetTieToon}]},${If[${Bool[${Spawn[${SetTieToon}]}]},${SetTieToon},]},]}"
-	/noparse /ini HUDPATH "tie8" "3,201,38,255,0,0,${If[${Bool[${SetTieToon}]},${If[!${Bool[${Spawn[${SetTieToon}]}]},${If[${Bool[${SetTieToon}]},${SetTieToon},]},]},]}"
-	/noparse /ini HUDPATH "tie9" "3,201,38,25,25,25,${If[${Bool[${SetTieToon}]},,NONE]}"
+	/noparse /ini HUDPATH "tie3" "19,162,38,255,255,255,${If[${SetTie},${SetTieDistance},]}"
+	/noparse /ini HUDPATH "tie4" "19,183,38,255,255,255,${If[${SetTie},${tCheck_Tie},]}"
+	/noparse /ini HUDPATH "tie5" "19,183,38,25,25,25,${If[${SetTie},,##]}"
+	/noparse /ini HUDPATH "tie6" "19,162,38,25,25,25,${If[${SetTie},,##]}"
+	/noparse /ini HUDPATH "tie7" "19,201,38,0,255,0,${If[${Bool[${SetTieToon}]},${If[${Bool[${Spawn[${SetTieToon}]}]},${SetTieToon},]},]}"
+	/noparse /ini HUDPATH "tie8" "19,201,38,255,0,0,${If[${Bool[${SetTieToon}]},${If[!${Bool[${Spawn[${SetTieToon}]}]},${If[${Bool[${SetTieToon}]},${SetTieToon},]},]},]}"
+	/noparse /ini HUDPATH "tie9" "19,201,38,25,25,25,${If[${Bool[${SetTieToon}]},,NONE]}"
 
 	| burn a thing
-	/noparse /ini HUDPATH "burn1" "3,140,50,0,255,0,${If[${burnAuto},Burn,]}"
-	/noparse /ini HUDPATH "burn2" "3,140,50,255,0,0,${If[${burnSwitch},,Burn]}"
+	/noparse /ini HUDPATH "burn1" "19,140,50,0,255,0,${If[${burnAuto},Burn,]}"
+	/noparse /ini HUDPATH "burn2" "19,140,50,255,0,0,${If[${burnAuto},,Burn]}"
 	/noparse /ini HUDPATH "burn3" "3,170,49,100,149,237,[     ][     ]"
-	/noparse /ini HUDPATH "burn4" "3,175,50,255,255,255,${If[!${burnForce} && ${burnCount},${burnCount},]}"
-	/noparse /ini HUDPATH "burn5" "3,175,50,25,25,25,${If[!${burnForce} && !${burnCount},##,]}"
-	/noparse /ini HUDPATH "burn6" "3,177,50,255,0,0,${If[${burnForce},X,]}"
-	/noparse /ini HUDPATH "burn7" "3,196,50,255,255,255,${If[!${burnForce} && ${burnEngageat},${burnEngageat},]}"
-	/noparse /ini HUDPATH "burn8" "3,196,50,25,25,25,${If[!${burnForce} && !${burnEngageat},##,]}"
-	/noparse /ini HUDPATH "burn9" "3,199,50,255,0,0,${If[${burnForce},X,]}"
+	/noparse /ini HUDPATH "burn4" "19,175,50,255,255,255,${If[!${burnForce} && ${burnCount},${burnCount},]}"
+	/noparse /ini HUDPATH "burn5" "19,175,50,25,25,25,${If[!${burnForce} && !${burnCount},##,]}"
+	/noparse /ini HUDPATH "burn6" "19,177,50,255,0,0,${If[${burnForce},X,]}"
+	/noparse /ini HUDPATH "burn7" "19,196,50,255,255,255,${If[!${burnForce} && ${burnEngageat},${burnEngageat},]}"
+	/noparse /ini HUDPATH "burn8" "19,196,50,25,25,25,${If[!${burnForce} && !${burnEngageat},##,]}"
+	/noparse /ini HUDPATH "burn9" "19,199,50,255,0,0,${If[${burnForce},X,]}"
 		
 	| rez
 	/noparse /ini HUDPATH "rez1" "3,140,62,100,149,237,Rez"
-	/noparse /ini HUDPATH "rez2" "3,162,61,255,0,0,${If[${switchRezTake},,[         ]]}"
-	/noparse /ini HUDPATH "rez3" "3,162,61,0,255,0,${If[${switchRezTake},[         ],]}"
-	/noparse /ini HUDPATH "rez4" "3,197,61,255,0,0,${If[${switchRezGive},,[      ]]}"
-	/noparse /ini HUDPATH "rez5" "3,197,61,0,255,0,${If[${switchRezGive},[      ],]}"
-	/noparse /ini HUDPATH "rez6" "3,167,62,255,255,255,${If[${versionCore},${Int[${Ini[${INICore},deathcount,${Me.DisplayName}]}]},]}"
-	/noparse /ini HUDPATH "rez7" "3,200,62,0,255,0,${If[${switchRezCombat},C,]}"
-	/noparse /ini HUDPATH "rez8" "3,200,62,25,25,25,${If[${switchRezCombat},,C]}"
-	/noparse /ini HUDPATH "rez9" "3,208,62,0,255,0,${If[${switchRezEveryone},E,]}"
-	/noparse /ini HUDPATH "rez10" "3,208,62,25,25,25,${If[${switchRezEveryone},,E]}"
-	/noparse /ini HUDPATH "rez11" "3,215,62,0,255,0,${If[${switchRezEmergency},!,]}"
-	/noparse /ini HUDPATH "rez12" "3,215,62,25,25,25,${If[${switchRezEmergency},,!]}"
+	/noparse /ini HUDPATH "rez2" "19,162,61,255,0,0,${If[${switchRezTake},,[         ]]}"
+	/noparse /ini HUDPATH "rez3" "19,162,61,0,255,0,${If[${switchRezTake},[         ],]}"
+	/noparse /ini HUDPATH "rez4" "19,197,61,255,0,0,${If[${switchRezGive},,[      ]]}"
+	/noparse /ini HUDPATH "rez5" "19,197,61,0,255,0,${If[${switchRezGive},[      ],]}"
+	/noparse /ini HUDPATH "rez6" "19,167,62,255,255,255,${If[${coreBuild},${Int[${Ini[${INICore},deathcount,${Me.DisplayName}]}]},]}"
+	/noparse /ini HUDPATH "rez7" "19,200,62,0,255,0,${If[${switchRezCombat},C,]}"
+	/noparse /ini HUDPATH "rez8" "19,200,62,25,25,25,${If[${switchRezCombat},,C]}"
+	/noparse /ini HUDPATH "rez9" "19,208,62,0,255,0,${If[${switchRezEveryone},E,]}"
+	/noparse /ini HUDPATH "rez10" "19,208,62,25,25,25,${If[${switchRezEveryone},,E]}"
+	/noparse /ini HUDPATH "rez11" "19,215,62,0,255,0,${If[${switchRezEmergency},!,]}"
+	/noparse /ini HUDPATH "rez12" "19,215,62,25,25,25,${If[${switchRezEmergency},,!]}"
 
 	| HUD WARNING/OVERIDE notices
 	/noparse /ini HUDPATH "hudwarning0" "3,110,1,100,149,237,[                                                     ]"
-	/noparse /ini HUDPATH "hudwarning1" "3,115,2,240,0,0,${If[${Bool[${hudWarning}]},${hudWarning},]}"
+	/noparse /ini HUDPATH "hudwarning1" "19,115,2,240,0,0,${If[${Bool[${hudWarning}]},${hudWarning},]}"
+
 
 	| group broadcast stauts
-	/noparse /ini HUDPATH "hudbroadcast0" "3,280,1,0,255,0,${If[${Bool[${setBroadcast}]},[                                         ],]}"
-	/noparse /ini HUDPATH "hudbroadcast1" "3,280,1,255,0,0,${If[${Bool[${setBroadcast}]},,[                                         ]]}"
-	/noparse /ini HUDPATH "hudbroadcast2" "3,285,2,100,149,237,${hudBroadcast}"
+	/noparse /ini HUDPATH "hudbroadcast0" "19,280,1,0,255,0,${If[${Bool[${setBroadcast}]},[                                         ],]}"
+	/noparse /ini HUDPATH "hudbroadcast1" "19,280,1,255,0,0,${If[${Bool[${setBroadcast}]},,[                                         ]]}"
+	/noparse /ini HUDPATH "hudbroadcast2" "19,285,2,100,149,237,${hudBroadcast}"
 
 	| agro notices and puler status
 	/noparse /ini HUDPATH "agro0" "3,280,13,100,149,237,[       ][       ][       ][    ]"
-	/noparse /ini HUDPATH "agro1" "3,286,14,0,255,0,${If[${switchAgro},A,]}"
-	/noparse /ini HUDPATH "agro2" "3,286,14,255,0,0,${If[${switchAgro},,A]}"
-	/noparse /ini HUDPATH "pull1" "3,295,14,0,255,0,${If[${switchPull},P,]}"
-	/noparse /ini HUDPATH "pull2" "3,295,14,255,0,0,${If[${switchPull},,P]}"	
-	/noparse /ini HUDPATH "agro4" "3,312,14,255,255,255,${MobAgro}"
-	/noparse /ini HUDPATH "zrad" "3,339,14,255,255,255,${zradius}"
-	/noparse /ini HUDPATH "cr1" "3,364,14,100,149,237,${combatRadius}"
+	/noparse /ini HUDPATH "agro1" "19,286,14,0,255,0,${If[${switchAgro},A,]}"
+	/noparse /ini HUDPATH "agro2" "19,286,14,255,0,0,${If[${switchAgro},,A]}"
+	/noparse /ini HUDPATH "pull1" "19,295,14,0,255,0,${If[${switchPull},P,]}"
+	/noparse /ini HUDPATH "pull2" "19,295,14,255,0,0,${If[${switchPull},,P]}"	
+	/noparse /ini HUDPATH "agro4" "19,312,14,255,255,255,${MobAgro}"
+	/noparse /ini HUDPATH "zrad" "19,339,14,255,255,255,${zradius}"
+	/noparse /ini HUDPATH "cr1" "19,364,14,100,149,237,${combatRadius}"
 
 	| ass..isting and stuff
 	/noparse /ini HUDPATH "ma11" "3,280,26,100,149,237,MA1"
-	/noparse /ini HUDPATH "ma12" "3,305,26,0,255,0,${If[${Bool[${MA1}]},${If[${Bool[${Spawn[${MA1}]}]},${MA1},]},]}"
-	/noparse /ini HUDPATH "ma13" "3,305,26,255,0,0,${If[${Bool[${MA1}]},${If[!${Bool[${Spawn[${MA1}]}]},${If[${Bool[${MA1}]},${MA1},]},]},]}"
-	/noparse /ini HUDPATH "ma14" "3,305,26,25,25,25,${If[${Bool[${MA1}]},,NONE]}"
+	/noparse /ini HUDPATH "ma12" "19,305,26,0,255,0,${If[${Bool[${MA1}]},${If[${Bool[${Spawn[${MA1}]}]},${MA1},]},]}"
+	/noparse /ini HUDPATH "ma13" "19,305,26,255,0,0,${If[${Bool[${MA1}]},${If[!${Bool[${Spawn[${MA1}]}]},${If[${Bool[${MA1}]},${MA1},]},]},]}"
+	/noparse /ini HUDPATH "ma14" "19,305,26,25,25,25,${If[${Bool[${MA1}]},,NONE]}"
 	/noparse /ini HUDPATH "ma21" "3,280,38,100,149,237,MA2"
-	/noparse /ini HUDPATH "ma22" "3,305,38,0,255,0,${If[${Bool[${MA2}]},${If[${Bool[${Spawn[${MA2}]}]},${MA2},]},]}"
-	/noparse /ini HUDPATH "ma23" "3,305,38,255,0,0,${If[${Bool[${MA2}]},${If[!${Bool[${Spawn[${MA2}]}]},${If[${Bool[${MA2}]},${MA2},]},]},]}"
-	/noparse /ini HUDPATH "ma24" "3,305,38,25,25,25,${If[${Bool[${MA2}]},,NONE]}"
+	/noparse /ini HUDPATH "ma22" "19,305,38,0,255,0,${If[${Bool[${MA2}]},${If[${Bool[${Spawn[${MA2}]}]},${MA2},]},]}"
+	/noparse /ini HUDPATH "ma23" "19,305,38,255,0,0,${If[${Bool[${MA2}]},${If[!${Bool[${Spawn[${MA2}]}]},${If[${Bool[${MA2}]},${MA2},]},]},]}"
+	/noparse /ini HUDPATH "ma24" "19,305,38,25,25,25,${If[${Bool[${MA2}]},,NONE]}"
 	/noparse /ini HUDPATH "sma1" "3,280,50,100,149,237,Smart MA"
 	/noparse /ini HUDPATH "sma2" "3,329,49,100,149,237,[    ]"
-	/noparse /ini HUDPATH "sma3" "3,334,50,255,255,255,${If[${useSmartAssist1},1,]}${If[${useSmartAssist2},2,]}${If[${useSmartAssistG},G,]}"
-	/noparse /ini HUDPATH "sma4" "3,334,50,25,25,25,${If[!${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG},X,]}"
+	/noparse /ini HUDPATH "sma3" "19,334,50,255,255,255,${If[${useSmartAssist1},1,]}${If[${useSmartAssist2},2,]}${If[${useSmartAssistG},G,]}"
+	/noparse /ini HUDPATH "sma4" "19,334,50,25,25,25,${If[!${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG},X,]}"
 
 	| buff switches
 	/noparse /ini HUDPATH "buff1" "3,280,62,100,149,237,Buff"
 	/noparse /ini HUDPATH "buff2" "3,305,61,100,149,237,[                   ]"
-	/noparse /ini HUDPATH "buff3" "3,310,62,0,255,0,${If[${switchBuffSelf},S,]}"
-	/noparse /ini HUDPATH "buff4" "3,310,62,25,25,25,${If[${switchBuffSelf},,S]} "
-	/noparse /ini HUDPATH "buff5" "3,319,62,0,255,0,${If[${switchBuffItem},I,]}"
-	/noparse /ini HUDPATH "buff6" "3,319,62,25,25,25,${If[${switchBuffItem},,I]} "
-	/noparse /ini HUDPATH "buff7" "3,324,62,0,255,0,${If[${switchBuffCombat},C,]}"
-	/noparse /ini HUDPATH "buff8" "3,324,62,25,25,25,${If[${switchBuffCombat},,C]} "
-	/noparse /ini HUDPATH "buff9" "3,332,62,0,255,0,${If[${switchBuffBc},B,]}"
-	/noparse /ini HUDPATH "buff10" "3,332,62,25,25,25,${If[${switchBuffBc},,B]}"
-	/noparse /ini HUDPATH "buff11" "3,341,62,0,255,0,${If[${switchBuffRaid},R,]}"
-	/noparse /ini HUDPATH "buff12" "3,341,62,25,25,25,${If[${switchBuffRaid},,R]}"
-	/noparse /ini HUDPATH "buff13" "3,349,62,0,255,0,${If[${switchBuffTell},T,]}"
-	/noparse /ini HUDPATH "buff14" "3,349,62,25,25,25,${If[${switchBuffTell},,T]}"
-	/noparse /ini HUDPATH "buff15" "3,357,62,0,255,0,${If[${switchBuffPet},P,]}"
-	/noparse /ini HUDPATH "buff16" "3,357,62,25,25,25,${If[${switchBuffPet},,P]}"
+	/noparse /ini HUDPATH "buff3" "19,310,62,0,255,0,${If[${switchBuffSelf},S,]}"
+	/noparse /ini HUDPATH "buff4" "19,310,62,25,25,25,${If[${switchBuffSelf},,S]} "
+	/noparse /ini HUDPATH "buff5" "19,319,62,0,255,0,${If[${switchBuffItem},I,]}"
+	/noparse /ini HUDPATH "buff6" "19,319,62,25,25,25,${If[${switchBuffItem},,I]} "
+	/noparse /ini HUDPATH "buff7" "19,324,62,0,255,0,${If[${switchBuffCombat},C,]}"
+	/noparse /ini HUDPATH "buff8" "19,324,62,25,25,25,${If[${switchBuffCombat},,C]} "
+	/noparse /ini HUDPATH "buff9" "19,332,62,0,255,0,${If[${switchBuffBc},B,]}"
+	/noparse /ini HUDPATH "buff10" "19,332,62,25,25,25,${If[${switchBuffBc},,B]}"
+	/noparse /ini HUDPATH "buff11" "19,341,62,0,255,0,${If[${switchBuffRaid},R,]}"
+	/noparse /ini HUDPATH "buff12" "19,341,62,25,25,25,${If[${switchBuffRaid},,R]}"
+	/noparse /ini HUDPATH "buff13" "19,349,62,0,255,0,${If[${switchBuffTell},T,]}"
+	/noparse /ini HUDPATH "buff14" "19,349,62,25,25,25,${If[${switchBuffTell},,T]}"
+	/noparse /ini HUDPATH "buff15" "19,357,62,0,255,0,${If[${switchBuffPet},P,]}"
+	/noparse /ini HUDPATH "buff16" "19,357,62,25,25,25,${If[${switchBuffPet},,P]}"
 
 	| lazy ass controlls
 	/noparse /ini HUDPATH "rest0" "3,140,74,100,149,237,Rest"
 	/noparse /ini HUDPATH "rest1" "3,165,73,100,149,237,[     ]"
-	/noparse /ini HUDPATH "rest2" "3,170,74,255,255,255,${If[${autoRest},${autoRest},]}"
-	/noparse /ini HUDPATH "rest3" "3,170,74,25,25,25,${If[${autoRest},,##]}"
+	/noparse /ini HUDPATH "rest2" "19,170,74,255,255,255,${If[${autoRest},${autoRest},]}"
+	/noparse /ini HUDPATH "rest3" "19,170,74,25,25,25,${If[${autoRest},,##]}"
 	
 	| DE-buff switches
 	/noparse /ini HUDPATH "debuff0" "3,280,74,100,149,237,deBuff"
 	/noparse /ini HUDPATH "debuff1" "3,316,73,100,149,237,[                    ]"	
-	/noparse /ini HUDPATH "debuff2" "3,321,74,0,255,0,${If[${switchdeBuffMezz},Z,]}"
-	/noparse /ini HUDPATH "debuff3" "3,321,74,25,25,25,${If[${switchdeBuffMezz},,Z]}"	
-	/noparse /ini HUDPATH "debuff4" "3,329,74,0,255,0,${If[${switchdeBuffMalo},M,]}"
-	/noparse /ini HUDPATH "debuff5" "3,329,74,25,25,25,${If[${switchdeBuffMalo},,M]}"	
-	/noparse /ini HUDPATH "debuff6" "3,337,74,0,255,0,${If[${switchdeBuffTash},T,]}"
-	/noparse /ini HUDPATH "debuff7" "3,337,74,25,25,25,${If[${switchdeBuffTash},,T]}"	
-	/noparse /ini HUDPATH "debuff8" "3,345,74,0,255,0,${If[${switchdeBuffCripple},C,]}"
-	/noparse /ini HUDPATH "debuff9" "3,345,74,25,25,25,${If[${switchdeBuffCripple},,C]}"	
-	/noparse /ini HUDPATH "debuff10" "3,353,74,0,255,0,${If[${switchdeBuffSlow},S,]}"
-	/noparse /ini HUDPATH "debuff11" "3,353,74,25,25,25,${If[${switchdeBuffSlow},,S]}"		
-	/noparse /ini HUDPATH "debuff12" "3,361,74,0,255,0,${If[${switchdeBuffEradicate},E,]}"
-	/noparse /ini HUDPATH "debuff13" "3,361,74,25,25,25,${If[${switchdeBuffEradicate},,E]}"		
-	/noparse /ini HUDPATH "debuff14" "3,369,74,0,255,0,${If[${switchdeBuffSnare},R,]}"		
-	/noparse /ini HUDPATH "debuff15" "3,369,74,25,25,25,${If[${switchdeBuffSnare},,R]}"		
+	/noparse /ini HUDPATH "debuff2" "19,321,74,0,255,0,${If[${switchdeBuffMezz},Z,]}"
+	/noparse /ini HUDPATH "debuff3" "19,321,74,25,25,25,${If[${switchdeBuffMezz},,Z]}"	
+	/noparse /ini HUDPATH "debuff4" "19,329,74,0,255,0,${If[${switchdeBuffMalo},M,]}"
+	/noparse /ini HUDPATH "debuff5" "19,329,74,25,25,25,${If[${switchdeBuffMalo},,M]}"	
+	/noparse /ini HUDPATH "debuff6" "19,337,74,0,255,0,${If[${switchdeBuffTash},T,]}"
+	/noparse /ini HUDPATH "debuff7" "19,337,74,25,25,25,${If[${switchdeBuffTash},,T]}"	
+	/noparse /ini HUDPATH "debuff8" "19,345,74,0,255,0,${If[${switchdeBuffCripple},C,]}"
+	/noparse /ini HUDPATH "debuff9" "19,345,74,25,25,25,${If[${switchdeBuffCripple},,C]}"	
+	/noparse /ini HUDPATH "debuff10" "19,353,74,0,255,0,${If[${switchdeBuffSlow},S,]}"
+	/noparse /ini HUDPATH "debuff11" "19,353,74,25,25,25,${If[${switchdeBuffSlow},,S]}"		
+	/noparse /ini HUDPATH "debuff12" "19,361,74,0,255,0,${If[${switchdeBuffEradicate},E,]}"
+	/noparse /ini HUDPATH "debuff13" "19,361,74,25,25,25,${If[${switchdeBuffEradicate},,E]}"		
+	/noparse /ini HUDPATH "debuff14" "19,369,74,0,255,0,${If[${switchdeBuffSnare},R,]}"		
+	/noparse /ini HUDPATH "debuff15" "19,369,74,25,25,25,${If[${switchdeBuffSnare},,R]}"		
 	
 	| heal switches
 	/noparse /ini HUDPATH "heal2" "3,305,85,100,149,237,[     ][              ]"
-	/noparse /ini HUDPATH "heal3" "3,310,86,255,255,255,${If[${HealOverride},${HealOverride},]}"
-	/noparse /ini HUDPATH "heal4" "3,310,86,25,25,25,${If[${HealOverride},,##]}"
-	/noparse /ini HUDPATH "heal5" "3,331,86,0,255,0,${If[${switchHealSelf},S,]}"
-	/noparse /ini HUDPATH "heal6" "3,331,86,25,25,25,${If[${switchHealSelf},,S]}"
-	/noparse /ini HUDPATH "heal7" "3,339,86,0,255,0,${If[${switchHealGroup},G,]}"
-	/noparse /ini HUDPATH "heal8" "3,339,86,25,25,25,${If[${switchHealGroup},,G]}"
-	/noparse /ini HUDPATH "heal9" "3,347,86,0,255,0,${If[${switchHealXtarget},X,]}"
-	/noparse /ini HUDPATH "heal10" "3,347,86,25,25,25,${If[${switchHealXtarget},,X]}"
-	/noparse /ini HUDPATH "heal11" "3,355,86,0,255,0,${If[${switchHealPet},P,]}"
-	/noparse /ini HUDPATH "heal12" "3,355,86,25,25,25,${If[${switchHealPet},,P]}"
-	/noparse /ini HUDPATH "heal13" "3,363,86,0,255,0,${If[${switchHealCure},C,]}"
-	/noparse /ini HUDPATH "heal14" "3,363,86,25,25,25,${If[${switchHealCure},,C]}"
-	/noparse /ini HUDPATH "heal15" "3,280,86,100,149,237,${If[!${Select[${Me.Class.ShortName},CLR]},Heal,]}"
-	/noparse /ini HUDPATH "heal16" "3,280,86,255,0,0,${If[${Select[${Me.Class.ShortName},CLR]} && ${switchHealAggressive},Heal,]}"
-	/noparse /ini HUDPATH "heal17" "3,280,86,0,255,0,${If[${Select[${Me.Class.ShortName},CLR]} && !${switchHealAggressive},Heal,]}"
+	/noparse /ini HUDPATH "heal3" "19,310,86,255,255,255,${If[${HealOverride},${HealOverride},]}"
+	/noparse /ini HUDPATH "heal4" "19,310,86,25,25,25,${If[${HealOverride},,##]}"
+	/noparse /ini HUDPATH "heal5" "19,331,86,0,255,0,${If[${switchHealSelf},S,]}"
+	/noparse /ini HUDPATH "heal6" "19,331,86,25,25,25,${If[${switchHealSelf},,S]}"
+	/noparse /ini HUDPATH "heal7" "19,339,86,0,255,0,${If[${switchHealGroup},G,]}"
+	/noparse /ini HUDPATH "heal8" "19,339,86,25,25,25,${If[${switchHealGroup},,G]}"
+	/noparse /ini HUDPATH "heal9" "19,347,86,0,255,0,${If[${switchHealXtarget},X,]}"
+	/noparse /ini HUDPATH "heal10" "19,347,86,25,25,25,${If[${switchHealXtarget},,X]}"
+	/noparse /ini HUDPATH "heal11" "19,355,86,0,255,0,${If[${switchHealPet},P,]}"
+	/noparse /ini HUDPATH "heal12" "19,355,86,25,25,25,${If[${switchHealPet},,P]}"
+	/noparse /ini HUDPATH "heal13" "19,363,86,0,255,0,${If[${switchHealCure},C,]}"
+	/noparse /ini HUDPATH "heal14" "19,363,86,25,25,25,${If[${switchHealCure},,C]}"
+	/noparse /ini HUDPATH "heal15" "19,280,86,100,149,237,${If[!${Select[${Me.Class.ShortName},CLR]},Heal,]}"
+	/noparse /ini HUDPATH "heal16" "19,280,86,255,0,0,${If[${Select[${Me.Class.ShortName},CLR]} && ${switchHealAggressive},Heal,]}"
+	/noparse /ini HUDPATH "heal17" "19,280,86,0,255,0,${If[${Select[${Me.Class.ShortName},CLR]} && !${switchHealAggressive},Heal,]}"
 
 	| notice at bottom	
 	/noparse /ini HUDPATH "notice1" "3,5,131,100,149,237,[                                                                                                                   ]"
-	/noparse /ini HUDPATH "notice2" "3,10,132,255,255,255,${hudNotice}"
+	/noparse /ini HUDPATH "notice2" "19,10,132,255,255,255,${hudNotice}"
 
-	/noparse /ini HUDPATH "time1" "3,360,132,146,149,180,${If[${HUDTime} || !${versionCore},${Time.Time24},${GameTime}]}"
+	/noparse /ini HUDPATH "time1" "19,360,132,146,149,180,${If[${HUDTime} || !${coreBuild},${Time.Time24},${GameTime}]}"
 
-	:exit
 /return

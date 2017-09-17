@@ -8,6 +8,8 @@ as required by the copyright holders of these functions, and desired by the deve
 ****************/
 
 #include "../MQ2Plugin.h"
+using namespace std;
+
 #include "math.h"
 #include <vector>
 

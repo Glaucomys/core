@@ -14,44 +14,86 @@
  *  NOTE: 
  ***|
 sub core_NEC()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
-	
-			/call sac_toon()
-
-|**	
-	DEBUGCLASS Loop start: ${cbug}core_NEC()\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
-	ISDEAD
-	CHECKTIE
+	AMIDEAD
 
+	CHECKTIE
+	
+	CHECKREZ
 	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_engaged
-		/if (!${Bool[${Macro.Return}]} && ${usePet}) /call check_pet
+		/if (!${Macro.Return}) {
+			/if (${switchPcPet}) /call check_pet
+		}
 	}
+
 
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
+		/call set_combat NUKE
+		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
+		/call disc_${Me.Class.ShortName}
+		/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill}
+		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
+		/if (${switchdeBuffMalo}) /call cast_malo_${Me.Class.ShortName} ${Target.ID}
+		/call click_BP
+		/call click_DPS_${Me.Class.ShortName}
+		/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
+		/if (${DoNuke}) /call cast_nuke
+		/if (${DoDoT}) /call cast_DOT_${Me.Class.ShortName}
+
+		/if (${doclickItem}) /call click_item TRUE
+		/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
+
+		
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
-	/call use_mod_rod
+	CHECKREZ
 	/if (${coreAuto}) {	
+		/call use_mod_rod
 		/if (${switchHealCure}) /call cast_cure
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
+		/if (!${Macro.Return}) /goto :killtarget
 	}
-	**|
-	:exit	
+
 /return
+
+
+
+
+
+|***
+ *	DES: Cast Necro DoT's
+ *	USE: /call cast_DOT_${Me.Class.ShortName}
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_DOT_NEC()
+	DEBUGCAST ${cbug}cast_DOT_NEC(count ${DoDoT})\ax
+	/call get_assist_target
+	/declare _count int local 0
+	/for _count 1 to ${DoDoT}
+		AMIDEAD
+		CHECKEXIT
+		/call is_target_dead
+		/if (${Macro.Return}) /return
+
+		/if ((${Target.BuffDuration[${DoT${_count}chk}]} <= 2 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
+			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
+		}
+	/next _count
+/return
+
 
 
 
@@ -74,65 +116,34 @@ sub pet_heal_NEC()
  *  NOTE: 
  ***|
 sub disc_NEC()
-	DEBUGCLASS \atdisc.${Me.Class.ShortName}()\ax 
+	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax 
+	CHECKEXIT
 	/doevents
-	ISDEAD
-	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
-	/call get_assist_target
-	/if (${useBanestrike} && ${Me.AltAbilityReady[Banestrike]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Banestrike].MyRange}) /call MQ2Cast "Banestrike" alt breakCast -targetid|${Spawn[${Target2Kill}].ID}
-|	/if (${Me.AltAbilityReady[Force of Elements]} && ${Spawn[${Target2Kill}].Distance} <= 200) /call MQ2Cast "Force of Elements" alt breakCast -targetid|${Spawn[${Target2Kill}].ID}
-	/if (${Bool[${useBuffKill}]} && !${timerBuffKill}) /call castBuffKill
-	:exit
-/return
+	CHECKTIE
+	/call is_target_dead
+	/if (!${Macro.Return}) /return
+	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+
+	| heal clickies
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
 
 
 
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub clickDPS_NEC()
-	DEBUGCLASS \atclickDPS.NEC()\ax 
-	/doevents
-	ISDEAD
-	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exit
-	/if (${Bool[${HornofUnity}]} && !${Bool[${Me.Song[Blessing of Unity]}]} && !${FindItem[Miniature Horn of Unity].Timer}) {
-		/call click_horn_of_unity 	
-		/goto :exit
-	}
-	:exit
-/return
+	| aa wake the dead
+	/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill}
+		
 
-
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub castNecroDot()
-	DEBUGCLASS \atcastNecroDot()\ax 
-	/doevents
-	ISDEAD
-	/if (!${Bool[${dotR${set}-${gem}}]}) /goto :exitcastNecroDot
-	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]}) /goto :exitcastNecroDot2
-
-	/if (${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${dotR${set}-${gem}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${dotR${set}-${gem}}].Mana}) {
-		/if ((${Target.BuffDuration[${dotR${set}-${gem}}]} <= 6 && ${Spawn[${Target.Buff[${dotR${set}-${gem}}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${dotR${set}-${gem}}].ID}) {
-			/call isTargetDead
-			/if (${Bool[${Macro.Return}]}) /goto :exitcastNecroDot
-			VOUT Casting \a-r${dotR${set}-${gem}}\ax on [\a-w${Spawn[${Target2Kill}].CleanName}\ax] \ag${set}\ax\aw:\ax\ag${gem}
-			/call MQ2Cast "${dotR${set}-${gem}}" gem${gem} 5s breakCast -targetid|${Target2Kill}
-		}
-	}
-
-	:exitcastNecroDot
+	| undead slow
+	| Death's  Malaise
 	
 	
-	:exitcastNecroDot2
+	| necro res
+	| Convergence / Essence Emerald
+	
+	| /if (${switchHealSelf} && ${Me.PctHPs} < 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Leech Touch]}) /call core_cast "Leech Touch" alt ${Target2Kill}
+	| /if (${switchHealSelf} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0
+	
 /return
 
 
@@ -143,40 +154,31 @@ sub castNecroDot()
  *	INI: 
  *  NOTE: 
  ***|
-sub mem_spell_set()
-/varset gem ${Math.Calc[${gem}+1]}
-	/if (${gem} > 11 ) {
-		/varset gem 1
-		/varset set ${Math.Calc[${set}+1]}
-		/if (${set} > ${SpellSets}) /varset set 1
-		/if (${set} > 1) {
-			VOUT Meming spell set \awcore${set}\ax
-			/memspellset core${set}
-			/delay 1s
-		}
-
-	}
-/return
-
-
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_Call_for_Blood()
-	ISDEAD
+sub click_DPS_NEC()
+	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	CHECKEXIT
+	CHECKTIE
 	/doevents
-	/if ((${coreAuto} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) || ${Me.Moving} || ${Bool[${Target.Mezzed}]} || ${Bool[${Me.Song[Chaotic Power]}]}) /goto :exit
-	/if (${Spawn[${Target2Kill}].Distance} < ${Spell[${CallforBlood}].MyRange} && ${Me.CurrentMana} > ${Spell[${CallforBlood}].Mana} && !${Bool[${Me.Song[Chaotic Power]}]}) {
-		VOUT Casting \a-r${CallforBlood}\ax on [\a-w${Spawn[${Target2Kill}].CleanName}\ax].
-		/call MQ2Cast "${CallforBlood}" -targetid|${Target2Kill}		
+	/call click_horn_of_unity 	
+/return
 
-	}
-	:exit
-	/call createTimer timer_Call_for_Blood ${tCall_for_Blood}
+
+
+|***
+ *	DES: casts call of blood line of spells
+ *	USE: /call cast_blood [ID]
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_blood(int _tmpID)
+	CHECKEXIT
+	/doevents
+	/call create_timer timer_check_blood ${tCheck_Blood}
+	/if (${Bool[${Me.Song[Chaotic Power]}]}) /return
+	/call is_target_dead
+	/if (${Macro.Return}) /return
+	/call core_cast "${spellBlood}" 0 ${_tmpID}	
+		
 /return
 
 
@@ -193,8 +195,6 @@ sub sac_toon()
 		 /delay 1
 		 /target id ${spawn[${sactarget}].ID}
 		/delay 1
-
-
 		/autoinventory
 		/call MQ2Cast "Sacrifice" gem12 5s -targetID|${Spawn[${sactarget}].ID} 
 		/delay 15s ${Cursor.ID}
@@ -206,37 +206,66 @@ sub sac_toon()
 
 
 |***
- *	DES: 
- *	USE: 
+ *	DES: malo the target
+ *	USE: debufs /debuff malo
  *	INI: 
  *  NOTE: 
  ***|
-sub dotCycle()
-	DEBUGCLASS \atdotCycle()\ax 
+sub cast_malo_NEC(int _tmpID)
+	DEBUGCLASS ${cbug}cast_malo_NEC()\ax
 	/doevents
-	/if (${coreAuto} && (${Bool[${NoCastList.Find[${Target.DisplayName}]}]} || ${Me.Moving} || ${Bool[${Target.Mezzed}]})) /goto :exitdotCycle
-	ISDEAD
-	/declare x int local
-	/declare y int local
-	/for x 1 to ${SpellSets}
-		/delay 1
-		/call isTargetDead
-		/if (${Bool[${Macro.Return}]}) /goto :exitdotCycle
-		/for y 1 to 12
-			/if (!${Bool[${dotR${x}-${y}}]}) /goto :skipdot
-			/delay 5s !${Me.SpellInCooldown}
-			/if (${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${dotR${x}-${y}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${dotR${x}-${y}}].Mana}) {
-				/if ((${Target.BuffDuration[${dotR${x}-${y}}]} <= 1 && ${Spawn[${Target.Buff[${dotR${x}-${y}}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${dotR${x}-${y}}].ID}) {
-					/call castCallforBlood
-					VOUT Casting \a-r${dotR${x}-${y}}\ax on [\a-w${Spawn[${Target2Kill}].CleanName}\ax]. (Set:${x} Spell:${y})
-					/call MQ2Cast "${dotR${x}-${y}}" gem${y} 5s breakCast -targetid|${Target2Kill}
-					/doevents
-				}
+	CHECKEXIT
+	/if (${timer_malo_${_tmpID}} || !${_tmpID}) /return
+	/call is_target_dead
+	/if (${Macro.Return} || !${Target.ID}) /return
+	
+	/if (${Target.Maloed.Duration}) {
+		/call create_timer timer_malo_${_tmpID} ${Target.Maloed.Duration.TotalSeconds}s
+		/return
+	}
+	/declare _resistCount int local 0
+
+	:loopmalo
+	/if (${Target.Distance} <= ${Spell[${spellMalo}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellMalo}].Mana} && ${Target.LineOfSight}) {
+		/call core_cast "${spellMalo}" alt ${_tmpID}
+		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+			/call create_timer timer_malo_${_tmpID} ${Spell[${spellMalo}].Duration.TotalSeconds}s
+		} else /if (${Select[${castReturn},CAST_RESIST]}) {
+			/varcalc _resistCount ${_resistCount}
+			/if (${_resistCount} >= 3) {
+				OUT ${ctar}${Target.CleanName}\ax resisted ${csp}${spellMalo}\ax ${cinfo}${_resistCount}\ax times, moving on!
+				/call create_timer timer_malo_${_tmpID} ${Spell[${spellMalo}].Duration.TotalSeconds}m
+			} else {
+				/delay 5
+				/goto :loopmalo
 			}
-		:skipdot
-		/next y
-	/next x
-	:exitdotCycle
+		}
+	}
+/return
+
+
+
+ |***
+ *	DES: Necromancer burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_NEC()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	CHECKEXIT
+	/doevents
+	
+	/call cast_AA_spire
+	
+	| aa swarm of decay
+	/if (${switchPcSwarm}) /call core_cast "Swarm of Decay" alt ${Target2Kill}
+	| aa Rise of bones
+	/if (${switchPcSwarm}) /call core_cast "Rise of Bones" alt ${Target2Kill}
+
+	/call use_glyph
+	/call synergy_click_Circle
+	/if (${doclickItemBurn}) /call click_item_burn
 /return
 
 
@@ -252,16 +281,30 @@ sub Bind_setNEC(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setNEC(type:${_classType}, verbage:${_classVerbage})\ax
 	/if (!${Select[${Me.Class.ShortName},NEC]}) {
 		/call echo_bitch EQBC
-		/goto :exit
+		/return
 	}
+	/declare _count	int local 0
+
 	
-	| enable/disable summer line of spells
-	/if (${Bool[${_classType.Find[TEST]}]}) {
+	/if (${Bool[${_classType.Equal[TEST]}]}) {
 		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		} 
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local FALSE
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
 
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return

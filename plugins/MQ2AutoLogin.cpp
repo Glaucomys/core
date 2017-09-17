@@ -109,6 +109,8 @@ Change log:
 
 
 #include "../MQ2Plugin.h"
+using namespace std;
+
 PLUGIN_VERSION(2.7);
 #include <map>
 #include <tlhelp32.h>

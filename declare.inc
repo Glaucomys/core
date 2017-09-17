@@ -8,193 +8,60 @@
  ***|
 
 
-
-
-
 |***
- *	DES: Version Control
- *	USE: 
+ *	DES: adjust the related ini
+ *	USE: /call writeINI [variable] [INISection] [value]
  *	INI: 
- *  NOTE: work in progress
- ***|  
-sub check_versions()
-	DEBUG ${cbug}set_versions()\ax
-	/declare versionCore				string	outer 4.0.0
-	/declare versionBRD 				string 	outer 1.5.1
-	/declare versionBER 				string 	outer 1.6.1
-	/declare versionBST 				string 	outer 1.0.2
-	/declare versionCLR 				string 	outer 2.2.0
-	/declare versionDRU 				string 	outer 2.0.1
-	/declare versionENC 				string 	outer 1.4.3
-	/declare versionMAG					string 	outer 2.0.3
-	/declare versionMNK 				string 	outer 0.5.0
-	/declare versionNEC 				string 	outer 0.5.1
-	/declare versionPAL 				string 	outer 1.0.3
-	/declare versionROG 				string 	outer 1.6.0
-	/declare versionRNG 				string 	outer 2.3.0
-	/declare versionSHD 				string 	outer 1.9.3
-	/declare versionSHM 				string 	outer 1.5.1
-	/declare versionWAR 				string 	outer 1.5.1
-	/declare versionWIZ 				string 	outer 1.8.2
-/return
-
-
-
-|***
- *	DES: Used to remove stale entries from the toons INI. 'cause I gotta keep changing shits.
- *	USE: /call fix_INI_declares
- *	INI: 
- *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
+ *  NOTE: 
  ***|
-sub fix_INI_declares()
-	/ini "${INIFile}" "Common" "SetModeInvis" NULL
-	/ini "${INIFile}" "Common" "SetScorchedEarthMode" NULL
-	/ini "${INIFile}" "Common" "SetSkillsMode" NULL
-	/ini "${INIFile}" "Common" "SetFishMode" NULL
-	/ini "${INIFile}" "Common" "SetForageMode" NULL
-	/ini "${INIFile}" "Common" "SetDragMode" NULL
-	/ini "${INIFile}" "Common" "Looter" NULL
-	/ini "${INIFile}" "Common" "ForageFishInvis" NULL
-	/ini "${INIFile}" "Common" "SetHunterMode" NULL
-	/ini "${INIFile}" "Common" "SetHunterAgro" NULL
-	/ini "${INIFile}" "Common" "SetPetFarmMode" NULL
-	/ini "${INIFile}" "Movement" "SetIgnoreLOS" NULL
-	
-	| timer	
-	/ini "${INICore}" "Timer" "tPetFarm_delay" NULL
-	
-	| wizard
-	/ini "${INIFile}" "Spells" "HuntNuke" NULL
-
-	| set rename to switch
-	/ini "${INIFile}" "Common" "setRaidInvite" NULL
-	/ini "${INIFile}" "Common" "setAgroMode" NULL
-	/ini "${INIFile}" "Common" "setPullMode" NULL
-	/ini "${INIFile}" "Common" "setToastMode" NULL
-	
-	| debuffs change
-	/ini "${INIFile}" "Common" "switchdeBuffMezz" NULL
-	/ini "${INIFile}" "Common" "switchdeBuffMalo" NULL
-	/ini "${INIFile}" "Common" "switchdeBuffTash" NULL
-	/ini "${INIFile}" "Common" "switchdeBuffSlow" NULL
-	/ini "${INIFile}" "Common" "switchdeBuffEradicate" NULL
-	/ini "${INIFile}" "Common" "switchdeBuffSnare" NULL
-	/ini "${INIFile}" "Common" "switchdeBuffCripple" NULL
-	/ini "${INIFile}" "Common" "setToastMode" NULL
-
-	| buff changes
-	/ini "${INIFile}" "Common" "BuffCombat" NULL
-	/ini "${INIFile}" "Common" "BuffSelf" NULL
-	/ini "${INIFile}" "Common" "BuffBC" NULL
-	/ini "${INIFile}" "Common" "BuffRaid" NULL
-	/ini "${INIFile}" "Common" "BuffTell" NULL
-	/ini "${INIFile}" "Common" "BuffPet" NULL
-	/ini "${INIFile}" "Common" "BuffItem" NULL
-	/ini "${INIFile}" "Common" "BuffAuto" NULL	
-	
-	/ini "${INIFile}" "Buffs" "BuffCombat" NULL
-	/ini "${INIFile}" "Buffs" "BuffSelf" NULL
-	/ini "${INIFile}" "Buffs" "BuffBC" NULL
-	/ini "${INIFile}" "Buffs" "BuffRaid" NULL
-	/ini "${INIFile}" "Buffs" "BuffTell" NULL
-	/ini "${INIFile}" "Buffs" "BuffPet" NULL
-	/ini "${INIFile}" "Buffs" "BuffItem" NULL	
-	/ini "${INIFile}" "Buffs" "BuffAuto" NULL	
-	
-	/ini "${INIFile}" "Spells" "useBuffKill" NULL
-	/ini "${INIFile}" "Buffs" "BuffCount" NULL
-	/ini "${INIFile}" "Spells" "SpellSet" NULL
-	/ini "${INIFile}" "Common" "autoCursor" NULL	
-	/ini "${INIFile}" "Common" "switchPullMode" NULL	
-	/ini "${INIFile}" "Common" "switchAgroMode" NULL	
-	
-	| rez changes
-	/ini "${INIFile}" "Heal" "rezAuto" NULL	
-	/ini "${INIFile}" "Heal" "rezEmergency" NULL	
-	/ini "${INIFile}" "Heal" "rezEveryone" NULL	
-	/ini "${INIFile}" "Heal" "rezCombat" NULL	
-	/ini "${INIFile}" "Heal" "rezEnable" NULL	
-	/ini "${INIFile}" "Heal" "switchRezAtuo" NULL	
-	/ini "${INIFile}" "Heal" "switchRezEnable" NULL	
-	/ini "${INIFile}" "Buffs" "switchRezEmergency" NULL	
-	/ini "${INIFile}" "Buffs" "switchRezAuto" NULL	
-	/ini "${INIFile}" "Buffs" "switchRezCombat" NULL	
-	/ini "${INIFile}" "Buffs" "switchRezEveryone" NULL	
-	/ini "${INICore}" "General" "RezTokenList" NULL	
-
-	| pets
-	/ini "${INIFile}" "Pet" "PetTank" NULL
-	/ini "${INIFile}" "Pet" "sendPetPerc" NULL
-	/ini "${INIFile}" "Pet" "usePet" NULL
-	/ini "${INIFile}" "Pet" "sendPetSwarmPerc" NULL
-	/ini "${INIFile}" "Pet" "usePetSwarm" NULL
-	/ini "${INIFile}" "Movement" "SetTie" NULL
-
-
-	| old ini entries
-	/ini "${INIFile}" "Common" "UseBanestrike" NULL
-	/ini "${INIFile}" "Common" "ModeNuke" NULL
-	/ini "${INIFile}" "Common" "AutoDeleteItem" NULL
-	/ini "${INIFile}" "Common" "CombatBuff" NULL
-	/ini "${INIFile}" "Common" "BalanceHP" NULL
-	/ini "${INIFile}" "Common" "DoDebuff" NULL
-	/ini "${INIFile}" "Common" "Mount" NULL
-	/ini "${INIFile}" "Common" "HealOverride" NULL
-	/ini "${INIFile}" "Spells" "RuneSpell" NULL
-	/ini "${INIFile}" "Spells" "RuneType" NULL
-	/ini "${INIFile}" "Spells" "CauldronDestroy" NULL
-	/ini "${INIFile}" "Common" "AutoSit" NULL
-	/ini "${INIFile}" "Common" "AutoBuff" NULL
-	/ini "${INIFile}" "Common" "UseCharm" NULL
-	/ini "${INIFile}" "Common" "SetTankMode" NULL
-	/ini "${INIFile}" "Common" "AutoBot" NULL
-	/ini "${INIFile}" "Common" "forcesafelist" NULL
-	/ini "${INIFile}" "SelfBuff" NULL NULL
-
-	| old toast stuff
-	/ini "${INIFile}" "Common" "ToastMobCount" NULL
-	/ini "${INIFile}" "Common" "WhentoToast" NULL
-	/ini "${INIFile}" "Common" "AutoToast" NULL
-
+sub writeINI(string _varName, string _section, string _value)
+	DEBUG ${cbug}writeINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
+	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${section},${_varName},"${value}"].NotEqual[${_value}]}) {
+		/varset ${_varName} ${_value}	
+	 	| /ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
+	 	/ini ${INIClass} ${_section} ${_varName} "${_value}"
+	}
 /return
 
 
 
 |***
  *	DES: adjust the related ini
- *	USE: /call Event_SetVar NA [variable] [INISection] [value]
+ *	USE: /call Event_SetaliasVar NA [variable] [INISection] [value]
  *	INI: 
  *  NOTE: 
  ***|
-#event SetVar 			"[MQ2] - Core: #1# -> [#2#] -> #3#"
-sub Event_SetVar(string line, string _varName, string _section, string _value)
-	/if (${Select[${_value},TRUE,ON]}) /varset _value TRUE
-	/if (${Select[${_value},FALSE,OFF,0]}) /varset _value FALSE
-	/varset ${_varName} ${_value}
-	/ini "${INIFile}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
-	DEBUG changing INI -> [${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value}
+#event SetaliasVar 			"[MQ2] - Core: #1# -> [#2#] -> #3#"
+sub Event_SetaliasVar(string line, string _varName, string _section, string _value)
+	/call writeINI ${_varName} ${_section} ${_value}
 /return
 
 
 
 |***
- *	DES: a /declare wrapper
- *	USE: /declare OPsMomisFat [int|bool|string] [outer|local] [3.14]
+ *	DES: creates timers
+ *	USE: /call declareTimer [NAME] [INT|BOOL|STRING|FLOAT] [INISECTION] [value] [timer_check_blah_blah]
  *	INI: 
  *  NOTE: 
  ***|
-sub DeclareVar(string _name, string _type, string _scope, string _value)
-	/if (!${Defined[${_name}]}) {
-		/declare ${_name} ${_type} ${_scope}
-		/if (${_value.NotEqual[NULL]}) /varset ${_name} ${_value}
-		/varset ${_name} ${_value}
-		DEBUG Setting ${_name} ${_type} ${_scope} "${_value}" 
-	} else /if (${Defined[${_name}]}) {
-		DEBUG DEFINED/Setting:${_name} VALUE:${_value}
-		/if (${_value.NotEqual[NULL]}) /varset ${_name} ${_value}
+sub setTimer(string _name, string _type, string _section, string _value, string _my_timer)
+	| DEBUG setTimer(name:${_name}, type:${_type}, INIsection:${_section}, value:${_value}, Timer_Name:${_my_timer})
+	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]} || !${Bool[${_my_timer}]}) {
+		/if (!${Bool[${_name}]}) OUT ${ocaution} ${sep} BAD variable Name. 
+		/if (!${Bool[${_type}]}) OUT ${ocaution} ${sep} BAD variable Type. 
+		/if (!${Bool[${_section}]}) OUT ${ocaution} ${sep} BAD INI Section.
+		/if (!${Bool[${_my_timer}]}) OUT ${ocaution} ${sep} BAD Timer Name. 
+		/return
 	}
-/return
 
+	/if (!${Defined[${_name}]}) /declare ${_name} ${_type} outer
+	/varset ${_name} ${Ini[${INIClass},${_section},${_name},"${_value}"]}
+	/if (!${Bool[${Ini[${INIClass},${_section}].Find[${_name}]}]}) {
+		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
+	} 
+
+	/call create_timer ${_my_timer} 1
+	/return
 
 
 
@@ -204,41 +71,29 @@ sub DeclareVar(string _name, string _type, string _scope, string _value)
  *	INI: 
  *  NOTE: 
  ***|
-sub DeclareIniVar(string name, string varType, string section, string value, string alias)
-	DEBUG Setting ${name} ${Ini[${INIFile},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
+sub DeclareIniVar(string name, string varType, string section, string value)
+	| /echo DeclareIniVar(name:${name}, type:${varType}, INIsection:${section}, value:${value})
+	| /echo Setting ${name} ${Ini[${INIClass},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
 	/if (!${Bool[${name}]} || !${Bool[${varType}]} || !${Bool[${section}]}) {
 		/echo ${cbad}-- INVALID INI SETTING/STRING [${name}/${varType}/${section}] --\ax
-		/goto :exit
+		/return
 	}
-
 	/if (!${Defined[${name}]}) /declare ${name} ${varType} outer
-	/varset ${name} ${Ini[${INIFile},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
-	/if (!${Bool[${Ini[${INIFile},${section}].Find[${name}]}]}) {
-		DEBUG Creating: INI -> [${section}] -> ${name} ${If[${Bool[${alias}]},[alias:\aw${alias}\ax],]}
-		/ini "${INIFile}" "${section}" "${name.Left[1].Upper}${name.Right[-1]}" "${${name}}" "${${value}}"
-	}
+	/varset ${name} ${Ini[${INIClass},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
+	/if (!${Bool[${Ini[${INIClass},${section}].Find[${name}]}]}) {
+		/ini "${INIClass}" "${section}" "${name.Left[1].Upper}${name.Right[-1]}" "${${name}}" "${${value}}"
 
-	/if (${Bool[${alias}]} && !${Bool[${Alias[${alias}]}]}) {
-		DEBUG Creating: Alias \aw${alias}\ax 
-		/squelch /alias ${alias} NOUT Core: \aw${name}\ax -> [${section}] -> 
-	} else /if (${Bool[${alias}]} && ${Bool[${Alias[${alias}]}]}) {
-		DEBUG Alias ${cinfo}${alias}\ax already exists
 	}
 
 	/if (${Me.Book[${Me.Book[${${name}} Rk. III]}].ID}) {
-		DEBUG Setting ${name}: ${${name}} ${debugalias}
 		/varset ${name} ${Me.Book[${Me.Book[${${name}} Rk. III]}].Name} 
 	} else /if (${Me.Book[${Me.Book[${${name}} Rk. II]}].ID}) {
-		DEBUG Setting ${name}: ${${name}} ${debugalias}
 		/varset ${name} ${Me.Book[${Me.Book[${${name}} Rk. II]}].Name}
 	} else /if (${Me.CombatAbility[${${name}} Rk. III]}) {
-		DEBUG Setting ${name}: ${${name}} ${debugalias}
 		/varset ${name} ${${name}} Rk. III
 	} else /if (${Me.CombatAbility[${${name}} Rk. II]}) {
-		DEBUG Setting ${name}: ${${name}} ${debugalias}
 		/varset ${name} ${${name}} Rk. II
 	}
-	:exit
 /return
 
 
@@ -249,27 +104,17 @@ sub DeclareIniVar(string name, string varType, string section, string value, str
  *	INI: 
  *  NOTE: 
  ***|
-sub DeclareCoreIniVar(string name, string varType, string section, string value, string alias)
+sub DeclareCoreIniVar(string name, string varType, string section, string value)
 	/if (!${Bool[${name}]} || !${Bool[${varType}]} || !${Bool[${section}]}) {
 		/echo ${cbad}-- INVALID INI SETTING/STRING [${name}/${varType}/${section}] --\ax
-		/goto :exit
+		/return
 	}
 
 	/if (!${Defined[${name}]}) /declare ${name} ${varType} outer
 	/varset ${name} ${Ini[${INICore},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
 	/if (!${Bool[${Ini[${INICore},${section}].Find[${name}]}]}) {
 		/ini "${INICore}" "${section}" "${name.Left[1].Upper}${name.Right[-1]}" "${${name}}" "${${value}}"
-		DEBUG Creating: INI -> [${section}] -> ${name} ${If[${Bool[${alias}]},[alias:${cinfo}${alias}\ax],]}
 	}
-	DEBUG Setting ${name} ${Ini[${INICore},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
-
-	/if (${Bool[${alias}]} && !${Bool[${Alias[${alias}]}]}) {
-		/squelch /alias ${alias} NOUT Core: ${cinfo}${name}\ax -> [${section}] -> 
-		DEBUG Creating: Alias ${cinfo}${alias}\ax 
-	} else /if (${Bool[${alias}]} && ${Bool[${Alias[${alias}]}]}) {
-		DEBUG Alias ${cinfo}${alias}\ax already exists
-	}
-	:exit
 /return
  
 
@@ -281,7 +126,6 @@ sub DeclareCoreIniVar(string name, string varType, string section, string value,
  *  NOTE: 
  ***|
 sub update_zone_list(string _list)
-	DEBUG  ${cbug}update_zone_list(list: ${_list})\ax
 	/if (!${Target.ID}) {
 		/call echos needtarget
 	} else /if (${Target.ID} && ${${_list}.Find[${Target.DisplayName}]}) {
@@ -302,12 +146,12 @@ sub update_zone_list(string _list)
  ***| 
 sub check_zone_INI(string _sender)
 	DEBUG ${cbug}check_zone_INI()\ax 
-	/if (${Bool[${_sender}]} && !${Spawn[pc ${_sender}].ID}) /goto :exit
+	/if (${Bool[${_sender}]} && !${Spawn[pc ${_sender}].ID}) /return
 
-	/if (!${Defined[_count]}) /declare _count 						int local	
-	/if (!${Defined[_listtype]}) /declare _listtype 			string local	
-	/if (!${Defined[_list]}) /declare _list 							string local ${ZoneFileList}
-	/if (!${Defined[_tmpString]}) /declare _tmpString			string local
+	/declare _count 						int local	
+	/declare _listtype 					string local	
+	/declare _list 							string local ${ZoneFileList}
+	/declare _tmpString					string local
 	
 	/if (${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {
 		/varset FullZoneName ${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}	
@@ -319,7 +163,7 @@ sub check_zone_INI(string _sender)
 			/varset ${_listtype} ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
 		/next _count				
 
-		/goto :exit
+		/return
 	} else /if (${Bool[${Ini[${INIZone},"${Zone.Name}"]}]} || !${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} || !${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {	
 		| start swap. create a full zone name INI
 		/if (!${Bool[${Ini[${INIZone},"${Zone.Name}","SafeZone"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}]}) {
@@ -368,21 +212,60 @@ sub check_zone_INI(string _sender)
 		| delete the full name and hope this shit works
 		/if (${Bool[${Ini[${INIZone},"${Zone.Name}"]}]} && ${Zone.Name.NotEqual[${Zone.ShortName}]}) /ini "${INIZone}" "${Zone.Name}" NULL NULL
 	}
- 	:exit
 /return 
 
 
 
 |***
- *	DES: Base variable inits.
- *	USE: 
- *	INI: core.ini
+ *	DES: class INI files for each toon
+ *	USE: /call set_declares
+ *	INI: 
  *  NOTE: 
  ***|
-sub declare_base()
-	DEBUG ${cbug}base.Environment()\ax
-	/call DeclareVar core												bool	outer TRUE
-	/call DeclareVar _count											int		local
+sub set_declares()
+	/declare coreBuild	 														int			outer 20170916
+
+	/declare _count 																int 		local
+	/declare combat																	string	outer
+		
+	/declare isValidTarget													bool		outer FALSE
+	/declare canCast																bool		outer	TRUE
+
+	| HUD controls
+	/declare hudType																string	outer |time|update|broadcasts|delete
+	/declare hudNotice															string	outer FALSE
+	/declare hudWarning															string	outer	FALSE
+	/declare hudTarNotice														string	outer FALSE
+	/declare hudBroadcast														string	outer FALSE
+	/declare tmpMode																string	outer FALSE
+		
+	/declare hudIV																	bool		outer FALSE
+	/declare hudIVU																	bool		outer FALSE
+	
+		/call DeclareCoreIniVar HudName									string	General Core
+	/call DeclareCoreIniVar HudType									string	General normal
+	/call DeclareIniVar HUDTime											bool 		Common TRUE
+	/call DeclareIniVar setBroadcast								string	Common TRUE	
+
+
+	| Base Environment settings
+	/declare noInvis 																bool 		outer TRUE
+	/declare noFeigning 														bool 		outer TRUE
+	/declare Target2Kill														int			outer 0
+	/declare UseRange																bool		outer FALSE
+	/declare currentLootCount												int			outer	0
+	/declare markerDead															bool		outer FALSE
+
+
+
+	/call DeclareCoreIniVar plist										string	Plugin |MQ2Cast|MQ2EQBC|MQ2Exchange|MQ2MoveUtils|MQ2Netbots|MQ2Debuffs
+	/call DeclareCoreIniVar EQBCServer							string	General 127.0.0.1
+	/call DeclareCoreIniVar EQBCPort								string	General 2112
+	/call DeclareCoreIniVar mqlog										string	General FALSE
+	/call DeclareCoreIniVar minMobPullLvl						int			General 1
+	/call DeclareCoreIniVar maxMobPullLvl						int			General 150
+	/call DeclareIniVar verbose											bool		Common TRUE
+
 		
 		|** Output Color Display 
 			Default			\ax							Black				\ab
@@ -399,65 +282,63 @@ sub declare_base()
 		**|
 	
 	| visual outputs
-	/call DeclareCoreIniVar ctar										string	Output \a-w
-	/call DeclareCoreIniVar cpc											string	Output \a-w
-	/call DeclareCoreIniVar csp											string	Output \a-r
-	/call DeclareCoreIniVar cbad										string	Output \ar
-	/call DeclareCoreIniVar cgood										string	Output \ag
-	/call DeclareCoreIniVar c-											string	Output \at
-	/call DeclareCoreIniVar cbug										string	Output \at
-	/call DeclareCoreIniVar cinfo										string	Output \aw
-	/call DeclareCoreIniVar citem										string	Output \au
-	/call DeclareCoreIniVar sep											string	Output \at..\ax
-	/call DeclareCoreIniVar sepO										string	Output \at[\ax
-	/call DeclareCoreIniVar sepC										string	Output \at]\ax
-	/call DeclareCoreIniVar oenabled								string	Output "${cgood}Enabled\ax"
-	/call DeclareCoreIniVar odisabled								string	Output "${cbad}DISABLED\ax"
-	/call DeclareCoreIniVar owarning								string	Output "${cbad}WARNING\ax"
-	/call DeclareCoreIniVar ofatal									string	Output "${cbad}FATAL ERROR\ax ${sep} ${cbad}ENDING MACRO\ax"
-	/call DeclareCoreIniVar ocaution								string	Output "${cbad}CAUTION\ax"
-	/call DeclareCoreIniVar otrue										string	Output "${cgood}TRUE\ax"
-	/call DeclareCoreIniVar ofalse									string	Output "${cbad}FALSE\ax"
-	/call DeclareCoreIniVar odestroy								string	Output "${cbad}DESTROY\ax"
-	/call DeclareCoreIniVar oleave									string	Output "${cinfo}Leave\ax"
-	/call DeclareCoreIniVar oannounce								string	Output "\amAnnounce\ax"
-	/call DeclareCoreIniVar oadd										string	Output "${cgood}Add\ax"
-	/call DeclareCoreIniVar okeep										string	Output "${cgood}Keep\ax"
-	/call DeclareCoreIniVar onotice									string	Output "\ayNotice\ax"
-	/call DeclareCoreIniVar prelink									string	Output "3Rorcex^11000004^0^1^1362119591^10000^'"
- 	/call DeclareCoreIniVar postlink								string	Output ""	
- 	/call DeclareCoreIniVar ocombat									string	Output "\amCombat\ax"	
-	/call DeclareCoreIniVar oremove									string	Output "${cbad}Removing\ax"
+	/declare ctar																		string	outer \a-w
+	/declare cpc																		string	outer \a-w
+	/declare csp																		string	outer \a-r
+	/declare cbad																		string	outer \ar
+	/declare cgood																	string	outer \ag
+	/declare c-																			string	outer \at
+	/declare cbug																		string	outer \at
+	/declare cinfo																	string	outer \aw
+	/declare citem																	string	outer \au
+	/declare sep																		string	outer \at..\ax
+	/declare sepO																		string	outer \at[\ax
+	/declare sepC																		string	outer \at]\ax
+	/declare oenabled																string	outer ${cgood}Enabled\ax
+	/declare odisabled															string	outer ${cbad}DISABLED\ax
+	/declare owarning																string	outer ${cbad}WARNING\ax
+	/declare ofatal																	string	outer ${cbad}FATAL ERROR\ax ${sep} ${cbad}ENDING MACRO\ax
+	/declare ocaution																string	outer ${cbad}CAUTION\ax
+	/declare otrue																	string	outer ${cgood}TRUE\ax
+	/declare ofalse																	string	outer ${cbad}FALSE\ax
+	/declare odestroy																string	outer ${cbad}DESTROY\ax
+	/declare oleave																	string	outer ${cinfo}Leave\ax
+	/declare oannounce															string	outer \amAnnounce\ax
+	/declare oadd																		string	outer ${cgood}Add\ax
+	/declare okeep																	string	outer ${cgood}Keep\ax
+	/declare onotice																string	outer \ayNotice\ax
+	| /declare prelink												string	outer "3Rorcex^11000004^0^1^1362119591^10000^'"
+ 	| /declare postlink												string	outer ""	
+ 	/declare ocombat																string	outer "\amCombat\ax"	
+	/declare oremove																string	outer "${cbad}Removing\ax"
+
  	 	
 	| various lists for .. you know..lists and stuff.
-	/call DeclareVar MeleeList      								string 	outer |WAR|ROG|BST|MNK|SHD|PAL|BER|BRD|RNG
-	/call DeclareVar CastList												string 	outer |BST|SHD|PAL|RNG|CLR|DRU|SHM|ENC|WIZ|NEC|MAG
-	/call DeclareVar PetList												string 	outer |ENC|DRU|SHM|SHD|CLR|WIZ|RNG|BRD|BST|MAG
-	/call DeclareVar HealerList											string 	outer |CLR|DRU|SHM
-	/call DeclareVar RezerList											string 	outer |CLR|DRU|SHM|PAL
-	/call DeclareVar AllClassList										string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
-	/call DeclareVar AASnareList										string 	outer |RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK
+	/declare MeleeList    		  										string 	outer |WAR|ROG|BST|MNK|SHD|PAL|BER|BRD|RNG
+	/declare CastList																string 	outer |BST|SHD|PAL|RNG|CLR|DRU|SHM|ENC|WIZ|NEC|MAG
+	/declare PetList																string 	outer |ENC|DRU|SHM|SHD|CLR|WIZ|RNG|BRD|BST|MAG
+	/declare HealerList															string 	outer |CLR|DRU|SHM
+	/declare RezerList															string 	outer |CLR|DRU|SHM|PAL
+	/declare AllClassList														string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
+	/declare AASnareList														string 	outer |RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL
+	/declare AAEradicateList												string 	outer |RNG|DRU|NEC|WIZ|ENC|MAG
 		
-	/call DeclareIniVar verbose											bool		Common TRUE
-	/call DeclareCoreIniVar EQBCServer							string	General 127.0.0.1
-	/call DeclareCoreIniVar EQBCPort								string	General 2112
-	/call DeclareCoreIniVar mqlog										string	General FALSE
-	/call DeclareCoreIniVar HudName									string	General Core
-	/call DeclareCoreIniVar HudType									string	General normal
-	/call DeclareCoreIniVar minMobPullLvl						int			General 1
-	/call DeclareCoreIniVar maxMobPullLvl						int			General 150
-	/call DeclareCoreIniVar combatRadius						string	General 30
-	/call DeclareCoreIniVar plist										string	Plugin |MQ2Cast|MQ2EQBC|MQ2Exchange|MQ2MoveUtils|MQ2Netbots|MQ2Debuffs
 		
 	| core control
-	/call DeclareVar coreType 											string 	outer "|auto|killcode|ma1|ma2|melee|nuke|range|reset|rest|verbose|whitewash"
-	
+	/declare coreType 															string 	outer |auto|control|echo|expadjust|expmaintain|explevel|find|fixini|invite|killcode|dbcash|raidinvite|relay|reset|rest|verbose|whitewash
+	/call DeclareIniVar relayTells									string	Common FALSE
 	/call DeclareIniVar coreAuto				 						bool	 	Common FALSE
 	/call DeclareCoreIniVar remoteKillKey						string	General "CHANGE ME" 
-	
 	/call DeclareCoreIniVar ${Me.DisplayName}				int			DeathCount 0
 	/call DeclareCoreIniVar invitelist							string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
+	/call DeclareIniVar toonControl			 						string	Common FALSE
+	/call DeclareIniVar autoRest 										int 		Common 90
+	/call DeclareIniVar echoChannel									string	Common FALSE 
+	/call DeclareIniVar AutoExpAdjust 							bool 		Common TRUE
+	/call DeclareIniVar MaintExpLvl   							int 		Common 99
+	/call DeclareIniVar MaxLevel      							int 		Common 105
+
 
 	| OCD Shit - 
 	/call DeclareCoreIniVar setMQFontSize						int			General 2
@@ -467,12 +348,12 @@ sub declare_base()
 	/call DeclareCoreIniVar setAutoAssist						string	General off
 	
 	| buff queue variables
-	/call DeclareCoreIniVar queueCountMax																			int			General 10
-	/call DeclareVar queueCount             					 												int  		outer 0
-	/if (!${Defined[queueBuffID]}) /declare queueBuffID[8] 										int  		outer
-	/if (!${Defined[queueList]}) /declare queueList[${queueCountMax},2] 		 		int  		outer
+	/call DeclareCoreIniVar queueCountMax						int			General 10
+	/declare queueCount             							 	int  		outer 0
+	/declare queueBuffID[8] 												int  		outer
+	/declare queueList[${queueCountMax},2] 				 	int  		outer
 		
-	/call DeclareVar status_check_string								string	outer NULL
+	| /declare status_check_string						string	outer NULL
 	
 	/call DeclareCoreIniVar main										string	Group |FALSE|FALSE
 	/call DeclareCoreIniVar GroupLeader							string	Group FALSE
@@ -507,27 +388,27 @@ sub declare_base()
 	/call DeclareCoreIniVar emptyHands							bool		Here	TRUE
 	/call DeclareCoreIniVar hereZRadius							int			Here	30
 	
-	/call DeclareCoreIniVar count										int			bitch	20	
-	/call DeclareCoreIniVar 1												string	bitch	"Seriously... Again..."
-	/call DeclareCoreIniVar 2												string	bitch	"Can I get some heals over here?"
-	/call DeclareCoreIniVar 3												string	bitch	"Aha, I see the Fuck-Up Fairy has visited us again!"
-	/call DeclareCoreIniVar 4												string	bitch	"Will trade a Halfling for a rez, or three Gn0mes."
-	/call DeclareCoreIniVar 5												string	bitch	"I'm sorry I bit you... pulled your hair... and punched you in the face..."
-	/call DeclareCoreIniVar 6												string	bitch	"WTB HEALS!!"
-	/call DeclareCoreIniVar 7												string	bitch	"Sometimes the first step to forgiveness, is realising the other person was born an idiot."
-	/call DeclareCoreIniVar 8												string	bitch	"I'm getting Disc lag . . . again."
-	/call DeclareCoreIniVar 9												string	bitch	"oh man....i figured out why i was lagging the other day...i look in my case and my kids knocked off my cpu fan"
-	/call DeclareCoreIniVar 10											string	bitch	"I'm jealous of all the people that haven't met you!"
-	/call DeclareCoreIniVar 11											string	bitch	"You're slower than a herd of turtles stampeding through peanut butter."
-	/call DeclareCoreIniVar 12											string	bitch	"Oh good, my dog found a chainsaw."
-	/call DeclareCoreIniVar 13											string	bitch	"You are not as bad as people say, you are much, much worse."
-	/call DeclareCoreIniVar 14											string	bitch	"Stupidity is not a crime so you are free to go."
-	/call DeclareCoreIniVar 15											string	bitch "AFK, playing Pokemon. More productive then this shit."
-	/call DeclareCoreIniVar 16											string	bitch	"All I did was move my mouse over it."
-	/call DeclareCoreIniVar 17											string	bitch	"You sound reasonable. It must be time to up my medication!"
-	/call DeclareCoreIniVar 18											string	bitch	"YOU CAN'T KILL ME!"
-	/call DeclareCoreIniVar 19											string	bitch	"Roses are red. Violets are blue. You're an idiot."
-	/call DeclareCoreIniVar 20											string	bitch	"Sometimes, when I close my eyes, I... can't see."
+	/declare bitchcount															int			outer	20	
+	/declare bitch1																	string	outer	"Seriously... Again..."
+	/declare bitch2																	string	outer	"Did your parents ever ask you to run away from home?"
+	/declare bitch3																	string	outer	"Aha, I see the Fuck-Up Fairy has visited us again!"
+	/declare bitch4																	string	outer	"Will trade a Halfling for a rez, or three Gn0mes."
+	/declare bitch5																	string	outer	"I'm sorry I bit you... pulled your hair... and punched you in the face..."
+	/declare bitch6																	string	outer	" Go ahead, tell them everything you know. It'll only take 10 seconds."
+	/declare bitch7																	string	outer	"Sometimes the first step to forgiveness, is realising the other person was born an idiot."
+	/declare bitch8																	string	outer	"I'm getting Disc lag . . . again."
+	/declare bitch9																	string	outer	"oh man....i figured out why i was lagging the other day...i look in my case and my kids knocked off my cpu fan"
+	/declare bitch10																string	outer	"I'm jealous of all the people that haven't met you!"
+	/declare bitch11																string	outer	"You're slower than a herd of turtles stampeding through peanut butter."
+	/declare bitch12																string	outer	"Oh good, my dog found a chainsaw."
+	/declare bitch13																string	outer	"You are not as bad as people say, you are much, much worse."
+	/declare bitch14																string	outer	"Stupidity is not a crime so you are free to go."
+	/declare bitch15																string	outer "AFK, playing Pokemon. More productive then this shit."
+	/declare bitch16																string	outer	"All I did was move the mouse over it."
+	/declare bitch17																string	outer	"You sound reasonable. It must be time to up my medication!"
+	/declare bitch18																string	outer	"I'll never forget the first time we met. Although, I'll keep trying."
+	/declare bitch19																string	outer	"Roses are red. Violets are blue. You're an idiot."
+	/declare bitch20																string	outer	"Sometimes, when I close my eyes, I... can't see you."
 		
 	| hide switches for /hidecorpse command
 	/call DeclareCoreIniVar hideNone								bool		hide FALSE
@@ -540,220 +421,264 @@ sub declare_base()
 	/call DeclareCoreIniVar hideLisdted							bool		hide FALSE
 	/call DeclareCoreIniVar hideListedUnlocked			bool		hide FALSE
 	
-	| Base Environment settings
-	/call DeclareVar noInvis 												bool 		outer TRUE
-	/call DeclareVar noFeigning 										bool 		outer TRUE
-	/call DeclareVar Target2Kill										int			outer 0
-	/call DeclareVar UseRange												bool		outer FALSE
-	/call DeclareVar currentLootCount								int			outer	0
-	/call DeclareVar markerDead											bool		outer FALSE
 	
 	| non-standard mode control
-	/call DeclareVar modeType												string	outer "|stop|agro|fish|forage|drag|petfarm|scorch|hunt|harvest|tradeskill"
-	/call DeclareVar setMode												bool		outer FALSE
-	/call DeclareVar setModeType										string	outer FALSE
-	/call DeclareVar setModeCount										int			outer 0
+	/declare modeType																string	outer |stop|agro|drag|fish|forage|harvest|hunt|lush|petfarm|scorch|tradeskill
+	/declare setMode																bool		outer FALSE
+	/declare switchModeStop													bool		outer FALSE
+	/declare switchModeAgro													bool		outer FALSE
+	/declare setModeType														string	outer FALSE
+	/declare setModeCount														int			outer 0
 	/call DeclareIniVar setModeAgro									int			Common FALSE 
-	/call DeclareVar switchModeDrag									bool		outer FALSE 
-	/call DeclareVar switchModeForage								bool		outer FALSE
-	/call DeclareVar switchModePetfarm							bool		outer FALSE
-	/call DeclareVar switchModeScorch								bool		outer FALSE
-	/call DeclareVar switchModeHunt									bool		outer FALSE
-	/call DeclareVar switchModeFish									bool		outer FALSE
-	/call DeclareVar switchModeSkill								bool		outer FALSE
-	/call DeclareVar switchModeHarvest							bool		outer FALSE
-	/call DeclareVar switchModeTradeskill						bool		outer FALSE
+	/declare switchModeDrag													bool		outer FALSE 
+	/declare switchModeForage												bool		outer FALSE
+	/declare switchModePetfarm											bool		outer FALSE
+	/declare switchModeScorch												bool		outer FALSE
+	/declare switchModeHunt													bool		outer FALSE
+	/declare switchModeFish													bool		outer FALSE
+	/declare switchModeSkill												bool		outer FALSE
+	/declare switchModeHarvest											bool		outer FALSE
+	/declare switchModeTradeskill										bool		outer FALSE
+	/declare switchModeLush													bool		outer FALSE
 
 	| burns
-	/call DeclareVar burnType												string	outer "|auto|count|engageat|force"
-	/call DeclareVar burnForce											bool		outer FALSE
+	/declare burnType																string	outer |auto|count|engageat|force
+	/declare burnForce															bool		outer FALSE
 	/call DeclareIniVar burnAuto										bool		common FALSE
 	/call DeclareIniVar burnEngageat								int			common 80
 	/call DeclareIniVar burnCount										int			common 10
 	
-	/call DeclareVar isValidTarget									bool		outer FALSE
-	/call DeclareVar combatMode											string	outer NULL
-	/call DeclareVar tmpMode												string	outer NULL
-	/call DeclareVar hudWarning											string	outer	NULL
-	/call DeclareVar hudNotice											string	outer	NULL	
-	/call DeclareVar hudTarNotice										string	outer	NULL
 
-	/call DeclareVar canCast												bool		outer	TRUE
+	| /declare 	pre 													string 	outer ${Ini[${INICore},fakelink,pre]}
+	| /declare 	post 													string 	outer ${Ini[${INICore},fakelink,post]}
 	
-	/call DeclareVar 	pre 													string 	outer ${Ini[${INICore},fakelink,pre]}
-	/call DeclareVar 	post 													string 	outer ${Ini[${INICore},fakelink,post]}
-	
-	/call DeclareVar hudBroadcast										string	outer
-	
-	/call DeclareVar INIBlurb												string	outer tc\core.blurb.ini
-	/call DeclareVar INILoot												string  outer	tc\core.loot.ini
-	/call DeclareVar INIZone		     								string 	outer tc\core.zone.ini
-	/call DeclareVar INIAugDump     								string 	outer tc\core.augmentdump.ini
 	
 	| core.zone.ini lists
-	/call DeclareVar ZoneFileList										string 	outer |NameList|ExcludeList|NoMezzList|RangeList|NoCastList|NoMeleeList|HuntMobList|CharmMobList|NoFireList|NoPoisonList|NoMagicList|NoCorruptionList|NoColdList|NoDiseaseList|HarvestList
-	/call DeclareVar RangeList		   								string 	outer NULL
-	/call DeclareVar ExcludeList    								string 	outer NULL
-	/call DeclareVar NameList       								string 	outer NULL
-	/call DeclareVar NoMeleeList       							string 	outer NULL
-	/call DeclareVar NoCastList       							string 	outer NULL
-	/call DeclareVar NoMezzList       							string 	outer NULL
-	/call DeclareVar NoDiseaseList       						string 	outer NULL
-	/call DeclareVar NoMagicList       							string 	outer NULL
-	/call DeclareVar NoPoisonList       						string 	outer NULL
-	/call DeclareVar NoFireList       							string 	outer NULL
-	/call DeclareVar NoCorruptionList       				string 	outer NULL
-	/call DeclareVar NoColdList       							string 	outer NULL
-	/call DeclareVar CharmMobList      							string 	outer NULL
-	/call DeclareVar SafeZone		       							string 	outer NULL
-	/call DeclareVar FullZoneName      							string 	outer NULL
-	/call DeclareVar HuntMobList       							string 	outer NULL
-	/call DeclareVar HarvestList       							string 	outer NULL
+	/declare ZoneFileList														string 	outer |NameList|ExcludeList|NoMezzList|RangeList|NoCastList|NoMeleeList|HuntMobList|CharmMobList|NoFireList|NoPoisonList|NoMagicList|NoCorruptionList|NoColdList|NoDiseaseList|HarvestList
+	/declare RangeList		   												string 	outer FALSE
+	/declare ExcludeList    												string 	outer FALSE
+	/declare NameList       												string 	outer FALSE
+	/declare NoMeleeList     		  									string 	outer FALSE
+	/declare NoCastList       											string 	outer FALSE
+	/declare NoMezzList       											string 	outer FALSE
+	/declare NoDiseaseList       										string 	outer FALSE
+	/declare NoMagicList       											string 	outer FALSE
+	/declare NoPoisonList       										string 	outer FALSE
+	/declare NoFireList       											string 	outer FALSE
+	/declare NoCorruptionList      			 						string 	outer FALSE
+	/declare NoColdList       											string 	outer FALSE
+	/declare CharmMobList      											string 	outer FALSE
+	/declare SafeZone		       											string 	outer FALSE
+	/declare FullZoneName      											string 	outer FALSE
+	/declare HuntMobList       											string 	outer FALSE
+	/declare HarvestList       											string 	outer FALSE
 	
-	| Timers for toons
-	/call DeclareIniVar tSelf_Buff									string	Timer 3m
-	/call DeclareIniVar tPet_Buff										string	Timer 1m
-	/call DeclareIniVar tItem_Buff									string	Timer 1m 
-	/call DeclareIniVar tBC_Buff										string	Timer 20s   
-	/call DeclareIniVar tRaid_Buff									string	Timer 20s   
-	/call DeclareIniVar tClear_Cursor								string	Timer 5s   
-	/call DeclareIniVar tCheck_Aura									string	Timer 3m   
-	/call DeclareIniVar tRez_Retry									string	Timer 3m   
-	/call DeclareIniVar	tBuff_Kill									string	Timer	1m	
-	/call DeclareIniVar	tTell_Buff									string	Timer	10s	
-	/call DeclareIniVar	tCheck_EQBC									string	Timer	10m	
-	/call DeclareIniVar	tCheck_EXP									string	Timer	5m	
-	/call DeclareIniVar	tCheck_Tie									string	Timer	5
-	/call DeclareIniVar	tCheck_Familiar							string	Timer	30s	
-	/call DeclareIniVar	tCheck_Ammo									string	Timer	5s	
-	/call DeclareIniVar	tCheck_snap_retry						string	Timer	15s	
-	/call DeclareIniVar	tOdds_and_Ends							string	Timer	30m
-	/call DeclareIniVar	tAuto_Control_Toon					string	Timer	10s
-	/call DeclareIniVar	tAA_picker									string	Timer	5m
-	/call DeclareIniVar	tWatch_Spawn								string	Timer	1s
-	/call DeclareIniVar	tCast_Cure									string	Timer	30s
-	/call DeclareIniVar	tZone_Pause									string	Timer	5s
-	/call DeclareIniVar	tHunt_delay									string	Timer	30s	
-	/call DeclareIniVar	tCheck_Runes								string	Timer	10s
-	/call DeclareIniVar	tScorchedEarth_delay				string	Timer	5s	
-	/call DeclareIniVar	tScorchedEarth_fail					string	Timer	1m	
-	/call DeclareIniVar	tScorchedEarth_ignore				string	Timer	30s	
-	/call DeclareIniVar	tHarvest_delay							string	Timer	1s	
 
-	| mod rod recovered addicts
-	/if (!${Select[${Me.Class.ShortName},MAG,WAR,ROG,BRD,MNK,BER]}) {
-		/call DeclareIniVar	tAsk_for_rod							string	Timer	1m
-	}
-	/call DeclareCoreIniVar	tCheck_status						string	Timer	2s	
-	/call DeclareIniVar	tPetfarm_delay							string	Timer	1s	
-/return
-
-
-
-|***
- *	DES: class INI files for each toon
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub declare_common()
-	DEBUG ${cbug}declare_common()\ax
-	/declare _count 																int 		local
-
-	/call DeclareIniVar toonControl			 						string	Common FALSE /control 
 	/call DeclareIniVar autoControl			 						bool		Common FALSE 
-	/call DeclareIniVar combat					 						string	Common melee /combat 
-	/call DeclareIniVar MA1			 										string 	Common FALSE
-	/call DeclareIniVar MA2			 										string 	Common FALSE
-	
-	/call DeclareIniVar MobAgro											int 		Common 10
-	/call DeclareIniVar engageAt 										int 		Common 98
-	/call DeclareIniVar smartengageAt 							int 		Common 98
-	/call DeclareIniVar autoRest 										int 		Common 90
-
 	/call DeclareIniVar noCastWith									string	Common "|Quick Defense|Protection of Bayle|Interrogation Intimidation|Energy Charge|Cloud of Terror|Faith"
-	/call DeclareIniVar echoChannel									string	Common FALSE /echochannel
-	
+
+
 	/call DeclareIniVar shrinkItem 									string 	Common "Ring of the Ancients"
-	/call DeclareIniVar setAutoShrink								bool		Common FALSE
-	/call DeclareIniVar	HornofUnity									bool		Common FALSE
-	/call DeclareIniVar	useSmartAssist1							bool		Common FALSE 
-	/call DeclareIniVar	useSmartAssist2							bool		Common FALSE
-	/call DeclareIniVar	useSmartAssistG							bool		Common FALSE
 	/call DeclareIniVar IllusionItem								string	Common FALSE
 	/call DeclareIniVar IllusionBuff								string	Common FALSE
-	/call DeclareIniVar HUDTime											bool 		Common TRUE
 	/call DeclareIniVar GTFO												string	Common FALSE
 	/call DeclareIniVar switchAApicker							bool 		Common FALSE
 	/call DeclareIniVar mount												string	Common FALSE
-	/call DeclareIniVar AutoExpAdjust 							bool 		Common TRUE /autoadjustexp
-	/call DeclareIniVar MaintExpLvl   							int 		Common 99 /maintexplvl
-	/call DeclareIniVar MaxLevel      							int 		Common 105 /maxlevel
 	/call DeclareIniVar RangeItem										string	Common FALSE		
 	/call DeclareIniVar RangeItemSummon							string	Common FALSE
 	/call DeclareIniVar autoInventoryItem						string	Common "|Summoned: Giant Modulation Shard"
 	/call DeclareIniVar stoponDS										bool		Common TRUE		
-	/call DeclareIniVar useGlyph										string	Common "Glyph of the Cataclysm"	/glyph
+	/call DeclareIniVar useGlyph										string	Common "Glyph of the Cataclysm"
 	/call DeclareIniVar ResidentMage								string	Common |FALSE|FALSE
+	/call DeclareIniVar ResidentrDruid							string	Common |FALSE|FALSE
+	/call DeclareIniVar ResidentWizard							string	Common |FALSE|FALSE
 	/call DeclareIniVar ClassChannel								int			Common FALSE	
-	/call DeclareIniVar setBroadcast								string	Common TRUE	
-	/call DeclareIniVar relayTells									string	Common FALSE /relay	
+
+
+
+
+
+	| spire control
+	/declare typeSpire															string	outer |0|1|2|3
+	/call DeclareIniVar spireRaid										int 	Buffs 0
+	/call DeclareIniVar spireGroup									int 	Buffs 0
+	
+
+	| Cleric
+	/declare CLRspire1															string	outer "Fundament: First Spire of Divinity"
+	/declare CLRspire2															string	outer "Fundament: Second Spire of Divinity"
+	/declare CLRspire3															string	outer "Fundament: Third Spire of Divinity"
+	/declare CLRsynergyAA														string	outer "Templar's Synergy"
+
+	| Druid
+	/declare DRUspire1															string	outer "Fundament: First Spire of Nature"
+	/declare DRUspire2															string	outer "Fundament: Second Spire of Nature"
+	/declare DRUspire3															string	outer "Fundament: Third Spire of Nature"
+	/declare DRUsynergyAA														string	outer "Preserver's Synergy"
+
+	| Shaman
+	/declare SHMspire1															string	outer "Fundament: First Spire of Ancestors"
+	/declare SHMspire2															string	outer "Fundament: Second Spire of Ancestors"
+	/declare SHMspire3															string	outer "Fundament: Third Spire of Ancestors"
+	/declare SHMsynergyAA														string	outer "Luminary's Synergy"
+
+	| Warrior
+	/declare WARspire1													string	outer "Fundament: First Spire of the Warlord"
+	/declare WARspire2													string	outer "Fundament: Second Spire of the Warlord"
+	/declare WARspire3													string	outer "Fundament: Third Spire of the Warlord"
+	/declare WARsynergyAA												string	outer "Myrmidon's Synergy"
+
+	| Shadow Knight
+	/declare SHDspire1													string	outer "Fundament: First Spire of the Reavers"
+	/declare SHDspire2													string	outer "Fundament: Second Spire of the Reavers"
+	/declare SHDspire3													string	outer "Fundament: Third Spire of the Reavers"
+	/declare SHDsynergyAA												string	outer "Knight's Synergy"
+
+	| Paladin
+	/declare PALspire1													string	outer "Fundament: First Spire of Holiness"
+	/declare PALspire2													string	outer "Fundament: Second Spire of Holiness"
+	/declare PALspire3													string	outer "Fundament: Third Spire of Holiness"
+	/declare PALsynergyAA												string	outer "Knight's Synergy"
+
+	| Magician
+	/declare MAGspire1													string	outer "Fundament: First Spire of the Elements"
+	/declare MAGspire2													string	outer "Fundament: Second Spire of the Elements"
+	/declare MAGspire3													string	outer "Fundament: Third Spire of the Elements"
+	/declare MAGsynergyAA												string	outer "Conjurer's Synergy"
+
+	| Enchanter	
+	/declare ENCspire1													string	outer "Fundament: First Spire of Enchantment"
+	/declare ENCspire2													string	outer "Fundament: Second Spire of Enchantment"
+	/declare ENCspire3													string	outer "Fundament: Third Spire of Enchantment"
+	/declare ENCIoG															string	outer "Illusions of Grandeur"
+	/declare ENCMC															string	outer "Mental Contortion"
+	/declare ENCsynergyAA												string	outer "Begulier's Synergy"
+	
+	| Wizard 
+	/declare WIZspire1													string	outer "Fundament: First Spire of the Arcanum"
+	/declare WIZspire2													string	outer "Fundament: Second Spire of the Arcanum"
+	/declare WIZspire3													string	outer "Fundament: Third Spire of the Arcanum"
+	/declare WIZmannaburn												string	outer "Manna Burn"
+	/declare WIZsynergyAA												string	outer "Evoker's Synergy"
+
+	| Necromancer
+	/declare NECspire1													string	outer "Fundament: First Spire of Necromancy"
+	/declare NECspire2													string	outer "Fundament: Second Spire of Necromancy"
+	/declare NECspire3													string	outer "Fundament: Third Spire of Necromancy"
+	/declare NECsynergyAA												string	outer "Defiler's Synergy"
+
+	| Ranger
+	/declare RNGspire1													string	outer "Fundament: First Spire of the Pathfinders"
+	/declare RNGspire2													string	outer "Fundament: Second Spire of the Pathfinders"
+	/declare RNGspire3													string	outer "Fundament: Third Spire of the Pathfinders"
+	/declare RNGauspice													string	outer "Auspice of the Hunter"
+	/declare RNGcheetah													string	outer "Scarlet Cheetah's Fang"
+	/declare RNGgroupguardian										string	outer "Group Guardian of the Forest"
+	/declare RNGsynergyAA												string	outer "Outrider's Synergy"
+
+	| Bard
+	/declare BRDspire1													string	outer "Fundament: First Spire of the Minstrel"
+	/declare BRDspire2													string	outer "Fundament: Second Spire of the Minstrel"
+	/declare BRDspire3													string	outer "Fundament: Third Spire of the Minstrel"
+	/declare BRDsynergyAA												string	outer "Troubadour's Synergy"
+
+	| Monk
+	/declare MONspire1													string	outer "Fundament: First Spire of the Sensei"
+	/declare MONspire2													string	outer "Fundament: Second Spire of the Sensei"
+	/declare MONspire3													string	outer "Fundament: Third Spire of the Sensei"
+	/declare MONsynergyAA												string	outer 
+
+	| Beastlord
+	/declare BSTspire1													string	outer "Fundament: First Spire of the Savage Lord"
+	/declare BSTspire2													string	outer "Fundament: Second Spire of the Savage Lord"
+	/declare BSTspire3													string	outer "Fundament: Third Spire of the Savage Lord"
+	/declare BSTsynergyAA												string	outer "Primalist's Synergy"
+
+	| Berzerker
+	/declare BERspire1													string	outer "Fundament: First Spire of Savagery"
+	/declare BERspire2													string	outer "Fundament: Second Spire of Savagery"
+	/declare BERspire3													string	outer "Fundament: Third Spire of Savagery"
+	/declare BERsynergyAA												string	outer "Fury's Synergy"
+
+	| Rogue
+	/declare ROGspire1													string	outer "Fundament: First Spire of the Rake"
+	/declare ROGspire2													string	outer "Fundament: Second Spire of the Rake"
+	/declare ROGspire3													string	outer "Fundament: Third Spire of the Rake"
+	/declare ROGsynergyAA												string	outer "Blackguard's Synergy"
+
+
+
+
+	| combat controls
+	/declare ccType																	string	outer |agro|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|pull|range|saferadius|smartengage|zradius
+	/call DeclareIniVar combat					 						string	Common melee
+	/call DeclareIniVar MA1			 										string 	Common FALSE
+	/call DeclareIniVar MA2			 										string 	Common FALSE
+	/call DeclareIniVar MobAgro											int 		Common 10
+	/call DeclareIniVar engageAt 										int 		Common 98
+	/call DeclareIniVar smartengageAt 							int 		Common 98
+	/call DeclareIniVar	useSmartAssist1							bool		Common FALSE 
+	/call DeclareIniVar	useSmartAssist2							bool		Common FALSE
+	/call DeclareIniVar	useSmartAssistG							bool		Common FALSE
+	/call DeclareIniVar switchAgro									bool		Common FALSE 
+	/call DeclareIniVar switchPull									bool		Common FALSE
+	/call DeclareIniVar CombatDistance							int			Movement 15
+	/call DeclareCoreIniVar combatRadius						string	General 30
 	/call DeclareIniVar zradius											int			Common 50	
-	/call DeclareIniVar ModeNuke										string	Common FALSE	
+		
 			
-	| rez	
-  /call DeclareVar 		rezType											string	outer "|stop|take|give|combat|everyone|emergency"
-	/call DeclareVar 		flagCallNeedRez							bool		outer FALSE
-	/call DeclareVar		switchRez										bool		outer FALSE
+	| rez	control
+  /declare 		rezType													string	outer |stop|combat|emergency|everyone|give|pct|range|take
+  /declare 		rezPct													string	outer |10|20|35|50|60|75|90|93|96
+	/declare 		flagCallNeedRez									bool		outer FALSE
+	/declare		switchRez												bool		outer FALSE
 	/call DeclareIniVar switchRezTake 							bool 		Heal TRUE 
 	/call DeclareIniVar switchRezEmergency					bool		Heal FALSE
+	/call DeclareIniVar minRezPct										int			Common 90
+	/call DeclareIniVar switchRezGive	 							bool 		Heal FALSE 
+	/call DeclareIniVar switchRezCombat 						bool 		Heal FALSE 
+	/call DeclareIniVar switchRezEveryone 					bool 		Heal FALSE 
+	/call DeclareIniVar maxRezRange				 					int 		Heal 60 
 
-	/if (${Select[${Me.Class.ShortName},CLR,PAL,DRU,NEC,SHM]}) {
-		/call DeclareIniVar switchRezGive	 						bool 		Heal FALSE 
-		/call DeclareIniVar switchRezCombat 					bool 		Heal FALSE 
-		/call DeclareIniVar switchRezEveryone 				bool 		Heal FALSE 
-	}
+	| /if (${Select[${Me.Class.ShortName},CLR,PAL,DRU,NEC,SHM]}) {
+	| }
 	/call DeclareIniVar RezTokenList								string 	Heal |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU	
 	
 	| watch spawn stuff
-	/call DeclareVar hudwatchspawn									string	outer FALSE
-	/call DeclareVar watchSpawnCount								int			outer	FALSE
+	/declare hudwatchspawn											string	outer FALSE
+	/declare watchSpawnCount										int			outer	FALSE
 	/call DeclareIniVar watchSpawn									string	Common FALSE 
 		
 	| tie control
-  /call DeclareVar 		tcType											string	outer "|name|time|distance"
+  /declare 		tcType													string	outer |name|time|distance
+	/call DeclareIniVar SetTieToon 									string 	Movement FALSE
+	/declare SetTie       											bool 		outer FALSE
+	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
+   
+ 	| Movement control
+  /declare 		movementType										string	outer |arc|behind|fast|home|leash|radius
+	/call DeclareIniVar HomeSet											bool		Movement FALSE
+	/call DeclareIniVar HomeRadius									int 		Movement 5
+	/call DeclareIniVar HomeLeash										int 		Movement 40
+	/call DeclareIniVar HomeDelayMin								int 		Movement 100
+	/call DeclareIniVar HomeDelayMax								int 		Movement 500	
+	/call DeclareIniVar SetStickBehind 							bool 		Movement FALSE
+	/call DeclareIniVar SetFaceFast									bool		Movement FALSE
+	/call DeclareIniVar SetFaceArc									int			Movement 30
+	/declare tempHomeSet												bool		outer FALSE	
+	/declare tempsnapstuck											bool		outer	FALSE  
 	
-	| set debuff switches by class	
-  /call DeclareVar 		deBuffType									string	outer "|stop|mezz|malo|tash|cripple|slow|eradicate|snare"
-	/call DeclareVar		switchdeBuff								bool		outer FALSE
-
-	| Mezz
-	/if (${Select[${Me.Class.ShortName},ENC,BRD,NEC,MAG,DRU]}) {
-		/call DeclareIniVar switchdeBuffMezz					bool		Buffs FALSE
-	}
-	| Malo	
-	/if (${Select[${Me.Class.ShortName},SHM,MAG]}) {
-		/call DeclareIniVar switchdeBuffMalo					bool		Buffs FALSE
-	}  
-	| Tash
-	/if (${Select[${Me.Class.ShortName},ENC]}) {
-		/call DeclareIniVar switchdeBuffTash					bool		Buffs FALSE
-	}  
-	| Cripple
+	| debuff switches by class	
+  /declare deBuffType													string	outer |stop|mezz|malo|tash|cripple|slow|eradicate|snare
+	/declare switchdeBuff												bool		outer FALSE
+	/declare switchdeBuffStop										bool		outer FALSE
 	/call DeclareIniVar switchdeBuffCripple					bool		Buffs FALSE
-
-	| Slow
-	/if (${Select[${Me.Class.ShortName},SHM,MAG,NEC,BRD,ENC,BST]}) {
-		/call DeclareIniVar switchdeBuffSlow					bool		Buffs FALSE
-	}  
-	| AA Eradicate Magic Line
-	/if (${Me.Class.CanCast}) {
-		/call DeclareIniVar switchdeBuffEradicate			bool	Buffs FALSE
-	}
-	| AA Snare Line
-	/if (${AASnareList.Find[${Me.Class.ShortName}]}) {
-		/call DeclareIniVar switchdeBuffSnare					bool		Buffs FALSE
-	} 
+	/call DeclareIniVar switchdeBuffMezz						bool		Buffs FALSE
+	/call DeclareIniVar switchdeBuffMalo						bool		Buffs FALSE
+	/call DeclareIniVar switchdeBuffTash						bool		Buffs FALSE
+	/call DeclareIniVar switchdeBuffSlow						bool		Buffs FALSE
+	/call DeclareIniVar switchdeBuffEradicate				bool	Buffs FALSE
+	/call DeclareIniVar switchdeBuffSnare						bool		Buffs FALSE
 	
 	/call DeclareIniVar doclickItem									int			Items 0 
 	/call DeclareIniVar clickItem1									string	Items FALSE 
@@ -791,27 +716,11 @@ sub declare_common()
 	/call DeclareIniVar DiscNow1										string	DiscNow FALSE 
 	/call DeclareIniVar DiscNow2										string	DiscNow FALSE 
 
-	| home camp / movement / tie	
-	/call DeclareIniVar HomeSet											bool		Movement FALSE
-	/call DeclareIniVar HomeRadius									int 		Movement 5 /homeradius
-	/call DeclareIniVar HomeLeash										int 		Movement 40	/homeleash
-	/call DeclareIniVar HomeDelayMin								int 		Movement 100
-	/call DeclareIniVar HomeDelayMax								int 		Movement 500	
-	/call DeclareIniVar CombatDistance							int			Movement 15
-	/call DeclareVar tempHomeSet										bool		outer FALSE	
-	/call DeclareVar tempsnapstuck									bool		outer	FALSE
-	/call DeclareIniVar SetTieToon 									string 	Movement FALSE
-	/call DeclareVar SetTie       									bool 		outer FALSE
-	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
-	/call DeclareIniVar SetStickBehind 							bool 		Movement FALSE
-	/call DeclareIniVar SetFaceFast									bool		Movement FALSE
-
-	| hud controlls
-	/call DeclareVar		hudType											string	outer "|time|update|broadcasts"
 
 	| overrides
-  /call DeclareVar 		overrideType								string	outer "|stop|safezone|los|exclude|name|engageat|loot|safelist"
-	/call DeclareVar		switchOverride							bool		outer FALSE
+  /declare overrideType												string	outer |stop|safezone|los|exclude|name|engageat|loot|safelist
+	/declare switchOverride											bool		outer FALSE
+	/declare switchOverrideStop									bool		outer FALSE
   /call DeclareIniVar switchOverrideLos						bool		Override FALSE
   | /call DeclareIniVar switchOverridePve					bool		Override FALSE
   /call DeclareIniVar switchOverrideSafezone			bool		Override FALSE
@@ -831,7 +740,7 @@ sub declare_common()
 		/call DeclareIniVar frenzy										bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},ROG]}) {
-		/call DeclareVar flagSoS											bool	outer FALSE
+		/declare flagSoS													bool	outer FALSE
 		/call DeclareIniVar backstab									bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
@@ -853,14 +762,14 @@ sub declare_common()
 	/call DeclareIniVar clickDrinkItem							string 	Meal FALSE
 	/call DeclareIniVar clickDrinkCount							int		 	Meal 0
 	/call DeclareIniVar tClick_FoodDrink						string	Timer 10m
+		/call create_timer timer_click_food ${tClick_FoodDrink}
+		/call create_timer timer_click_drink ${tClick_FoodDrink}
 
 
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) {
-		/call DeclareIniVar	tAsk_for_weapons					string	Timer	10m
 
 		/call DeclareIniVar PetTank 									bool 		Pet FALSE
 		/call DeclareIniVar PetTypeSpell 							string 	Pet FALSE
-		/call DeclareIniVar switchBuffPet 						bool 		Pet TRUE 
 		/call DeclareIniVar useSummonWeps 						bool 		Pet TRUE
 		/call DeclareIniVar EpicClick 								string 	Pet FALSE
 		/call DeclareIniVar EpicPetBuff 							string 	Pet FALSE
@@ -899,34 +808,29 @@ sub declare_common()
 	| buffs
 	/call DeclareIniVar BuffRemove									string	Buffs "|Illusion: Gnoll Reaver|Illusion: Darkfell Gnoll Reaver|Illusion: Blackburrow Gnoll Reaver|Illusion: Mucktail Gnoll Reaver|Illusion: Direwind Gnoll Reaver|Illusion: Human Pirate|Illusion: Ogre Pirate"
 
-  /call DeclareVar 		buffType										string	outer "|stop|self|item|combat|bc|raid|tell|pet"
-	/call DeclareVar		switchBuff									bool		outer FALSE
-	/call DeclareVar		switchBuffType							string	outer FALSE
+  /declare 		buffType												string	outer |stop|self|item|combat|bc|raid|tell|pet
+	/declare		switchBuff											bool		outer FALSE
+	/declare		switchBuffStop									bool		outer FALSE
+	| /declare		switchBuffType							string	outer FALSE
 
-	/call DeclareIniVar switchBuffItem	 						bool		Buffs TRUE 
-	/call DeclareIniVar switchBuffCombat 						bool		Buffs TRUE 
+	/call DeclareIniVar switchBuffItem	 						bool		Buffs FALSE 
+	/call DeclareIniVar switchBuffCombat 						bool		Buffs FALSE 
+	/call DeclareIniVar switchBuffPet 							bool 		Pet FALSE 
+
 	
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
 		/call DeclareIniVar buffGem 									string 	Spells "gem12"
 		/call DeclareIniVar GoMLevel									int			Spells 105
 		/call DeclareIniVar GoMNuke										string	Spells FALSE
 		/call DeclareIniVar GoMNuke2									string	Spells FALSE
-		/call DeclareIniVar switchBuffSelf	 					bool		Buffs TRUE 
+		/call DeclareIniVar switchBuffSelf	 					bool		Buffs FALSE 
 		/call DeclareIniVar switchBuffBc							bool		Buffs FALSE
 		/call DeclareIniVar switchBuffRaid						bool		Buffs FALSE
 		/call DeclareIniVar switchBuffTell						bool		Buffs FALSE
-		
-		| /call DeclareIniVar SelfBuffCount 						int 		SelfBuff 0
-		| 10 self only buffs
-		| /for _count 1 to 10
-		| 	/call DeclareIniVar SelfBuff${_count}				string 	SelfBuff FALSE
-		| 	/call DeclareIniVar SelfBuff${_count}chk		string 	SelfBuff FALSE
-		| /next _count
 
 		| bc/tell buffs
-		/call DeclareVar BuffCount										int 		outer 15
+		/declare BuffCount												int 		outer 15
 		/for _count 1 to ${BuffCount}
-			DEBUG Buff${_count}	
 			/call DeclareIniVar Buff${_count}							string 	Buffs FALSE
 			/call DeclareIniVar Buff${_count}chk					string 	Buffs FALSE
 			/call DeclareIniVar Buff${_count}self					string 	Buffs FALSE
@@ -937,17 +841,13 @@ sub declare_common()
 		/next _count
 	}
 
-	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,PAL,BRD,NEC,BER,DRU,MNK]}) {
-		/call DeclareIniVar Aura1Spell 								string 	Aura FALSE
-		/call DeclareIniVar Aura1Buff 								string 	Aura FALSE  
-	}
-	/if (${Select[${Me.Class.ShortName},CLR,ENC]}) {
-		/call DeclareIniVar Aura2Spell 								string 	Aura FALSE
-		/call DeclareIniVar Aura2Buff 								string 	Aura FALSE
-	}
+	/call DeclareIniVar Aura1Spell 									string 	Aura FALSE
+	/call DeclareIniVar Aura1Buff 									string 	Aura FALSE  
+	/call DeclareIniVar Aura2Spell 									string 	Aura FALSE
+	/call DeclareIniVar Aura2Buff 									string 	Aura FALSE
 
-	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM]}) {
-		/call DeclareVar callID												int 		outer
+	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
+		/declare callID												int 		outer 0
 
 		/call DeclareIniVar PetPoint 									int			Heal 80	
 		/call DeclareIniVar CLRPoint		 							int 		Heal 80
@@ -966,12 +866,9 @@ sub declare_common()
 		/call DeclareIniVar BRDPoint 									int 		Heal 65
 		/call DeclareIniVar BERPoint 									int 		Heal 70
 		/call DeclareIniVar PALPoint 									int 		Heal 90
-		/call DeclareIniVar MercWarPoint 							int 		Heal 70
-		/call DeclareIniVar MercCLRPoint 							int 		Heal 80
-		/call DeclareIniVar MercDPSpoint 							int 		Heal 80	
 		/call DeclareIniVar GoMpoint 									int 		Heal 80	
 		/call DeclareIniVar XHealClass								string	Heal |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
-		/call DeclareIniVar tXHeal										string	Timer 3m   
+		/call setTimer tXHeal													string	Timer 3m timer_set_xtarget
 		/call DeclareIniVar toonControlXTslot					int			Heal 13
 		/call DeclareIniVar toonControlProtect				bool		Heal TRUE
 	}
@@ -984,7 +881,7 @@ sub declare_common()
 	}
 	
 	| pet control
-  /call DeclareVar 		pcType											string	outer "|pet|swarm|tank|type|build|bag"
+  /declare 		pcType											string	outer |pet|swarm|tank|type|build|bag
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD,CLR,WIZ,RNG,BRD,BST]}) {
 		/call DeclareIniVar PcPetengageat							int			Pet 99
 		/call DeclareIniVar switchPcPet								bool 		Pet FALSE
@@ -998,7 +895,8 @@ sub declare_common()
 	/call DeclareIniVar sumFamiliarLeave						bool		Pet TRUE	
 
 	| debug
-  /call DeclareVar 		debugType										string	outer "|stop|core|class|casting|rez|array|mode"
+  /declare 		debugType														string	outer |stop|core|class|casting|rez|array|mode
+  /declare		switchDebugStop											bool 		outer FALSE
 	/call DeclareIniVar switchDebugCore							bool		debug FALSE 
 	/call DeclareIniVar switchDebugClass						bool		debug FALSE 
 	/call DeclareIniVar switchDebugCasting					bool		debug FALSE 
@@ -1006,72 +904,124 @@ sub declare_common()
 	/call DeclareIniVar switchDebugArray						bool		debug FALSE 
 	/call DeclareIniVar switchDebugMode							bool		debug FALSE 
 	| SET THIS TO TRUE TO ENABLE DEBUGING. ALTERNATIVE USE /varset debug TRUE
-	| on a funny note: prepare your ass for spam
-	/call DeclareVar debug													bool		outer FALSE
+	| on a funny note: prepare your ass
+	/declare debug																	bool		outer FALSE
 
 
 	| onoff types
-  /call DeclareVar 		onoffType										string	outer "|agro|pull|banestrike|horn"
+  /declare 		onoffType														string	outer |banestrike|horn|shrink
 
 	/call DeclareIniVar switchBanestrike						bool		Common FALSE		
 	/call DeclareIniVar switchInvites								bool 		Common TRUE
 	/call DeclareIniVar switchRaidInvite						bool		Common FALSE
-	/call DeclareIniVar switchAgro									bool		Common FALSE 
-	/call DeclareIniVar switchPull									bool		Common FALSE
+	/call DeclareIniVar switchShrink								bool		Common FALSE
+	/call DeclareIniVar switchHorn									bool		Common FALSE
 
 	| tradeskill control
-  /call DeclareVar 		tsType											string	outer "|movebank"
+  /declare 		tsType															string	outer |movebank
 	
 	| CLASS controls
-  /call DeclareVar 		brdType											string	outer "|"
-  /call DeclareVar 		berType											string	outer "|"
-  /call DeclareVar 		bstType											string	outer "|"
-  /call DeclareVar 		clrType											string	outer "|aggressive|yaulp|qm|regen"
-  /call DeclareVar 		druType											string	outer "|"
-  /call DeclareVar 		encType											string	outer "|"
-  /call DeclareVar 		magType											string	outer "|"
-  /call DeclareVar 		mnkType											string	outer "|"
-  /call DeclareVar 		necType											string	outer "|"
-  /call DeclareVar 		palType											string	outer "|yaulp|mg"
-  /call DeclareVar 		rogType											string	outer "|poison"
-  /call DeclareVar 		rngType											string	outer "|summer|spice"
-  /call DeclareVar 		shdType											string	outer "|"
-  /call DeclareVar 		shmType											string	outer "|"
-  /call DeclareVar 		warType											string	outer "|"
-  /call DeclareVar 		wizType											string	outer "|"
+  /declare brdType																string	outer |spiregroup|spireraid
+  /declare berType																string	outer |spiregroup|spireraid
+  /declare bstType																string	outer |spiregroup|spireraid
+  /declare clrType																string	outer |aggressive|fade|groupheal|grouphot|healpoint|qm|regen|spiregroup|spireraid|xtradius|xttime|yaulp
+  /declare druType																string	outer |groupheal|healpoint|spiregroup|spireraid|xtradius|xttime
+  /declare encType																string	outer |spiregroup|spireraid
+  /declare magType																string	outer |fade|mana|rods|spiregroup|spireraid
+  /declare mnkType																string	outer |spiregroup|spireraid
+  /declare necType																string	outer |spiregroup|spireraid
+  /declare palType																string	outer |groupheal|harmonions|healpoint|mg|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
+  /declare rogType																string	outer |poison|spiregroup|spireraid
+  /declare rngType																string	outer |spice|spiregroup|spireraid|summer
+  /declare shdType																string	outer |harmoniouns|skin|spiregroup|spireraid|stance
+  /declare shmType																string	outer |groupheal|grouphot|healpoint|spiregroup|spireraid|xtradius|xttime
+  /declare warType																string	outer |spiregroup|spireraid
+  /declare wizType																string	outer |spiregroup|spireraid
   
   
 	| cursor
-  /call DeclareVar 		cursorType									string	outer "|auto|what|sell|keep|destroy|leave|announce|ignore|pause"
+  /declare cursorType															string	outer |auto|what|sell|keep|destroy|leave|announce|ignore|pause
 	/call DeclareIniVar switchAutoCursor						bool		Common FALSE	
   
   | list control
-	/call DeclareVar		listType										string	outer "|safe|reset|remove|exclude|name|nomezz|nocast|range|nomelee|nomagic|nodisease|nofire|nopoison|nocold|nocorruption|huntmob"
+	/declare listType																string	outer |safe|reset|remove|exclude|name|nomezz|nocast|range|nomelee|nomagic|nodisease|nofire|nopoison|nocold|nocorruption|huntmob
 
 	| heals
-  /call DeclareVar 		healType										string	outer "|stop|self|group|xtarget|pet|cure|override"
-	/call DeclareVar		switchHeal									bool		outer FALSE
+  /declare healType																string	outer |stop|self|group|xtarget|pet|cure|override
+  /declare switchHealStop													bool		outer	FALSE
+  /declare switchHealOverride											bool		outer	0
+	/declare switchHeal															bool		outer FALSE
 	/call DeclareIniVar HealOverride								int			Heal 0
-	/call DeclareVar 		tmpHealOverride							float 	outer 99.99	
-	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,CLR,BST,MAG]}) {
-		/call DeclareIniVar switchHealPet							bool 		Pet FALSE
-	}
-	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,BST,PAL,RNG]}) {
-		/call DeclareIniVar switchHealXtarget					bool 		Heal FALSE
-		/call DeclareIniVar switchHealGroup						bool 		Heal FALSE
-	}
-	/if (!${Select[${Me.Class.ShortName},CLR,DRU,SHM]}) {
-		/call DeclareIniVar switchHealSelf						bool 		Heal FALSE
-	}
+	/declare tmpHealOverride												float 	outer 99.99	
+	/call DeclareIniVar switchHealSelf							bool 		Heal FALSE
+	/call DeclareIniVar switchHealGroup							bool 		Heal FALSE
+	/call DeclareIniVar switchHealXtarget						bool 		Heal FALSE
+	/call DeclareIniVar switchHealPet								bool 		Pet FALSE
 	/call DeclareIniVar switchHealCure							bool 		Heal FALSE
 
 	/call DeclareIniVar cureCurseItem								string 	Cure FALSE
 	/call DeclareIniVar curePoisonItem 							string 	Cure FALSE
 	/call DeclareIniVar cureDiseaseItem							string 	Cure FALSE
 	/call DeclareIniVar cureCorruptItem							string 	Cure FALSE
-	/call DeclareIniVar noCureList	 								string 	Cure "|Sunset's Shadow"
+	/call DeclareIniVar noCureList	 								string 	Cure "|Sunset's Shadow|FALSE"
 /return
 	
+
+
+sub declare_timers()
+	/declare _count int local 0
+
+	/call DeclareIniVar tRez_Retry									string	Timer 3m
+	| /call DeclareIniVar	tBuff_Kill									string	Timer	1m
+	/call DeclareIniVar	tCheck_snap_retry						string	Timer	15s
+	| /call DeclareIniVar	tAA_picker									string	Timer	5m
+	/call DeclareIniVar	tCheck_Runes								string	Timer	10s
+	/call DeclareIniVar	tScorchedEarth_ignore				string	Timer	30s
+	
+	/call create_timer timer_auto_cursor_pause 10s
+	/call create_timer timer_spellcast_nomob_ID 1
+	/call create_timer timer_scribe_timer 1
+
+	/call setTimer tScorchedEarth_fail							string	Timer	1m 		timer_scorched_earth_fail
+	/call setTimer tCheck_Familiar									string	Timer	30s		timer_Check_Familiar
+	/call setTimer tHarvest_delay										string	Timer	1s 		timer_Harvest_delay
+	/call setTimer tScorchedEarth_delay							string	Timer	5s 		timer_ScorchedEarth_delay
+	/call setTimer tCheck_EQBC											string	Timer	10m		timer_check_EQBC
+	/call setTimer tOdds_and_Ends										string	Timer	30m 	timer_check_odds_and_ends
+	/call setTimer tCheck_EXP												string	Timer	5m 		timer_check_EXP
+	/call setTimer tCheck_Tie												string	Timer	5 		timer_check_Tie
+	/call setTimer tWatch_Spawn											string	Timer	1s 		timer_check_watch_spawn
+	/call setTimer tCast_Cure												string	Timer	30s 	timer_check_cast_cure
+	/call setTimer tCheck_status										string	Timer	2s 		timer_check_status
+	/call setTimer tPetfarm_delay										string	Timer	1s 		timer_Petfarm_delay	
+	/call setTimer tClear_Cursor										string	Timer 5s 		timer_clear_cursor   
+	/call setTimer tSelf_Buff												string	Timer 3m 		timer_check_buffs_self
+	/call setTimer tPet_Buff												string	Timer 1m 		timer_check_pet_buffs
+	/call setTimer tItem_Buff												string	Timer 1m 		timer_check_buffs_item
+	/call setTimer tBC_Buff													string	Timer 20s 	timer_check_buffs_BC
+	/call setTimer tRaid_Buff												string	Timer 20s 	timer_check_buffs_raid
+	/call setTimer tCheck_Aura											string	Timer 3m 		timer_check_aura
+	/call setTimer tTell_Buff												string	Timer	10s 	timer_check_buffs_tell
+	/call setTimer tCheck_Ammo											string	Timer	5s 		timer_Check_Ammo
+	/call setTimer tHunt_delay											string	Timer	30s 	timer_wait_for_mob_to_kill
+	/call setTimer tAuto_Control_Toon								string	Timer	10s 	timer_auto_toon_control
+	/call setTimer tZone_Pause											string	Timer	5s		timer_zone_pause
+	
+
+	| mod rod/pet weapon recovered addicts
+	/if (!${Select[${Me.Class.ShortName},MAG,WAR,ROG,BRD,MNK,BER]}) {
+		/for _count 1 to ${ResidentMage.Count[|]}
+			/if (!${Bool[${ResidentMage.Arg[${_count},|]}]}) /continue
+			/call setTimer	tAsk_for_rod									string	Timer	1m 		timer_ask_for_rod_${ResidentMage.Arg[${_count},|]}
+			/call setTimer	tAsk_for_weapons							string	Timer	1m		timer_ask_for_weapons_${ResidentMage.Arg[${_count},|]}
+		/next _count		
+	}
+/return	
+	
+	
+	
+
+
   
    
 |***
@@ -1082,7 +1032,7 @@ sub declare_common()
  ***|   
 sub declare_MAG()
 	/call DeclareIniVar ServantNuke 								string 	Pet "Remorseless Servant"
-	/call DeclareIniVar tCauldron_use								string 	Timer 360m
+	/call setTimer tCauldron_use										string 	Timer 360m	timer_caldron_use
 
 	/call DeclareIniVar ParadoxSpell 								string 	Rods "Grant Icebound Paradox"
 	/call DeclareIniVar ParadoxRodName 							string 	Rods "Summoned: Icebound Fragment"
@@ -1105,11 +1055,17 @@ sub declare_MAG()
 	/call DeclareIniVar DoDoT						 						int			Spells 0
 	/call DeclareIniVar Cauldron				 						string	Spells "Cauldron of Countless Goods"
 	/call DeclareIniVar CauldronDestroy 						string 	Spells "Tavon's Burnished Gemstone|Tavon's Polished Gemstone|Ether-Fused Shard|Imprint of the Enhanced Minion|Crystallized Sulfur|Worlu's Windcloak|Worlu's Prying Eyes|"
-	/call DeclareIniVar useRain											bool 		Spells FALSE /userain
+	/call DeclareIniVar useRain											bool 		Spells FALSE
 	/call DeclareIniVar doRainNuke									int 		Spells 2
 	/call DeclareIniVar RainNuke1 									string 	Spells "Rain of Cutlasses"
 	/call DeclareIniVar RainNuke2 									string 	Spells "Coronal Rain"
 	/call DeclareIniVar MaloSpell 									string 	Spells "Malosinete"
+	
+	
+	/call DeclareIniVar AAFade											string	Buffs "Dimensional Shield"
+	/call DeclareIniVar useAAFade										int			Buffs 50
+	
+	
 /return
 	
 
@@ -1122,7 +1078,7 @@ sub declare_MAG()
  ***|
 sub declare_WIZ()
 	/call DeclareIniVar GatherSpell									string 	Spells "Quietscent Harvest"
-	/call DeclareIniVar GatherPercent			 					int			Spells 60 /gather
+	/call DeclareIniVar GatherPercent			 					int			Spells 60
 	/call DeclareIniVar DoNuke										 	int			Spells 5
 	/call DeclareIniVar Nuke1 											string 	Spells "Cloudburst Stormstrike"
 	/call DeclareIniVar Nuke2 											string 	Spells "Claw of the Flameweaver"
@@ -1135,50 +1091,50 @@ sub declare_WIZ()
 	/call DeclareIniVar tempPet						 					string	Pet "Yulin's Pyroblade"
 	
 	
-	/call DeclareIniVar fay 												string	Transport "Translocate: Fay"
-	/call DeclareIniVar dragonscale 								string	Transport "Translocate: Dragonscale Hills"
-	/call DeclareIniVar northkarana 								string	Transport "Translocate: North"
-	/call DeclareIniVar commonlands 								string	Transport "Translocate: Common"
-	/call DeclareIniVar nektulos 										string	Transport "Translocate: Nek"
-	/call DeclareIniVar qeyenos 										string	Transport "Translocate: West"
-	/call DeclareIniVar northro 										string	Transport "Translocate: Ro"
-	/call DeclareIniVar cazic 											string	Transport "Translocate: Cazic"
-	/call DeclareIniVar undershore 									string	Transport "Translocate: Undershore"
-	/call DeclareIniVar westkarana 									string	Transport "Translocate: West Karana"
-	/call DeclareIniVar bloodfields 								string	Transport "Translocate: Bloodfields"
-	/call DeclareIniVar wallofslaughter 						string	Transport "Translocate: Slaughter"
-	/call DeclareIniVar shardslanding 							string	Transport "Translocate: Shard's Landing"
-	/call DeclareIniVar pillars 										string	Transport "Translocate Pillars of Alra"
-	/call DeclareIniVar sarithc 										string	Transport "Translocate Sarith"
-	/call DeclareIniVar dreadlands 									string	Transport "Translocate: Combine"
-	/call DeclareIniVar lceanium										string	Transport "Translocate: Lceanium"
-	/call DeclareIniVar dawnshroud 									string	Transport "Translocate: Dawnshroud"
-	/call DeclareIniVar twilight 										string	Transport "Translocate: Twilight"
-	/call DeclareIniVar grimling 										string	Transport "Translocate: Grimling"
-	/call DeclareIniVar nexus 											string	Transport "Translocate: Nexus"
-	/call DeclareIniVar bind 												string	Transport "Translocate"
-	/call DeclareIniVar primary 										string	Transport "Translocate: Primary Anchor"
-	/call DeclareIniVar secondary 									string	Transport "Translocate: Secondary Anchor"
-	/call DeclareIniVar pushprimary 								string	Transport "Primary Anchor Push"
-	/call DeclareIniVar pushsecondary 							string	Transport "Secondary Anchor Push"
-	/call DeclareIniVar tempesttemple 							string	Transport "Translocate: Tempest Temple"
-	/call DeclareIniVar katta												string	Transport "Translocate: Katta Castrum"
-	/call DeclareIniVar tox 												string	Transport "Translocate: Tox"
-	/call DeclareIniVar stonebrunt 									string	Transport "Translocate: Stonebrunt"
-	/call DeclareIniVar icefall 										string	Transport "Translocate: Icefall Glacier"
-	/call DeclareIniVar sunderock 									string	Transport "Translocate: Sunderock Springs"
-	/call DeclareIniVar blightfire 									string	Transport "Translocate: Blightfire Moors"
-	/call DeclareIniVar Barnidu 										string	Transport "Translocate: Barindu"
-	/call DeclareIniVar Natimbi 										string	Transport "Translocate: Natimbi"
-	/call DeclareIniVar grounds 										string	Transport "Translocate: the Grounds"
-	/call DeclareIniVar potime 											string	Transport "Translocate: Plane of Time"
-	/call DeclareIniVar brells 											string	Transport "Translocate: Brell's Rest"
-	/call DeclareIniVar Arcstone 										string	Transport "Translocate: Arcstone"
-	/call DeclareIniVar pok 												string	Transport "Translocate: Knowledge"
-	/call DeclareIniVar cobaltscar 									string	Transport "Translocate: Cobalt Scar"
-	/call DeclareIniVar wakening 										string	Transport "Translocate: Wakening Lands"
-	/call DeclareIniVar greatdivide 								string	Transport "Translocate: Great Divide"
-	/call DeclareIniVar iceclad 										string	Transport "Translocate: Iceclad"		
+	/declare fay 																string	outer "Translocate: Fay"
+	/declare dragonscale 												string	outer "Translocate: Dragonscale Hills"
+	/declare northkarana 												string	outer "Translocate: North"
+	/declare commonlands 												string	outer "Translocate: Common"
+	/declare nektulos 													string	outer "Translocate: Nek"
+	/declare qeyenos 														string	outer "Translocate: West"
+	/declare northro 														string	outer "Translocate: Ro"
+	/declare cazic 															string	outer "Translocate: Cazic"
+	/declare undershore 												string	outer "Translocate: Undershore"
+	/declare westkarana 												string	outer "Translocate: West Karana"
+	/declare bloodfields 												string	outer "Translocate: Bloodfields"
+	/declare wallofslaughter 										string	outer "Translocate: Slaughter"
+	/declare shardslanding 											string	outer "Translocate: Shard's Landing"
+	/declare pillars 														string	outer "Translocate Pillars of Alra"
+	/declare sarith 														string	outer "Translocate Sarith"
+	/declare dreadlands 												string	outer "Translocate: Combine"
+	/declare lceanium														string	outer "Translocate: Lceanium"
+	/declare dawnshroud 												string	outer "Translocate: Dawnshroud"
+	/declare twilight 													string	outer "Translocate: Twilight"
+	/declare grimling 													string	outer "Translocate: Grimling"
+	/declare nexus 															string	outer "Translocate: Nexus"
+	/declare bind 															string	outer "Translocate"
+	/declare primary 														string	outer "Translocate: Primary Anchor"
+	/declare secondary 													string	outer "Translocate: Secondary Anchor"
+	/declare pushprimary 												string	outer "Primary Anchor Push"
+	/declare pushsecondary 											string	outer "Secondary Anchor Push"
+	/declare tempesttemple 											string	outer "Translocate: Tempest Temple"
+	/declare katta															string	outer "Translocate: Katta Castrum"
+	/declare tox 																string	outer "Translocate: Tox"
+	/declare stonebrunt 												string	outer "Translocate: Stonebrunt"
+	/declare icefall 														string	outer "Translocate: Icefall Glacier"
+	/declare sunderock 													string	outer "Translocate: Sunderock Springs"
+	/declare blightfire 												string	outer "Translocate: Blightfire Moors"
+	/declare Barnidu 														string	outer "Translocate: Barindu"
+	/declare Natimbi 														string	outer "Translocate: Natimbi"
+	/declare grounds 														string	outer "Translocate: the Grounds"
+	/declare potime 														string	outer "Translocate: Plane of Time"
+	/declare brells 														string	outer "Translocate: Brell's Rest"
+	/declare Arcstone 													string	outer "Translocate: Arcstone"
+	/declare pok 																string	outer "Translocate: Knowledge"
+	/declare cobaltscar 												string	outer "Translocate: Cobalt Scar"
+	/declare wakening 													string	outer "Translocate: Wakening Lands"
+	/declare greatdivide 												string	outer "Translocate: Great Divide"
+	/declare iceclad 														string	outer "Translocate: Iceclad"		
 	
 	/call DeclareIniVar runeMagiWard	 							string	Rune "Doomscale Husk"
 	/call DeclareIniVar runeShieldofFate						string	Rune "Shield of Consequence"
@@ -1195,8 +1151,8 @@ sub declare_WIZ()
  *  NOTE: 
  ***|
 sub declare_ENC()
-	/call DeclareVar mobList string outer
-	/call DeclareVar addList string outer
+	/declare mobList														string	outer
+	/declare addList 														string 	outer
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer |5|8|12|17|18|42|44|80|106|129|144
 
 	/call DeclareIniVar runeVeil			 							string	Rune "Veil of Mindshadow"
@@ -1249,57 +1205,43 @@ sub declare_ENC()
  *  NOTE: 
  ***|
 sub declare_NEC()
-	/call DeclareIniVar tCall_for_Blood							string	Timer 30s
-		
-	/call DeclareVar set														int			outer 1
-	/call DeclareVar gem														int			outer 1
+	/call setTimer tCheck_Blood											string	Timer 8s	timer_check_blood
+	| /declare set																int			outer 1
+	| /declare gem																int			outer 1
 	
-	/call DeclareIniVar SpellSets 									int 		Spells 4
-	/call DeclareIniVar SpellSet1 									string 	Spells core1
-	/call DeclareIniVar SpellSet2 									string 	Spells core2
-	/call DeclareIniVar SpellSet3 									string 	Spells core3
-	/call DeclareIniVar SpellSet4 									string 	Spells core4
-	/call DeclareIniVar MaloSpell 									string 	Spells "Scent of Terris"
-	/call DeclareIniVar CallforBlood								string 	Spells "Impose for Blood"
+	| /call DeclareIniVar SpellSets 									int 		Spells 4
+	| /call DeclareIniVar SpellSet1 									string 	Spells core1
+	| /call DeclareIniVar SpellSet2 									string 	Spells core2
+	| /call DeclareIniVar SpellSet3 									string 	Spells core3
+	| /call DeclareIniVar SpellSet4 									string 	Spells core4
 
-	/call DeclareIniVar dotR1-1	 										string 	Spells "Pyre of Jorobb"
-	/call DeclareIniVar dotR1-2 										string 	Spells "Pyre of Marnek"	
-	/call DeclareIniVar dotR1-3	 										string 	Spells "Ignite Synapses"
-	/call DeclareIniVar dotR1-4	 										string 	Spells "Annihilation"
-	/call DeclareIniVar dotR1-5	 										string 	Spells "Scourge of Fates"
-	/call DeclareIniVar dotR1-6	 										string 	Spells "Glistenwing Venom"
-	/call DeclareIniVar dotR1-7	 										string 	Spells "Plexipharia's Pallid Haze"
-	/call DeclareIniVar dotR1-8	 										string 	Spells FALSE
-	/call DeclareIniVar dotR1-9	 										string 	Spells "Dark Leech"
-	/call DeclareIniVar dotR1-10 										string 	Spells "Smouldering Shadow"
-	/call DeclareIniVar dotR1-11 										string 	Spells "Mortiferous Wounds"
-	
-	/call DeclareIniVar dotR2-9	 										string 	Spells "Coruscating Shadow"
-	/call DeclareIniVar dotR2-10 										string 	Spells "Binaesa Venom"
-	/call DeclareIniVar dotR2-11 										string 	Spells "Liquefaction"	
-	
-	/call DeclareIniVar dotR3-9	 										string 	Spells "Halstor's Pallid Haze"
-	/call DeclareIniVar dotR3-10 										string 	Spells "Livianus' Decay"	
-	/call DeclareIniVar dotR3-11 										string 	Spells "Grip of Jabaum"	
-
-	/call DeclareIniVar dotR4-9	 										string 	Spells "Pyre of the Forsaken"
-	/call DeclareIniVar dotR4-10 										string 	Spells "Ignite Thoughts"	
-	/call DeclareIniVar dotR4-11 										string 	Spells "Dissolution"	
+	/call DeclareIniVar spellMalo										string 	Spells "Scent of Terris"
+	/call DeclareIniVar spellBlood									string 	Spells "Impose for Blood"
 
 	/call DeclareIniVar DoDoT								 				int			Spells 0
-	/call DeclareIniVar DoT1							 					string	Spells "Combust Bones"
-	/call DeclareIniVar DoT2							 					string	Spells "Pyre of Jorobb"
-	/call DeclareIniVar DoT3							 					string	Spells "Ignite Snypases"
-	/call DeclareIniVar DoT4							 					string	Spells "Ilsaria's Swift Sickness"
-	/call DeclareIniVar DoT5							 					string	Spells "Annihilation"
+	/call DeclareIniVar DoT1							 					string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT5					 							string	Spells FALSE
+	/call DeclareIniVar DoT5chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT6					 							string	Spells FALSE
+	/call DeclareIniVar DoT6chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT7					 							string	Spells FALSE
+	/call DeclareIniVar DoT7chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT8					 							string	Spells FALSE
+	/call DeclareIniVar DoT8chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT9					 							string	Spells FALSE
+	/call DeclareIniVar DoT9chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT10					 							string	Spells FALSE
+	/call DeclareIniVar DoT10chk					 					string	Spells FALSE
 
-	/call DeclareIniVar DoNuke					 						int			Spells 0
-	/call DeclareIniVar Nuke1					 							string	Spells FALSE	
+	/call DeclareIniVar DoNuke					 						int			Spells 1
+	/call DeclareIniVar Nuke1					 							string	Spells "Combust Bones"	
 	/call DeclareIniVar Nuke2					 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells FALSE
@@ -1316,7 +1258,10 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
-	/call DeclareVar mobAECount											int	outer
+	/call DeclareIniVar tcheck_Stance								string 	Timer 3m
+	/call DeclareIniVar tcheck_Skin									string 	Timer 45s
+
+	/declare mobAECount													int			outer 0
 	/call DeclareIniVar Withstand 									string 	Discs "Repel"
 	/call DeclareIniVar BladeStrike 								string 	Discs "Lacerating Blade"
 	/call DeclareIniVar CrimsonBlade 								string 	Discs "Carmine Blade"
@@ -1353,7 +1298,13 @@ sub declare_SHD()
 	/call DeclareIniVar ManaTapSpell1 							string 	Spells "Bonemaw's Bite"
 	/call DeclareIniVar ManaTapSpell2 							string 	Spells "Ancient: Bite of Muram"
 
-	/call DeclareIniVar Harmonious 									string 	Spells "Harmonious Disruption"
+	/call DeclareIniVar switchHarmonious 						bool	 	Buffs TRUE
+	/call DeclareIniVar Harmonious 									string 	Buffs "Harmonious Disruption"
+	/call DeclareIniVar switchStance 								bool	 	Buffs TRUE
+	/call DeclareIniVar Stance 											string 	Buffs "Staunch Stance"
+	/call DeclareIniVar switchSkin			 						bool	 	Buffs TRUE
+	/call DeclareIniVar Skin			 									string 	Buffs "Vizat's Skin"
+
 /return	
 
 
@@ -1365,39 +1316,25 @@ sub declare_SHD()
  *  NOTE: 
  ***|
 sub declare_PAL()
-	/call DeclareIniVar	tcheck_MG										string	Timer	10s
+	/call setTimer	tcheck_MG												string	Timer	10s timer_check_MG
+	/call setTimer tcheck_Steel											string 	Timer 2m timer_check_Steel
+	/call setTimer tcheck_Stance										string 	Timer 7.5m timer_check_stance
 
-	/call DeclareVar mobAECount											int			outer
-	/call DeclareVar MajorHurt 											int 		outer 0
-	/call DeclareVar WorstHurt 											string 	outer NULL
-	/call DeclareVar WorstHurtID 										int 		outer
-	/call DeclareVar WorstHP 												int 		outer 100
-	/call DeclareVar WorstClass 										string 	outer NULL
-	/call DeclareVar MinorHurt											int    	outer 0 
+	/declare mobAECount													int			outer 0 
+	/declare groupHurt 													int 		outer 0
+	/declare WorstHurt 													string 	outer FALSE
+	| /declare WorstHurtID 										int 		outer
+	/declare WorstHP 														int 		outer 100
+	/declare WorstClass 												string 	outer FALSE
+	| /declare MinorHurt											int    	outer 0 
 	
   /call DeclareIniVar healWholeGroup							string 	Heal "Wave of Grief"
-  /call DeclareIniVar healTouch										string 	Heal "Ardent Touch"
+  /call DeclareIniVar splashGroup									string 	Heal "Wave of Grief"
   /call DeclareIniVar healPanic										string 	Heal FALSE
-|	/call DeclareVar rezID 													int 		outer
-	/call DeclareVar callID													int 		outer
-
-	/call DeclareIniVar PetPoint 										int			Heal 80	
-	/call DeclareIniVar CLRPoint 										int 		Heal 80
-	/call DeclareIniVar DRUPoint 										int 		Heal 70
-	/call DeclareIniVar SHMPoint 										int 		Heal 60
-	/call DeclareIniVar WIZPoint 										int 		Heal 75
-	/call DeclareIniVar MAGPoint 										int 		Heal 75
-	/call DeclareIniVar ENCPoint 										int 		Heal 80
-	/call DeclareIniVar NECPoint 										int 		Heal 75
-	/call DeclareIniVar WARPoint 										int 		Heal 70
-	/call DeclareIniVar MNKPoint 										int 		Heal 60
-	/call DeclareIniVar ROGPoint 										int 		Heal 60
-	/call DeclareIniVar RNGPoint 										int 		Heal 90
-	/call DeclareIniVar BSTPoint 										int 		Heal 70
-	/call DeclareIniVar SHDPoint 										int 		Heal 90
-	/call DeclareIniVar BRDPoint 										int 		Heal 65
-	/call DeclareIniVar BERPoint 										int 		Heal 70
-	/call DeclareIniVar PALPoint 										int 		Heal 90
+  /call DeclareIniVar splashPanic									string 	Heal "Aurora of Dayspring"
+	| /declare rezID 													int 		outer
+	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
+	/call DeclareIniVar XTHealRadius								int			Heal 300
 	
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar DiscRest			 							string	Discs "Breather"
@@ -1425,6 +1362,7 @@ sub declare_PAL()
 	/call DeclareIniVar AAJudgement									string	Discs "Inquisitor's Judgement"
 	/call DeclareIniVar AAValorousRage							string	Discs "Valorous Rage"
 	/call DeclareIniVar AAShield										string	Discs "Shield of Brilliance"
+	/call DeclareIniVar chainStun										string	Discs FALSE
 	
 	/call DeclareIniVar DoNuke					 						int			Spells 5
 	/call DeclareIniVar Nuke1												string 	Spells "Force of Ardency"
@@ -1438,13 +1376,22 @@ sub declare_PAL()
 	/call DeclareIniVar DoT2					 							string	Spells FALSE
 	/call DeclareIniVar DoT3					 							string	Spells FALSE
 	/call DeclareIniVar DoT4					 							string	Spells FALSE
+	
 
 	/call DeclareIniVar ChallengeSpell							string 	Spells "Impose for Honor"
 	/call DeclareIniVar ValiantDefense							string 	Spells "Valiant Defense"
 		
 	/call DeclareIniVar Twincast										string 	Spells "Glorious Exoneration"
 	
-	/call DeclareIniVar Harmonious 									string 	Spells "Harmonious Blessing"
+	/call DeclareIniVar switchHarmonious 						bool	 	Buffs TRUE
+	/call DeclareIniVar Harmonious 									string 	Buffs "Harmonious Blessing"
+	/call DeclareIniVar switchSteel			 						bool	 	Buffs TRUE
+	/call DeclareIniVar Steel			 									string 	Buffs "Reinvigorating Steel"
+	/call DeclareIniVar switchStance 								bool	 	Buffs TRUE
+	/call DeclareIniVar Stance 											string 	Buffs "Staunch Stance"
+	
+	
+	
 	
 	/call DeclareIniVar useMG												bool		Buffs TRUE
 	/call DeclareIniVar useMGPct										int			Buffs 60
@@ -1529,13 +1476,13 @@ sub declare_BER()
  	/call DeclareIniVar DiscDisconcert							string 	Discs "Disconcerting Discipline"
  	/call DeclareIniVar DiscEnduranceTap						string 	Discs "Sapping Strikes"
 
-	/call DeclareVar OpenWoundEffect								string 	outer Open Wound
+	/declare OpenWoundEffect										string 	outer Open Wound
   /if (${OpenWoundDisc.Find[rk. III]}) {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-6]} effect II
   }
-	/call DeclareVar AugmentedFrenzyEffect 			string outer Augmented Frenzy Effect
+	/declare AugmentedFrenzyEffect 							string outer Augmented Frenzy Effect
   /if (${AugmentedFrenzyDisc.Find[rk. III]}) {
 		/varset AugmentedFrenzyEffect ${AugmentedFrenzyDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
@@ -1552,7 +1499,8 @@ sub declare_BER()
  *  NOTE: 
  ***|
 sub declare_RNG()
-	/call DeclareIniVar tNuke_Summer								string	Timer 3s
+	/call setTimer tNuke_Summer											string	Timer 3s timer_cast_nuke_summer
+	/call create_timer timer_Elemental_Arrow 1
 
 	/call DeclareIniVar DoNuke					 						int			Spells 5
 	/call DeclareIniVar Nuke1					 							string	Spells "Anticipated Shots"	
@@ -1617,77 +1565,78 @@ sub declare_DRU()
 	/call DeclareIniVar DoT3							 					string	Spells FALSE	
 	/call DeclareIniVar DoT4					 							string	Spells FALSE	
 	
-	/call DeclareVar MajorHurt 											int 		outer 0
-	/call DeclareVar WorstHurt 											string 	outer NULL
-	/call DeclareVar WorstHurtID 										int 		outer
-	/call DeclareVar WorstHP 												int 		outer 100
-	/call DeclareVar WorstClass 										string 	outer NULL
-  /call DeclareVar MinorHurt											int    	outer 0 
-  /call DeclareVar WorstHp 												int    	outer 100
-  /call DeclareVar pWorstHurt 										string 	outer ${Me.DisplayName}
-  /call DeclareVar pWorstHP												int			outer 100
-  /call DeclareVar pWorstHurtID										int 		outer ${Me.ID}
-  /call DeclareVar pWorstClass										string	outer NULL
-  /call DeclareVar pMajorHurt											int			outer 0
+	/declare MajorHurt 													int 		outer 0
+	/declare WorstHurt 													string 	outer FALSE
+	/declare WorstHurtID 												int 		outer
+	/declare WorstHP 														int 		outer 100
+	/declare WorstClass 												string 	outer FALSE
+  /declare MinorHurt													int    	outer 0 
+  /declare WorstHp 														int    	outer 100
+  /declare pWorstHurt 												string 	outer ${Me.DisplayName}
+  /declare pWorstHP														int			outer 100
+  /declare pWorstHurtID												int 		outer ${Me.ID}
+  /declare pWorstClass												string	outer FALSE
+  /declare pMajorHurt													int			outer 0
 	
 	/call DeclareIniVar RandRezDelay								int 		Heal 10
-	/call DeclareIniVar ProtectOutsideGroup					string	Heal |NULL|NULL
-	/call DeclareIniVar ProtectInsideRaid						string	Heal |NULL|NULL
-	/call DeclareIniVar ProtectNPCList							string	Heal |NULL|NULL
-	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE /usegroupheal
+	/call DeclareIniVar ProtectOutsideGroup					string	Heal |FALSE|FALSE
+	/call DeclareIniVar ProtectInsideRaid						string	Heal |FALSE|FALSE
+	/call DeclareIniVar ProtectNPCList							string	Heal |FALSE|FALSE
+	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
 
 	/call DeclareIniVar healPanic			 							string  Heal "Survival of the Serendipitous"
 	/call DeclareIniVar healRejuvilation						string  Heal "Resurgence"
 	/call DeclareIniVar healAdrenaline				 			string 	Heal "Daggerthorn Rush"
 	/call DeclareIniVar healSanavida	 							string  Heal "Panavida"
 	/call DeclareIniVar healWholeGroup							string 	Heal "Lunasoothe"
+	/call DeclareIniVar XTHealRadius								int			Heal 300
 	
 	| ports	
-	/call DeclareIniVar looping											string	Transport "Zephyr: Looping Planes"
-	/call DeclareIniVar steamfront									string	Transport "Zephyr: Steamfront"
-	/call DeclareIniVar butcherblock								string	Transport "Zephyr: Butcherblock"
-	/call DeclareIniVar shardslanding								string	Transport "Zephyr: Shard's Landing"
-	/call DeclareIniVar pillars											string	Transport "Zephyr: Pillars of Alra"
-	/call DeclareIniVar beast												string	Transport "Zephyr: Beasts' Domain"
-	/call DeclareIniVar westkarna										string	Transport "Zephyr: West Karana"
-	/call DeclareIniVar lavastorm										string	Transport "Zephyr: Lavastorm"
-	/call DeclareIniVar undershore									string	Transport "Zephyr: Undershore"
-	/call DeclareIniVar misty												string	Transport "Zephyr: Misty"
-	/call DeclareIniVar ro													string	Transport "Zephyr: Ro"
-	/call DeclareIniVar feerrott										string	Transport "Zephyr: Feerrott"
-	/call DeclareIniVar commonlands									string	Transport "Zephyr: Commonlands"
-	/call DeclareIniVar surefall										string	Transport "Zephyr: Surefall Glade"
-	/call DeclareIniVar karana											string	Transport "Zephyr: Karana"
-	/call DeclareIniVar wallofslaughter 						string	Transport "Zephyr: Slaughter"
-	/call DeclareIniVar bloodfields 								string	Transport "Zephyr: Bloodfields"
-	/call DeclareIniVar lceanium										string	Transport "Zephyr: Lceanium"
-	/call DeclareIniVar dreadlands									string	Transport "Zephyr: Combines"
-	/call DeclareIniVar dawnshroud									string	Transport "Zephyr: Dawnshroud"
-	/call DeclareIniVar twilight										string	Transport "Zephyr: Twilight"
-	/call DeclareIniVar grimling										string	Transport "Zephyr: Grimling"
-	/call DeclareIniVar nexus												string	Transport "Zephyr: Nexus"
-	/call DeclareIniVar primarypush									string	Transport "Primary Anchor Push"
-	/call DeclareIniVar secondarypush								string	Transport "Secondary Anchor Push"
-	/call DeclareIniVar primary											string	Transport "Zephyr: Primary Anchor"
-	/call DeclareIniVar secondary										string	Transport "Zephyr: Secondary Anchor"
-	/call DeclareIniVar tempesttemple								string	Transport "Zephyr: Tempest Temple"
-	/call DeclareIniVar buriedsea										string	Transport "Zephyr: Buried Sea"
-	/call DeclareIniVar stonebrunt									string	Transport "Zephyr: Stonebrunt"
-	/call DeclareIniVar tox													string	Transport "Zephyr: Toxxulia"
-	/call DeclareIniVar direwind										string	Transport "Zephyr: Direwind"
-	/call DeclareIniVar steppes											string	Transport "Zephyr: Steppes"
-	/call DeclareIniVar blightfire									string	Transport "Zephyr: Blightfire Moors"
-	/call DeclareIniVar barindu											string	Transport "Zephyr: Barindu"
-	/call DeclareIniVar natimbi											string	Transport "Zephyr: Natimbi"
-	/call DeclareIniVar grounds											string	Transport "Zephyr: the Grounds"
-	/call DeclareIniVar potime											string	Transport "Zephyr: Plane of Time"
-	/call DeclareIniVar brells											string	Transport "Zephyr: Brell's Rest"
-	/call DeclareIniVar arcstone										string	Transport "Zephyr: Arcstone"
-	/call DeclareIniVar knowledge										string	Transport "Zephyr: Knowledge"
-	/call DeclareIniVar cobaltscar									string	Transport "Zephyr: Cobalt Scar"
-	/call DeclareIniVar wakening										string	Transport "Zephyr: Wakening Land"
-	/call DeclareIniVar greatdivide									string	Transport "Zephyr: Great Divide"
-	/call DeclareIniVar iceclad											string	Transport "Zephyr: Iceclad"	
+	/declare looping														string	outer "Zephyr: Looping Planes"
+	/declare steamfront													string	outer "Zephyr: Steamfront"
+	/declare butcherblock												string	outer "Zephyr: Butcherblock"
+	/declare shardslanding											string	outer "Zephyr: Shard's Landing"
+	/declare pillars														string	outer "Zephyr: Pillars of Alra"
+	/declare beast															string	outer "Zephyr: Beasts' Domain"
+	/declare westkarna													string	outer "Zephyr: West Karana"
+	/declare lavastorm													string	outer "Zephyr: Lavastorm"
+	/declare undershore													string	outer "Zephyr: Undershore"
+	/declare misty															string	outer "Zephyr: Misty"
+	/declare ro																	string	outer "Zephyr: Ro"
+	/declare feerrott														string	outer "Zephyr: Feerrott"
+	/declare commonlands												string	outer "Zephyr: Commonlands"
+	/declare surefall														string	outer "Zephyr: Surefall Glade"
+	/declare karana															string	outer "Zephyr: Karana"
+	/declare wallofslaughter 										string	outer "Zephyr: Slaughter"
+	/declare bloodfields 												string	outer "Zephyr: Bloodfields"
+	/declare lceanium														string	outer "Zephyr: Lceanium"
+	/declare dreadlands													string	outer "Zephyr: Combines"
+	/declare dawnshroud													string	outer "Zephyr: Dawnshroud"
+	/declare twilight														string	outer "Zephyr: Twilight"
+	/declare grimling														string	outer "Zephyr: Grimling"
+	/declare nexus															string	outer "Zephyr: Nexus"
+	/declare primarypush												string	outer "Primary Anchor Push"
+	/declare secondarypush											string	outer "Secondary Anchor Push"
+	/declare primary														string	outer "Zephyr: Primary Anchor"
+	/declare secondary													string	outer "Zephyr: Secondary Anchor"
+	/declare tempesttemple											string	outer "Zephyr: Tempest Temple"
+	/declare buriedsea													string	outer "Zephyr: Buried Sea"
+	/declare stonebrunt													string	outer "Zephyr: Stonebrunt"
+	/declare tox																string	outer "Zephyr: Toxxulia"
+	/declare direwind														string	outer "Zephyr: Direwind"
+	/declare steppes														string	outer "Zephyr: Steppes"
+	/declare blightfire													string	outer "Zephyr: Blightfire Moors"
+	/declare barindu														string	outer "Zephyr: Barindu"
+	/declare natimbi														string	outer "Zephyr: Natimbi"
+	/declare grounds														string	outer "Zephyr: the Grounds"
+	/declare potime															string	outer "Zephyr: Plane of Time"
+	/declare brells															string	outer "Zephyr: Brell's Rest"
+	/declare arcstone														string	outer "Zephyr: Arcstone"
+	/declare knowledge													string	outer "Zephyr: Knowledge"
+	/declare cobaltscar													string	outer "Zephyr: Cobalt Scar"
+	/declare wakening														string	outer "Zephyr: Wakening Land"
+	/declare greatdivide												string	outer "Zephyr: Great Divide"
+	/declare iceclad														string	outer "Zephyr: Iceclad"	
 /return	
 
 
@@ -1699,20 +1648,20 @@ sub declare_DRU()
  *  NOTE: 
  ***|
 sub declare_SHM()
-	/call DeclareVar MajorHurt 											int 		outer 0
-	/call DeclareVar WorstHurt 											string 	outer NULL
-	/call DeclareVar WorstHurtID 										int 		outer
-	/call DeclareVar WorstHP 												int 		outer 100
-	/call DeclareVar WorstClass 										string 	outer NULL
-  /call DeclareVar MinorHurt											int    	outer 0 
-  /call DeclareVar WorstHp		 										int    	outer 100	
+	/declare MajorHurt 													int 		outer 0
+	/declare WorstHurt 													string 	outer FALSE
+	/declare WorstHurtID 												int 		outer ${Me.ID}
+	/declare WorstHP 														int 		outer 100
+	/declare WorstClass 												string 	outer FALSE
+  /declare MinorHurt													int    	outer 0 
+  /declare WorstHp		 												int    	outer 100	
   
 	/call DeclareIniVar AidTXT 											string 	Spells "ANCESTRAL AID Done (Str/Agi/Dex +300, HoT Heal +1840)"
 	/call DeclareIniVar MaloSpell 									string 	Spells "Malosinete"
 	/call DeclareIniVar AASlow			 								string	Spells "Turgur's Swarm"	
 	/call DeclareIniVar spellSlow										string 	Spells FALSE
 	/call DeclareIniVar spellAESlow 								string 	Spells "Srasku's Drowse"
-	/call DeclareIniVar usePathosis 								bool	 	Spells TRUE /pathiosis
+	/call DeclareIniVar usePathosis 								bool	 	Spells TRUE
 	
 	/call DeclareIniVar TC1									 				string	Spells "Glacial Gift"	
 	/call DeclareIniVar TC2									 				string	Spells "Frigid Gift"
@@ -1729,8 +1678,8 @@ sub declare_SHM()
 	/call DeclareIniVar CaniPercent				 					int			Spells 60 /cani
 	/call DeclareIniVar spellCannibalization				string	Spells "Tribal Pact"
 
-	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE /usegroupheal
-	/call DeclareIniVar useGroupHoT									bool		Heal TRUE /usegrouphot
+	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
+	/call DeclareIniVar useGroupHoT									bool		Heal TRUE
 	/call DeclareIniVar RandRezDelay								int 		Heal 10
 
   /call DeclareIniVar healSurge										string 	Heal "Spiritual Surge"
@@ -1740,11 +1689,12 @@ sub declare_SHM()
   /call DeclareIniVar healWholeGroup							string 	Heal "Krasir's Recourse"
   /call DeclareIniVar healWholeGroupHoT						string 	Heal "Shear of Renewal"
 
-	/call DeclareIniVar ProtectOutsideGroup					string	Heal |NULL|NULL
-	/call DeclareIniVar ProtectInsideRaid						string	Heal |NULL|NULL
-	/call DeclareIniVar ProtectNPCList							string	Heal |NULL|NULL
+	/call DeclareIniVar ProtectOutsideGroup					string	Heal |FALSE|FALSE
+	/call DeclareIniVar ProtectInsideRaid						string	Heal |FALSE|FALSE
+	/call DeclareIniVar ProtectNPCList							string	Heal |FALSE|FALSE
+	/call DeclareIniVar XTHealRadius								int			Heal 300
 
-	/call DeclareVar HealList 											string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
+	/declare HealList 													string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
 /return	
 
 
@@ -1756,9 +1706,9 @@ sub declare_SHM()
  *  NOTE: 
  ***|
 sub declare_BRD()
-	/call DeclareVar mobList												string outer
-	/call DeclareVar addList 												string outer
-
+	/declare mobList														string 	outer
+	/declare addList 														string 	outer
+		
 	/call DeclareIniVar ServantNukeAA1 							string 	Pet "Lyrical Prankster"
 	/call DeclareIniVar ServantNukeAA2 							string 	Pet "Song of Stone"
 	/call DeclareIniVar songServantNuke							string 	Pet "Plague of the Piper"
@@ -1773,7 +1723,7 @@ sub declare_BRD()
 	
 	/call DeclareIniVar DoNuke					 						int			Song 1
 	/call DeclareIniVar Nuke1												string 	Song "Tsaph's Insult"
-	/call DeclareIniVar Nuke2												string 	Song NULL
+	/call DeclareIniVar Nuke2												string 	Song FALSE
 	
 	/call DeclareIniVar spellMez										string 	Song "Slumber of Silisia"
 	/call DeclareIniVar spellpbaeMez								string	Song "Wave of Torpor"	
@@ -1787,7 +1737,6 @@ sub declare_BRD()
  *  NOTE: 
  ***|
 sub declare_BST()
-|	/call DeclareIniVar useAASlow 									bool 		Spells TRUE /aaslow
 	/call DeclareIniVar DiscForay 									string 	Spells "Pummel"
 	/call DeclareIniVar DiscFocusClaws 							string 	Spells "Focused Clamor of Claws"
 	/call DeclareIniVar DiscSavage 									string 	Spells "Savage Rage"
@@ -1849,7 +1798,7 @@ sub declare_MNK()
  ***|
 sub declare_ROG()
 	| keep on cooldown
-	/call DeclareIniVar tClick_Poison								string	Timer 30s
+	/call setTimer tClick_Poison										string	Timer 30s 	timer_click_poison
 
 	/call DeclareIniVar DiscRest				 						string 	Discs "Breather"
 	/call DeclareIniVar DiscAggro 									string 	Discs "Disorientation"
@@ -1888,32 +1837,34 @@ sub declare_ROG()
  ***|
 sub declare_CLR()
 	DEBUG ${cbug}declare_CLR()\ax
-	/call DeclareIniVar tHealWard										string	Timer 185s
-	/call DeclareIniVar	tcheck_QM										string	Timer	10s
+	/call setTimer tHealWard												string	Timer 185s timer_heal_ward
+	/call setTimer tcheck_QM												string	Timer	10s timer_check_QM
 		
-	/call DeclareVar MajorHurt 											int 		outer 0
-	/call DeclareVar WorstHurt 											string 	outer NULL
-	/call DeclareVar WorstHurtID 										int 		outer
-	/call DeclareVar WorstHP 												int 		outer 100
-	/call DeclareVar WorstClass 										string 	outer NULL
-	/call DeclareVar MinorHurt											int    	outer 0 
+	/declare WorstHurt 													string 	outer FALSE
+	| /declare WorstHurtID 												int 		outer ${Me.ID}
+	/declare WorstHP 														int 		outer 100
+	/declare WorstClass 												string 	outer FALSE
+	/declare MajorHurt 													int 		outer 0
+	/declare MinorHurt													int    	outer 0 
+	/declare groupHurt 													int 		outer 0
+
 	
-	/call DeclareVar pWorstHurt 										string 	outer ${Me.DisplayName}
-	/call DeclareVar pWorstHP												int			outer 100
-	/call DeclareVar pWorstHurtID										int 		outer ${Me.ID}
-	/call DeclareVar pWorstClass										string	outer NULL
-	/call DeclareVar pMajorHurt											int			outer 0
+	/declare pWorstHurt 												string 	outer ${Me.DisplayName}
+	/declare pWorstHP														int			outer 100
+	/declare pWorstHurtID												int 		outer ${Me.ID}
+	/declare pWorstClass												string	outer FALSE
+	/declare pMajorHurt													int			outer 0
 	
-	/call DeclareVar WorstManaID										int			outer
-	/call DeclareVar WorstManaPct										int			outer
+	/declare WorstManaID												int			outer
+	/declare WorstManaPct												int			outer
 	
 	/call DeclareIniVar DivineRezCleric							bool 		Heal TRUE
 	/call DeclareIniVar RandRezDelay								int 		Heal 5
 	/call DeclareIniVar ProtectOutsideGroup					string	Heal |FALSE|FALSE
 	/call DeclareIniVar ProtectInsideRaid						string	Heal |FALSE|FALSE
 	/call DeclareIniVar ProtectNPCList							string	Heal |FALSE|FALSE
-	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE /usegroupheal
-	/call DeclareIniVar useGroupHoT									bool		Heal TRUE /usegrouphot
+	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
+	/call DeclareIniVar useGroupHoT									bool		Heal TRUE
 	/call DeclareIniVar tempPet						 					string	Pet "Ardent Hammer of Zeal"
 	/call DeclareIniVar setDivinetoGroupHeal				bool		Heal FALSE
 
@@ -1936,12 +1887,21 @@ sub declare_CLR()
   /call DeclareIniVar healIssuance								string  Heal "Issuance of Spirit"
 	/call DeclareIniVar CRTXT												string	Heal "Celestial Regeneration (+11100HP / tic)"
 	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
+	/call DeclareIniVar XTHealRadius								int			Heal 300
 		
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar sumWeaponSpell							string	Buffs "Hammer of	Reverence"
 	/call DeclareIniVar sumWeaponItem								string	Buffs "Hammer of	Reverence III"
 	/call DeclareIniVar useQM												bool		Buffs TRUE
 	/call DeclareIniVar useQMPct										int			Buffs 40
+	/call DeclareIniVar AAFade											string	Buffs "Divine Peace"
+	/call DeclareIniVar useAAFade										int			Buffs 50
+	
+	/call DeclareIniVar DoNuke					 						int			Spells 0
+	/call DeclareIniVar Nuke1					 							string	Spells FALSE	
+	/call DeclareIniVar Nuke2					 							string	Spells FALSE
+	/call DeclareIniVar Nuke3					 							string	Spells FALSE
+	/call DeclareIniVar Nuke4					 							string	Spells FALSE
 		
 /return	
 
@@ -1954,7 +1914,7 @@ sub declare_CLR()
  *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry it's slow as fuck.
  ***|
 sub whitewash()
-	NOUT ${owarning} ${sep} Deleting all Core ${cinfo}${versionCore}\ax aliases. ${cbad}Please wait.\ax
+	OUT ${owarning} ${sep} Deleting all Core ${cinfo}${versionCore}\ax aliases. ${cbad}Please Wait\ax
 	/declare _count 				int local
 	/declare _todelete[11] 	string local
 	/declare _index 				int local
@@ -1979,7 +1939,7 @@ sub whitewash()
 	/varset _todelete[3] |combat|on|off
 
 	| Misc commands
-	/varset _todelete[4] |maxlevel|autoadjustexp|oneoff|userain|crew|autologin
+	/varset _todelete[4] |maxlevel|autoadjustexp|oneoff|userain|crew|autologin|usebuffkill
 	/varset _todelete[5] |pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel
 	/varset _todelete[6] |mirror|maintexplvl|autocontrol|echoaugments|relay|givecoin|stop
 
@@ -1989,7 +1949,7 @@ sub whitewash()
 	| pets
 	/varset _todelete[8]	|sendpets
 
-	| class commands
+	| commands
 	/varset _todelete[9] |harvest|gather|rod|redorod|rods|song
 	/varset _todelete[10] |glyph|lesson|wood|cani
 
@@ -1998,11 +1958,12 @@ sub whitewash()
 
 	
 	/for _count 1 to ${_todelete.Size}
+		DEBUG _count: ${_count}-${_todelete.Size}
 		/for _index 1 to ${_todelete[${_count}].Count[|]}
-			NOUT Deleting Alias ${If[${_count} > 4,${_increment}:,]} ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
+			DEBUG _index: ${_count}-${_todelete.Size}: ${_index} ${_todelete[${_count}].Arg[${_index},|]}
+			OUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
 			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
-			/if (${_count} > 4) /varcalc _increment ${_increment}+1
-			/delay 1
+			/varcalc _increment ${_increment}+1
 		/next _index	
 	/next _count
 	
@@ -2026,18 +1987,18 @@ sub set_alias()
 	/if (!${Bool[${Alias[/door]}]}) 					/squelch /alias /door 											/bc door
 	/if (!${Bool[${Alias[/stack]}]}) 					/squelch /alias /stack 											/bcaa //invis
 	
-  /if (!${Bool[${Alias[/sendpets]}]}) 			/squelch /alias /sendpets										NOUT SendPets: 
+  /if (!${Bool[${Alias[/sendpets]}]}) 			/squelch /alias /sendpets										OUT SendPets: 
 	/if (!${Bool[${Alias[/killmob]}]}) 				/squelch /alias /killmob 										/bc killmob
 	/if (!${Bool[${Alias[/mirror]}]}) 				/squelch /alias /mirror 										/bc mirror
 	/if (!${Bool[${Alias[/stein]}]}) 					/squelch /alias /stein 											/bc stein
   /if (!${Bool[${Alias[/stop]}]}) 					/squelch /alias /stop 											/bc stop
-	/if (!${Bool[${Alias[/blurb]}]}) 					/squelch /alias /blurb 											NOUT Blurb: 
- 	/if (!${Bool[${Alias[/clean]}]}) 					/squelch /alias /clean 											NOUT Clean this mess up.
-	/if (!${Bool[${Alias[/song]}]}) 					/squelch /alias /song 											NOUT Song: 
-	/if (!${Bool[${Alias[/crew]}]}) 					/squelch /alias /crew 											NOUT Crew: 
+	/if (!${Bool[${Alias[/blurb]}]}) 					/squelch /alias /blurb 											OUT Blurb: 
+ 	/if (!${Bool[${Alias[/clean]}]}) 					/squelch /alias /clean 											OUT Clean this mess up.
+	/if (!${Bool[${Alias[/song]}]}) 					/squelch /alias /song 											OUT Song: 
+	/if (!${Bool[${Alias[/crew]}]}) 					/squelch /alias /crew 											OUT Crew: 
 	/if (!${Bool[${Alias[/here]}]}) 					/squelch /alias /here 											/bc here
   /if (!${Bool[${Alias[/bcsay]}]}) 					/squelch /alias /bcsay 											/bc bcsay
-  /if (!${Bool[${Alias[/echoaugments]}]}) 	/squelch /alias /echoaugments								NOUT Echo Augment file!
+  /if (!${Bool[${Alias[/echoaugments]}]}) 	/squelch /alias /echoaugments								OUT Echo Augment file!
   /if (!${Bool[${Alias[/autologin]}]}) 			/squelch /alias /autologin									/plugin mq2autologin unload
 
 	| quick cleric cure commands
@@ -2051,30 +2012,32 @@ sub set_alias()
 	/if (!${Bool[${Alias[/off]}]}) 						/noparse /squelch /alias /off						    /bca //varset coreAuto FALSE
 	/if (!${Bool[${Alias[/zonereset]}]}) 			/noparse /squelch /alias /zonereset			    /bc zonereset
 
-	/if (!${Bool[${Alias[/givecoin]}]}) 			/noparse /squelch /alias /givecoin			    NOUT Bribe Time:
+	/if (!${Bool[${Alias[/givecoin]}]}) 			/noparse /squelch /alias /givecoin			    OUT Bribe Time:
 
 	/if (!${Bool[${Alias[/oneoff]}]}) 				/noparse /squelch /alias /oneoff   					/bc oneoff
 
 	/if (!${Bool[${Alias[/gtfo]}]}) 					/noparse /squelch /alias /gtfo    			 		/bc gtfo
 	/if (!${Bool[${Alias[/lesson]}]}) 				/noparse /squelch /alias /lesson   			 		/bc lesson
 
-	| /if (!${Bool[${Alias[/autocontrol]}]})		/noparse /squelch /alias /autocontrol				NOUT Setting Automatic Control Toon swapping!
+	| /if (!${Bool[${Alias[/autocontrol]}]})		/noparse /squelch /alias /autocontrol				OUT Setting Automatic Control Toon swapping!
 
+	|***
 	/if (${Select[${Me.Class.ShortName},DRU]}) {
 		/if (!${Bool[${Alias[/wood]}]}) 				/squelch /alias /wood 											/bc wood
 	}
 	/if (${Select[${Me.Class.ShortName},SHM]}) {
 		/if (!${Bool[${Alias[/aid]}]}) 					/squelch /alias /aid 												/bc aid
 	}
+	***|
 /return
 
 
 #event Join "#1# invites you to join a #2#.#*#"
 sub Event_Join(string line, string _sender, string _groupraid)
 	DEBUG ${cbug}Event_Join(\ax${_sender} ${_groupraid}\ax${cbug})\ax
-	/if (!${switchInvites}) /goto :exit
+	/if (!${switchInvites}) /return
 	CHECKSAFELIST
-	VOUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
+	OUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
 	/if (${_groupraid.Equal[group]}) /invite
 	/if (${_groupraid.Equal[raid]}) {
 		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["join a raid"]}) {
@@ -2083,7 +2046,6 @@ sub Event_Join(string line, string _sender, string _groupraid)
 			/raidaccept	
 		}
 	}
-	:exit
 /return
 
 
@@ -2096,44 +2058,38 @@ sub Event_Join(string line, string _sender, string _groupraid)
  ***| 
 #event EQBC "<#1#> #2#"
 #event EQBC "[#1#(msg)] #2#"
-#event EQBC "<#1#> #2# #3#"
-#event EQBC "[#1#(msg)] #2# #3#"
-#event EQBC "<#1#> #2# #3# #4#"
-#event EQBC "[#1#(msg)] #2# #3# #4#"
-sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string _other)
-	DEBUG cmd: ${_cmd} _sender ${_sender} _verbage ${_verbage}
+| #event EQBC "<#1#> #2# #3#"
+| #event EQBC "[#1#(msg)] #2# #3#"
+| #event EQBC "<#1#> #2# #3# #4#"
+| #event EQBC "[#1#(msg)] #2# #3# #4#"
+| sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string _other)
+| sub Event_EQBC(string line, string _sender, string _cmd, string _verbage)
+sub Event_EQBC(string line, string _sender, string _cmd)
+	DEBUG cmd: ${_cmd} _sender ${_sender}
 
-	/if (${_cmd.Equal[horn]}) /call click_horn_of_unity 
-	/if (${_cmd.Equal[whitewash]}) /call whitewash
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
-  | /if (${_cmd.Equal[switchRaidInvite]}) /call setRaidInviteMode
   /if (${_cmd.Equal[killmob]}) {
   	/varset switchOverrideEngageat ${If[${switchOverrideEngageat},FALSE,TRUE]}
 		/call echos override "Engageat" switchOverrideEngageat
   }
-  /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /useitem "Mirror Fragment of Anashti Sul"
-  /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /useitem "Drunkard's Stein"
+  /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item
+  /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
 
-  | MGB Class AA casts
   /if (${_cmd.Equal[paragon]} && ${Select[${Me.Class.ShortName},BST]}) /call cast_AA_paragon
-  | /if (${_cmd.Equal[rods]} && ${Select[${Me.Class.ShortName},MAG]}) /call cast_rods
-  /if (${_cmd.Equal[aid]} && ${Select[${Me.Class.ShortName},SHM]}) /call doAid
-  /if (${_cmd.Equal[cr]} && ${Select[${Me.Class.ShortName},CLR]}) /call cast_celest_regen
-  /if (${_cmd.Equal[wood]} && ${Select[${Me.Class.ShortName},DRU]}) /call cast_AA_spirit_wood
-  | /if (${_cmd.Equal[issuance]} && ${Select[${Me.Class.ShortName},CLR]}) /call cast_issuance_heal
-  | /if (${_cmd.Equal[spice]} && ${Select[${Me.Class.ShortName},RNG]}) /call cast_AA_auspice
+  | /if (${_cmd.Equal[aid]} && ${Select[${Me.Class.ShortName},SHM]}) /call doAid
+  | /if (${_cmd.Equal[wood]} && ${Select[${Me.Class.ShortName},DRU]}) /call cast_AA_spirit_wood
+  /if (${_cmd.Equal[lesson]} && ${Me.AltAbilityReady[Lesson of the Devoted]}) /call core_cast "Lesson of the Devoted" alt
+	| /if (${_cmd.Equal[handin]}) /call hand_in "${_sender}" "${_verbage}"
   
-  /if (${_cmd.Equal[lesson]} && ${Me.AltAbilityReady[Lesson of the Devoted]}) /call core_cast "Lesson of the Devoted" alt 0
-  
-	/if (${_cmd.Equal[handin]}) /call hand_in "${_sender}" "${_verbage}"
-  
+
+ 	|***
  	| have everyone say the same thing to the same target with a touch of random delay
   /if (${_cmd.Equal[bcsay]}) {
  		/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Spawn[pc ${_sender} radius 80].ID}) {
 			/assist ${_sender}
 			/delay 5s ${Me.AssistComplete} 
-			/if (!${Target.ID}) //goto :exit
+			/if (!${Target.ID}) /return
 		}
 		/if (${Me.Invis}) {
 			/makemevisible
@@ -2141,72 +2097,25 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 		}
 		/say ${_verbage}
 	}
+	***|
    
     
 	| commands to control all assist targets.  
   /if (${_cmd.Equal[sma1]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
 		/smartma 1
-  }
-  /if (${_cmd.Equal[sma2]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
+  } else /if (${_cmd.Equal[sma2]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
 		/smartma 2
-  }
-  /if (${_cmd.Equal[smag]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
+  } else /if (${_cmd.Equal[smag]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
 		/smartma G
-	}
-	/if (${_cmd.Equal[smax]}) {
+	} else /if (${_cmd.Equal[smax]}) {
 		/smartma X
 	}
  
-	/if (${_cmd.Equal[MELEE]}) {
-		/if (!${Target.ID} || ${Target.ID}==${Me.ID}) {
-			/varset combat FALSE
-			/call echos needtarget
-			/goto :exit
-		}
-		/varset isValidTarget TRUE
-		/varset combat MELEE
-		/varset Target2Kill ${Target.ID}		
-	}
-	/if (${_cmd.Equal[RANGE]}) {
-		/if (!${Target.ID} || ${Target.ID}==${Me.ID}) {
-			/varset combat FALSE
-			/call echos needtarget
-			/goto :exit
-		} else /if (${Target.Distance} < 30) {
-			/stick off
-			NOUT ${cbad}Target too close.\ax
-		}
-		/varset isValidTarget TRUE
-		/varset combat RANGE
-		/varset Target2Kill ${Target.ID}		
-	}
-	/if (${_cmd.Equal[NUKE]}) {
-		/if (!${Target.ID} || ${Target.ID}==${Me.ID} || ${Target.ID}==${Me.Pet.ID}) {
-			/varset combat FALSE
-			/call echos needtarget
-			/goto :exit
-		}
-		/varset isValidTarget TRUE
-		/varset combat NUKE
-		/varset Target2Kill ${Target.ID}		
-	}
-	/if (${_cmd.Equal[HEAL]}) {
-	}
-	/if (${_cmd.Equal[DUAL]}) {
-		/if (!${Target.ID} || ${Target.ID}==${Me.ID} || ${Target.ID}==${Me.Pet.ID}) {
-			/varset combat FALSE
-			/call echos needtarget
-			/goto :exit
-		}
-		/varset isValidTarget TRUE
-		/varset combat DUAL
-		/varset Target2Kill ${Target.ID}	
-	}
 
 	| group bail stuff
   /if (${_cmd.Equal[gtfo]}) {
   	/if (${Bool[${GTFO}]}) {
-  		/call sort_cursor TRUE
+  		CLEARCURSOR TRUE
   		/call set_stop TRUE
   		/call clear_combat
   		/docommand /makemevisible
@@ -2217,7 +2126,7 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
   }
 
 	| if you would be so kind as to stop running around like asses and kill the shit attackign us, that would be great.
-  /if (${_cmd.Equal[here]} && !${Me.DisplayName.Equal[${_sender}]}) NOUT Set Combat Here!
+  /if (${_cmd.Equal[here]} && !${Me.DisplayName.Equal[${_sender}]}) OUT Set Combat Here!
 
 	|***
 	 *	DES: Tell toon to take ports: translocate, banner, Guild Hall TL, Task Acceptance
@@ -2251,18 +2160,17 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 	/if (${_cmd.Equal[door]}) {
 		/call create_timer timer_try_door 4s
 		:retrydoortarget
-		/if (!${timer_try_door}) /goto :exitdoor
+		/if (!${timer_try_door}) /return
 		/doortarget 
 		/delay 1
 		/if (!${Switch.ID}) /goto :retrydoortarget
 		:retryopendoor
-		/if (!${timer_try_door}) /goto :exitdoor
+		/if (!${timer_try_door}) /return
 		/if (!${Switch.Open}) {
 			/click left door
 			/delay 1s
 			/doevents flush
 		}
-		:exitdoor
 	}
 
 	|***
@@ -2280,19 +2188,19 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 	* USE: /bc zonereset
 	***|
 	/if (${_cmd.Equal[zonereset]}) {
-		/if (!${Spawn[pc ${_sender}].ID}) /goto :exit
+		/if (!${Spawn[pc ${_sender}].ID}) /return
 
 		/call echos zone
 		/call check_zone_INI ${_sender}
-		/if (${coreAuto} && ${setAutoShrink}) /call check_shrink
-		/goto :exit
+		/if (${coreAuto} && ${switchShrink}) /call check_shrink
+		/return
 	}
 
 	| wis healers only
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
 		| radient Cure
 		/if (${_cmd.Equal[rc]} &&  ${Me.AltAbilityReady[Radiant Cure]}) {
-			/call core_cast "Radiant Cure" alt ${Me.ID}
+			/call core_cast "Radiant Cure" alt
 			ECHOCHANNEL Radient Cure
 		}
 		
@@ -2301,10 +2209,9 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 			/call core_cast "Purified Spirits" alt ${Spawn[pc ${_sender}].ID}
 			ECHOCHANNEL Purified Spirits: ${Spawn[pc ${_sender}].Name}
 		}
-		/goto :exit
+		/return
 	}
 
-	:exit
 /return
 
 	
@@ -2312,7 +2219,7 @@ sub Event_EQBC(string line, string _sender, string _cmd, string _verbage, string
 sub Event_camping(string line)
 	DEBUG ${cbug}Event_camping()\ax
 	/call clear_combat
-	VOUT Core Macro ${cinfo}${versionCore}\ax ${sep} ${cbad}STOPPED\ax for camp.
+	OUT Core Build ${cinfo}${coreBuild}\ax ${sep} ${cbad}STOPPED\ax for camp.
 	/endm
 	/squelch /makecamp off
 	/squelch /moveto pause
@@ -2321,7 +2228,7 @@ sub Event_camping(string line)
 
 #event skillup "#*#You have become better at #1#! (#2#)"
 sub Event_skillup(string line, string skillname, int skillup)
-   VOUT [${cinfo}${skillname}\ax] has increased to (${cinfo}${skillup}\ax)! [Max:${cinfo} ${Skill[${skillname}].SkillCap}\ax]
+   OUT [${cinfo}${skillname}\ax] has increased to (${cinfo}${skillup}\ax)! [Max:${cinfo} ${Skill[${skillname}].SkillCap}\ax]
 /return
 
 #event task_update "Your task '#1#' has been updated."
@@ -2331,9 +2238,9 @@ sub Event_task_update(string line, string skillname)
 
 #event noRaid "Your raid was disbanded."
 sub Event_noRaid()
- 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-		/if (${switchRaidInvite}) /call Event_SetVar NA switchRaidInvite Common FALSE
+ 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
+		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
+		/if (${switchRaidInvite}) /call writeINI switchRaidInvite Common FALSE
 /return
 
 
@@ -2351,17 +2258,17 @@ sub Event_noRaid()
 sub Event_raidinvite(string line, string _sender)
 	/if (${switchRaidInvite}) {
 		/if (${Bool[${Raid.Member[${_sender}]}]}) {
-			VOUT ${cpc}${_sender}\ax is already in the raid.
-			/goto :exit
+			OUT ${cpc}${_sender}\ax is already in the raid.
+			/return
 		}
 		/if (${invitelist.Find[${_sender}]}) {
-			VOUT ${cbad}NO\ax invites for ${cpc}${_sender}\ax.
-			/goto :exit
+			OUT ${cbad}NO\ax invites for ${cpc}${_sender}\ax.
+			/return
 		}
 		/declare _timeDelay ${Math.Calc[${Math.Rand[40]}+20]}
 		/varset _timeDelay ${Int[${_timeDelay}]}
 		/delay 1m !${Raid.Locked}
-		VOUT Delay: ${cbug}${_timeDelay}\ax \ag- \ax ${cpc}${_sender}\ax requested a raid invite. [Raid: ${If[${Raid.Locked},${cbad}LOCKED\ax,${cgood}UNLOCKED\ax]}]
+		OUT Delay: ${cbug}${_timeDelay}\ax \ag- \ax ${cpc}${_sender}\ax requested a raid invite. [Raid: ${If[${Raid.Locked},${cbad}LOCKED\ax,${cgood}UNLOCKED\ax]}]
 		/delay 1m !${Raid.Locked}
 		/delay ${_timeDelay}
 		/raidinvite ${_sender}
@@ -2387,11 +2294,10 @@ sub Event_Blurb(string line, string exp, string event)
 	
 	/if (${exp.Equal[LIST]}) {
 		/echo ${explist}
-		/goto :exit
+		/return
 	}
 	/if (${explist.Find[${exp}]} && ${event.Equal[LIST]}) {
-		NOUT ${Ini[${INIBlurb},${exp.Upper}]}		
-		/goto :exitEvent_Blurb
+		OUT ${Ini[${INIBlurb},${exp.Upper}]}		
 	}
 	/if (${explist.Find[${exp}]} && ${Bool[${event}]}) {
 		/varset eventlist ${Ini[${INIBlurb},${exp.Upper}]}
@@ -2425,19 +2331,6 @@ sub Event_Crew(string line, string _clist)
 	/call set_crew ${_clist}
 /return 
 
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
-
-#event autocontrol "[MQ2] - Setting Automatic Control Toon swapping!"
-sub Event_autocontrol()
-	/call Event_SetVar NA autoControl Common ${If[${autoControl},FALSE,TRUE]}
-	/call echos switch "Auto Adjusting Control Toon" autoControl
-/return
- ***| 	
 
 
 |***
@@ -2488,8 +2381,8 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 	} else /if (${_coin.Equal[copper]}) {
 		/varset _coinID 3
 	} else /if (${_coinID} == 99) {
-		VOUT ${ocaution} ${sep} Invalid coin type. Try again.
-		/goto :exit
+		OUT ${ocaution} ${sep} Invalid coin type. Try again.
+		/return
 	}
 
 	/if (!${Window[InventoryWindow].Open}) /invoke ${Window[InventoryWindow].DoOpen}
@@ -2498,12 +2391,13 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 	/declare _countloop 	int local 1
 
 	:loopgivemorecash
-		VOUT Giving ${_coin} stack ${sep} ${_countloop} of ${_stacks}
-		/if (!${Window[InventoryWindow].Open}) /goto :exit
-		/if (!${Target.ID} || ${Taret.ID} == (${Me.ID} || ${Pet.ID})) /goto :exit
+		OUT Giving ${_coin} stack ${sep} ${_countloop} of ${_stacks}
+		/if (!${Window[InventoryWindow].Open}) /return
+		/if (!${Target.ID} || ${Taret.ID} == (${Me.ID} || ${Pet.ID})) /return
 		/delay 2s
 		/for _count 1 to ${_stacks}
-			ISDEAD
+			AMIDEAD
+
 			DEBUG stack count: ${_count}/${_stacks}
 			/ctrl /notify InventoryWindow IW_Money${_coinID} leftmouseup
 			/delay 5
@@ -2517,8 +2411,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 		/varset _countloop ${Math.Calc[${_countloop}+1]}
 		/if (${_countloop} < ${_amount}) /goto :loopgivemorecash
 
-	VOUT ${onotice} ${sep} Done giving cash for bribes.	How the mighty have fallen.
-	:exit
+	OUT ${onotice} ${sep} Done giving cash for bribes.	How the mighty have fallen.
 /return 
  
  
@@ -2567,7 +2460,7 @@ sub Event_Talk(string line, string _sender, string _chatText)
   /if (${Bool[${remoteKillKey}]} && ${_chatText.Equal[${remoteKillKey}]}) {
   	/call set_stop FALSE
   	/call clear_combat
-  	NOUT ${owarning} ${sep} Recieved tell from ${cpc}${_sender}\ax to end current macro.
+  	OUT ${owarning} ${sep} Recieved tell from ${cpc}${_sender}\ax to end current macro.
   	/endm
   }
   
@@ -2583,7 +2476,6 @@ sub Event_Talk(string line, string _sender, string _chatText)
   /if (${_chatText.Equal[makemedzleader]}) /dzmakeleader ${_sender}
   /if (${_chatText.Equal[makemetaskleader]}) /taskmakeleader ${_sender}
   
-  :exit
 /return
 
 
@@ -2623,73 +2515,9 @@ sub Event_CantLoot
  ***| 	
 #event NullSlot "#*#Invalid item slot 'null#*#"
 sub Event_NullSlot
-	NOUT ${owarning} ${sep} Opening all bags to correct null slot
+	OUT ${owarning} ${sep} Opening all bags to correct null slot
 	/keypress OPEN_INV_BAGS
 	/timed 10 /keypress CLOSE_INV_BAGS
-/return
-
-
-
-|***
- *	DES: zephyr/TL requesting toon.
- *	USE: /t [toon] send [location]
- *	INI: 
- *  NOTE: 
- ***|
-#event send "#1# tells you, 'send #2#'"
-sub Event_send(string line, string _sender, string _location)
-	CHECKSAFELIST
-	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]} || ${Spawn[pc ${_sender}].Distance} > 125) /goto :exit
-	/declare _portList[14]		string local
-	/declare _count 					int local 0
-
-	/if (${_location.Equal[where]}) {
-		/if (${Select[${Me.Class.ShortName},DRU]}) {
-			/varset _portList[1] Alaris: shardslanding, pillars, beast
-			/varset _portList[2] Antonica: westkarna, lavastorm, undershore, misty, ro, feerrott, commonlands, surefall, karana
-			/varset _portList[3] Discord: wallofslaughter, bloodfields
-			/varset _portList[4] Faydwer: looping, steamfront, butcherblock
-			/varset _portList[5] Kunark: lceanium, dreadlands
-			/varset _portList[6] Luclin: dawnshroud, twilight, grimling, nexus
-			/varset _portList[7] Misc: primarypush, secondarypush, primary, secondary
-			/varset _portList[8] Odus: tempesttemple, buriedsea, stonebrunt, tox
-			/varset _portList[9] Serpent's Spine: direwind, steppes, blightfire
-			/varset _portList[10] Taelosia: barindu, natimbi
-			/varset _portList[11] The Planes: grounds, potime, brells, arcstone, knowledge
-			/varset _portList[12] 
-			/varset _portList[13] Velious: cobaltscar, wakening, greatdivide, iceclad
-			/varset _portList[14] --Port List End
-		} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
-			/varset _portList[1] Alaris: pillars, sarith 
-			/varset _portList[2] Antonica: northkarana, commonlands, nektulos, qeyenos, northro, cazic, undershore, westkarana
-			/varset _portList[3] Discord: wallofslaughter, bloodfields
-			/varset _portList[4] Faydwer: fay, dragonscale
-			/varset _portList[5] Kunark: lceanium, dreadlands
-			/varset _portList[6] Luclin: dawnshroud, twilight, grimling
-			/varset _portList[7] Misc: bind, nexus, primary, secondary, primarypush, secondarypush
-			/varset _portList[8] Odus: tempesttemple, katta
-			/varset _portList[9] Serpent's Spine: tox, stonebrunt, icefall, sunderdock, blightfire
-			/varset _portList[10] Taelosia: barindu, natimbi
-			/varset _portList[11] The Planes: grounds, potime, brells, arcstone, pok
-			/varset _portList[12] 
-			/varset _portList[13] Velious: cobaltscar, wakening, greatdivide, iceclad
-			/varset _portList[14] --Port List End
-		}
-		| feed the response back to sender		
-		/for _count 1 to ${_portList.Size}
-			/t ${_sender} ${_portList[${_count}]}
-			/delay 8
-			:nextcount
-		/next _count
-	}
-	
-	| send 'em on their way with a valid location request
-	/if (${Defined[${_location}]}) {
-		/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
-		/call scribe "${${_location}}" ${buffGem} TRUE
-		/call core_cast "${${_location}}" 0 ${Spawn[pc ${_sender}].ID}
-	} 
-	:exit
 /return
 
 
@@ -2702,13 +2530,13 @@ sub Event_send(string line, string _sender, string _location)
  ***| 
 #event Zone "LOADING, PLEASE WAIT..."
 sub Event_Zone()
-	/call echos zone
+	/call echos zone 0 0 0 0 
 	/call check_zone_INI
-	/if (${switchToastMode}) /varset switchToastMode FALSE
+	/if (${burnForce}) /varset burnForce FALSE
 	/makecamp off
-	/if (${HomeSet}) /call Event_SetVar NA HomeSet Movement FALSE
+	/if (${HomeSet}) /call writeINI HomeSet Movement FALSE
 	/call switch_clear_mode
-	/if (${coreAuto} && ${setAutoShrink}) /call check_shrink
+	/if (${coreAuto} && ${switchShrink}) /call check_shrink
 	
 	/call create_timer timer_zone_pause ${tZone_Pause}
 /return 
@@ -2725,9 +2553,9 @@ sub Event_Zone()
 sub Event_buystuff(string line, string _itemtoBuy, int _buyAmount)
 	DEBUG (string:${_itemtoBuy}, int:${_buyAmount})
 	/if (${_itemtoBuy.Equal[NULL]}) {
-		NOUT Need an item to buy, in single qoutes.
+		OUT Need an item to buy, in single qoutes.
 	} else /if (${_buyAmount} < 1) {
-		NOUT Need a valid quantity. 
+		OUT Need a valid quantity. 
 	} else {
 		/call vendor_buy "${_itemtoBuy}" ${_buyAmount}
 	}
@@ -2767,75 +2595,6 @@ sub Event_clean()
 	/if (${hideListed}) /hidecorpse listed
 	/if (${hideListedUnlocked}) /hidecorpse listedunlocked  
 /return
-   
-   
-   
-|***
- *	DES: 
- *	USE: /checkcash
- *	INI: 
- *  NOTE:
- ***| 	
-#bind gamecash /checkcash
-sub Bind_gamecash()
-	/call check_free_ingame_cash
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /ri
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setRIMode /ri
-sub Event_setRIMode()
-	/call Event_SetVar NA switchRaidInvite Common ${If[${switchRaidInvite},FALSE,TRUE]} 
-	/call echos switch "Invites for Raids" switchRaidInvite
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /home
- *	INI: 
- *  NOTE:
- ***| 	
-#bind HomeCamp /home
-sub Bind_HomeCamp()
-	/call Event_SetVar NA HomeSet Movement ${If[${HomeSet},FALSE,TRUE]}  
-	/call set_home
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /invites
- *	INI: 
- *  NOTE:
- ***| 	
-#bind takeInvites /invites
-sub Bind_takeInvites()
-	/call Event_SetVar NA switchInvites Common ${If[${switchInvites},FALSE,TRUE]}  
-	/call echos switch "Auto Accept Invites" switchInvites
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /banestrike
- *	INI: 
- *  NOTE:
- ***| 	
-#bind banestrike /banestrike
-sub Bind_banestrike()
-	/call Event_SetVar NA switchBanestrike Common ${If[${switchBanestrike},FALSE,TRUE]}  
-	/call echos switch "Use AA Banestrike" switchBanestrike
-/return
 
 
 
@@ -2849,7 +2608,7 @@ sub Bind_banestrike()
 sub Bind_itembuffs()
 	/call check_buffs_item
 	/if (${Select[${Me.Class.ShortName},ENC]}) /call check_crystals
-	/if (${Select[${Me.Class.ShortName},MAG]}) /call check_rods
+	/if (${Select[${Me.Class.ShortName},MAG]}) /call Bind_setMAG rods
 /return
 
 
@@ -2862,28 +2621,12 @@ sub Bind_itembuffs()
  ***| 	
 #bind selfbuffs /sb
 sub Bind_selfbuffs()
-	| /if (!${switchBuffSelf}) /goto :exit
 	/call check_buffs_self
 	/if (${Select[${Me.Class.ShortName},SHD,PAL]}) /call check_harmonious
 	/if (${Select[${Me.Class.ShortName},WIZ,ENC]}) /call check_rune_${Me.Class.ShortName}
 	/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
 	/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 	/if (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) /call check_aura
-	:exit
-/return
-
-
-
-|***
- *	DES: enable or disable auto shrinking 
- *	USE: /autoshrink
- *	INI: 
- *  NOTE:
- ***| 	
-#bind setAutoShrink /autoshrink
-sub Bind_setAutoShrink()
-	/call Event_SetVar NA setAutoShrink Common ${If[${setAutoShrink},FALSE,TRUE]}  
-	/call echos switch "Automatic Shrink" setAutoShrink
 /return
 
 
@@ -2903,41 +2646,6 @@ sub Bind_setstop()
 
 
 |***
- *	DES: enable/disable toon sticking behind the monbat target
- *	USE: /stickbehind
- *	INI: 
- *  NOTE:
- ***| 	
-#bind SetStickBehind /stickbehind
-sub Bind_SetStickBehind()
-	/call Event_SetVar NA SetStickBehind Movement ${If[${SetStickBehind},FALSE,TRUE]}  
-	/call echos switch "Stick behind target"  SetStickBehind
-
-	| disable mezzing with stickbehind enabled.
-	/if (${switchdeBuffMezz} && ${SetStickBehind}) {
-		/if (${Defined[switchdeBuffMezz]}) /call Event_SetVar NA switchdeBuffMezz Buffs FALSE  
-		/call echos switch "deBuff Mezz" switchdeBuffMezz
-	}
-/return
-
-
-
-|***
- *	DES: enable/disable facing the mob fast like
- *	USE: /facefast
- *	INI: 
- *  NOTE:
- ***| 	
-#bind SetFaceFast /facefast
-sub Bind_SetFaceFast()
-	/call Event_SetVar NA SetFaceFast Movement ${If[${SetFaceFast},FALSE,TRUE]}  
-	/call echos switch "Face Fast"  SetFaceFast
-	/if (${SetFaceFast}) NOUT ${owarning} ${sep} This is a MQ2 Dead Giveaway. Use with caution.
-/return
-
-
-
-|***
  *	DES: Adjusts the smart assist through Raid 1 then Raid 2 then Group then off
  *	USE: /smartma [1|2|X|G]
  *	INI: 
@@ -2951,95 +2659,43 @@ sub Bind_smartMA(string _assist)
 	| Raid Assist 1
 	/if ((${_assist.Equal[1]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
 		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
- 		/if (!${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common TRUE
-		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
+ 		/if (!${useSmartAssist1}) /call writeINI useSmartAssist1 Common TRUE
+		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
+		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 		/xtarget set 1 Raidassist1target
-		VOUT Setting Assist ${sep} ${cinfo}Raid 1\ax
+		OUT Setting Assist ${sep} ${cinfo}Raid 1\ax
+
 	| Raid Assist 2
 	} else /if ((${_assist.Equal[2]} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
 		DEBUG ((${_assist} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
- 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-		/if (!${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common TRUE
-		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
+ 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
+		/if (!${useSmartAssist2}) /call writeINI useSmartAssist2 Common TRUE
+		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 		/xtarget set 1 Raidassist1target
-		VOUT Setting Assist ${sep} ${cinfo}Raid 2\ax
+		OUT Setting Assist ${sep} ${cinfo}Raid 2\ax
+
 	| NO Assist
 	} else /if ((${_assist.Equal[X]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${Select[${Me.Class.ShortName},CLR]} || ${switchPull}) {
 		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${Select[${Me.Class.ShortName},CLR]} || ${switchPull})
- 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-		/if (${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common FALSE
-		/if (${Bool[${MA1}]}) /call Event_SetVar NA MA1 Common FALSE
-		/if (${Bool[${MA2}]}) /call Event_SetVar NA MA2 Common FALSE
-		| /if (${switchPull}) /call echos switch "Pull Mode" switchPull
+ 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
+		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
+		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
 		/xtarget set 1 Autohater
-		VOUT Setting Assist ${sep} ${odisabled}\ax
+		OUT Setting Assist ${sep} ${odisabled}\ax
+
 	| Goup Main Assist
 	} else /if ((${_assist.Equal[G]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
 		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
- 		/if (${useSmartAssist1}) /call Event_SetVar NA useSmartAssist1 Common FALSE
-		/if (${useSmartAssist2}) /call Event_SetVar NA useSmartAssist2 Common FALSE
-		/if (!${useSmartAssistG}) /call Event_SetVar NA useSmartAssistG Common TRUE
+ 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
+		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
+		/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
 		/xtarget set 1 Groupassisttarget
-		VOUT Setting Assist ${sep} ${cinfo}Group\ax
+		OUT Setting Assist ${sep} ${cinfo}Group\ax
 	}
 /return
 
-
-
-|***
- *	DES: 
- *	USE: /agro [##]
- *	INI: 
- *  NOTE:
- ***| 	
-#bind MobAgro /agro
-sub Bind_MobAgro(int _MobAgro)
-	/if (${Range.Between[1,400:${_MobAgro}]}) {
-		/call Event_SetVar NA MobAgro Common ${_MobAgro} 
-		/call echos number "Mob Agro Range" ${_MobAgro}
-	} else {
-		NOUT /agro [${cinfo}##\ax] allowable range is ${cinfo}1 - 400\ax
-	}
-/return
-
-	
-	
-|***
- *	DES: 
- *	USE: /engageat [##]
- *	INI: 
- *  NOTE:
- ***| 	
-#bind engageAt /engageat
-sub Bind_engageAt(int _engageAt)
-	/if (${Range.Between[1,99:${_engageAt}]}) {
-		/call Event_SetVar NA engageAt Common ${_engageAt} 
-`	/call echos number "MA1/2 Enagage At" ${_engageAt}
-	} else {
-		NOUT /engageat [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
-	}
-/return	
-	
-
-
-|***
- *	DES: 
- *	USE: /smartengageat [##]
- *	INI: 
- *  NOTE:
- ***| 	
-#bind smartengageAt /smartengageat
-sub Bind_smartengageAt(int _smartengageAt)
-	/if (${Range.Between[1,99:${_smartengageAt}]}) {
-		/call Event_SetVar NA smartengageAt Common ${_smartengageAt} 
-		/call echos number "Smart Enagage At" ${_smartengageAt}
-	} else {
-		NOUT /smartengageat [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
-	}
-/return	
-	
 
 
 |***
@@ -3050,17 +2706,15 @@ sub Bind_smartengageAt(int _smartengageAt)
  ***| 
 #bind cast_AA_invis /invis
 sub Bind_cast_AA_invis()
-		| /delay ${Math.Rand[5]}
-		/if (${Me.AltAbilityReady[Group Perfected Invisibility]} && ${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
-			/call MQ2Cast "Group Perfected Invisibility" alt -targetid|${Me.ID}
-			ECHOCHANNEL AA: Group Perfected Invisibility
-		}  
-		/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},PAL,CLR,SHD,NEC]}) {
-			/delay 3
-			/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
-			ECHOCHANNEL AA: Group Perfected Invisibility to Undead
-		}
-
+	/if (${Me.AltAbilityReady[Group Perfected Invisibility]} && ${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
+		/call MQ2Cast "Group Perfected Invisibility" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Group Perfected Invisibility
+	}  
+	/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},CLR,SHD,NEC]}) {
+		/delay 3
+		/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Group Perfected Invisibility to Undead
+	}
 /return		
 
 
@@ -3098,23 +2752,6 @@ sub Bind_click_secondary_anchor()
 
 
 |***
- *	DES: 
- *	USE: /zradius ##
- *	INI: 
- *  NOTE:
- ***| 	
-#bind zradius /zradius
-sub Bind_zradius(int _zradius)
-	/if (${Range.Between[1,200:${_zradius}]}) {
-		/call Event_SetVar NA zradius Common ${_zradius} 
-		/call echos number "Set ZRadius At" ${_zradius}
-	} else {
-		NOUT /zradius [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 200\ax
-	}
-/return
-
-
-|***
  *	DES: keeps an eye out for a mob
  *	USE: /watchspawn
  *	INI: 
@@ -3123,49 +2760,13 @@ sub Bind_zradius(int _zradius)
 #bind watchspawn /watchspawn
 sub Bind_watchspawn(string _spawn)
 	/if (${Bool[${_spawn}]}) {
-		/call Event_SetVar NA watchSpawn Common "${_spawn}"
+		/call writeINI watchSpawn Common "${_spawn}"
 	} else /if (!${Bool[${_spawn}]} && ${Target.ID}) {
-		/call Event_SetVar NA watchSpawn Common "${Target.DisplayName}"
+		/call writeINI watchSpawn Common "${Target.DisplayName}"
 	} else /if (!${Bool[${_spawn}]} && !${Target.ID}) {
-		VOUT ${sep} ${cinfo}/watchspawn\ax requires a taret or mob partial name. 
-		VOUT ${sep} NPC and CORPSE is also acceptable.
-		/if (!${Bool[${_spawn}]}) /call Event_SetVar NA watchSpawn Common FALSE
-	}
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /combatradius
- *	INI: 
- *  NOTE:
- ***| 
-#bind combatRadius /combatradius
-sub Bind_combatRadius(string _combatRadius)
-	/if (${Range.Between[1,99:${_combatRadius}]}) {
-		/call Event_SetVar NA combatRadius Common ${_combatRadius}
-		/call echos number "Fake Safe Combat Radius" ${_combatRadius}
-	} else {
-		NOUT /combatradius [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
-	}
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /combatdistance
- *	INI: 
- *  NOTE:
- ***| 
-#bind CombatDistance /combatdistance
-sub Bind_CombatDistance(string _CombatDistance)
-	/if (${Range.Between[1,99:${_CombatDistances}]}) {
-		/call Event_SetVar NA CombatDistance Common ${_CombatDistance}
-		/call echos number "Mele Combat Distance" ${_CombatDistance}
-	} else {
-		NOUT /combatradius [${cinfo}##\ax] of mobs HP range ${cinfo}1 - 99\ax
+		OUT ${sep} ${cinfo}/watchspawn\ax requires a taret or mob partial name. 
+		OUT ${sep} NPC and CORPSE is also acceptable.
+		/if (!${Bool[${_spawn}]}) /call writeINI watchSpawn Common FALSE
 	}
 /return
 
@@ -3186,76 +2787,73 @@ sub Bind_findathing(string _verbage)
 
 |***
  *	DES: enable override
- *	USE: /override [pve|los|safezone|exclude|named|engage]
+ *	USE: /override []
  *	INI: NA
  *  NOTE: starts/ends overrides
  ***|
 #bind override /override
 sub Bind_override(string _overrideType)
 	DEBUG ${cbug}Bind_override(type: ${_overrideType})\ax
-	/declare _count		int local
+	/declare _count int local 0
 	
 	/if (${Bool[${overrideType.Find[${_overrideType}]}]} && ${_overrideType.NotEqual[stop]}) {
-		| /varset switchOverrideType ${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}
+		/echo switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}
 		/if (${Defined[switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}]}) {
-			/call Event_SetVar NA switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower} Override ${If[${switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos override "${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}" switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}
-		} else {
-			/goto :namefail
-		}
-	} else /if (${Bool[${overrideType.Find[${_overrideType}]}]} && ${_overrideType.Equal[stop]}) {
+			/call writeINI switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower} Override ${If[${switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}},FALSE,TRUE]}  
+		} 
+	} else /if (${_overrideType.Equal[stop]}) {
 		/for _count 1 to ${overrideType.Count[|]}
 			/if (${switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}}) {
-				/call Event_SetVar NA switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower} Override FALSE  
-				/call echos override "${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}" switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}
+				/call writeINI switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower} Override FALSE  
 			}
 		/next _count
-	} else /if (!${Bool[${overrideType.Find[${_overrideType}]}]} && ${_overrideType.NotEqual[stop]}) {
-		:namefail
-		/call echos listtype override override	
-	} else {
-		/goto :namefail
 	}
+	/declare _listout string local
+	/declare _sep bool local FALSE
+	/for _count 1 to ${overrideType.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${overrideType.Arg[${_count},|]}\ax
+		/varset _sep TRUE
+	/next _count
+	VOUT /override [${_listout}]		
 /return  
 
 
 
 |***
  *	DES: set various debuff things
- *	USE: /debuff
+ *	USE: /debuff []
  *	INI: 
  *  NOTE:
  ***| 	
 #bind deBuff /debuff
 sub Bind_deBuff(string _debuffType)
 	DEBUG ${cbug}Bind_deBuff(type: ${_debuffType})\ax
-	/declare _count		int local
+	/declare _count int local 0
 	
 	/if (${Bool[${deBuffType.Find[${_debuffType}]}]} && ${_debuffType.NotEqual[stop]}) {
 		/if (${Defined[switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}]}) {
-			/call Event_SetVar NA switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower} Buffs ${If[${switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos debuff "${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}" switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}
-		} else {
-			/goto :namefail
+			/call writeINI switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower} Buffs ${If[${switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}},FALSE,TRUE]}  
 		}
-	} else /if (${Bool[${deBuffType.Find[${_debuffType}]}]} && ${_debuffType.Equal[stop]}) {
+	} else /if (${Bool[${deBuffType.Equal[${_debuffType}]}]} && ${_debuffType.Equal[stop]}) {
 		/for _count 1 to ${deBuffType.Count[|]}
 			/if (${switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower}}) {
-				/call Event_SetVar NA switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower} Buffs FALSE  
-				/call echos debuff "${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower}" switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower}
+				/call writeINI switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower} Buffs FALSE  
 			}
 		/next _count
-	} else /if (!${Bool[${deBuffType.Find[${_debuffType}]}]} && ${_debuffType.NotEqual[stop]}) {
-		:namefail
-		/call echos listtype debuff deBuff
-	} else {
-		/goto :namefail
-	}
+	} 
+	/declare _listout string local
+	/declare _sep bool local FALSE
+	/for _count 1 to ${deBuffType.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${deBuffType.Arg[${_count},|]}\ax
+		/varset _sep TRUE
+	/next _count
+	OUT /debuff [${_listout}]			
+
 
 	| clear stickbehind. it will force bad targeting fot the mezzer.
 	/if (${SetStickBehind} && ${switchdeBuffMezz}) {
-		/call Event_SetVar NA SetStickBehind Movement FALSE  
-		/call echos switch "Stick behind target"  SetStickBehind
+		/call writeINI SetStickBehind Movement FALSE  
+		/call echos switch "Stick behind target"  SetStickBehind 0 0
 	}
 /return
 
@@ -3263,7 +2861,7 @@ sub Bind_deBuff(string _debuffType)
 
 |***
  *	DES: set various heal switches
- *	USE: /heal
+ *	USE: /heal []
  *	INI: 
  *  NOTE:
  ***| 	
@@ -3274,75 +2872,88 @@ sub Bind_heal(string _healType, int _healInt)
 	
 	/if (${Bool[${healType.Find[${_healType}]}]} && ${_healType.NotEqual[stop]} && ${_healType.NotEqual[override]}) {
 		/if (${Defined[switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}]}) {
-			/call Event_SetVar NA switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower} Heal ${If[${switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos heal "${_healType.Left[1].Upper}${_healType.Right[-1].Lower}" switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}
-		} else {
-			/goto :namefail
-		}
-	} else /if (${Bool[${healType.Find[${_healType}]}]} && ${_healType.Equal[stop]}) {
+			/call writeINI switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower} Heal ${If[${switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}},FALSE,TRUE]}  
+		} 
+	| stop all healing
+	} else /if (${_healType.Equal[stop]}) {
 		/for _count 1 to ${healType.Count[|]}
 			/if (${switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}}) {
-				/call Event_SetVar NA switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower} Heal FALSE  
-				/call echos heal "${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}" switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}
+				/call writeINI switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower} Heal FALSE  
 			}
 		/next _count
-	} else /if (${Bool[${healType.Find[${_healType}]}]} && ${_healType.Equal[override]}) {
-		/if (${Range.Between[0,99:${_healInt}]}) {
-			/call Event_SetVar NA HealOverride Heal ${_healInt} 
-			NOUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_healInt},${_healInt},${odisabled}]}
+	| heal override
+	} else /if (${_healType.Equal[override]}) {
+		/if (${Range.Between[0,99:${Int[${_healInt}]}]}) {
+			/call writeINI HealOverride Heal ${_healInt} 
+			OUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_healInt},${_healInt},${odisabled}]}
 		} else {
-			NOUT /heal override [${cinfo}##\ax] allowable range is ${cinfo}0 - 99\ax
+			OUT /heal override [${cinfo}${HealOverride}\ax] allowable range ${cinfo}0 - 99\ax
 		}
-	} else /if (!${Bool[${healType.Find[${_healType}]}]} && ${_healType.NotEqual[stop]}) {
-		:namefail
-		/call echos listtype heal heal 0 ##
-		/if (${Select[${Me.Class.ShortName},DRU,CLR,SHM,PAL]} && ${_healType.Equal[self]}) VOUT Heal Classes [CLR,DRU,SHM,PAL] use /heal group. Not /heal self.
-	} else {
-		/goto :namefail
 	}
+	/if (${Select[${Me.Class.ShortName},DRU,CLR,SHM]} && ${_healType.Equal[self]}) OUT Heal Classes [CLR,DRU,SHM] use /heal group. Not /heal self.
+	/declare _listout string local
+	/declare _sep bool local
+	/for _count 1 to ${healType.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${healType.Arg[${_count},|]}\ax
+		/varset _sep TRUE
+	/next _count
+	OUT /heal [${_listout}] [${cinfo}##\ax]				
 /return
-
+	
 
 
 |***
  *	DES: set various buff switches
- *	USE: /buff [stop|item|self|combat|bc|raid|tell|pet]
+ *	USE: /buff []
  *	INI: 
  *  NOTE:
  ***| 	
 #bind buff /buff
 sub Bind_buff(string _buffType)
 	DEBUG ${cbug}Bind_buff(type: ${_buffType})\ax
-	/declare _count		int local
+	/declare _count int local 0
 	
-	/if (${Bool[${buffType.Find[${_buffType}]}]} && ${_buffType.NotEqual[stop]}) {
-		| /varset switchBuffType ${_buffType.Left[1].Upper}${_buffType.Right[-1].Lower}
-		/if (${Defined[switchBuff${_buffType.Left[1].Upper}${_buffType.Right[-1].Lower}]}) {
-			/call Event_SetVar NA switchBuff${_buffType.Left[1].Upper}${_buffType.Right[-1].Lower} Buffs ${If[${switchBuff${_buffType.Left[1].Upper}${_buffType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos buff "${_buffType.Left[1].Upper}${_buffType.Right[-1].Lower}" switchBuff${_buffType.Left[1].Upper}${_buffType.Right[-1].Lower}
-		} else {
-			/goto :namefail
-		}
-	} else /if (${Bool[${buffType.Find[${_buffType}]}]} && ${_buffType.Equal[stop]}) {
+	/if (${_buffType.Equal[stop]}) {
 		/for _count 1 to ${buffType.Count[|]}
 			/if (${switchBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower}}) {
-				/call Event_SetVar NA switchBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower} Buffs FALSE  
-				/call echos buff "${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower}" switceBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower}
+				/call writeINI switchBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower} Buffs FALSE  
 			}
 		/next _count
-	} else /if (!${Bool[${buffType.Find[${_buffType}]}]} && ${_buffType.NotEqual[stop]}) {
-		:namefail
-		/call echos listtype buff buff
-	}  else {
-		/goto :namefail
+	} else /if (${_buffType.Equal[self]}) {
+		/call writeINI switchBuffSelf Buffs ${If[${switchBuffSelf},FALSE,TRUE]}
+	} else /if (${_buffType.Equal[item]}) {
+		/call writeINI switchBuffItem Buffs ${If[${switchBuffItem},FALSE,TRUE]}
+	} else /if (${_buffType.Equal[combat]}) {
+		/call writeINI switchBuffCombat Buffs ${If[${switchBuffCombat},FALSE,TRUE]}
+	} else /if (${_buffType.Equal[bc]}) {
+		/call writeINI switchBuffBc Buffs ${If[${switchBuffBc},FALSE,TRUE]}
+	} else /if (${_buffType.Equal[raid]}) {
+		/call writeINI switchBuffRaid Buffs ${If[${switchBuffRaid},FALSE,TRUE]}
+	} else /if (${_buffType.Equal[tell]}) {
+		/call writeINI switchBuffTell Buffs ${If[${switchBuffTell},FALSE,TRUE]}
+	} else /if (${_buffType.Equal[pet]}) {
+		/if (${Select[${Me.Class.ShortName},NEC,ENC,SHM,DRU,BST,SHD,MAG]}) {
+			/call writeINI switchBuffPet Pet ${If[${switchBufPet},FALSE,TRUE]}
+		} else {
+			/call writeINI switchBuffPet Pet FALSE
+			/call echos failboat 0 0 0 0
+		}
 	}
+	/declare _listout string local
+	/declare _sep bool local
+	/for _count 1 to ${buffType.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${buffType.Arg[${_count},|]}\ax
+		/varset _sep TRUE
+	/next _count
+	OUT /buff [${_listout}]				
 /return
+
 
 
 
 |***
  *	DES: cursor control
- *	USE: /cursor [auto|what|sell|keep|destroy|ignore|announce|pause]
+ *	USE: /cursor []
  *	INI: 
  *  NOTE: 
  ***| 
@@ -3352,70 +2963,96 @@ sub Bind_cursor(string _cursorType, string _time)
 	/declare _properType string local
 	
 	/if (${_cursorType.Equal[auto]}) {
-		/call Event_SetVar NA switchAutoCursor Common ${If[${switchAutoCursor},FALSE,TRUE]}  
-		NOUT Cursor ${sep} ${cinfo}Auto\ax ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
-		/if (${Bool[${timer_auto_cursor_pause}]}) /varset timer_auto_cursor_pause 0
-	| } else /if (${_cursorType.Equal[pause]} && ${switchAutoCursor}) {
+		/call writeINI switchAutoCursor Common ${If[${switchAutoCursor},FALSE,TRUE]}  
+		OUT Cursor ${sep} ${cinfo}Auto\ax ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
+		/if (${timer_auto_cursor_pause}) /varset timer_auto_cursor_pause 1
 	} else /if (${_cursorType.Equal[pause]}) {
 		/call create_timer timer_auto_cursor_pause ${If[${Bool[${_time}]},${_time},30s]}
-		VOUT Cursor ${sep} ${cinfo}Pause\ax ${sep} ${If[${Bool[${_time}]},${_time},30s]}
+		OUT Cursor ${sep} ${cinfo}Pause\ax ${sep} ${If[${Bool[${_time}]},${_time},30s]}
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.Equal[what]}) {
-		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}
+		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.NotEqual[what]} && ${_cursorType.NotEqual[auto]}) {
 		/varset _properType ${_cursorType.Left[1].Upper}${_cursorType.Right[-1].Lower}
 		/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" "${_properType}"
-		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}
+		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 		/if (${Cursor.ID} && ${_cursorType.Equal[Destroy]}) /destroy
-	} else /if (!${Cursor.ID} || !${Bool[${cursorType.Find[${_cursorType}]}]}) {
-		:namefail
-		/call echos listtype cursor cursor
-	} else {
-		/goto :namefail
-	} 
+	} else {	
+		/call echos listtype cursor cursor 0 0
+	}
+
 /return
 
 
 
 |***
  *	DES: set rez controls
- *	USE: /rez
+ *	USE: /rez []
  *	INI: 
  *  NOTE:
  ***| 	
 #bind rez /rez
-sub Bind_rez(string _rezType)
-	DEBUG ${cbug}Bind_rez(type: ${_rezType})\ax
-	/declare _count		int local
+sub Bind_rez(string _rezType, string _verbage)
+	DEBUG ${cbug}Bind_rez(type: ${_rezType}, pct: ${_verbage})\ax
+	/declare _count int local 0
 	
-	/if (${Bool[${rezType.Find[${_rezType}]}]} && ${_rezType.NotEqual[stop]}) {
+	/if (${Bool[${rezType.Find[${_rezType}]}]} && ${_rezType.NotEqual[stop]} && ${_rezType.NotEqual[pct]} && ${_rezType.NotEqual[range]}) {
 		/if (${Defined[switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}]}) {
-			/call Event_SetVar NA switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower} Heal ${If[${switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos rez "${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}" switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}
-		} else {
-			/goto :namefail
-		}
-		
-	} else /if (${Bool[${rezType.Find[${_rezType}]}]} && ${_rezType.Equal[stop]}) {
+			/call writeINI switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower} Heal ${If[${switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}},FALSE,TRUE]}
+			/call echos rez "${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}" switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower} 0 0
+		} 
+	
+	| turn off all rez controls	
+	} else /if (${_rezType.Equal[stop]}) {
 		/for _count 1 to ${rezType.Count[|]}
 			DEBUG switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}
 			/if (${switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}}) {
-				/call Event_SetVar NA switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower} Heal FALSE
-				/call echos rez "${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}" switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}
+				/call writeINI switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower} Heal FALSE
+				/call echos rez "${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}" switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower} 0 0
 			}
 		/next _count
-	} else /if (!${Bool[${rezType.Find[${_rezType}]}]} && ${_rezType.NotEqual[stop]}) {
-		:namefail
-		/call echos listtype rez rez
-	} else {
-		/goto :namefail
-	}
+		
+	| set rez accept percent	
+	} else /if (${_rezType.Equal[pct]}) {
+		/if (${Range.Between[10,96:${Int[${_verbage}]}]}) {
+			/if (${rezPct.Find[${_verbage}]}) /call writeINI minRezPct Common ${_verbage}
+		}
+		/declare _listout string local
+		/declare _sep bool local FALSE
+		/for _count 1 to ${rezPct.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${minRezPct} == ${rezPct.Arg[${_count},|]},${cgood},${cinfo}]}${rezPct.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		OUT /rez pct [${_listout}]
+	} else /if (${_rezType.Equal[range]}) {
+		/if (${Range.Between[1,110:${Int[${_verbage}]}]}) {
+			/call writeINI maxRezRange Heal ${_verbage}
+			OUT /rez range [${cinfo}${_verbage}\ax]
+		} else {
+			OUT /rez range [${cinfo}${maxRezRange}\ax] allowable range is ${cinfo}1 - 110\ax
+			/return
+		}
+	} 
+	/declare _listout string local
+	/declare _sep bool local FALSE
+	/for _count 1 to ${rezType.Count[|]}
+		/if (${rezType.Arg[${_count},|].Equal[pct]}) {
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}pct[${cgood}${minRezPct}\ax]\ax
+		} else /if (${rezType.Arg[${_count},|].Equal[range]}) {
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}range[${cgood}${maxRezRange}\ax]\ax
+		} else {
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${rezType.Arg[${_count},|]}\ax
+		}
+		/varset _sep TRUE
+	/next _count
+	OUT /rez [${_listout}] [${cinfo}##\ax]]			
 /return
+
 
 
 
 |***
  *	DES: list control
- *	USE: /lc [safe|reset|remove|exclude|name|nomezz|nocast|range|nomelee|nomagic|nodisease|nofire|nopoison|nocold|nocorruption|huntmob]
+ *	USE: /lc []
  *	INI: core.zone.ini
  *  NOTE: 
  ***| 
@@ -3423,30 +3060,30 @@ sub Bind_rez(string _rezType)
 sub Bind_listControl(string _list)
 	DEBUG ${cbug}Bind_listControl (control: ${_list})\ax
 	/declare _properType 			string local
-	/declare _count 					int local
+	/declare _count 					int local 0
 	/declare _listchanged 		bool local FALSE
 	/declare _validName				bool local FALSE
 
 	| disable all commands but safezone while in a safezone
 	/if (${SafeZone} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
-		VOUT ${onotice} ${sep} List Control is disabled while in a Safe Zone.
-		/goto :exit
+		OUT ${onotice} ${sep} List Control is disabled while in a Safe Zone.
+		/return
 	}
 
 	| require a target. one that is not a PC
 	/if ((!${Target.ID} || ${Bool[${Spawn[pc ID ${Target.ID}]}]}) && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
 		DEBUG NO /lc Target
-		/call echos needtarget
-		/goto :namefail
+		/call echos needtarget 0 0 0 0
 	} 
 
 	| validate _name and correct the case
 	/if (${Bool[${_list}]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
 		/for _count 1 to ${listType.Count[|]}
-			DEBUG Match: ${listType.Arg[${_count},|]} == ${_list}: ${Bool[${_list.Find[${listType.Arg[${_count},|]}]}]}
+			DEBUG Match: ${listType.Arg[${_count},|]} ${If[${Bool[${_list.Find[${listType.Arg[${_count},|]}]}]},${cgood}==\ax,${cbad}!=\ax]} ${_list}
 			
 			/if (${Bool[${_list.Find[${listType.Arg[${_count},|]}]}]}) {
 				/if (${_list.Left[2].Equal[no]}) {
+					DEBUG ${_list.Left[2].Left[1].Upper}${_list.Left[2].Right[-1].Lower}${_list.Right[-2].Left[1].Upper}${_list.Right[-2].Right[-1].Lower}
 					/varset _list ${_list.Left[2].Left[1].Upper}${_list.Left[2].Right[-1].Lower}${_list.Right[-2].Left[1].Upper}${_list.Right[-2].Right[-1].Lower}
 				} else /if (${_list.Left[2].NotEqual[no]}) {
 					/varset _list ${_list.Left[1].Upper}${_list.Right[-1].Lower}
@@ -3456,28 +3093,31 @@ sub Bind_listControl(string _list)
 				/goto :validname
 			}	
 		/next _count
-		/if (!${_validName}) /goto :namefail
+		/if (!${_validName}) /call echos listtype lc list 0 0
 	} else /if (!${Bool[${_list}]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
-		/goto :namefail
+		/call echos listtype lc list 0 0
 	}
 
 	:validname
 	DEBUG :validname
 	/if (${_list.Equal[safe]}) {
+		DEBUG SAFE zone adjustment
 		/if (${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}) {
 			/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" "FALSE"
 		} else /if (!${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}) {
 			/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" "TRUE"
 		}
 		/varset SafeZone ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
-		/call echos switch "Safe Zone ${sep} ${cinfo}${Zone.Name}\ax" SafeZone
+		/call echos switch "Safe Zone ${sep} ${cinfo}${Zone.Name}\ax" SafeZone 0 0
 		/varset _listchanged TRUE
 	} else /if (${_list.Equal[reset]}) {
-		/call echos zone
+		DEBUG Reset Zone
+		/call echos zone 0 0 0 0
 		/call check_zone_INI ${Me.DisplayName}
 	} else /if (${_list.Equal[remove]}) {
+		DEBUG remove from INI
 		/declare _mobName string local |${Target.DisplayName}
-		VOUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
+		OUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
 
 		/declare _listName 			string local	
 		/declare _INIlist				string local ${ZoneFileList}
@@ -3501,17 +3141,18 @@ sub Bind_listControl(string _list)
 		/varset _listchanged TRUE
 
 	} else /if (${Bool[${listType.Find[${_list}]}]} && ${_list.NotEqual[remove]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
+		DEBUG Exists
 		/if (${${_list}List.Find[${Target.DisplayName}]}) {
-			NOUT ${onotice} ${sep} [${ctar}${Target.DisplayName}\ax] already exists in ${sep} ${cinfo}${Zone.Name}\ax
+			OUT ${onotice} ${sep} [${ctar}${Target.DisplayName}\ax] already exists in ${sep} ${cinfo}${Zone.Name}\ax
 		} else /if (!${${_list}List.Find[${Target.DisplayName}]}) {
-			VOUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
+			DEBUG Adding
+			OUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
 			/if (${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "${${_list}List}|${Target.DisplayName}"
 			/if (!${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "|${Target.DisplayName}"
 			/varset _listchanged TRUE
 		}
-	} else {
-		:namefail
-		/call echos listtype lc list 0 TARGET
+	} else /if (${Bool[${_list}]}) {
+		/call echos listtype lc list 0 0
 	}
 
 	| do we need to reset the zone
@@ -3522,61 +3163,45 @@ sub Bind_listControl(string _list)
 			/zonereset
 		}
 	}
-
-	:exit
 /return
 
 
 
 |***
  *	DES: debug switches
- *	USE: /debug [stop|core|class|cast|rez]
+ *	USE: /debug []
  *	INI: NA
  *  NOTE: starts/ends debugs
  ***|
 #bind debug /debug
 sub Bind_debug(string _debugType)
 	DEBUG ${cbug}Bind_debug(Debug: ${_debugType})\ax
-	/if (${Bool[${debugType.Find[${_debugType}]}]} && ${_debugType.NotEqual[stop]}) {
+	/declare _count int local 0
+	/if (${Bool[${debugType.Equal[${_debugType}]}]} && ${_debugType.NotEqual[stop]}) {
 		/if (${Defined[switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}]}) {
-			/call Event_SetVar NA switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower} debug ${If[${switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos debug "${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}" switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}
-		} else {
-			/goto :namefail
-		}
-	} else /if (${Bool[${debugType.Find[${_debugType}]}]} && ${_debugType.Equal[stop]}) {
-		/call switch_clear_debug
-	} else /if (!${Bool[${debugType.Find[${_modeType}]}]} && ${_debugType.NotEqual[stop]}) {
-		:namefail
-		/call echos listtype debug debug
-	} else {
-		/goto :namefail
+			/call writeINI switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower} debug ${If[${switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}},FALSE,TRUE]}  
+		} 
+	} else /if (${_debugType.Equal[stop]}) {
+		/for _count 1 to ${debugType.Count[|]}
+			/if (${switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower}}) {
+				/call writeINI switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower} debug FALSE
+			}
+		/next _count	
 	}
+	/declare _listout string local
+	/declare _sep bool local FALSE
+	/for _count 1 to ${debugType.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${debugType.Arg[${_count},|]}\ax
+		/varset _sep TRUE
+	/next _count
+	OUT /debug [${_listout}]		
 /return  
 
 
 
-|***
- *	DES: stop all running debugs
- *	USE: /call switch_clear_debug
- *	INI: NA
- *  NOTE: 
- ***|
-sub switch_clear_debug()
-	/declare _count int local
-	/for _count 1 to ${debugType.Count[|]}
-		/if (${switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower}}) {
-			/call Event_SetVar NA switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower} debug FALSE
-			/call echos debug "${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower}" switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower}
-		}
-	/next _count	
-/return
-
-	
-
 #bind petControl /pc
-sub Bind_petControl(string _pcType, int _pcNum, string _pcString)
-	DEBUG ${cbug}Bind_petControl(type: ${_pcType}, #: ${_pcNum})\ax
+sub Bind_petControl(string _pcType, string _verbage, string _pcString)
+	DEBUG ${cbug}Bind_petControl(type: ${_pcType}, #: ${_verbage})\ax
 
 	| build and buff
 	/if (${Bool[${_pcType.Find[build]}]}) {
@@ -3584,10 +3209,10 @@ sub Bind_petControl(string _pcType, int _pcNum, string _pcString)
 		/if (${Me.Pet.ID}) /call check_pet_buffs	
 
 	| pet/engage#
-	} else /if (${Bool[${_pcType.Find[pet]}]}) {
-		/if (!${Bool[${_pcNum}]}) {
-			/call Event_SetVar NA switchPcPet Pet ${If[${switchPcPet},FALSE,TRUE]}
-			/call echos switch "Use Pet" switchPcPet
+	} else /if (${Bool[${_pcType.Equal[pet]}]}) {
+		/if (!${Bool[${_verbage}]}) {
+			/call writeINI switchPcPet Pet ${If[${switchPcPet},FALSE,TRUE]}
+			/call echos switch "Use Pet" switchPcPet 0 0
 			/if (!${switchPcPet} && ${Pet.ID}) {
 				/if (${Me.AltAbilityReady[Suspended Minion]}) {
 					/call core_cast "Suspended Minion" alt 0
@@ -3595,49 +3220,49 @@ sub Bind_petControl(string _pcType, int _pcNum, string _pcString)
 					/pet leave
 				}
 			}
-		} else /if (${Bool[${_pcNum}]} && ${Range.Between[1,99:${_pcNum}]}) {
-			/call Event_SetVar NA PcPetengageat Pet ${_pcNum}
-			/call echos number "Pet Engage" ${_pcNum}
-		} else /if (${Bool[${_pcNum}]} && !${Range.Between[1,99:${_pcNum}]}) {
-			NOUT /pc pet [${cinfo}##\ax] valid range ${cinfo}1 - 99\ax
+		} else /if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI PcPetengageat Pet ${_verbage}
+			/call echos number "Pet Engage" ${_verbage} 0 0
+		} else /if (!${Bool[${_pcNum}]} || !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			OUT /pc pet [${cinfo}${PcPetengageat}\ax] valid range ${cinfo}1 - 99\ax
 		}
 		
 	| swarm/engage#
-	} else /if (${Bool[${_pcType.Find[swarm]}]}) {
-		/if (!${Bool[${_pcNum}]}) {
-			/call Event_SetVar NA switchPcSwarm Pet ${If[${switchPcSwarm},FALSE,TRUE]}
-			/call echos switch "Use Pet Swarm" switchPcSwarm
-		} else /if (${Bool[${_pcNum}]} && ${Range.Between[1,99:${_pcNum}]}) {			
-			/call Event_SetVar NA PcSwarmengageat Pet ${_pcNum}
-			/call echos number "Swarm Pet Engage" ${_pcNum}
-		} else /if (${Bool[${_pcNum}]} && !${Range.Between[1,99:${_pcNum}]}) {
-			NOUT /pc swarm [${cinfo}##\ax] valid range ${cinfo}1 - 99\ax
+	} else /if (${Bool[${_pcType.Equal[swarm]}]}) {
+		/if (!${Bool[${_verbage}]}) {
+			/call writeINI switchPcSwarm Pet ${If[${switchPcSwarm},FALSE,TRUE]}
+			/call echos switch "Use Pet Swarm" switchPcSwarm 0 0
+		} else /if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {			
+			/call writeINI PcSwarmengageat Pet ${_verbage}
+			/call echos number "Swarm Pet Engage" ${_verbage} 0 0
+		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			OUT /pc swarm [${cinfo}${PcSwarmengageat}\ax] valid range ${cinfo}1 - 99\ax
 		}
 
 		
 	| pc tank
-	} else /if (${Bool[${_pcType.Find[tank]}]}) {
-		/call Event_SetVar NA switchPcPettank Pet ${If[${switchPcPettank},FALSE,TRUE]}
-		/call echos switch "Pet Tank" switchPcPettank	
+	} else /if (${Bool[${_pcType.Equal[tank]}]}) {
+		/call writeINI switchPcPettank Pet ${If[${switchPcPettank},FALSE,TRUE]}
+		/call echos switch "Pet Tank" switchPcPettank	0 0
 		
 	| pc type
-	} else /if (${Bool[${_pcType.Find[type]}]}) {
-		/call Event_SetVar NA PetTypeSpell Pet ${_pcString}
+	} else /if (${Bool[${_pcType.Equal[type]}]}) {
+		/call writeINI PetTypeSpell Pet ${_pcString}
 	
 		
 		
 	| pc bag ##
-	} else /if (${Bool[${_pcType.Find[bag]}]}) {
-		/if (${Range.Between[1,10:${_pcNum}]}) {
-			/call Event_SetVar NA PetBagSlotNumber Pet ${_pcNum}
-			/call echos number "Pet Weapons Slot" ${_pcNum}
+	} else /if (${Bool[${_pcType.Equal[bag]}]}) {
+		/if (${Range.Between[1,10:${Int[${_verbage}]}]}) {
+			/call writeINI PetBagSlotNumber Pet ${_verbage}
+			/call echos number "Pet Weapons Slot" ${_verbage} 0 0
 		} else {
-			NOUT /pc bag [${cinfo}##\ax] valid range range ${cinfo}1 - 10\ax
+			OUT /pc bag [${cinfo}${PetBagSlotNumber}\ax] valid range range ${cinfo}1 - 10\ax
 		}
 
 
 	} else {
-		/call echos listtype pc pc 0 ##
+		/call echos listtype pc pc 0 0
 	} 
 
 /return
@@ -3654,7 +3279,7 @@ sub Bind_petControl(string _pcType, int _pcNum, string _pcString)
 sub Event_SendPets(string line, int _tmpID)
 	DEBUG ${cbug}Event_SendPets()\ax
 	/if (${switchPcPet} && ${Pet.ID}) {
-		VOUT Sending ${cpc}${Pet.DisplayName}\ax
+		OUT Sending ${cpc}${Pet.DisplayName}\ax
 		/target	ID ${_tmpID}
 		/pet attack
 	}
@@ -3668,35 +3293,35 @@ sub Event_SendPets(string line, int _tmpID)
  *	INI: 
  *  NOTE:
  ***| 
-#bind setTc /tc
-sub Bind_setTc(string _tcType, string _param)
-	DEBUG ${cbug}Bind_setTc()\ax
+#bind setTieControl /tc
+sub Bind_setTieControl(string _tcType, string _verbage)
+	DEBUG ${cbug}Bind_setsetTieControl()\ax
 
 	| set time to toon name
-	/if (${Bool[${_tcType.Find[name]}]}) {
-		/if (${SetTieToon.NotEqual[${_param}]} && ${_param.NotEqual[${Me.DisplayName}]}) {	
-			/call Event_SetVar NA SetTieToon Movement ${_param}	
-			/call echos	string "Set Tie Toon" _param
+	/if (${Bool[${_tcType.Equal[name]}]}) {
+		/if (${SetTieToon.NotEqual[${_verbage}]} && ${_verbage.NotEqual[${Me.DisplayName}]}) {	
+			/call writeINI SetTieToon Movement ${_verbage}	
+			/call echos	string "Set Tie Toon" _verbage 0 0
 		}
 	| set tie time
-	} else /if (${Bool[${_tcType.Find[time]}]}) {
-		/if (${Range.Between[5,50:${_setTietime}]}) {
-			/call Event_SetVar NA tCheck_Tie Timer ${_setTietime} 
-		/call echos number "Tie Check Time" ${_setTietime}		
+	} else /if (${Bool[${_tcType.Equal[time]}]}) {
+		/if (${Range.Between[5,50:${Int[${_verbage}]}]}) {
+			/call writeINI tCheck_Tie Timer ${_verbage} 
+		/call echos number "Tie Check Time" ${_verbage} 0 0
 		} else {
-			NOUT /tc time [${cinfo}##\ax] allowable range is ${cinfo}5 - 50\ax
+			OUT /tc time [${cinfo}${tCheck_Tie}\ax] allowable range is ${cinfo}5 - 50\ax
 		}
 		
 	| set tie distance		
-	} else /if (${Bool[${_tcType.Find[distance]}]}) {
-		/if (${Range.Between[1,99:${_param}]}) {
-			/call Event_SetVar NA SetTieDistance Movement ${_param} 
-			/call echos number "Tie Distance" ${_param}		
+	} else /if (${Bool[${_tcType.Equal[distance]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI SetTieDistance Movement ${_verbage} 
+			/call echos number "Tie Distance" ${_verbage}	0 0	
 		} else {
-			NOUT /tc distance [${cinfo}##\ax] allowable range is ${cinfo}1 - 99\ax
+			OUT /tc distance [${cinfo}${SetTieDistance}\ax] allowable range is ${cinfo}1 - 99\ax
 		}
 	} else {
-		/call echos listtype tc tc 0 NAME|##
+		/call echos listtype tc tc 0 0
 	} 
 /return
 
@@ -3712,52 +3337,51 @@ sub Bind_setTc(string _tcType, string _param)
 sub Bind_setTie()
 	/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie ${If[${SetTie},FALSE,TRUE]}  
 	/if (!${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie FALSE 
-	NOUT Tie to ${cpc}${SetTieToon}\ax ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
-
+	OUT Tie to ${cpc}${SetTieToon}\ax ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
 /return
 
 
 
 |***
  *	DES: Burn control
- *	USE: /burn [auto|engageat|force|count]
+ *	USE: /burn []
  *	INI: 
  *  NOTE:
  ***| 	
 #bind burn /burn
 sub Bind_burn(string _burnType, int _burnNum)
-	DEBUG ${cbug}Bind_setTc()\ax
+	DEBUG ${cbug}Bind_burn()\ax
 
 	| Burn Automatic on/off
 	/if (${Bool[${_burnType.Find[auto]}]}) {
-		/call Event_SetVar NA burnAuto Common ${If[${burnAuto},FALSE,TRUE]}  
-		/call echos switch "Burn Auto" burnAuto
+		/call writeINI burnAuto Common ${If[${burnAuto},FALSE,TRUE]}  
+		/call echos switch "Burn Auto" burnAuto 0 0
 
 	| Mob count #
-	} else /if (${Bool[${_burnType.Find[count]}]}) {
-	 	/if (${Range.Between[1,99:${_burnNum}]}) {
-			/call Event_SetVar NA burnCount Common ${_burnNum} 
-			/call echos number "Burn # Mob Count" ${_burnNum}
+	} else /if (${Bool[${_burnType.Equal[count]}]}) {
+	 	/if (${Range.Between[1,99:${Int[${_burnNum}]}]}) {
+			/call writeINI burnCount Common ${_burnNum} 
+			/call echos number "Burn # Mob Count" ${_burnNum} 0 0
 		} else {
-			NOUT /burn count [${cinfo}##\ax] of mobs in range ${cinfo}1 - 99\ax
+			OUT /burn count [${cinfo}##\ax] of mobs in range [${cbug}${burnCount}\ax] ${cinfo}1 - 99\ax
 		}
 
 	| Burn Engage at %
-	} else /if (${Bool[${_burnType.Find[engageat]}]}) {
-	 	/if (${Range.Between[1,99:${_toastengageat}]}) {
-			/call Event_SetVar NA burnEngageat Common ${_burnNum} 
-			/call echos number "Burn % Health Enagage At" ${_burnNum}
+	} else /if (${Bool[${_burnType.Equal[engageatat]}]}) {
+	 	/if (${Range.Between[1,99:${Int[${_burnNum}]}]}) {
+			/call writeINI burnEngageat Common ${_burnNum} 
+			/call echos number "Burn health enagage %" ${_burnNum} 0 0
 		} else {
-			NOUT /burn engageat [${cinfo}##\ax] % of mobs health to engage Burn ${cinfo}1 - 99\ax
+			OUT /burn engageat [${cinfo}##\ax] % of mobs health to engage Burn [${cbug}${burnEngageat}\ax] ${cinfo}1 - 99\ax
 		}
 
 	| force constant burning
-	} else /if (${Bool[${_burnType.Find[force]}]}) {
+	} else /if (${Bool[${_burnType.Equal[force]}]}) {
 		/varset burnForce ${If[${burnForce},FALSE,TRUE]}
-		/call echos switch "Constant Burn" burnForce
+		/call echos switch "Constant Burn" burnForce 0 0
 
 	} else {
-		/call echos listtype burn burn 0 ##
+		/call echos listtype burn burn 0 0
 	} 
 
 /return
@@ -3766,7 +3390,7 @@ sub Bind_burn(string _burnType, int _burnNum)
 
 |***
  *	DES: core controls
- *	USE: /core [auto|melee|range|nuke|verbose|killcode|reset|whitewash|MA1|MA2] [TEXT]
+ *	USE: /core [] [TEXT]
  *	INI: 
  *  NOTE:
  ***|
@@ -3775,117 +3399,157 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 	DEBUG ${cbug}Bind_setCore(type:${_coreType}, verbage:${_coreVerbage})\ax
 
 	| core auto/manual
-	/if (${Bool[${_coreType.Find[auto]}]}) {
-		/call Event_SetVar NA coreAuto Common ${If[${coreAuto},FALSE,TRUE]}  
+	/if (${Bool[${_coreType.Equal[auto]}]}) {
+		/call writeINI coreAuto Common ${If[${coreAuto},FALSE,TRUE]}
+		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}  
 		/if (!${coreAuto}) { 
 			/call set_stop TRUE
 			/call clear_combat
 		}
-		VOUT Core ${sep} ${cinfo}Automatic\ax ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
-	
-	| engage Melee combat
-	} else /if (${Bool[${_coreType.Find[melee]}]}) {
-		/if (${Target.ID} && ${Target.ID} != ${Me.ID}) {
-			/varset isValidTarget TRUE
-			/varset combat MELEE
-			/varset Target2Kill ${Target.ID}
-			VOUT Combat ${sep} ${cinfo}Melee\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
-		} 
+		OUT Core ${sep} ${cinfo}Automatic\ax ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
 
-	| engage Range combat
-	} else /if (${Bool[${_coreType.Find[range]}]}) {
-		/if (${Target.ID} && ${Target.Distance} > 30 && ${Target.ID} != ${Me.ID}) {
-			/varset isValidTarget TRUE
-			/varset combat RANGE
-			/varset Target2Kill ${Target.ID}	
-			VOUT Combat ${sep} ${cinfo}Range\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
-		} 
 
-	| engage Nuke combat
-	} else /if (${Bool[${_coreType.Find[nuke]}]}) {
-		/if (${Target.ID} && ${Target.ID} != ${Me.ID} && ${Target.ID} != ${Me.Pet.ID}) {
-			/varset isValidTarget TRUE
-			/varset combat NUKE
-			/varset Target2Kill ${Target.ID}
-			VOUT Combat ${sep} ${cinfo}Nuke\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
-		} 
-
-	| eset out of group Main assist
-	} else /if (${Bool[${_coreType.Find[ma1]}]}) {		
-		/call Event_SetVar NA MA1 Common ${_coreVerbage.Left[1].Upper}${_coreVerbage.Right[-1].Lower}
-	} else /if (${Bool[${_coreType.Find[ma2]}]}) {		
-		/call Event_SetVar NA MA2 Common ${_coreVerbage.Left[1].Upper}${_coreVerbage.Right[-1].Lower}		
-
+	| find something in bank or inventory
+	} else /if (${Bool[${_coreType.Equal[find]}]}) {
+		/if (${Bool[${_coreVerbage}]}) {
+			/call check_for_item "${_coreVerbage}"
+		} else /if (!${Bool[${_coreVerbage}]}) {
+			OUT /core find ${cinfo}"NAME OF ITEM"\ax (use quotes around item name)
+		}
+			
 	| enable/disable verbose EQBC Echos
-	} else /if (${Bool[${_coreType.Find[verbose]}]}) {
-		/call Event_SetVar NA verbose Common ${If[${verbose},FALSE,TRUE]}
-		NOUT Core ${sep} ${cinfo}Verbose\ax ${sep} ${If[${verbose},${oenabled},${odisabled}]}
+	} else /if (${Bool[${_coreType.Equal[verbose]}]}) {
+		/call writeINI verbose Common ${If[${verbose},FALSE,TRUE]}
+		OUT Core ${sep} ${cinfo}Verbose\ax ${sep} ${If[${verbose},${oenabled},${odisabled}]}
 
 	| set the kill code
-	} else /if (${Bool[${_coreType.Find[killcode]}]}) {
-		/call DeclareCoreIniVar NA remoteKillKey General ${_coreVerbage} 
-		NOUT Core ${sep} ${cinfo}Remote Kill Code\ax ${sep} ${_coreVerbage}
+	} else /if (${Bool[${_coreType.Equal[killcode]}]}) {
+		/if (${Bool[${_coreVerbage}]}) {
+			/call DeclareCoreIniVar NA remoteKillKey General ${_coreVerbage} 
+			OUT Core ${sep} ${cinfo}Remote Kill Code\ax ${sep} ${_coreVerbage}
+		} else {
+			OUT Current killcode: ${cinfo}${remoteKillKey}\ax
+		}
 
 	| runs the whitewash routine to clear all aliases
-	} else /if (${Bool[${_coreType.Find[whitewash]}]}) {
+	} else /if (${Bool[${_coreType.Equal[whitewash]}]}) {
 		/call whitewash
 		
-	} else /if (${Bool[${_coreType.Find[rest]}]}) {
+	} else /if (${Bool[${_coreType.Equal[rest]}]}) {
 		/declare _num int local ${_coreVerbage}
-		/if (${Range.Between[0,99:${_num}]}) {
-			/call Event_SetVar NA autoRest Common ${_num}  
-			/call echos number "Auto Rest" ${If[${_num},${_num},${autoRest}]} 
+		/if (${Range.Between[0,99:${Int[${_num}]}]}) {
+			/call writeINI autoRest Common ${_num}  
+			/call echos number "Auto Rest" ${If[${_num},${_num},${autoRest}]} 0 0
 		} 		
 
+	| set control toon
+	} else /if (${Bool[${_coreType.Equal[control]}]}) {
+		/if (${Bool[${_coreVerbage}]}) {
+			/call writeINI toonControl Common ${_coreVerbage.Left[1].Upper}${_coreVerbage.Right[-1].Lower}
+		} else /if (!${Bool[${_coreVerbage}]}) {
+			/call writeINI toonControl Common FALSE
+		}
+		OUT Control Toon ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
+
+	| enable/disable relay tells
+	} else /if (${Bool[${_coreType.Equal[relay]}]}) {
+		/if (${Bool[${_coreVerbage}]}) {
+			/call writeINI relayTells Common ${_coreVerbage.Left[1].Upper}${_coreVerbage.Right[-1].Lower}
+		} else /if (!${Bool[${_coreVerbage}]}) {
+			/call writeINI relayTells Common FALSE
+		}
+		OUT Relay Tells ${sep} ${If[${Bool[${relayTells}]},${cgood}${relayTells}\ax,${odisabled}]}
+		
 	| reset all core INIs
-	} else /if (${Bool[${_coreType.Find[reset]}]}) {
+	} else /if (${Bool[${_coreType.Equal[reset]}]}) {
 		/call core_reset
 
+
+	| take invites to raid/group
+	} else /if (${Bool[${_coreType.Equal[invite]}]}) {
+		/call writeINI switchInvites Common ${If[${switchInvites},FALSE,TRUE]}  
+		/call echos switch "Auto Accept Invites for [${ctar}Group\ax|${ctar}Raid\ax]" switchInvites 0 0
+
+	| accepts requests to add to the raid
+	} else /if (${Bool[${_coreType.Equal[raidinvite]}]}) {
+		/call writeINI switchRaidInvite Common ${If[${switchRaidInvite},FALSE,TRUE]} 
+		/call echos switch "Accept request for invites to [${ctar}Raid\ax]" switchRaidInvite 0 0
+
+	| claim market cash
+	} else /if (${Bool[${_coreType.Equal[dbcash]}]}) {
+		/call check_free_ingame_cash
+
+	| set echo channel
+	} else /if (${Bool[${_coreType.Equal[echo]}]}) {
+		/declare _num int local ${_coreVerbage}
+		/if (${Range.Between[1,9:${Int[${_num}]}]}) {
+			/call writeINI echoChannel Common ${_num} 0 0
+		} 
+		OUT /core echo [${cinfo}${echoChannel}\ax] set Echo Channel ${cinfo}1 - 9\ax
+
+
+	| exp max level
+	} else /if (${Bool[${_coreType.Equal[expmaintain]}]}) {
+		/declare _num int local ${_coreVerbage}
+		/if (${Range.Between[1,99:${Int[${_num}]}]}) {
+			/call writeINI MaintExpLvl Common ${_num} 
+			/call echos number "Maintain $ of EXP in level" ${_num} 0 0
+		} else {
+			OUT /core expmaintain [${cinfo}${MaintExpLvl}\ax] EXP % range ${cinfo}1 - 99\ax
+		}	
+
+	| exp maintain level
+	} else /if (${Bool[${_coreType.Equal[explevel]}]}) {
+		/declare _num int local ${_coreVerbage}
+		/if (${Range.Between[1,105:${Int[${_num}]}]}) {
+			/call writeINI MaxLevel Common ${_num} 
+			/call echos number "Max EXP Level" ${_num} 0 0
+		} else {
+			OUT /core explevel [${cinfo}${MaxLevel}\ax] set Max Level ${cinfo}1 - 105\ax
+		}	
+
+	| exp auto adjust
+ 	} else /if (${Bool[${_coreType.Equal[expadjust]}]}) {
+		/call writeINI AutoExpAdjust Common ${If[${AutoExpAdjust},FALSE,TRUE]} 
+		/call echos switch "Auto Adjust EXP/AA" AutoExpAdjust 0 0
+
+	| delete old INI entries
+ 	} else /if (${Bool[${_coreType.Find[fixini]}]}) {
+ 		OUT Deleting old INI entries
+		/call fix_INI_declares
+
 	} else {
-		/call echos listtype core core 0 TEXT|##
+		/call echos listtype core core 0 0 
 	} 
 /return
 
 
 
-
-
-
-
-
-
-
 |***
  *	DES: set on/off switches
- *	USE: /onoff [agro|pull|banestrike|horn]
+ *	USE: /onoff [banestrike|horn|shrink]
  *	INI: NA
  *  NOTE: enable/disable many switches
  ***|
 #bind onoff /onoff
 sub Bind_onoff(string _onoffType)
 	DEBUG ${cbug}Bind_onoff(type: ${_onoffType})\ax
-	/declare _count		int local
+	/declare _count int local 0
 	
-	/if (${Bool[${onoffType.Find[${_onoffType}]}]}) {
+	/if (${Bool[${onoffType.Equal[${_onoffType}]}]}) {
 		/if (${Defined[switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}]}) {
-			/call Event_SetVar NA switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower} Common ${If[${switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos switch "${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}" switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}
+			/call writeINI switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower} Common ${If[${switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}},FALSE,TRUE]}  
+			/call echos switch "${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}" switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower} 0 0
 		} 
 	} else {
-		/call echos listtype onoff onoff	
-	}
-	/if (${switchPull}) {
-		/if (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) /smartma X
-		/if (${switchPull} && ${Bool[${MA1}]}) /call Event_SetVar NA MA1 Common FALSE
-		/if (${switchPull} && ${Bool[${MA2}]}) /call Event_SetVar NA MA2 Common FALSE
+		/call echos listtype onoff onoff 0 0
 	}
 /return  
 
 
 
-
 |***
- *	DES: /info
+ *	DES: i dunno... information maybe?
  *	USE: /info
  *	INI: NA
  *  NOTE: list all switches for help
@@ -3893,18 +3557,19 @@ sub Bind_onoff(string _onoffType)
 #bind info /info
 sub Bind_info()
 	DEBUG ${cbug}Bind_info()\ax
-	/if (!${Defined[_listout]}) /declare _listout string local
-	/if (!${Defined[_sep]}) /declare _sep bool local
-	/if (!${Defined[_count]}) /declare _count int local
-	/if (!${Defined[_controls]}) /declare _controls string local |buff|burn|class|core|cursor|debuff|hc|heal|lc|onoff|override|pc|rez|tc|tie|ts${AllClassList}
+	/declare _listout string local
+	/declare _sep bool local
+	/declare _count int local
+	/declare _controls string local |buff|burn|cc|core|cursor|debuff|hc|heal|lc|movement|onoff|override|pc|port|rez|tc|tie|ts|${Me.Class.ShortName}
 	
 	/for _count 1 to ${_controls.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},-,]} ${cinfo}/${_controls.Arg[${_count},|]}\ax
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
 		/varset _sep TRUE
 	/next _count
-	VOUT
-	/call echos info
-	VOUT Controls [${_listout}]
+	/echo
+	/call echos info 0 0 0 0
+	OUT ${_listout}
+	/echo
 /return  	
 
 
@@ -3919,16 +3584,15 @@ sub Bind_info()
 sub Bind_ts(string _tsType)
 	DEBUG ${cbug}Bind_ts(type:${_tsType})\ax
 
-
 	| tradeskill commands
 	/if (${Bool[${_tsType.Find[movebank]}]}) {
-		/if (!${Defined[_slot]}) /declare _slot 				int local
-		/if (!${Defined[_bagslot]}) /declare _bagslot 	int local
+		/declare _slot 				int local
+		/declare _bagslot 		int local
 		/for _slot 23 to 26
 			/if (${InvSlot[${_slot}].Item.Container}) {
 				/for _bagslot 1 to ${InvSlot[${_slot}].Item.Container}
 					/if (${Me.Inventory[${_slot}].Item[${_bagslot}].StackSize} > 100 && ${Window[BigBankWnd].Open}) {
-						VOUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
+						OUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
 						/nomodkey /shift /itemnotify in Pack${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot2}+1]} leftmouseup
 						/delay 5 ${Cursor.ID}
 						/notify BigBankWnd bigb_autobutton leftmouseup
@@ -3940,14 +3604,14 @@ sub Bind_ts(string _tsType)
 
 	} else /if (${Bool[${_tsType.Find[movehouse]}]}) {
 		/if (${Window[RealEstateItemsWnd].Open}) {
-			/if (!${Defined[_slot]}) /declare _slot 				int local
-			/if (!${Defined[_bagslot]}) /declare _bagslot 	int local
+			/declare _slot 				int local
+			/declare _bagslot 		int local
 			/for _slot 23 to 26
 				/if (${InvSlot[${_slot}].Item.Container}) {
 					/for _bagslot 1 to ${InvSlot[${_slot}].Item.Container}
 						/nomodkey /itemnotify "${Me.Inventory[${_slot}].Name}" rightmouseup
 						/if (${Me.Inventory[${_slot}].Item[${_bagslot}].StackSize} > 100 && ${Window[RealEstateItemsWnd].Open}) {
-							VOUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
+							OUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
 							| /nomodkey /itemnotify in Pack${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot2}+1]} 
 							/click left ${Me.Inventory[${_slot}].Item[${_bagslot}].Name} 
 
@@ -3958,7 +3622,7 @@ sub Bind_ts(string _tsType)
 				}
 			/next _slot
 		} else {
-			VOUT Open Realestate Items Window
+			OUT Open Realestate Items Window
 		}
 
 | /click left ${Me.Inventory[1].Item[23].Name} 
@@ -3968,11 +3632,427 @@ sub Bind_ts(string _tsType)
 | /nomodkey /itemnotify "${Me.Inventory[23].Name}" rightmouseup
 | /nomodkey /shift /notify RealEstateItemsWnd REIW_Move_Closet_Button leftmouseup
 
-
-
 	} else {
-		/call echos listtype ts ts
+		/call echos listtype ts ts 0 0 0
 	} 
 /return
+
+	
+
+|***
+ *	DES: core controls
+ *	USE: /cc [auto|agro|force|melee|range|nuke|verbose|killcode|reset|whitewash|MA1|MA2|saferadius|zradius] [TEXT]
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setCombatControl /cc
+sub Bind_setCombatControl(string _combatType, string _combatVerbage)
+	DEBUG ${cbug}Bind_setCombatControl(type:${_combatType}, verbage:${_combatVerbage})\ax
+
+	| force manual combat routines
+	/if (${Bool[${_combatType.Equal[force]}]}) {
+		/if (${Bool[${_combatVerbage}]}) {
+			/if (${Target.ID} && (${Target.ID} != ${Me.ID}) && (${Target.ID} != ${Me.Pet.ID})) {
+				| engage Melee combat
+				/if (${Bool[${_combatVerbage.Equal[melee]}]}) {
+					/varset isValidTarget TRUE
+					/varset combat MELEE
+					/varset Target2Kill ${Target.ID}
+					OUT Combat ${sep} ${cinfo}Melee\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+				| engage Range combat
+				} else /if (${Bool[${_combatVerbage.Equal[range]}]}) {
+					/if (${Target.Distance} > 31) {
+						/varset isValidTarget TRUE
+						/varset combat RANGE
+						/varset Target2Kill ${Target.ID}	
+						OUT Combat ${sep} ${cinfo}Range\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+					} 
+				| engage Nuke combat
+				} else /if (${Bool[${_combatVerbage.Equal[nuke]}]}) {
+					/varset isValidTarget TRUE
+					/varset combat NUKE
+					/varset Target2Kill ${Target.ID}
+					OUT Combat ${sep} ${cinfo}Nuke\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+				}
+			}
+			 
+			| echo options
+			} else {
+				/declare _tmpVariable string local |melee|range|nuke
+				/declare _listout string local
+				/declare _sep bool local FALSE
+				/declare _count int local 0 
+
+				/for _count 1 to ${_tmpVariable.Count[|]}
+					/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_tmpVariable.Arg[${_count},|]}\ax
+					/varset _sep TRUE
+				/next _count
+				OUT /cc force [${_listout}]	
+				
+			}
+
+	| set Melee combat
+	} else /if (${Bool[${_combatType.Equal[melee]}]}) {
+		/call writeINI combat Common ${_combatType.Upper}
+		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+
+	| set Range combat
+	} else /if (${Bool[${_combatType.Equal[range]}]}) {
+		/call writeINI combat Common ${_combatType.Upper}
+		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+
+	| set Nuke combat
+	} else /if (${Bool[${_combatType.Equal[nuke]}]}) {
+		/call writeINI combat Common ${_combatType.Upper}
+		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+
+	| set Heal combat
+	} else /if (${Bool[${_combatType.Equal[heal]}]}) {
+		/call writeINI combat Common ${_combatType.Upper}
+		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+
+	| set Dual combat
+	} else /if (${Bool[${_combatType.Equal[dual]}]}) {
+		/call writeINI combat Common ${_combatType.Upper}
+		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+
+	| set Pull
+	} else /if (${Bool[${_combatType.Equal[pull]}]}) {
+		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
+		OUT Combat ${sep} ${cinfo}Pull\ax ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
+		/if (${switchPull}) {
+			/if (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) /smartma X
+			/if (${switchPull} && ${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+			/if (${switchPull} && ${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+		}
+
+	| agro/agro range ##
+	} else /if (${Bool[${_combatType.Equal[agro]}]}) {
+		/declare _num int local ${_combatVerbage}
+		/if (${Bool[${_combatVerbage}]} && ${Range.Between[1,400:${Int[${_num}]}]}) {
+			/call writeINI MobAgro Common ${_num} 
+			/call echos number "Combat Agro Range" ${_num} 0 0
+		} else /if (${Bool[${_combatVerbage}]} && !${Range.Between[1,400:${Int[${_num}]}]})  {
+			OUT /cc agro [${cinfo}${MobAgro}\ax] allowable range is ${cinfo}1 - 400\ax
+		} else /if (!${Bool[${_combatVerbage}]}) {
+			/call writeINI switchAgro Common ${If[${switchAgro},FALSE,TRUE]}
+			OUT Combat ${sep} ${cinfo}Agro\ax ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
+		}
+		
+		| adjust bold attacks AA
+		/if (${switchAgro}) {
+			/if (${Me.AltAbilityReady[Bold Attacks: Disabled]}) {
+				/call MQ2Cast "Bold Attacks: Disabled" alt
+				OUT AA Bold Attacks ${sep} ${oenabled}
+			}
+		} else /if (!${switchAgro}) {
+			/if (${Me.AltAbilityReady[Bold Attacks: Enabled]}) {
+				/call MQ2Cast "Bold Attacks: Enabled" alt
+				OUT AA Bold Attacks ${sep} ${odisabled}
+			}
+		}		
+
+	| set out of group Main assist 1 or 2
+	} else /if (${Bool[${_combatType.Equal[ma1]}]}) {
+		/if (${Bool[${_combatVerbage}]}) {
+			/call writeINI MA1 Common ${_combatVerbage.Left[1].Upper}${_combatVerbage.Right[-1].Lower}
+		} else /if (!${Bool[${_combatVerbage}]})  {
+			/call writeINI MA1 Common FALSE
+		} 				
+		OUT MA1 ${sep} ${If[${Bool[${MA1}]},${cinfo}${MA1}\ax,${odisabled}]}
+	} else /if (${Bool[${_combatType.Equal[ma2]}]}) {		
+		/if (${Bool[${_combatVerbage}]}) {
+			/call writeINI MA2 Common ${_combatVerbage.Left[1].Upper}${_combatVerbage.Right[-1].Lower}
+		} else /if (!${Bool[${_combatVerbage}]})  {
+			/call writeINI MA2 Common FALSE
+		} 				
+		OUT MA2 ${sep} ${If[${Bool[${MA2}]},${cinfo}${MA2}\ax,${odisabled}]}	
+
+	| MA1/2 engage at %
+	} else /if (${Bool[${_combatType.Equal[engage]}]}) {
+		/declare _num int local ${_combatVerbage}
+		/if (${Range.Between[1,100:${Int[${_num}]}]}) {
+			/call writeINI engageAt Common ${_num}  
+			/call echos number "MA Engage at" ${If[${_num},${_num},${engageAt}]} 0 0
+		} else {
+			OUT MA1/2 Engage [${cinfo}${engageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
+		}
+
+	| Smart Assist engage at %
+		/declare _num int local ${_combatVerbage}
+		/if (${Range.Between[1,100:${Int[${_num}]}]}) {
+			/call writeINI smartengageAt Common ${_num}  
+			/call echos number "Smart Assist Engage at" ${If[${_num},${_num},${smartengageAt}]} 0 0
+		} else {
+			OUT Smart Engage [${cinfo}${smartengageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
+		}
+
+	| set melee combat distance to target
+	} else /if (${Bool[${_combatType.Equal[combatdistance]}]}) {
+		/declare _num int local ${_combatVerbage}
+		/if (${Range.Between[1,50:${Int[${_num}]}]}) {
+			/call writeINI CombatDistance Movement ${_num}
+			/call echos number "Melee Combat Distance" ${_num} 0 0
+		} else {
+			OUT Melee Combat Distance [${cinfo}${CombatDistance}\ax] minimum range to melee mob ${cinfo}1 - 50\ax
+		}
+
+	| set fake safe radius
+	} else /if (${Bool[${_combatType.Equal[saferadius]}]}) {
+		/declare _num int local ${_combatVerbage}
+		/if (${Range.Between[1,99:${Int[${_num}]}]}) {
+			/call writeINI combatRadius Common ${_num}
+			/call echos number "Fake Safe Combat Radius" ${_num} 0 0
+		} else {
+			OUT /cc saferadius [${cinfo}${combatRadius}\ax] fake safe combat radius ${cinfo}1 - 50\ax
+		}
+	
+	| set Z radius
+	} else /if (${Bool[${_combatType.Equal[zradius]}]}) {
+		/declare _num int local ${_combatVerbage}
+		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
+			/call writeINI zradius Common ${_num} 
+			/call echos number "Set ZRadius" ${_num} 0 0
+		} else {
+			OUT /cc zradius [${cinfo}${zradius}\ax] of mobs Z Radius range ${cinfo}1 - 200\ax
+		}	
+	} else {
+		/call echos listtype cc cc 0 TEXT|## 0
+	} 
+/return	
+	
+
+
+|***
+ *	DES: shortcut for the agro command
+ *	USE: /agro [##]
+ *	INI: 
+ *  NOTE:
+ ***| 	
+#bind MobAgro /agro
+sub Bind_MobAgro(int _MobAgro)
+	/call Bind_setCombatControl agro ${_MobAgro}
+/return
+
+
+
+|***
+ *	DES: 
+ *	USE: /port 
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind port_list /port
+sub Bind_port_list(string _class, string _location)
+	/declare _listout 				string 	local
+	/declare _sep 						bool 		local FALSE
+	/declare _country 				int 		local 0
+	/declare _count 					int 		local 0
+	/declare _state 					int 		local 0
+	/declare _portclass 			string 	local |druid|wizard
+	/declare _continent 			string 	local |alaris|antonica|discord|faydwer|kunark|luclin|odus|serpentsspine|taelosia|planes|other
+	/declare _tell						bool		local FALSE
+
+	| druid port list
+	/declare _portDruidAlaris 											string local |beast|pillars|shardslanding
+	/declare _portDruidAntonica  										string local |commonlands|feerrott|karana|lavastorm|misty|ro|surefall|undershore|westkarna
+	/declare _portDruidDiscord 											string local |bloodfields|wallofslaughter
+	/declare _portDruidFaydwer 											string local |butcherblock|looping|steamfront
+	/declare _portDruidKunark 											string local |dreadlands|lceanium
+	/declare _portDruidLuclin 											string local |dawnshroud|grimling|nexus|twilight
+	/declare _portDruidOdus 												string local |buriedsea|stonebrunt|tempesttemple|tox
+	/declare _portDruidSerpentsspine							 	string local |blightfire|direwind|steppes
+	/declare _portDruidTaelosia 										string local |barindu|natimbi
+	/declare _portDruidPlanes 											string local |grounds|potime|brells|arcstone|knowledge
+	/declare _portDruidVelious 											string local |cobaltscar|wakening|greatdivide|iceclad
+	/declare _portDruidOther 												string local |primarypush|secondarypush|primary|secondary
+
+	| wizard port list
+	/declare _portWizardAlaris 											string local |pillars|sarith 
+	/declare _portWizardAntonica 										string local |northkarana|commonlands|nektulos|qeyenos|northro|cazic|undershore|westkarana
+	/declare _portWizardDiscord 										string local |wallofslaughter|bloodfields
+	/declare _portWizardFaydwer 										string local |fay|dragonscale
+	/declare _portWizardKunark 											string local |lceanium|dreadlands
+	/declare _portWizardLuclin 											string local |dawnshroud|twilight|grimling
+	/declare _portWizardOdus 												string local |tempesttemple|katta
+	/declare _portWizardSerpentsspine							 	string local |tox|stonebrunt|icefall|sunderock|blightfire
+	/declare _portWizardTaelosia 										string local |barindu|natimbi
+	/declare _portWizardPlanes 											string local |grounds|potime|brells|arcstone|pok
+	/declare _portWizardVelious 										string local |cobaltscar|wakening|greatdivide|iceclad
+	/declare _portWizardOther 											string local |bind|nexus|primary|secondary|primarypush|secondarypush
+			
+	| sort the class
+	/if (${Bool[${_class.Find[druid]}]}) {
+		/varset _class Druid
+	} else /if (${Bool[${_class.Find[wizard]}]}) {
+		/varset _class Wizard
+	} else {
+		/for _count 1 to ${_portclass.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_portclass.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		OUT /port [${_listout}] [${cinfo}location\ax]
+		/return
+	}
+	
+  | echo locations if class correct
+	/if (${Bool[${_class}]} && !${Bool[${_location}]}) {
+		/for _country 1 to ${_continent.Count[|]}
+			/for _state 1 to ${_port${_class}${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower}.Count[|]}
+				/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_port${_class}${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower}.Arg[${_state},|]}\ax
+				/varset _sep TRUE
+			/next _state
+			OUT ${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower} [${_listout}] 
+			/varset _listout
+			/varset _sep
+		/next _country
+
+	| request port when class and location are present
+	} else /if (${Bool[${_class}]} && ${Bool[${_location}]}) {
+		/for _count 1 to ${Resident${_class}.Count[|]}
+			/if (${Spawn[pc ${Resident${_class}.Arg[${_count},|]} zradius 80 radius 100].ID}) {
+				/t ${Resident${_class}.Arg[${_count},|]} send ${_location}
+				/varset _tell TRUE
+			}		
+		/next _count
+		/if (!${_tell}) /call echos failboat
+	}
+
+/return
+
+
+
+|***
+ *	DES: zephyr/TL requesting toon.
+ *	USE: /t [toon] send [location]
+ *	INI: 
+ *  NOTE: 
+ ***|
+#event send "#1# tells you, 'send #2#'"
+sub Event_send(string line, string _sender, string _location)
+	CHECKSAFELIST
+	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]} || ${Spawn[pc ${_sender}].Distance} > 125) /return
+	/declare _portList[14]		string local
+	/declare _count 					int local 0
+
+	/if (${_location.Equal[where]}) {
+		/if (${Select[${Me.Class.ShortName},DRU]}) {
+			/varset _portList[1] Alaris: shardslanding, pillars, beast
+			/varset _portList[2] Antonica: westkarna, lavastorm, undershore, misty, ro, feerrott, commonlands, surefall, karana
+			/varset _portList[3] Discord: wallofslaughter, bloodfields
+			/varset _portList[4] Faydwer: looping, steamfront, butcherblock
+			/varset _portList[5] Kunark: lceanium, dreadlands
+			/varset _portList[6] Luclin: dawnshroud, twilight, grimling, nexus
+			/varset _portList[7] Misc: primarypush, secondarypush, primary, secondary
+			/varset _portList[8] Odus: tempesttemple, buriedsea, stonebrunt, tox
+			/varset _portList[9] Serpent's Spine: direwind, steppes, blightfire
+			/varset _portList[10] Taelosia: barindu, natimbi
+			/varset _portList[11] The Planes: grounds, potime, brells, arcstone, knowledge
+			/varset _portList[12] 
+			/varset _portList[13] Velious: cobaltscar, wakening, greatdivide, iceclad
+			/varset _portList[14] --Port List End
+		} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
+			/varset _portList[1] Alaris: pillars, sarith 
+			/varset _portList[2] Antonica: northkarana, commonlands, nektulos, qeyenos, northro, cazic, undershore, westkarana
+			/varset _portList[3] Discord: wallofslaughter, bloodfields
+			/varset _portList[4] Faydwer: fay, dragonscale
+			/varset _portList[5] Kunark: lceanium, dreadlands
+			/varset _portList[6] Luclin: dawnshroud, twilight, grimling
+			/varset _portList[7] Misc: bind, nexus, primary, secondary, primarypush, secondarypush
+			/varset _portList[8] Odus: tempesttemple, katta
+			/varset _portList[9] Serpent's Spine: tox, stonebrunt, icefall, sunderock, blightfire
+			/varset _portList[10] Taelosia: barindu, natimbi
+			/varset _portList[11] The Planes: grounds, potime, brells, arcstone, pok
+			/varset _portList[12] 
+			/varset _portList[13] Velious: cobaltscar, wakening, greatdivide, iceclad
+			/varset _portList[14] --Port List End
+		}
+		| feed the response back to sender		
+		/for _count 1 to ${_portList.Size}
+			/t ${_sender} ${_portList[${_count}]}
+			/delay 8
+			:nextcount
+		/next _count
+	}
+	
+	| send 'em on their way with a valid location request
+	/if (${Defined[${_location}]}) {
+		/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
+		/call scribe "${${_location}}" ${buffGem} TRUE
+		/call core_cast "${${_location}}" 0 ${Spawn[pc ${_sender}].ID}
+	} 
+/return
+
+
+
+|***
+ *	DES: movement controls
+ *	USE: /movement [] [##]
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setMovementControls /movement
+sub Bind_setMovementControls(string _movementType, string _movementVerbage)
+	DEBUG ${cbug}Bind_setMovementControls(type:${_mcType}, verbage:${_mcVerbage})\ax
+
+	| set home on or off
+	/if (${Bool[${_movementType.Equal[home]}]}) {
+		/call writeINI HomeSet Movement ${If[${HomeSet},FALSE,TRUE]}  
+		/call set_home
+
+	| set stick behind
+	} else /if (${Bool[${_movementType.Equal[behind]}]}) {
+		/call writeINI SetStickBehind Movement ${If[${SetStickBehind},FALSE,TRUE]}  
+		/call echos switch "Stick Behind Target"  SetStickBehind 0 0
+
+		| disable mezzing with stickbehind enabled.
+		/if (${switchdeBuffMezz} && ${SetStickBehind}) {
+			/if (${Defined[switchdeBuffMezz]}) /call writeINI switchdeBuffMezz Buffs FALSE  
+			/call echos switch "deBuff Mezz" switchdeBuffMezz 0 0
+		}
+
+	| set face fast
+	} else /if (${Bool[${_movementType.Equal[fast]}]}) {
+		/call writeINI SetFaceFast Movement ${If[${SetFaceFast},FALSE,TRUE]}  
+		/call echos switch "Face Fast" SetFaceFast 0 0
+		/if (${SetFaceFast}) OUT ${owarning} ${sep} This is a MQ2 Dead Giveaway ${sep} ${owarning}
+
+	| set home radius
+	} else /if (${Bool[${_movementType.Equal[radius]}]}) {
+		/declare _num int local ${_movementVerbage}
+		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
+			/call writeINI HomeRadius Movement ${_num} 
+			/call echos number "Home Radius" ${_num} 0 0
+		} else {
+			OUT /movement radius [${cinfo}${HomeRadius}\ax] Home Radius range ${cinfo}1 - 200\ax
+		}
+
+	| set leash range
+	} else /if (${Bool[${_movementType.Equal[leash]}]}) {
+		/declare _num int local ${_movementVerbage}
+		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
+			/call writeINI HomeLeash Movement ${_num} 
+			/call echos number "Leash to Home" ${_num} 0 0
+		} else {
+			OUT /movement leash [${cinfo}${HomeLeash}\ax] Home Leash range ${cinfo}1 - 200\ax
+		}	
+
+	| set facing arc
+	} else /if (${Bool[${_movementType.Equal[arc]}]}) {
+		/declare _num int local ${_movementVerbage}
+		/if (${Range.Between[1,45:${Int[${_num}]}]}) {
+			/call writeINI SetFaceArc Movement ${_num} 
+			/call echos number "Facing Arc Buffer" ${_num} 0 0
+		} else {
+			OUT /movement arc [${cinfo}${SetFaceArc}\ax] Facing Movement buffer range ${cinfo}1 - 45\ax
+		}	
+
+	} else {
+		/call echos listtype movement movement 0 0 0
+	} 
+
+
+/return
+
 
 

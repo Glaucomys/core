@@ -14,9 +14,9 @@
  *  NOTE: 
  ***|
 sub core_ENC()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
+	AMIDEAD
 	/doevents
-	ISDEAD
 	CHECKTIE
 	
 	/if (${coreAuto} && !${Me.Invis}) {
@@ -26,7 +26,7 @@ sub core_ENC()
 
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -44,29 +44,29 @@ sub core_ENC()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 		/doevents
-		ISDEAD
+		AMIDEAD
 		CHECKTIE
 		/call get_target_ENC
 		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
 		/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
 		/call list_delete mobList ${Target2Kill}
-		/goto :exit
+		/return
 		:loop
 		/doevents
-		ISDEAD
+		AMIDEAD
 		CHECKTIE
 		/if (${Spawn[${Target2Kill}].Type.Equal[Corpse]}  || !${Target2Kill} || !${Target.ID} || ${Target.Type.Equal[corpse]} || !${Spawn[${Target2Kill}].ID}) /call get_target_ENC
 		/call check_for_adds
 		/if (${addList.Count[|]} && ${switchdeBuffMezz}) /call mez_adds
 		/call check_for_adds
-		/if (${addList.Count[|]}) /goto :exit
-		/if (${mobList.Find[|]}) /call list_update
+		/if (${addList.Count[|]}) /return
+		/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
 		/call check_for_adds
-		/if (${addList.Count[|]}) /goto :exit
+		/if (${addList.Count[|]}) /return
 		/if (!${addList.Count[|]}) /call debuff_mobs
-		/if (${mobList.Find[|]}) /call list_update
+		/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
 		/call check_for_adds
-		/if (${addList.Count[|]}) /goto :exit
+		/if (${addList.Count[|]}) /return
 		/call is_target_valid ${Target2Kill}
 		/if (${isValidTarget}) {
 			/if (!${addList.Count[|]}) /call send_pet
@@ -88,9 +88,8 @@ sub core_ENC()
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
+		/if (!${Macro.Return}) /goto :killtarget
 	}
-	:exit
 /return
 
 
@@ -102,13 +101,12 @@ sub core_ENC()
  *  NOTE: 
  ***|
 sub debuff_mobs
+	AMIDEAD
+	CHECKEXIT
 	/doevents
-	ISDEAD
 	CHECKTIE
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
-	/declare _count 				int local
-	/declare _tmpID 				string local
+	/declare _count int local 0
+	/declare _tmpID string local 
 	
 	
 	/if (${mobList.Find[|]} > 1) /varset mobList ${mobList.Right[-${Math.Calc[${mobList.Find[|]}-1]}]}
@@ -122,27 +120,26 @@ sub debuff_mobs
 		/if (${switchdeBuffTash} && !${timer_tash_${_tmpID}}) {
 			/call cast_tash ${_tmpID}
 			/call check_for_adds
-			/if (${addList.Count[|]}) /goto :exit
+			/if (${addList.Count[|]}) /return
 		}
 		/if (${switchdeBuffSlow} && !${timer_slow_${_tmpID}}) {
 			DEBUGCLASS SLOWING ID ${_tmpID}
 			/call cast_slow ${_tmpID}
 			/call check_for_adds
-			/if (${addList.Count[|]}) /goto :exit
+			/if (${addList.Count[|]}) /return
 		}
 		/if (${switchdeBuffCripple} && ${timer_cripple_${_tmpID}}) {
 			/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
 			/call check_for_adds
-			/if (${addList.Count[|]}) /goto :exit
+			/if (${addList.Count[|]}) /return
 		}
 		/if (${switchdeBuffEradicate} && !${timer_eradicate_${Target2Kill}}) {
 			/call cast_eradicate_magic ${_tmpID}
 			/call check_for_adds
-			/if (${addList.Count[|]}) /goto :exit
+			/if (${addList.Count[|]}) /return
 		}
 	/next _count
 
-	:exit
 	UPDATEHUD
 /return
 
@@ -157,9 +154,9 @@ sub debuff_mobs
  ***|
 sub check_rune_ENC()
 	DEBUGCLASS ${cbug}check_rune_ENC()\aw
-	ISDEAD
+	/call create_timer timer_check_runes ${tCheck_Runes}
+	AMIDEAD
 	CHECKEXIT
-	| /if (${timer_check_runes}) /goto :exit
 	UPDATEHUD "BUFF: Rune"
 	/if (${Me.AltAbilityReady[${runeVeil}]} && !${Bool[${Me.Buff[Veil of Mindshadow]}]}) /call core_cast "${runeVeil}" alt 0
 	/if (${Me.AltAbilityReady[${runeEldritch}]} && !${Bool[${Me.Buff[Eldritch Rune]}]}) /call core_cast "${runeEldritch}" alt 0
@@ -180,7 +177,6 @@ sub check_rune_ENC()
 
 	UPDATEHUD
 	/call create_timer timer_check_runes ${tCheck_Runes}
-	:exit
 /return
 
 
@@ -193,37 +189,33 @@ sub check_rune_ENC()
  ***|
 sub check_rune_auspice()
 	DEBUGCLASS ${cbug}check_rune_auspice()\ax
-	ISDEAD
+	AMIDEAD
+	CHECKEXIT
 	/doevents
 	CHECKTIE
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call check1offBuffs
 	
 	/declare _runeAuspiceID int local ${Spell[${runeAuspice}].ID}
 	/declare _AuspiceToon string local
-	/declare _count int local
+	/declare _count int local 0
 	/declare _toon string local ${runeAuspiceToon}
 
 	/for _count 1 to ${_toon.Count[|]}
-|		/if (!${Spawn[${_AuspiceToon}]}) /next _count
-		ISDEAD
+		/if (!${Spawn[${_AuspiceToon}]}) /continue
+		CHECKEXIT
 		/doevents
 		/if (${Bool[${Spawn[id ${NetBots[${_toon.Arg[${_count},|]}].ID}]}]} && ${Spawn[id ${NetBots[${_AuspiceToon}].ID}].Distance} < ${Spell[${runeWard}].MyRange} && ${Me.SpellReady[${runeWard}]}) {
 			/varset _AuspiceToon ${_toon.Arg[${_count},|]}
 			DEBUGCLASS  ${_count}: ${_toon.Count[|]}, ${_toon.Arg[${_count},|]}, ${Bool[${Spawn[id ${NetBots[${_toon.Arg[${_count},|]}].ID}]}]}, found: ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]}
-			/goto :buff
+			/break
 		}
 	/next _count	
 	
-	:buff
-	/if (!${Bool[${Spawn[${_AuspiceToon}]}]} || !${Me.SpellReady[${runeAuspice}]} || ${Me.CurrentMana} > ${Spell[${runeAuspice}].Mana} || ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]} || ${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /goto :exit
+	/if (!${Bool[${Spawn[${_AuspiceToon}]}]} || !${Me.SpellReady[${runeAuspice}]} || ${Me.CurrentMana} > ${Spell[${runeAuspice}].Mana} || ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]} || ${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /return
 	UPDATEHUD "BUFF: BC Ward"
   DEBUGCLASS BC Buffing: ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
-	:loopretry
+
 	/call core_cast "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
-	/if (${Macro.Return.Equal[CAST_FIZZLE]}) /goto :loopretry
-	:exit
 	UPDATEHUD
 /return
 
@@ -237,17 +229,15 @@ sub check_rune_auspice()
  ***|
 sub disc_ENC()
 	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
-	ISDEAD
-	/doevents
+	AMIDEAD
 	CHECKEXIT
+	/doevents
 	CHECKTIE
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
 	/if (${Me.AltAbilityReady[Crippling Aurora]} ) /call core_cast "Crippling Aurora" alt 0
 	/if (${Me.AltAbilityReady[Phantasmal Opponent]} && ${switchPcSwarm} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /call core_cast "Phantasmal Opponent" alt 0
 	/if (${Me.AltAbilityReady[Chromatic Haze]}) /call core_cast "Chromatic Haze" alt 0
-	
-	:exit
 /return
 
 
@@ -260,9 +250,9 @@ sub disc_ENC()
  ***|
 sub check_crystals()
 	DEBUGCLASS ${cbug}check_crystals()\ax
-	/doevents
-	ISDEAD
+	AMIDEAD
 	CHECKEXIT
+	/doevents
 	CHECKTIE
 
 	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]} && ${Spell[${mannaCrystal}].Mana} < ${Me.CurrentMana} && ${Me.AltAbilityReady[${mannaCrystal}]}) {
@@ -270,20 +260,18 @@ sub check_crystals()
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${mannaCrystal}]}
 	}
-	CLEARCURSOR TRUE
+	/call sort_cursor TRUE
 
 	/if (${Bool[${healCrystal}]} && !${FindItem[${healCrystal}].ID} && !${Cursor.Name.Equal[${healCrystal}]} && ${Spell[${healCrystal}].Mana} < ${Me.CurrentMana} && ${Me.AltAbilityReady[${healCrystal}]}) {
 		/call core_cast "${healCrystal}" alt 0 check_for_adds
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${healCrystal}]}
 	}
-	CLEARCURSOR TRUE
+	/call sort_cursor TRUE
 
 	/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${Bool[${mannaCrystal}]} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) /call core_cast "${mannaCrystal} IV" item
 	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Fundament: Second Spire of Enchantment]}) /call core_cast "Fundament: Second Spire of Enchantment" alt
 	/if (${Me.PctMana} < 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Gather Mana]}) /call core_cast "Gather Mana" alt	
-	
-	:exit
 /return
 
 
@@ -296,25 +284,12 @@ sub check_crystals()
  ***|
 sub click_DPS_ENC()
 	DEBUGCLASS ${cbug}clickDPS_ENC()\ax
-	/doevents
-	ISDEAD
+	AMIDEAD
 	CHECKEXIT
+	/doevents
 	CHECKTIE
-	/call click_horn_of_unity
-	:exit
+	/call click_horn_of_unity 	
 /return
-
-
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub petHeal_ENC()
-/return
-
 
 
 
@@ -326,14 +301,14 @@ sub petHeal_ENC()
  ***|
 sub patch_heal_ENC()
 	DEBUGCLASS ${cbug}patch_heal_ENC_${Me.Class.ShortName}()\ax
-	ISDEAD
-	CHECKTIE
 	/declare _count int local
 	/declare _tmpID int local
 	/if (${SpawnCount[npc radius 15]}) {
 		/for _count 1 to ${SpawnCount[npc radius 15]}
-		ISDEAD
-		CHECKTIE
+			AMIDEAD
+			CHECKEXIT
+			/doevents
+			CHECKTIE
 		/varset _tmpID ${NearestSpawn[${_count},npc radius 15].ID}
 		/if (!${NearestSpawn[${_count},npc radius 15].ID}) /next _count
 		/squelch /target id ${_tmpID}
@@ -358,8 +333,6 @@ sub patch_heal_ENC()
 		}
 		/next _count
 	}
-
-	:exit
 /return
 
 
@@ -372,7 +345,7 @@ sub patch_heal_ENC()
  ***|
 sub mez_adds()
 	DEBUGCLASS ${cbug}mez_adds()\ax
-	ISDEAD
+	AMIDEAD
 	/doevents
 	/declare _tmpID string local
 
@@ -392,7 +365,7 @@ sub mez_adds()
 			/delay 5 ${Target.ID} == ${_tmpID}
 			/delay 2.25s ${Me.SpellReady[${spellMez}]}
 			/if (${SpawnCount[npc los radius 30 zradius 15 targetable]} >= 3 ) {
-				VOUT ${sepO} ${cinfo}${SpawnCount[npc radius 30 zradius 15]}\ax ${sepC} Targets in point blank range.
+				VOUT ${sepO} ${cinfo}${SpawnCount[npc radius 30 zradius 15]}\ax ${sepC} ${If[${SpawnCount[npc los radius 30 zradius 15 targetable]} == 1,Target,Targets]} in point blank range.
 
 				/if (${switchdeBuffTash} && ${Me.AltAbilityReady[Bite of Tashani]}) /call core_cast "Bite of Tashani" alt 0 check_for_adds
 				
@@ -416,7 +389,6 @@ sub mez_adds()
 					/call core_cast "Scintillating Beam" alt 0
 				}
 			}
-
 			/call cast_mez ${_tmpID}
 		}
 		/call list_delete addList ${_tmpID}
@@ -424,7 +396,6 @@ sub mez_adds()
 		/if (!${addList.Count[|]} && ${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 		/goto :loopmezzadds
 	}
-	:exit
 /return
 
 
@@ -437,27 +408,26 @@ sub mez_adds()
  ***|
 sub cast_mez(int _tmpID)
 	/doevents
-	ISDEAD
 	/declare _resistCount int local 0
 	:loopmez
-	ISDEAD
-	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /goto :exit
+	AMIDEAD
+	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
 
 	| check for mez immune list mobs
 	/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
 	  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
 	  NOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
 	  /call list_delete addList ${_tmpID}	
-		/goto :exit
+		/return
 	}
 	
 	/if (${Target.Mezzed.Duration} && ${Spell[${Target.Mezzed}].Name.Find[${spellMez}]}) {
 		/call create_timer timer_mez_${_tmpID} ${Target.Mezzed.Duration.TotalSeconds}s
-		/goto :exit
+		/return
 	} else /if (${Target.PctHPs} < 90) {
 		/call create_timer timer_mez_${_tmpID} 5m
 		VOUT [${ctar}${Target.DisplayName}\ax] is being attacked!
-		/goto :exit
+		/return
 	}
 	/if (${Me.CurrentMana}>${Spell[${spellMez}].Mana}) {
 		/delay 2.25s ${Me.SpellReady[${spellMez}]}
@@ -470,7 +440,7 @@ sub cast_mez(int _tmpID)
 			  ECHOCHANNEL MEZ IMMUNE to ${spellMez} ... ${Target.DisplayName}
 			  /call list_delete addList ${_tmpID}
 			}
-			/goto :exit
+			/return
 		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
 			/varcalc _resistCount ${_resistCount}+1
 			/if (${_resistCount}==2 && !${timer_tash_${_tmpID}}) /call cast_tash ${_tmpID}
@@ -479,75 +449,68 @@ sub cast_mez(int _tmpID)
 
 		/goto :loopmez
 	}
-	:exit
 /return
 
 
 
 |***
  *	DES: tashes the target
- *	USE: debufs
+ *	USE: /call cast_tash [ID] | /debuff tash
  *	INI: 
  *  NOTE: 
  ***|
 sub cast_tash(int _tmpID)
+	AMIDEAD
+	CHECKEXIT
 	/doevents
-	ISDEAD
 	CHECKTIE
-	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /goto :exit
+	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
 
 	/if (${Target.Tashed.Duration} && !${Target.Buff[Bite of Tashani].ID}) {
 		DEBUGCLASS ${Target.DisplayName} already has ${Target.Tashed}
-		/goto :exit
+		/return
 	}
 	
 	/if (${Target.Distance} <= ${Spell[${spellTash}].MyRange} && ${Target.LineOfSight}) {
-		/delay 2.25s ${Me.SpellReady[${spellTash}]}
 		/call core_cast "${spellTash}" 0 ${_tmpID} check_for_adds
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
-			/goto :exit
+			/return
 		}
 	}
-	:exit
 /return
 
 
 
 |***
  *	DES: slows the target
- *	USE: debufs
+ *	USE: /call cast_slow [ID] | /debuff slow
  *	INI: 
  *  NOTE: 
  ***|
 sub cast_slow(int _tmpID)
 	DEBUGCLASS ${cbug}cast_slow(int ${_tmpID})\ax
-	ISDEAD
+	AMIDEAD
 	/doevents
 	/declare _tmpSlow string local ${Target.Slowed}
 
 	/if (${Target.Crippled.Duration}) /call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
 
-	/if (${ExcludeList.Find[${Target.DisplayName}]} || ${Target.Type.Equal[corpse]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /goto :exit
+	/if (${ExcludeList.Find[${Target.DisplayName}]} || ${Target.Type.Equal[corpse]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
 	DEBUGCLASS passed bail checks
-	
 	
 	/if (${Target.Slowed.Duration}) {
 		DEBUGCLASS already slowed ffs.. ${Target.Slowed}
 		/if (${_tmpSlow.Find[helix]}) {
 			/call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
-			/goto :exit
+			/return
 		}
-		
-		| /if (${_tmpSlow.Find[tendon]}) /call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
-		
 	}
-		
 
 	/declare _resistCount int local 0
 	:loopslow
 	DEBUGCLASS :loopslow
-	ISDEAD
+	AMIDEAD
 	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${spellSlow}].MyRange}) {
 		/delay 2.25s ${Me.SpellReady[${spellSlow}]}
 		/call core_cast "${spellSlow}" 0 ${_tmpID} check_for_adds
@@ -563,40 +526,38 @@ sub cast_slow(int _tmpID)
 			}
 		}
 	}
-	:exit
 /return
 
 
 
 |***
  *	DES: cripples the target
- *	USE: debufs
+ *	USE: /call cast_cripple [ID] | /debuff cripple
  *	INI: 
  *  NOTE: 
  ***|
 sub cast_cripple(int _tmpID)
+	AMIDEAD
+	CHECKEXIT
 	/doevents
-	ISDEAD
-	/declare _resistCount int local
-	/call check_exit
-	/if (${Bool[${Macro.Return}]} || !${Spawn[${_tmpID}].ID}) /goto :exit
+	CHECKTIE
+	/declare _resistCount int local 0
 
 	/if (${Target.Crippled.Duration}) {
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
-		/goto :exit
+		/return
 	}
 
 	/declare _tmpSlow string local ${Target.Slowed}
 	/if (${Target.Slowed.Duration}) {
 		/if (${_tmpSlow.Find[Undermining]}) {
 			/call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
-			/goto :exit
+			/return
 		}
 	}	
 	
 	:loopcripple
 	/if (${Target.Distance} <= ${Spell[${spellCripple}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellCripple}].Mana} && ${Target.LineOfSight}) {
-		/delay 2.25s ${Me.SpellReady[${spellCripple}]}
 		/call core_cast "${spellCripple}" 0 ${_tmpID} check_for_adds
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
@@ -613,66 +574,8 @@ sub cast_cripple(int _tmpID)
 			}
 		}
 	}
-	:exit
 /return
 
-
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
-
-sub mob_charm(int _tmpID)
-	/declare _oldtmpID int local ${Target.ID}
-	/squelch /target id ${_tmpID}
-	/if (${Me.SpellReady[${spellpbaeMez}]}) {
-		/if (${Target.Distance3D} <= 30) /call core_cast "${spellpbaeMez}" 0
-		VOUT Pet broke PB mezzing him!
-	}
-	/squelch /target id ${_tmpID}
-	/squelch /if ( ${tashTimer${_tmpID}}  <5500 ) /call Tash
-
-	/call core_cast "${spellCharm}" 0 ${_tmpID}
-	/if (${Me.Pet.ID}) {
-		/if (${Spawn[${_oldtmpID}].ID}) {
-			/squelch /target id ${_oldtmpID}
-		} else {
-			/squelch /target clear
-		}
-	}
-/return
- ***|
-
-
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
-sub mob_charm2()
-	/declare _count int local
-	/declare _mobs int local
-	/declare _tmpID int local
-	/delay 1
-	/if (${SpawnCount[npc los Range 70 110 radius 200 targetable]}) {
-	/varset _mobs ${SpawnCount[npc los Range 70 110 radius 200 targetable]} 
-	/for _count 1 to ${_mobs}
-		/varset _tmpID ${NearestSpawn[${_count}, npc los Range 70 110 radius 200 targetable].ID}
-		/if (${CharmList.Find["${Spawn[id ${_tmpID}].DisplayName}"]} && !${Spawn[${_tmpID}].Master.Type.Equal[Pet]} && !${Spawn[${_tmpID}].Master.Type.Equal[Corpse]}) {
-			VOUT Oh yeah found a mob to charm up in this bitch! Grabbing ${Spawn[id ${_tmpID}].DisplayName} --Nyte
-			/call Charm ${_tmpID}
-			/if (${Defined[mezTimer${_tmpID}]}) /deletevar mezTimer${_tmpID} 
-			/if (${Me.Pet.ID}) /call create_timer mezTimer${_tmpID} -1
-			/return
-		}
-	/next _count
-	}
-	:exit
-/return
- ***|
 
 
 
@@ -715,8 +618,7 @@ sub is_attacking(int _tmpID)
 	/if (${_ani} == 144) /varset _isAttacking TRUE
 	/if (${_ani} == 146) /varset _isAttacking FALSE
 	DEBUGCLASS ${cbad}Unknown Animation\ax #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name}).
-	:exit
-/return ${_isAttacking}	
+/return ${Bool[${_isAttacking}]}	
 
 
 
@@ -729,19 +631,41 @@ sub is_attacking(int _tmpID)
  ***|
 sub get_target_ENC()
 	DEBUGCLASS ${cbug}get_target_ENC()\ax
-	/if (${Me.Moving}) /goto :exit
+	/if (${Me.Moving}) /return
 	/call get_assist_target
-	/if (${ExcludeList.Find[${Target.DisplayName}]}) /goto :notgood
-	/if (${Spawn[${Target2Kill}].Type.Equal[npc]} && ${Spawn[${Target2Kill}].LineOfSight}) {
-		/varset isValidTarget TRUE
-		/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
-		/call create_timer timer_mez_${Target2Kill} timer outer 600s
-		/call list_add mobList ${Target2Kill}
-	} else {
-		:notgood
-		/varset isValidTarget FALSE
+	/if (!${ExcludeList.Find[${Target.DisplayName}]}) {
+		/if (${Spawn[${Target2Kill}].Type.Equal[npc]} && ${Spawn[${Target2Kill}].LineOfSight}) {
+			/varset isValidTarget TRUE
+			/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
+			/call create_timer timer_mez_${Target2Kill} timer outer 600s
+			/call list_add mobList ${Target2Kill}
+		}
+		/return
 	}
-	:exit
+	/varset isValidTarget FALSE
+/return
+
+
+
+ |***
+ *	DES: Enchanter burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_ENC()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	CHECKEXIT
+	/doevents
+	
+	/if (${Me.AltAbilityReady[${ENCIoG}]}) /call core_cast "${ENCIoG}" alt 0
+	/call cast_AA_spire
+	/if (${Me.AltAbilityReady[Dimensional Shield]} && ${Spell[Dimensional Shield].Stacks}) /call core_cast "Dimensional Shield" alt 0
+	/if (${Me.AltAbilityReady[Calculated Insanity]} && ${Spell[Calculated Insanity].Stacks}) /call core_cast "Calculated Insanity" alt 0
+	
+	/call use_glyph
+	/call synergy_click_Circle
+	/if (${doclickItemBurn}) /call click_item_burn
 /return
 
 
@@ -757,16 +681,30 @@ sub Bind_setENC(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_classVerbage})\ax
 	/if (!${Select[${Me.Class.ShortName},ENC]}) {
 		/call echo_bitch EQBC
-		/goto :exit
+		/return
 	}
-	
-	| enable/disable summer line of spells
+	/declare _count	int local 0
+
+	| 
 	/if (${Bool[${_classType.Find[TEST]}]}) {
 		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
 
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		} 
+		/declare _listout 	string 	local 
+		/declare _sep 			bool 		local FALSE
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return

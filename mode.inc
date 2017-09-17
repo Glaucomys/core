@@ -17,17 +17,17 @@
  ***|
 #bind mode /mode
 sub Bind_mode(string _modeType, int _modeCount)
-	DEBUGMODE ${cbug}Bind_mode(Mode:${_modeType}, Num:${_modeCount})\ax
 	
-	| agro range
-	/if (${Bool[${_modeType.Equal[agro]}]} && ${Bool[${_modeCount}]}) {
-		/if (${Range.Between[1,99999:${_modeCount}]}) {
-			/call Event_SetVar NA setModeAgro Common ${_modeCount} 
-			/call echos number "Mode Agro Range" ${_modeCount}
+	| set mode agro range
+	/if (${Bool[${_modeType.Find[agro]}]}) {
+		/declare _num int local ${_modeCount}
+		/if (${Range.Between[1,999999:${Int[${_num}]}]}) {
+			/call writeINI setModeAgro Common ${_num}  
+			/call echos number "Mode Agro Range" ${_num}
 		} else {
-			NOUT /mode agro [${cinfo}##\ax] allowable range is ${cinfo}1 - 99999\ax
-		}
-		
+			NOUT /mode agro [${cinfo}${setModeAgro}\ax] allowable range is ${cinfo}1 - 99999\ax
+		}	
+
 	| all switches except stop
 	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
 		/varset setModeType ${_modeType.Left[1].Upper}${_modeType.Right[-1].Lower}
@@ -53,29 +53,11 @@ sub Bind_mode(string _modeType, int _modeCount)
 		/goto :namefail
 	}
 	
-	/varset switchOverrideLos ${Ini[${INIFile},"Override","switchOverrideLos"]}
-	/varset switchOverrideEngageat ${Ini[${INIFile},"Override","switchOverrideEngageat"]}
-	/varset switchAutoCursor ${Ini[${INIFile},"Common","switchAutoCursor"]}
+	/varset switchOverrideLos ${Ini[${INIClass},"Override","switchOverrideLos"]}
+	/varset switchOverrideEngageat ${Ini[${INIClass},"Override","switchOverrideEngageat"]}
+	/varset switchAutoCursor ${Ini[${INIClass},"Common","switchAutoCursor"]}
 
 /return
-
-
-
-|***
- *	DES: set max for quantities on modes
- *	USE: /setmodecount [1,99999]
- *	INI: 
- *  NOTE:
-#bind setModeCount /setmodecount
-sub Bind_setModeCount(int _ModeCount)
-	/if (${Range.Between[1,99999:${_ModeCount}]}) {
-		/call Event_SetVar NA setModeCount Common ${_ModeCount} 
-		/call echos number "Mode Max Count" ${setModeCount}
-	} else {
-		NOUT /setmodecount [${cinfo}##\ax] allowable range is ${cinfo}1 - 99999\ax
-	}
-/return
- ***| 	
 
 
 
@@ -98,10 +80,9 @@ sub switch_clear_mode()
 		}
 	/next _count	
 	
-	/varset switchOverrideLos ${Ini[${INIFile},"Override","switchOverrideLos"]}
-	/varset switchOverrideEngageat ${Ini[${INIFile},"Override","switchOverrideEngageat"]}
-	/varset switchAutoCursor ${Ini[${INIFile},"Common","switchAutoCursor"]}
-
+	/varset switchOverrideLos ${Ini[${INIClass},"Override","switchOverrideLos"]}
+	/varset switchOverrideEngageat ${Ini[${INIClass},"Override","switchOverrideEngageat"]}
+	/varset switchAutoCursor ${Ini[${INIClass},"Common","switchAutoCursor"]}
 /return
 
 
@@ -113,8 +94,8 @@ sub switch_clear_mode()
  *  NOTE: 
  ***|
 sub do_mode()
-	DEBUGMODE ${cbug}do_mode()\ax
-	ISDEAD
+	AMIDEAD
+
 	CLEARCURSOR TRUE
 	/doevents
 	/if (${switchModeDrag}) /call mode_drag
@@ -125,6 +106,8 @@ sub do_mode()
 	/if (${switchModeScorch} && !${timer_ScorchedEarth_delay}) /call mode_scorched_earth
 	/if (${switchModeHarvest} && !${timer_Harvest_delay}) /call mode_harvest
 	/if (${switchModeTradeskill}) /call mode_tradeskill
+	/if (${switchModeLush} && !${Me.Drunk}) /call mode_get_waisted
+	
 	:exit
 /return
 
@@ -140,7 +123,8 @@ sub mode_get_mob()
 	DEBUGMODE ${cbug}mode_get_mob(${Target2Kill})\ax
 	:movetomob
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	CLEARCURSOR TRUE
 	/doevents
 	
@@ -148,7 +132,7 @@ sub mode_get_mob()
 		DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
 		/call set_stop TRUE
 		/call clear_combat
-		/goto :exit
+		/return
 	}
 
 	/call check_watch_spawn
@@ -182,7 +166,6 @@ sub mode_get_mob()
 
 	/if (${Spawn[${Target2Kill}].ID} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) /goto :movetomob	
 
-	:exit
 /return
 
 
@@ -211,7 +194,6 @@ sub mode_skill_train()
 		/doability "Bind Wound"
 	}
 	/goto :looptrainingskills
-	:exit
 	UPDATEHUD
 /return
 
@@ -272,11 +254,13 @@ sub mode_drag()
 	/declare _corpseID 	int local
 	UPDATEHUD "Drag Corpse"
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	/delay 1
 	/if (${SpawnCount[pccorpse radius 110]}) {
 		/for _count 1 to ${SpawnCount[pccorpse radius 110]}
-			ISDEAD
+			AMIDEAD
+
 			/varset _corpseID ${NearestSpawn[${_count},pccorpse radius 110].ID}
 			/if (${Spawn[${_corpseID}].Distance} > 30) {
 				/target id ${_corpseID}
@@ -300,7 +284,8 @@ sub mode_hunt()
 	DEBUGMODE ${cbug}mode_hunt()\ax
 	/declare _count 									int 	local 0
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	UPDATEHUD "Hunt"
 	CLEARCURSOR TRUE
 	
@@ -356,14 +341,16 @@ sub mode_petfarm()
 	UPDATEHUD "Pet Farm"
 	:loopfindmob
 	/doevents
-	/if (!${switchModePetfarm}) /goto :exit
+	/if (!${switchModePetfarm}) /return
 	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST,SHD,SHM,RNG,DRU]} || (${SafeZone} && !${switchOverrideSafezone})) {
 		/call echos failboat
 		/call mode_clear_all
-		/goto :exit
+		/return
 	}
 	/call check_watch_spawn
 	/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
+	
+	/if (${Select[${Me.Class.ShortName},MAG]} && ${switchdHealPet}) /call pet_heal_MAG
 
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius} targetable]}) {
 		/varset _spawnCount ${SpawnCount[npccorpse ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius}]}	
@@ -401,7 +388,7 @@ sub mode_petfarm()
 		/if (${Me.Pet.Target.ID}) /pet back off
 		/if (${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) /call core_cast "Summon Companion" alt 0
 
-		/goto :exit
+		/return
 	}
 	
 	:gettarget
@@ -411,7 +398,7 @@ sub mode_petfarm()
 	/if (!${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]}) {
 		/if (!${Pet.Target.ID}) {
 			/delay 5
-			/call echos petfarm 0 ${Target2Kill}
+			/call echos petfarm 0 ${Target2Kill} 0 0
 			/pet attack
 		}
 	}
@@ -459,13 +446,14 @@ sub mode_scorched_earth()
 	:loopfindmob
 	UPDATEHUD "Scorched Earth"
 	/doevents
-	/if (!${switchModeScorch}) /goto :exit
+	/if (!${switchModeScorch}) /:movetomob
 	/if (${SafeZone} && !${switchOverrideSafezone}) {
-		/call echos failboat
+		/call echos failboat 0 0 0 0
 		/call mode_clear_all
-		/goto :exit
+		/return
 	}
 	/call check_watch_spawn
+	/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
 	/call check_buff_routines TRUE
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}) {
@@ -500,9 +488,9 @@ sub mode_scorched_earth()
 		/if (!${timer_ScorchedEarth_delay}) /call create_timer timer_ScorchedEarth_delay ${tScorchedEarth_delay}
 		/if (${Me.Pet.Target.ID}) /pet back off
 		/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) /call core_cast "Summon Companion" alt 0
-		/goto :exit
+		/return
 	}
-	/call echos hunt 0 0 ${Target2Kill}
+	/call echos hunt 0 0 ${Target2Kill} 0
 
 	:gettarget
 	/doevents
@@ -564,7 +552,6 @@ sub mode_harvest()
 	/next _count	
 
 	UPDATEHUD
-	:exit
 /return
 
 
@@ -613,9 +600,9 @@ sub get_ground_harvest(string _tmpItem)
 #event mode_CombineError "#*#Sorry, but you don't have everything you need for this recipe in your general inventory.#*#"
 sub Event_mode_CombineError(string _line)
 	/varset switchModeTradeskill FALSE
-	/call echos mode "Tradeskill" switchModeTradeskil
-	/call echos failboat
-	/varset switchAutoCursor ${Ini[${INIFile},"Common","switchAutoCursor"]}
+	/call echos mode "Tradeskill" switchModeTradeskil 0 0
+	/call echos failboat 0 0 0 0
+	/varset switchAutoCursor ${Ini[${INIClass},"Common","switchAutoCursor"]}
 /return
 
 
@@ -626,7 +613,7 @@ sub mode_tradeskill()
 		NOUT Tradeskill window must be open.
 		NOUT Make All option must be deselected.
 		/varset switchModeTradeskill FALSE
-		/goto :exit
+		/return
 	}
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	UPDATEHUD "Tradeskill"
@@ -635,10 +622,52 @@ sub mode_tradeskill()
 	/delay 1.5s ${Cursor.ID}
 	/doevents
 	
-	:exit
 	UPDATEHUD
 /return
 
 
 
 
+
+|***
+ *	DES: Alcohol Tolerance
+ *	USE: /call mode_get_waisted 
+ *	INI: NA
+ *  NOTE: 
+ ***|
+sub mode_get_waisted()
+	DEBUGMODE ${cbug}mode_get_waisted()\ax
+	/declare _ale 				string 	local Summoned: Ale
+	/declare _aleCount		int		 	local 20	
+	/declare _pole				string	local Brell's Fishin' Pole
+	/declare _box					string	local Fisherman's Companion
+
+	| no fishermans companion. end this mess
+	/if (!${Me.ItemReady[${_box}]}) {
+		VOUT ${onotice} ${sep} No ${_box}
+		/varset switchModeLush FALSE
+		/return
+	}
+
+	UPDATEHUD "Booze"
+
+	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
+
+	
+	| check max stats too ?
+	
+	
+	| need booze! keep a stock on hand
+	/if (${FindItemCount[${_ale}]} < ${_aleCount} && ${Me.ItemReady[${_pole}]} && !${Me.Drunk}) {
+		DEBUGCLASS click ${clickPoisonDispenser}
+		/call core_cast "${_pole}" item ${Me.ID}
+		CLEARCURSOR TRUE
+	}
+	
+	| lets get lit
+	/if (${FindItemCount[${_ale}]} && ${Me.Drunk} < 180) {
+		VOUT Drinking ${sep} ${cinfo}${_ale}\ax
+		/useitem ${_ale}
+	}
+	UPDATEHUD
+/return

@@ -14,20 +14,21 @@
  *  NOTE: 
  ***|
 sub core_BST()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}(${cinfo}${version${Me.Class.ShortName}}\ax${cbug})\ax
+	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
-	ISDEAD
+	AMIDEAD
+
 	CHECKTIE
 
 	/if (${coreAuto} && !${Me.Invis}) {
 		/call cast_AA_focused_paragon
 		/call check_engaged
-		/if (!${Bool[${Macro.Return}]} && ${switchPcPet}) /call check_pet
+		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
 	}
 
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -62,15 +63,14 @@ sub core_BST()
 	}
 	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
+		/call use_mod_rod
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	}
-	/call use_mod_rod
-	/if (${coreAuto} && ${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-	/if (${coreAuto} && ${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
+		/if (!${Macro.Return}) /goto :killtarget
 	}
-	:exit
 /return
 
 
@@ -83,14 +83,12 @@ sub core_BST()
  ***|
 sub disc_BST()
 	DEBUGCLASS ${cbug}disc_BST()\ax
-	ISDEAD
+	/if (${Me.PctEndurance} < 3) /return
+	CHECKEXIT
 	/doevents
 
-	/if (${Me.PctEndurance} < 3) /goto :exit
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${Macro.Return}) /return
 			
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
@@ -103,7 +101,6 @@ sub disc_BST()
 	/if (${Me.AltAbilityReady[Roar of thunder]}) /call core_cast "Roar of Thunder" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[${DiscEnduring}]} && ${Target.Distance} < ${Spell[${DiscEnduring}].MyRange} && !${Bool[${Targe.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscRending}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill}
-	:exit
 /return
 
 
@@ -116,13 +113,12 @@ sub disc_BST()
  ***|
 sub cast_AA_focused_paragon()
 	DEBUGCLASS ${cbug}cast_AA_focused_paragon()\ax
-	ISDEAD
+	/if (!${coreAuto}) /return
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]} || !${coreAuto}) /goto :exit
-	/declare _cout 							int 	local
+	/declare _cout 							int 	local 0
 	/declare _tmpID 						int 	local 0
-	/declare _tmpTarget2Kill		int		local 
+	/declare _tmpTarget2Kill		int		local 0
 	
 	/if (${Target2Kill}) /varset _tmpTarget2Kill ${Target2Kill}
 	
@@ -131,7 +127,10 @@ sub cast_AA_focused_paragon()
 	| self only focus
 	/if (${Me.AltAbilityReady[Focused Paragon of Spirits]} && ${Me.PctMana} < ${selfParagon} && !${Me.Song[Paragon].ID}) {
 		/call core_cast "Focused Paragon of Spirits" alt ${Me.ID}
-		/goto :exit
+		/if (${_tmpTarget2Kill}) {
+			/target ID ${_tmpTarget2Kill}
+			/delay 1s ${Target.ID} == ${_tmpTarget2Kill}
+		}
 	}
 
 	| check the group
@@ -144,11 +143,6 @@ sub cast_AA_focused_paragon()
 		/if (${_tmpID}) /call core_cast "Focused Paragon of Spirits" alt ${_tmpID}
 	}	
 
-	:exit
-	/if (${_tmpTarget2Kill}) {
-		/target ID ${_tmpTarget2Kill}
-		/delay 1s ${Target.ID} == ${_tmpTarget2Kill}
-	}
 /return
 
 
@@ -169,7 +163,6 @@ sub patch_heal_BST()
 	}
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	:exit
 /return
 
 
@@ -182,15 +175,11 @@ sub patch_heal_BST()
  ***|
 sub pet_heal_BST()
 	DEBUGCLASS ${cbug}pet_heal_BST()\aw
-	ISDEAD
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+
 	/if (${switchPcPet} && ${Pet.PctHPs} < 20 && ${Me.AltAbilityReady[Mend Companion]}) {
 		/call core_cast "Mend Companion" alt ${Me.Pet.ID}
-		| VOUT Healing \a-w${Pet.CleanName}\ax with \a-rMend Companion\ax.
-		| /call MQ2Cast "Mend Companion" alt
-	 	| /delay 5s !${Me.SpellInCooldown}
 	}
 	/if (${switchPcPet} && ${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) {
 		VOUT Healing \a-w${Pet.CleanName}\ax with \a-r${PetHealSpell}\ax.
@@ -202,7 +191,6 @@ sub pet_heal_BST()
 		/call MQ2Cast "${PetRenewalSpell}" ${PetRenewalType} 30s
 	 	/delay 5s !${Me.SpellInCooldown}
 	}
-	:exit
 /return
 
 
@@ -221,10 +209,9 @@ sub Bind_cast_AA_paragon()
 
 sub cast_AA_paragon()
 	DEBUGCLASS ${cbug}cast_AA_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
-	ISDEAD
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Paragon of Spirit]} && !${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		/call core_cast "Mass Group Buff" alt 0
 		/call core_cast "Paragon of Spirit" alt 0
@@ -232,7 +219,6 @@ sub cast_AA_paragon()
 	} else /if (${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		NOUT ${owarning} trying to cast ${csp}Paragon of Spirit\ax while its running.	
 	}		
-	:exit
 /return
 
 
@@ -245,19 +231,52 @@ sub cast_AA_paragon()
  ***|
 sub click_DPS_BST()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
-	ISDEAD
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call click_horn_of_unity 	
-	:exit
+/return
+
+
+
+ |***
+ *	DES: Beast burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_BST()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	CHECKEXIT
+	/doevents
+
+	| /if (${Me.AltAbilityReady[Bloodlust]}) /call core_cast "Bloodlust" alt 0
+	/if (${Me.AltAbilityReady[Bestial Alignment]}) /call core_cast "Bestial Alignment" alt 0
+	/if (${Me.AltAbilityReady[Frenzied Swipes]}) /call core_cast "Frenzied Swipes" alt 0
+	/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Bestial BloodRage]}) /call core_cast "Bestial BloodRage" alt 0
+	/call use_glyph
+	/if (${usePet}) /call core_cast "Attack of the Warders" alt ${Target2Kill}
+	/if (${Me.CombatAbilityReady[${DiscRuaabri}]} && !${Me.Song[Frenzy of Spirit].ID} && !${Me.Buff[Dichotomic Fury].ID}) {
+		/call core_cast "${DiscRuaabri}" disc 0
+	} else {
+		/if (${Me.Song[${DiscRuaabri}].ID}) /return
+		/if (${Me.AltAbilityReady[Frenzy of Spirit]}) /call core_cast "Frenzy of Spirit" alt 0
+		/if (${Me.AltAbilityReady[BloodLust]}) /call core_cast "BloodLust" alt 0
+		/call cast_AA_spire
+		/if (!${Me.Song[Bestial Alignment].ID} && ${Me.CombatAbilityReady[${DiscSavage}]}) /call core_cast "${DiscSavage}" disc 0
+		/if (!${Me.Song[${DiscSavage}].ID} && ${Me.AltAbilityReady[Ferociousness]}) /call core_cast "Ferociousness" alt 0
+		/if (${Me.AltAbilityReady[Group Bestial Alignment]} && !${Me.Buff[Ferociousness].ID}) /call core_cast "Group Bestial Alignment" alt 0
+	}
+
+	/call use_glyph
+	/call synergy_click_Circle
+	/if (${doclickItemBurn}) /call click_item_burn	
 /return
 
 
 
 |***
  *	DES: Class controls
- *	USE: /brd []
+ *	USE: /bst []
  *	INI: 
  *  NOTE:
  ***|
@@ -266,16 +285,30 @@ sub Bind_setBST(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setBST(type:${_classType}, verbage:${_classVerbage})\ax
 	/if (!${Select[${Me.Class.ShortName},BST]}) {
 		/call echo_bitch EQBC
-		/goto :exit
+		/return
 	}
+	/declare _count	int local 0
+
 	
-	| enable/disable summer line of spells
-	/if (${Bool[${_classType.Find[TEST]}]}) {
+	/if (${Bool[${_classType.Equal[TEST]}]}) {
 		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
 
 
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		} 
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local FALSE
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return
