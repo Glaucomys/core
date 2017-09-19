@@ -91,7 +91,7 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "target1" "3,5,98,255,255,255,Target"
 	/noparse /ini HUDPATH "target2" "3,103,97,100,149,237,${If[${Target.ID},[${Target.Class.ShortName} ${Target.Level}] ${Target.Name} ${If[${Bool[${Target.Guild}]},<${Target.Guild}>, ]}, ]}"
 	/noparse /ini HUDPATH "target3" "3,39,97,100,149,237,[     ][     ][     ]"
-
+	
 	| engage ##
 	| MA
 	/noparse /ini HUDPATH "engage1" "19,44,98,255,255,255,${If[(!${switchOverrideEngageat} && ${coreAuto} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && (${Bool[${MA1}]} || ${Bool[${MA2}]}),${engageAt},]}"
@@ -177,7 +177,7 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "rez3" "19,162,61,0,255,0,${If[${switchRezTake},[         ],]}"
 	/noparse /ini HUDPATH "rez4" "19,197,61,255,0,0,${If[${switchRezGive},,[      ]]}"
 	/noparse /ini HUDPATH "rez5" "19,197,61,0,255,0,${If[${switchRezGive},[      ],]}"
-	/noparse /ini HUDPATH "rez6" "19,167,62,255,255,255,${If[${coreBuild},${Int[${Ini[${INICore},deathcount,${Me.DisplayName}]}]},]}"
+	/noparse /ini HUDPATH "rez6" "19,167,62,255,255,255,${If[${coreBuild},${hudDeathCount},]}"
 	/noparse /ini HUDPATH "rez7" "19,200,62,0,255,0,${If[${switchRezCombat},C,]}"
 	/noparse /ini HUDPATH "rez8" "19,200,62,25,25,25,${If[${switchRezCombat},,C]}"
 	/noparse /ini HUDPATH "rez9" "19,208,62,0,255,0,${If[${switchRezEveryone},E,]}"

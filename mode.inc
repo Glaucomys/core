@@ -23,7 +23,7 @@ sub Bind_mode(string _modeType, int _modeCount)
 		/declare _num int local ${_modeCount}
 		/if (${Range.Between[1,999999:${Int[${_num}]}]}) {
 			/call writeINI setModeAgro Common ${_num}  
-			/call echos number "Mode Agro Range" ${_num}
+			/call echos number "Mode Agro Range" ${_num} 0 0
 		} else {
 			NOUT /mode agro [${cinfo}${setModeAgro}\ax] allowable range is ${cinfo}1 - 99999\ax
 		}	
@@ -33,7 +33,7 @@ sub Bind_mode(string _modeType, int _modeCount)
 		/varset setModeType ${_modeType.Left[1].Upper}${_modeType.Right[-1].Lower}
 		/if (${Defined[switchMode${setModeType}]}) {
 			/varset switchMode${setModeType} ${If[${switchMode${setModeType}},FALSE,TRUE]}
-			/call echos mode "${setModeType}" switchMode${setModeType}
+			/call echos mode "${setModeType}" switchMode${setModeType} 0 0
 			/if ((${_modeType.Equal[hunt]} || ${_modeType.Equal[scorch]}) && ${Bool[${setModeType}]}) {
 				/call set_stop TRUE
 				/call clear_combat
@@ -48,7 +48,7 @@ sub Bind_mode(string _modeType, int _modeCount)
 		/call clear_combat
 	} else /if (!${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
 		:namefail
-		/call echos listtype mode mode
+		/call echos listtype mode mode 0 0
 	} else {
 		/goto :namefail
 	}
@@ -76,7 +76,7 @@ sub switch_clear_mode()
 		/if (${switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}}) {
 			
 			/varset switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower} FALSE  
-			/call echos mode "${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}" switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}
+			/call echos mode "${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}" switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower} 0 0
 		}
 	/next _count	
 	
@@ -292,7 +292,7 @@ sub mode_hunt()
 	/for _count 1 to ${HuntMobList.Count[|]}
 		/if (${Spawn[npc ${HuntMobList.Arg[${_count},|]} radius ${setModeAgro} targetable].ID}) {
 			/varset Target2Kill ${NearestSpawn[npc ${HuntMobList.Arg[${_count},|]}].ID}
-			/call echos hunt 0 0 ${Target2Kill}
+			/call echos hunt 0 0 ${Target2Kill} 0
 			/call Event_SetVar NA watchSpawn Common "${Spawn[${Target2Kill}].DisplayName}"
 			/goto :haveatarget
 		}
@@ -343,7 +343,7 @@ sub mode_petfarm()
 	/doevents
 	/if (!${switchModePetfarm}) /return
 	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST,SHD,SHM,RNG,DRU]} || (${SafeZone} && !${switchOverrideSafezone})) {
-		/call echos failboat
+		/call echos failboat 0 0 0 0
 		/call mode_clear_all
 		/return
 	}

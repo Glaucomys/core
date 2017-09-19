@@ -9,6 +9,73 @@
 
 
 
+20170919
+WHITEWASH !!!!
+- alias /here (should be fixed)
+  -- prep toons in your BC for immediate combat
+  -- to execute: /here or /bca //setcombathere (if you are not using Core to drive with)
+  -- affects ALL toons in your BC EXCEPT the command giver
+  -- will only adjust a setting if it does not match what is pre-defined in core.ini->[Here]->
+  -- will only adjust timers that have switches turned on
+- /say works again
+- /door works as well as it used too
+- core_cast()
+  -- fails were marking alt skills as spells when being used in the self/tell buff routines. broke things like the auto beg for shards
+
+
+
+    
+
+
+
+
+20170918
+WHITEWASH
+HUDUPDATE
+- core_cast()
+  -- will now validate spells are in the book
+- class.enc.inc
+  -- removed mana checks from runes
+- clear_timer()
+  - typo in a timer deletion
+- class.brd.inc
+  -- delete alias /song
+  -- adjusted for new INI writing functions
+	-- updated to current loop structure
+	-- updated all mq2cast to core_cast
+	-- slimed down the SebHH sword casting and moved to discs
+  -- /brd [line] - bard song line
+  -- /brd line [caster|melee|mix|other|tank]
+  -- /brd line [caster] - list songs for a caster group
+  -- /brd line [melee] - songs for a melee group
+  -- /brd line [mix] - seriously, should have this down by now
+  -- /brd line [other] - songs for when you're stoned on the couch and realize you are out of doritos
+  -- /brd line [tank] - songs for a tank group
+  ****** you  will need to adjust your INI lists for the songs. example below..
+  LineCurrent=Caster
+  LineTank=|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Fjilnauk's Song of Suffering|Chorus of Sionachie
+  LineCaster=|Nilsara's Aria|Fatesong of Jocelyn|Arcane Melody|Aria of Maetanrus|Chorus of Sionachie
+  LineMelee=|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Fjilnauk's Song of Suffering|Arcane Melody|Chorus of Sionachie
+  LineMix=|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Nilsara's Aria|Chorus of Sionachie
+  LineOther=|FALSE|FALSE 
+- death counts
+  -- to keep the hud from hitting core.ini a dozen times per second. we now have this
+    -- a 10 second timer
+  -- either adjust your deathcounts in core.ini to reflect:
+    -- server.CLS.Name  eg. rathe.SHM.Hoociesboochies 45...
+    -- or the counts will get created for you from scratch at 0.
+- do_rest()
+  -- wrong healoverride varible check for hybrids. they will once again rest
+ 
+ 
+20170917
+- variable error in sumFamiliarLeave
+- rewrite of /bcsay
+  -- say repeate radius reduced to 40
+- class.pal.inc
+  -- no AEs on raids. i'm talking to the stun/agro generation AAs Hallowed and Beacon  
+
+
 20170916
 12 Sep 2017 PATCH
 - ditching individual versioning for 1 build date as the increment number
@@ -53,8 +120,6 @@
   -- /clr [xttime ##] - [1,5] sets the duration in min for the refresh of the xtarget window  \
  - corrected all classes for the Boolean wraps and use of :exit 
 - corrected logic error in is_target_valid()
-
-  
 
 
 20170911
@@ -103,7 +168,6 @@ Enchanter Version 1.5.1
 - auras...
   -- everyone gets access to 2 auras now  
 - switchOverrideLos corected for: common, core, PAL, SHD, DRU, WAR.. fuck it.. all the classes...
-
 
 
 20170906

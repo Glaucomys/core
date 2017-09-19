@@ -17,12 +17,11 @@ sub core_BRD()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
 		
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -40,7 +39,7 @@ sub core_BRD()
 		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
 		/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
 		/call list_delete mobList ${Target2Kill}
-		/goto :exit
+		/return
 		:loop
 		/doevents
 		AMIDEAD
@@ -50,19 +49,19 @@ sub core_BRD()
 		/call check_for_adds
 		/if (${addList.Count[|]} && ${switchdeBuffMezz}) /call mez_adds_BRD
 		/call check_for_adds
-		/if (${addList.Count[|]}) /goto :exit
+		/if (${addList.Count[|]}) /return
 		/if (${mobList.Find[|]}) /call list_update
 		/call check_for_adds
-		/if (${addList.Count[|]}) /goto :exit
+		/if (${addList.Count[|]}) /return
 		/call is_target_valid ${Target2Kill}
 		/if (${isValidTarget}) {
 			/if (!${addList.Count[|]}) /call set_combat MELEE
 			/if (!${addList.Count[|]}) /call stick_to_target
 			/call check_for_adds
-			/if (${addList.Count[|]}) /goto :exit
+			/if (${addList.Count[|]}) /return
 			/if (!${addList.Count[|]} && ${DoNuke}) /call bard_nuke
 			/call check_for_adds
-			/if (${addList.Count[|]}) /goto :exit
+			/if (${addList.Count[|]}) /return
 			/if (!${addList.Count[|]}) /call pulse
 		}
 
@@ -72,10 +71,8 @@ sub core_BRD()
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
-		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
+		/if (!${Macro.Return}) /goto :killtarget
 	}
-
-	:exit
 /return
 
 
@@ -89,23 +86,19 @@ sub core_BRD()
 sub disc_BRD()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
-
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${Macro.Return}) /return
 	/call stick_to_target
 	/if ((${Me.AltAbilityReady[Selo's Kick]} || ${Me.AltAbilityReady[Banestrike]} || ${Me.AltAbilityReady[Cacophony]} || ${Me.AltAbilityReady[Bladed Song]} || ${Me.AltAbilityReady[Boastful Bellow]}) && ${Me.Casting.ID}) /call pulse_stop
-	/call item_harmony_blade
-	/if (${Me.AltAbilityReady[Banestrike]} && ${switchBanestrike}) /call MQ2Cast "Banestrike" -targetID|${Target2Kill}
-	/if (${Me.AltAbilityReady[Selo's Kick]}) /call MQ2Cast "Selo's Kick" alt -targetID|${Target2Kill}
-	/if (${usePetSwarm}) /call cast_servant_swarm ${Target2Kill}
-	/if (${Me.AltAbilityReady[Cacophony]}) /call MQ2Cast "Cacophony" alt -targetID|${Target2Kill}
-	/if (${Me.AltAbilityReady[Bladed Song]}) /call MQ2Cast "Bladed Song" alt -targetID|${Target2Kill}
-	/if (${Me.AltAbilityReady[Boastful Bellow]}) /call MQ2Cast "Boastful Bellow" alt -targetID|${Target2Kill}
-
-	:exit
+	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0
+		/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
+	/if (${Me.AltAbilityReady[Selo's Kick]}) /call core_cast "Selo's Kick" alt ${Target2Kill}
+	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill}
+	/if (${Me.AltAbilityReady[Cacophony]}) /call core_cast "Cacophony" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[Boastful Bellow]}) /call core_cast "Boastful Bellow" alt ${Target2Kill}
 /return
 
 
@@ -119,13 +112,10 @@ sub disc_BRD()
 sub click_DPS_BRD()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
-
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call stick_to_target
 	/call click_horn_of_unity 	
-	:exit
 /return
 
 
@@ -139,65 +129,58 @@ sub click_DPS_BRD()
 sub cast_servant_swarm(int _tmpID)
 	DEBUGCLASS ${cbug}cast_servant_swarm(target: ${_tmpID})\ax
 	AMIDEAD
-
+	CHECKEXIT
 	/doevents
-	/call check_exit TRUE
-	/if (${Bool[${Macro.Return}]} || !${usePetSwarm}) /goto :exit
 	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${Macro.Return}) /return
 	
 	/if (${Spawn[${_tmpID}].LineOfSight} && ${Target.PctHPs} > 10 && ${Spawn[${_tmpID}].Distance} < ${MobAgro}) {
 		/pet swarm
 		/if (${Me.AltAbilityReady[${ServantNukeAA1}]}) {
 			/call core_cast "${ServantNukeAA1}" alt ${_tmpID}
-			/goto :exit
+			/return
 		} else /if (${Me.AltAbilityReady[${ServantNukeAA2}]}) {
 			/call core_cast "${ServantNukeAA2}" alt ${_tmpID}
-			/goto :exit
+			/return
 		} else /if (${Me.SpellReady[${songServantNuke}]}) {
 			/call core_sing ${Me.Gem[${songServantNuke}]}
-			/goto :exit
+			/return
 		}
 	}
-	
-	:exit
 /return
 
 
 
 |***
  *	DES: memorize songs
- *	USE: /call mem_song_set [TANK|CASTER|MELEE|MIX]
- *	INI: [Song] -> song[TANK|CASTER|MELEE|MIX]List
- *  NOTE: send in ALL THE PETS
+ *	USE: /call mem_song_line []
+ *	INI: [Song] -> line[TANK|CASTER|MELEE|MIX]
+ *  NOTE:
  ***|
-sub mem_song_set(string _group)
- 	DEBUGCLASS ${cbug}mem_song_set(group: ${_group})\ax
+sub mem_song_line(string _line)
+ 	DEBUGCLASS ${cbug}mem_song_line(group: ${_line})\ax
 	AMIDEAD
-
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
-
-	/call Event_SetVar NA songList Song ${_group.Upper}
-	
 	/declare _count 				int local
 	/declare _index 				int local	
-	/declare _list[1] 			string ${song${songList.Upper}List}
+	/declare _list[1] 			string ${line${lineCurrent}}
 	/declare _currentSong 	string NULL
 	
 	/for _count 1 to ${_list.Size}
 		/for _index 1 to ${_list[${_count}].Count[|]}
 			/varset _currentSong ${Spell[${_list[${_count}].Arg[${_index},|]}].RankName}
-			/if (${Me.Gem[${_index}].Name.Equal[${_currentSong}]} ) /goto :skipmemorize
+			/if (${Me.Gem[${_index}].Name.Equal[${_currentSong}]}) /continue
 			/call scribe "${_currentSong}" "${_index}" FALSE
-			:skipmemorize
 		/next _index	
 	/next _count	
-	VOUT Song Line ${cinfo}${songList.Upper}\ax scribe completed.
-	
-	:exit	
+	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax scribe completed.
 /return
+
+
+
+
+
 
 
 |***
@@ -219,21 +202,18 @@ sub mem_song_set(string _group)
 	/for _count 1 to ${_list.Size}
 		/for _index 1 to ${_list[${_count}].Count[|]}
 			AMIDEAD
-
+			CHECKEXIT
 			/doevents
-			/call check_exit
-			/if (${Bool[${Macro.Return}]}) /goto :exit
 			/call is_target_dead
-			/if (${Bool[${Macro.Return}]}) /goto :exit
+			/if (${Macro.Return}) /return
 			/call stick_to_target
 			| /if (${Me.Casting.ID}) /stopcast
 			/call pulse_valid ${_index}
-			/if (${Bool[${Macro.Return}]}) /call core_sing ${_index}
+			/if (${Macro.Return}) /call core_sing ${_index}
 		/next _index	
 	/next _count	
 
-	:exit
-	UPDATEHUD
+	UPDATEHUD FALSE
 /return
 
 
@@ -252,7 +232,6 @@ sub pulse_valid(_gem)
 	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (!${Me.SpellReady[${Me.Gem[${_gem}].Name}]}) /varset _pulseSong FALSE
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
-	:exit
 	DEBUGCLASS VALID CAST: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
 /return ${Bool[${_pulseSong}]}
 
@@ -269,13 +248,10 @@ sub pulse_stop()
 	
 	/stopcast		
 	/delay 2
-	:stoppulse
-	/if (${Me.Casting.ID}) {
+	/while (${Me.Casting.ID}) {
 		/delay 1
 		/stopcast
-		/goto :stoppulse
 	}
-	:exit
 /return
 
 
@@ -288,13 +264,11 @@ sub pulse_stop()
 sub core_sing(_spellgem)
 	DEBUGCLASS ${cbug}core_sing(gem: ${_spellgem})\ax
 	AMIDEAD
-
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem			int local ${Macro.Return}
-	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /goto :exit	
+	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /return	
 	/call stick_to_target
 	/if (${Me.Casting.ID}) {
 		| /call Interrupt
@@ -308,8 +282,6 @@ sub core_sing(_spellgem)
 	
 	/delay 2
 	/call pulse_stop
-
-	:exit
 /return
 
 
@@ -322,25 +294,19 @@ sub core_sing(_spellgem)
  ***|
 sub bard_nuke()
 	DEBUGCLASS ${cbug}bard_nuke()\ax
-	AMIDEAD
-
-	/doevents 
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoNuke}
 		AMIDEAD
-
+		CHECKEXIT
 		/doevents
-		/call check_exit TRUE
-		/if (${Bool[${Macro.Return}]}) /goto :exit	
 		/call is_target_dead
-		/if (${Bool[${Macro.Return}]}) /goto :exit	
+		/if (${Macro.Return}) /return
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${Nuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${Nuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${Nuke${_count}}].Mana}) {
 			/call stick_to_target
 			/call core_sing ${Me.Gem[${Nuke${_count}}]}
 		}
 	/next _count
-	:exit
 /return
 
 
@@ -384,7 +350,6 @@ sub mez_adds_BRD()
 		VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
 		/goto :loopmezzadds
 	}
-	:exit
 /return
 
 
@@ -397,29 +362,27 @@ sub mez_adds_BRD()
  ***|
 sub cast_mez_BRD(int _tmpID)
 	DEBUGCLASS ${cbug}cast_mez_BRD(${_tmpID})\ax
-	/doevents
-	AMIDEAD
 
 	:loopmez
 	AMIDEAD
 
-	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /goto :exit
+	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
 
 	| check for mez immune list mobs
 	/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].CleanName}]}) {
 	  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
 	  NOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.CleanName}\ax]
 	  /call list_delete addList ${_tmpID}	
-		/goto :exit
+		/return
 	}
 	
 	/if (${Target.Mezzed.Duration} && ${Spell[${Target.Mezzed}].Name.Find[${spellMez}]}) {
 		/call create_timer timer_mez_${_tmpID} ${Target.Mezzed.Duration.TotalSeconds}s
-		/goto :exit
+		/return
 	} else /if (${Target.PctHPs} < 90) {
 		/call create_timer timer_mez_${_tmpID} 10m
 		VOUT [${ctar}${Target.CleanName}\ax] is being attacked!
-		/goto :exit
+		/return
 	}
 	/if (${Me.CurrentMana}>${Spell[${spellMez}].Mana}) {
 		/delay 6s ${Me.SpellReady[${spellMez}]}
@@ -428,22 +391,6 @@ sub cast_mez_BRD(int _tmpID)
 		/call core_sing ${Me.Gem[${spellMez}]}
 		/if (${Target.Mezzed.Duration.TotalSeconds}) /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
 		/goto :loopmez
-	}
-	:exit
-/return
-
-
-
-|***
- *	DES: uses harmony blade from HH Old Seb.
- *	USE: /call item_harmony_blade
- *	INI: 
- *  NOTE: 
- ***|
-sub item_harmony_blade()
-	DEBUGCLASS ${cbug}item_harmony_blade()\ax
-	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) {
-		/call core_cast "Darkened Breath of Harmony" item 0
 	}
 /return
 
@@ -460,19 +407,14 @@ sub item_harmony_blade()
 sub cast_AA_Rallying()
  	DEBUGCAST ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Call]})\ax
 	AMIDEAD
-
 	/doevents
-
- 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Call]}) /goto :exit
-	
+ 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Call]}) /return
  	/declare _endurancePoint		int local 30
  	/declare _manaPoint		int local 30
 
  	/if (((${Me.PctEndurance} < ${_endurancePoint}) || (${Me.PctMana} < ${_manaPoint})) && ${Select[${Me.CombatState},RESTING]}) {
 		/call core_cast "Rallying Call" alt ${Me.ID}
 	}
-
-	:exit
 /return
 
 
@@ -486,10 +428,8 @@ sub cast_AA_Rallying()
 sub synergy_BRD()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
-
+	CHECKEXIT
 	/doevents
-	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit	
 	
  	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0
  	/if (${Me.CombatAbilityReady[Thousand Blades]}) /call core_cast "Thousand Blades" disc 0	
@@ -501,7 +441,6 @@ sub synergy_BRD()
 	/call use_glyph
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn	
- 	:exit	
 /return
 
 
@@ -514,16 +453,29 @@ sub synergy_BRD()
  ***|
 #bind setBRD /brd
 sub Bind_setBRD(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setBRD(type:${_classType}, verbage:${_classVerbage})\ax
+	SDEBUG ${cbug}Bind_setBRD(type:${_classType}, verbage:${_classVerbage})\ax
 	/if (!${Select[${Me.Class.ShortName},BRD]}) {
 		/call echo_bitch EQBC
-		/goto :exit
+		/return
 	}
 	/declare _count	int local 0
 	
-	| enable/disable summer line of spells
-	/if (${Bool[${_classType.Find[TEST]}]}) {
-		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+	| enable/disable sets bard song line
+	/if (${Bool[${_classType.Equal[line]}]}) {
+
+		/if (${Bool[${lineType.Find[${_classVerbage.Lower}]}]}) {
+			SDEBUG ${lineType.Find[${_classVerbage.Lower}]}
+			/call writeINI lineCurrent Song ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
+			/delay 2
+			/call mem_song_line ${lineCurrent}
+		}
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local
+		/for _count 1 to ${lineType.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${lineCurrent.Equal[${lineType.Arg[${_count},|]}]},${cgood},${cinfo}]}${lineType.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /brd line [${_listout}]	
 
 
 	| spire control
@@ -544,5 +496,4 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 	} else {
 		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return

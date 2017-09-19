@@ -305,8 +305,25 @@ sub Bind_setWIZ(string _classType, string _classVerbage)
 
 	
 	| 
-	/if (${Bool[${_classType.Equal[TEST]}]}) {
+	/if (${Bool[${_classType.Equal[line]}]}) {
 
+
+		| mem a line of spells.-
+		/if (${Bool[${lineType.Find[${_classVerbage.Lower}]}]}) {
+			SDEBUG ${lineType.Find[${_classVerbage.Lower}]}
+			/call writeINI lineCurrent Spell ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
+			/delay 2
+			/call mem_spell_line ${lineCurrent}
+		}
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local
+		/for _count 1 to ${lineType.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${lineCurrent.Equal[${lineType.Arg[${_count},|]}]},${cgood},${cinfo}]}${lineType.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /wiz line [${_listout}]	
+		
+		
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}

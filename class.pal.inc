@@ -124,9 +124,9 @@ sub get_agro_PAL()
 	| AE Stuns
 	/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 60 playerstate 4 targetable]}
 	/if  (${mobAECount} > 1) {
-		/if (${Me.AltAbilityReady[${AAAELodestar}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill} cast_break
+		/if (!${Bool[${Raid.Members}]} && ${Me.AltAbilityReady[${AAAELodestar}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill} cast_break
 	} else /if (${mobAECount} > 3) {
-		/if (${Me.AltAbilityReady[${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill} cast_break
+		/if (!${Bool[${Raid.Members}]} && ${Me.AltAbilityReady[${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill} cast_break
 	}
 
 	| chain stun

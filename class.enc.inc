@@ -140,7 +140,7 @@ sub debuff_mobs
 		}
 	/next _count
 
-	UPDATEHUD
+	UPDATEHUD FALSE
 /return
 
 
@@ -162,21 +162,20 @@ sub check_rune_ENC()
 	/if (${Me.AltAbilityReady[${runeEldritch}]} && !${Bool[${Me.Buff[Eldritch Rune]}]}) /call core_cast "${runeEldritch}" alt 0
 	/if (${Me.AltAbilityReady[${runeSpray}]}) /call core_cast "${runeSpray}" alt 0
 	/if (${Me.AltAbilityReady[${runeReactive}]}) /call core_cast "${runeReactive}" alt 0
-	/if (${Me.SpellReady[${runeAuspice}]}) {
-		/if (${Bool[${runeAuspice}]} && !${Bool[${Me.Buff[${runeAuspice}]}]} && ${Me.CurrentMana} >= ${Spell[${runeAuspice}].Mana}) /call core_cast "${runeAuspice}" 0 ${Me.ID}
+	/if (${Bool[${runeAuspice}]} && ${Me.SpellReady[${runeAuspice}]}) {
+		/if (${Bool[${runeAuspice}]} && !${Bool[${Me.Buff[${runeAuspice}]}]}) /call core_cast "${runeAuspice}" 0 ${Me.ID}
 		/if (${Me.SpellReady[${runeAuspice}]}) /call check_rune_auspice
 	}
-	/if (${Me.SpellReady[${runeWard}]} && !${Me.Buff[${runeWard}].ID}) /call core_cast "${runeWard}" 0
+	/if (${Bool[${runeWard}]} && ${Me.SpellReady[${runeWard}]} && !${Me.Buff[${runeWard}].ID}) /call core_cast "${runeWard}" 0 0
 	/if (${Me.AltAbilityReady[${runeMind}]} && ${Me.PctMana} > 60) /call core_cast "${runeMind}" alt 0
-	/if (!${Me.Buff[${runeEntAuspice}].ID} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID}
+	/if (${Bool[${runeEntAuspice}]} && !${Me.Buff[${runeEntAuspice}].ID} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID}
 
-	/if (${Bool[${runePoly}]} && !${Bool[${Me.Buff[${runePoly}]}]} && ${Me.CurrentMana} >= ${Spell[${runePoly}].Mana}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID}
-	/if (${Bool[${runeBrimstone}]} && !${Bool[${Me.Buff[${runeBrimstone}]}]} && ${Me.CurrentMana} >= ${Spell[${runeBrimstone}].Mana}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID}
+	/if (${Bool[${runePoly}]} && !${Bool[${Me.Buff[${runePoly}]}]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID}
+	/if (${Bool[${runeBrimstone}]} && !${Bool[${Me.Buff[${runeBrimstone}]}]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID}
 
-	/if (${Bool[${runeShieldofFate}]} && !${Bool[${Me.Buff[${runeShieldofFate}]}]} && ${Me.CurrentMana} >= ${Spell[${runeShieldofFate}].Mana}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
+	/if (${Bool[${runeShieldofFate}]} && !${Bool[${Me.Buff[${runeShieldofFate}]}]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
 
-	UPDATEHUD
-	/call create_timer timer_check_runes ${tCheck_Runes}
+	UPDATEHUD FALSE
 /return
 
 
@@ -211,12 +210,12 @@ sub check_rune_auspice()
 		}
 	/next _count	
 	
-	/if (!${Bool[${Spawn[${_AuspiceToon}]}]} || !${Me.SpellReady[${runeAuspice}]} || ${Me.CurrentMana} > ${Spell[${runeAuspice}].Mana} || ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]} || ${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /return
+	/if (!${Bool[${Spawn[${_AuspiceToon}]}]} || !${Me.SpellReady[${runeAuspice}]}  || ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]} || ${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /return
 	UPDATEHUD "BUFF: BC Ward"
   DEBUGCLASS BC Buffing: ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
 
 	/call core_cast "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
-	UPDATEHUD
+	UPDATEHUD FALSE
 /return
 
 
@@ -255,14 +254,14 @@ sub check_crystals()
 	/doevents
 	CHECKTIE
 
-	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]} && ${Spell[${mannaCrystal}].Mana} < ${Me.CurrentMana} && ${Me.AltAbilityReady[${mannaCrystal}]}) {
+	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]} && ${Me.AltAbilityReady[${mannaCrystal}]}) {
 		/call core_cast "${mannaCrystal}" alt 0 check_for_adds
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${mannaCrystal}]}
 	}
 	/call sort_cursor TRUE
 
-	/if (${Bool[${healCrystal}]} && !${FindItem[${healCrystal}].ID} && !${Cursor.Name.Equal[${healCrystal}]} && ${Spell[${healCrystal}].Mana} < ${Me.CurrentMana} && ${Me.AltAbilityReady[${healCrystal}]}) {
+	/if (${Bool[${healCrystal}]} && !${FindItem[${healCrystal}].ID} && !${Cursor.Name.Equal[${healCrystal}]} && ${Me.AltAbilityReady[${healCrystal}]}) {
 		/call core_cast "${healCrystal}" alt 0 check_for_adds
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${healCrystal}]}
@@ -429,7 +428,7 @@ sub cast_mez(int _tmpID)
 		VOUT [${ctar}${Target.DisplayName}\ax] is being attacked!
 		/return
 	}
-	/if (${Me.CurrentMana}>${Spell[${spellMez}].Mana}) {
+	/if (${Me.CurrentMana} > ${Spell[${spellMez}].Mana}) {
 		/delay 2.25s ${Me.SpellReady[${spellMez}]}
 		/call core_cast "${spellMez}" 0 ${_tmpID} check_for_adds
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
