@@ -446,7 +446,7 @@ sub mode_scorched_earth()
 	:loopfindmob
 	UPDATEHUD "Scorched Earth"
 	/doevents
-	/if (!${switchModeScorch}) /:movetomob
+	/if (!${switchModeScorch}) /return
 	/if (${SafeZone} && !${switchOverrideSafezone}) {
 		/call echos failboat 0 0 0 0
 		/call mode_clear_all

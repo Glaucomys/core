@@ -2851,20 +2851,12 @@ sub update_HUD_notices(string _mode)
 		/next _count	
 		
 	
-	
-	
-	
-	
-	
-	
-	
-	
 	| ** Notices for bottom of HUD	
 	/varset _sep FALSE
 
 	DEBUG HUD: Bottom Notices
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} ${songList}
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} ${lineCurrent}
 		/varset _sep TRUE
 	}	
 	/if (${AdvPath.Playing}) {
@@ -2897,9 +2889,7 @@ sub update_HUD_notices(string _mode)
 			/varset _sep TRUE
 		}		
 	}	
-		
 
-	
 	| Mode Notice
 	DEBUG HUD: Mode Notice
 	/varset _sep FALSE
@@ -2943,7 +2933,6 @@ sub update_HUD_notices(string _mode)
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Lush[${Me.Drunk}]
 		/varset _sep TRUE
 	}		
-
 		
 	/varset _sep FALSE
 
@@ -2954,9 +2943,6 @@ sub update_HUD_notices(string _mode)
 		/goto :exitWARNING
 	}
 	
-	
-
-
 
 	:exitWARNING
 
@@ -5215,28 +5201,18 @@ sub cast_challenge(int _tmpID)
 	DEBUGCLASS ${cbug}cast_challenge(ID: ${_tmpID})\ax
 	AMIDEAD
 	CHECKEXIT
-	/if (!${switchAgro} && !${Target.Body.Name.Equal[Undead]}) /return
-	/if (${Me.SpellReady[${ChallengeSpell}]} && ${Target.Distance} <= ${Spell[${ChallengeSpell}].MyRange} && !${Target.Buff[${ChallengeSpell}].ID}) /call core_cast "${ChallengeSpell}"  0 ${_tmpID} cast_break
+	
+	| /if (!${switchAgro} && !${Target.Body.Name.Equal[Undead]}) /return
+	| /if (${Me.SpellReady[${ChallengeSpell}]} && ${Target.Distance} <= ${Spell[${ChallengeSpell}].MyRange} && !${Target.Buff[${ChallengeSpell}].ID}) /call core_cast "${ChallengeSpell}"  0 ${_tmpID} cast_break
+
+	/if (${Me.SpellReady[${ChallengeSpell}]} && !${Target.Buff[${ChallengeSpell}].ID}) {
+		/if (${switchAgro}) {
+			/call core_cast "${ChallengeSpell}" 0 ${_tmpID} cast_break
+		} else /if (!${switchAgro} && ${Target.Body.Name.Equal[Undead]} && ${switchdeBuffCripple}) {
+			/call core_cast "${ChallengeSpell}" 0 ${_tmpID} cast_break
+		}
+	}
 /return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

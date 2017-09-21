@@ -646,7 +646,7 @@ sub set_declares()
 	/call DeclareIniVar RezTokenList								string 	Heal |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU	
 	
 	| watch spawn stuff
-	/declare hudwatchspawn													=string	outer FALSE
+	/declare hudwatchspawn													string	outer FALSE
 	/declare watchSpawnCount												int			outer	FALSE
 	/call DeclareIniVar watchSpawn									string	Common FALSE 
 		

@@ -1,17 +1,16 @@
 |***
- *	changelog.txt
- *	Core Change Log
- *  Timestamp: YYYYMMDD
+ * changelog.txt
+ * Core Change Log
+ * Timestamp: YYYYMMDD
  *
- *  WHITEWASH means a '/core whitewash' needs to be run to reset the aliases
- *  HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
+ * WHITEWASH means a '/core whitewash' needs to be run to reset the aliases
+ * HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
  ***|
 
 
 20170921
 DB patch Sep 20, 2017
 /core fixini
-
 - /core [find] - buhby
 - cast_AA_snare() 
   -- fixed the timers.. all sorts of messed up
