@@ -8,7 +8,46 @@
  ***|
 
 
+20170921
+DB patch Sep 20, 2017
+/core fixini
 
+- /core [find] - buhby
+- cast_AA_snare() 
+  -- fixed the timers.. all sorts of messed up
+- check_buffs_tell()
+  -- some math changes to the queue listings. need to keep an eye on this one
+- cast_challenge()
+  -- Paladin / Shadowknight
+  -- account for the changes to the unded Nuke being added to the spell
+- class.pal.inc
+  -- removed AA Helix of the Undying. hope you like Demand for Honor
+  -- AA Marr's Gift
+    -- will not use while medding
+    -- will not use in safe zones
+- class.clr.inc
+  -- completely removed Quiet Miracle (Prayer) /mourn
+  -- /clr [vp] - enable/disable use of AA Veturika's Perseverance
+  -- /clr [vp ##] - % mana to use AA Veturika's Perseverance at
+    -- Veturika's Perseverance 30k Manna/20 min
+    -- will not use in a safe zone
+    -- will not use while medding
+- class.wiz.inc
+  -- no code changes. wou will need to adjust your INI to match the new familiar name. like so
+    -- SumFamiliar=Improved Familiar
+    -- SumFamiliarBuff=Improved Familiar
+- class.enc.inc
+  -- removed Beam of Slumber from rotation
+- class.shd.inc
+  -- AA Soul Flay added to the /cc agro toggle
+- class.mag.inc
+  -- removed frienzied burnout from burn routine
+  -- since they fucked up virulent tallon. can add it back in the class.ini->[pet] buffs like so
+    -- PetBuff1=Frenzied Burnout
+    -- PetBuff1chk=Virulent Talon
+
+
+ 
 20170919
 WHITEWASH !!!!
 - alias /here (should be fixed)
@@ -21,12 +60,6 @@ WHITEWASH !!!!
 - /door works as well as it used too
 - core_cast()
   -- fails were marking alt skills as spells when being used in the self/tell buff routines. broke things like the auto beg for shards
-
-
-
-    
-
-
 
 
 20170918

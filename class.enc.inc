@@ -382,11 +382,7 @@ sub mez_adds()
 					/if (${Me.Casting.ID}) /call interrupt
 					/face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
 					/call core_cast "Beam of Slumber" alt 0				
-				} else /if (${Me.AltAbilityReady[Scintillating Beam]}) {
-					/if (${Me.Casting.ID}) /call interrupt
-					/face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
-					/call core_cast "Scintillating Beam" alt 0
-				}
+				} 
 			}
 			/call cast_mez ${_tmpID}
 		}

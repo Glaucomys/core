@@ -76,6 +76,10 @@ sub disc_PAL()
 	/call is_target_dead
 	/if (${Macro.Return}) /return
 	
+	| check challenge
+	/call cast_challenge ${Target2Kill}
+	
+	
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	/if (${Me.CombatAbilityReady[${DiscFastRune}]} && ${Bool[${DiscFastRune}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFastRune}].EnduranceCost}) /call core_cast "${DiscFastRune}" disc
 
@@ -97,7 +101,7 @@ sub disc_PAL()
 
 	| undead cripple
 	/if (${Target.Body.Name.Equal[Undead]}) {
-		/if (${switchdeBuffCripple} && !${Target.Buff[Helix of the Undying].ID} && !${Bool[${Target.Slowed}]}) /call core_cast "Helix of the Undying" alt ${Target2Kill}
+		| /if (${switchdeBuffCripple} && !${Target.Buff[Helix of the Undying].ID} && !${Bool[${Target.Slowed}]}) /call core_cast "Helix of the Undying" alt ${Target2Kill}
 		/call core_cast "Vanquish the Fallen" alt ${Target2Kill}
 	}
 	
@@ -140,9 +144,6 @@ sub get_agro_PAL()
 
 	| named fake hate
 	/if (${Me.CombatAbilityReady[${DiscUnflinching}]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 80) && ${NameList.Find[${Target.DisplayName}]}  && ${Me.CurrentEndurance} > ${Spell[${DiscUnflinching}].EnduranceCost}) /disc ${DiscUnflinching}
-
-	| challenge agro
-	/if (${Me.SpellReady[${ChallengeSpell}]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 90)) /call core_cast "${ChallengeSpell}" 0 ${Target2Kill} cast_break
 
 	| Valiant Defense. agro+heal
 	/if (${Me.SpellReady[${ValiantDefense}]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 70)) /call core_cast "${ValiantDefense}" 0 ${Target2Kill} cast_break
@@ -340,17 +341,18 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 		/next _count
 		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
 
-	| Marr's Gift	Control	
+	| AA Marr's Gift	Control	
 	} else /if (${Bool[${_classType.Equal[mg]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${_classVerbage}]}) {
 			/call writeINI useMGPct Buffs ${_classVerbage} 
-			/call echos number "Marr's Gift at" ${_classVerbage}		
+			/call echos number "Marr's Gift" ${_classVerbage}		
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${_classVerbage}]}) {
 			VOUT /pal mg [${cinfo}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else /if (!${Bool[${_classVerbage}]}) {
 			/call writeINI useMG Buffs ${If[${useMG},FALSE,TRUE]}  
 			/call echos switch "Marr's Gift ${sep} ${useMGPct}%" useMG
 		}	
+		
 
 	| use group Heals
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {

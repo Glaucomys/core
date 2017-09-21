@@ -30,8 +30,8 @@ sub core_CLR()
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
-		/if (${Me.PctMana} < 60*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez}) /call core_cast "Veturika's Perseverance" alt 0
-		/if (!${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
+		/if (${Me.PctMana} < ${useVPPct}*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez} && !${SafeZone}) /call core_cast "Veturika's Perseverance" alt 0
+		| /if (!${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
 	}	
 
 	:killtarget
@@ -58,7 +58,7 @@ sub core_CLR()
 		/call click_DPS_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
-		/if (!${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
+		| /if (!${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/if (${coreAuto}) {	
@@ -132,53 +132,6 @@ sub cast_sum_weapon()
 
 
 |***
- *	DES: Quiet Miracle 30ish k HP/Manna
- *	USE: auto
- *	INI: 
- *  NOTE: 
- ***|	
-sub cast_AA_quiet_miracle()
-	DEBUGCLASS ${cbug}cast_AA_quiet_miracle(QM%:${useQMPct}, useQM:${useQM})\aw
-	AMIDEAD
-	CHECKEXIT
-	/doevents
-	/if (!${Me.AltAbilityReady[Quiet Miracle]} || ${Bool[${timer_zone_pause}]} || ${SafeZone}) /return
-	/call create_timer timer_check_QM ${tcheck_QM}
-	
-	/declare _count 					int local
-	/varset WorstManaID				${Me.ID}
-	/varset WorstManaPct			${If[${HealOverride},${useQMPct}*.${HealOverride},${useQMPct}]}
-	
-	| QM cleric first always
-	/if (!${useQM} && ${Me.PctMana} < ${useQMPct}*.${tmpHealOverride}) {
-		/call core_cast "Quiet Miracle" alt ${Me.ID} 
-		}
-	
-	/if (!${useQM}) /return
-	
-	| Do group members need Manna
-	/for _count 0 to ${Group.Members}
-		DEBUGCLASS ${_count}: ${Group.Member[${_count}].ID}-${Group.Member[${_count}].DisplayName} ${Group.Member[${_count}].PctMana}%
-		/if (${Group.Member[${_count}].Dead} || !${CastList.Find[${Group.Member[${_count}].Class.ShortName}]} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) /continue
-
-		/if (${Spawn[pc ID ${Group.Member[${_count}].ID}].ID} && ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange} && ${Group.Member[${_count}].PctMana} < ${WorstManaPct}) {
-		DEBUGCLASS (Spawn: ${Spawn[pc ID ${Group.Member[${_count}].ID}].ID}, Distance: ${Group.Member[${_count}].Distance} <= ${Spell[Quiet Miracle].MyRange}
-			/varset WorstManaID ${Group.Member[${_count}].ID}
-			/varset WorstManaPct ${Group.Member[${_count}].PctMana}
-		} 
-  /next _count
-
-	/if (${WorstManaPct} < ${useQMPct}) {
-		/target ID ${WorstManaID}
-		/delay 5 ${Target.ID} == ${WorstManaID}
-		ECHOCHANNEL Quiet Miracle ... ${Target.DisplayName}
-		/call core_cast "Quiet Miracle" alt ${WorstManaID}
-	}
-/return	
-
-
-
-|***
  *	DES: cleric main heal sub
  *	USE: /call check_heal_group_${Me.Class.ShortName}
  *	INI: 
@@ -200,29 +153,33 @@ sub check_heal_group_CLR()
 	
 
 	| Does the control toon need healing?
-	/if (!${Bool[${Group.Member[${toonControl}]}]} && ${Bool[${toonControl}]} && ${toonControlProtect} && !${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
-		/varset WorstHurt ${Spawn[${toonControl}].ID}
-		/varset WorstHP ${Spawn[${toonControl}].PctHPs}
-		/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
-	} 
+	/if (${Bool[${toonControl}]} && ${toonControlProtect}) {
+		/if (!${Bool[${Group.Member[${toonControl}]}]} && !${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
+			/varset WorstHurt ${Spawn[${toonControl}].ID}
+			/varset WorstHP ${Spawn[${toonControl}].PctHPs}
+			/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
+		} 
+	}
 
 	| Do group members need healing? ${Group.Member[${_count}].State.Equal[HOVER]}
-	/for _count 0 to ${Group.Members}
-		AMIDEAD
-		CHECKEXIT
-	 	/doevents
-		/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && (${Group.Member[${_count}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7)) {
-			/varset WorstHurt ${Group.Member[${_count}].ID}
-			/varset WorstHP ${Group.Member[${_count}].PctHPs}
-			/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
-		} 
+	/if (${Bool[${Group.Members}]}) {
+		/for _count 0 to ${Group.Members}
+			AMIDEAD
+			CHECKEXIT
+		 	/doevents
+			/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && (${Group.Member[${_count}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7)) {
+				/varset WorstHurt ${Group.Member[${_count}].ID}
+				/varset WorstHP ${Group.Member[${_count}].PctHPs}
+				/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
+			} 
 
- 		| set count for # of toons hurt
-		/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
-			/varcalc groupHurt ${groupHurt}+1
-		}   
-    
-  /next _count
+	 		| set count for # of toons hurt
+			/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
+				/varcalc groupHurt ${groupHurt}+1
+			}   
+	    
+	  /next _count
+	}
 	
 	
 	
@@ -772,17 +729,17 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	 } else /if (${Bool[${_classType.Equal[yaulp]}]}) {
 	 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
 	 	/call echos switch "Yaulp" doYaulp 0 0
-	
-	| Quiet Miracle	Control	
-	} else /if (${Bool[${_classType.Equal[qm]}]}) {
+
+	| Veturika's Perseverance	Control	
+	} else /if (${Bool[${_classType.Equal[vp]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/call writeINI useQMPct Buffs ${_classVerbage} 
-			/call echos number "Quiet Miracle at" ${_classVerbage} 0 0
+			/call writeINI useVPPct Buffs ${_classVerbage} 
+			/call echos number "Veturika's Perseverance" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
 			NOUT /clr qm [${cinfo}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else /if (!${Bool[${_classVerbage}]}) {
-			/call writeINI useQM Buffs ${If[${useQM},FALSE,TRUE]}  
-			/call echos switch "Quiet Miracle ${sep} ${useQMPct}%" useQM 0 0
+			/call writeINI useVP Buffs ${If[${useVP},FALSE,TRUE]}  
+			/call echos switch "Veturika's Perseverance ${sep} ${useVPPct}%" useVP 0 0
 		}	
 		
 	| use group Heals

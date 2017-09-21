@@ -1038,7 +1038,6 @@ sub do_rest()
 				/call cast_disc_breather
 			}
 			/if (${Select[${Me.Class.ShortName},PAL]}) {
-				/if (${useMG} && !${timer_check_MG}) /call cast_AA_marrs_gift
 			} else /if (${Select[${Me.Class.ShortName},SHD]}) {
 				/if (${switchPcPet}) /call check_pet
 			} else /if (${Select[${Me.Class.ShortName},RNG]}) {
@@ -1067,8 +1066,8 @@ sub do_rest()
 
 			/if (${Select[${Me.Class.ShortName},CLR]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-				/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez}) /call core_cast "Veturika's Perseverance" alt 0
-				/if (${Me.AltAbilityReady[Quiet Miracle]} && !${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
+				| /if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez}) /call core_cast "Veturika's Perseverance" alt 0
+				| /if (${Me.AltAbilityReady[Quiet Miracle]} && !${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
 			} else /if (${Select[${Me.Class.ShortName},DRU]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 			} else /if (${Select[${Me.Class.ShortName},SHM]}) {
@@ -1857,7 +1856,7 @@ sub cast_eradicate_magic(int _tmpID)
  *  NOTE: did I mention this is for classes with AA snares..
  ***|
 sub cast_AA_snare(int _tmpID)
-	DEBUGCAST ${cbug}cast_AA_snare()\ax
+	DEBUG ${cbug}cast_AA_snare(ID: ${_tmpID})\ax
 	/if (${timer_snare_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -1878,7 +1877,7 @@ sub cast_AA_snare(int _tmpID)
 	/if (${Select[${Me.Class.ShortName},MNK]}) /varset _debuffSnare Crippling Strike	
 	
 	
-	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} || !${Target.Snared.ID}) {
+	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} && !${Target.Snared.ID}) {
 		/if (!${Select[${Me.Class.ShortName},PAL]}) /call core_cast "${_debuffSnare}" alt ${_tmpID}
 		
 		| pally live or dead snare
@@ -1887,14 +1886,15 @@ sub cast_AA_snare(int _tmpID)
 		} /if (${Select[${Me.Class.ShortName},PAL]} && !${Target.Body.Name.Equal[Undead]}){
 			/call core_cast "Shackles of Tunare" alt ${_tmpID}
 		}
-			
+		
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_snare_${_tmpID} ${Spell[${_debuffSnare}].Duration.TotalSeconds}s
+			DEBUG /call create_timer timer_snare_${_tmpID} ${Spell[${_debuffSnare}].Duration.TotalSeconds}s
+			/call create_timer timer_snare_${_tmpID} 1m
 		} else /if (${Select[${castReturn},CAST_IMMUNE]}) {
-			/call create_timer timer_snare_${_tmpID} ${Spell[${_debuffSnare}].Duration.TotalSeconds}m
+			/call create_timer timer_snare_${_tmpID} 4m
 		}
-	} else /if (${Target.Snared.ID} && ${Spell[${Target.Snared.ID}].Duration.TotalSeconds} > 30) {
-		/call create_timer timer_snare_${_tmpID} ${Spell[${Target.Snared.ID}].Duration.TotalSeconds}s
+	} else /if (${Target.Snared.ID} && !${timer_snare_${_tmpID}}) {
+		/call create_timer timer_snare_${_tmpID} 30s
 	}
 /return
 
@@ -2886,14 +2886,14 @@ sub update_HUD_notices(string _mode)
 		}	
 	}
 	/if (${Select[${Me.Class.ShortName},CLR]}) {
-		/if (&& ${Bool[${useQM}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} QM
+		/if (${Bool[${useVP}]}) {
+			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} VP[${useVPPct}]
 			/varset _sep TRUE
 		}	
 	}
 	/if (${Select[${Me.Class.ShortName},PAL]}) {
 		/if (${Bool[${useMG}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MG
+			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MG[${useMGPct}]
 			/varset _sep TRUE
 		}		
 	}	
@@ -3776,7 +3776,7 @@ sub check_buffs_tell()
 	UPDATEHUD "BUFF: Tell"
 	/doevents
 	/declare _count					int local
-	/declare _tmpVAR				int local ${Math.Calc[${BuffCount}+1]}
+	/declare _tmpVAR				int local ${Math.Calc[${BuffCount}]}
 	/declare _tmpID					int local 0
 	/if (${coreAuto}) /call create_timer timer_check_buffs_tell ${tTell_Buff}
 
@@ -3790,7 +3790,8 @@ sub check_buffs_tell()
 		}
 	/next _count
 	
-	/if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || !${Me.Gem[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || (${BuffGem${_tmpVAR}.Equal[item]} && ${FindItem[${Buff${_tmpVAR}}].TimerReady} < 30)) {
+	| /if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || !${Me.Gem[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || (${BuffGem${_tmpVAR}.Equal[item]} && ${FindItem[${Buff${_tmpVAR}}].TimerReady} < 30)) {
+	/if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || !${Me.Gem[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || (${FindItem[${Buff${_tmpVAR}}].TimerReady} < 30)) {
 	| /if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || ${Me.ItemReady[${Buff${_tmpVAR}}]}) {
 		/target id ${_tmpID}
 		/delay 5s ${Target.ID}==${_tmpID}
@@ -3803,6 +3804,8 @@ sub check_buffs_tell()
 	
 	UPDATEHUD FALSE
 /return
+
+
 
 |******************************************************************|
 
@@ -5153,6 +5156,68 @@ sub mem_spell_line(string _line)
 
 
 
+|***
+ *	DES: passive toggle AA Agro switches
+ *	USE: /call cast_challenge_${Me.Class.ShortName}
+ *	INI: 
+ *  NOTE:
+ ***|
+sub check_AA_agro()
+	DEBUG ${cbug}check_AA_agro()\ax
+	AMIDEAD
+	
+	| turn agro ON
+	/if (${switchAgro}) {
+
+		| adjust bold attacks AA
+		/if (${Me.AltAbilityReady[Bold Attacks: Disabled]}) {
+			/call MQ2Cast "Bold Attacks: Disabled" alt
+			OUT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${oenabled}
+		}
+
+		| SHD Soul Flay
+		/if (${Select[${Me.Class.ShortName},SHD]}) {
+			/if (${Me.AltAbilityReady[Soul Flay: Disabled]}) {
+				/call MQ2Cast "Soul Flay: Disabled" alt
+				OUT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${oenabled}
+			}			
+		}
+
+	| turn agro OFF
+	} else /if (!${switchAgro}) {
+
+		| adjust bold attacks AA
+		/if (${Me.AltAbilityReady[Bold Attacks: Enabled]}) {
+			/call MQ2Cast "Bold Attacks: Enabled" alt
+			OUT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${odisabled}
+		}
+
+		| SHD Soul Flay
+		/if (${Select[${Me.Class.ShortName},SHD]}) {
+			/if (${Me.AltAbilityReady[Soul Flay: Enabled]}) {
+				/call MQ2Cast "Soul Flay: Enabled" alt
+				OUT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${odisabled}
+			}			
+		}
+		
+	}
+/return
+
+
+
+|***
+ *	DES: Challenge Spells for paladin/shadowknight
+ *	USE: /call cast_challenge_${Me.Class.ShortName}
+ *	INI: 
+ *  NOTE:
+ ***|
+sub cast_challenge(int _tmpID)
+	DEBUGCLASS ${cbug}cast_challenge(ID: ${_tmpID})\ax
+	AMIDEAD
+	CHECKEXIT
+	/if (!${switchAgro} && !${Target.Body.Name.Equal[Undead]}) /return
+	/if (${Me.SpellReady[${ChallengeSpell}]} && ${Target.Distance} <= ${Spell[${ChallengeSpell}].MyRange} && !${Target.Buff[${ChallengeSpell}].ID}) /call core_cast "${ChallengeSpell}"  0 ${_tmpID} cast_break
+/return
 
 
 
@@ -5190,6 +5255,8 @@ sub mem_spell_line(string _line)
  *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
  ***|
 sub fix_INI_declares()
+	VOUT ${onotice} ${sep} Deleting old INI entries
+
 	/ini "${INIClass}" "Common" "SetModeInvis" NULL
 	/ini "${INIClass}" "Common" "SetScorchedEarthMode" NULL
 	/ini "${INIClass}" "Common" "SetSkillsMode" NULL
@@ -5344,7 +5411,17 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Common" "autoRez" NULL
 	/ini "${INIClass}" "Heal" "CombatCall" NULL
 
+	| remove cleric QM from 20 sep 2017 patch
+	/ini "${INIClass}" "Buffs" "useQM" NULL
+	/ini "${INIClass}" "Buffs" "useQMPct" NULL
+	/ini "${INIClass}" "Timer" "tcheck_QM" NULL
 
+
+	VOUT ${onotice} ${sep} Deleting old INI entries ${sep} ${cgood}DONE\ax
 /return
+
+
+
+
 
 

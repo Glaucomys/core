@@ -16,10 +16,10 @@
  ***|
 sub writeINI(string _varName, string _section, string _value)
 	DEBUG ${cbug}writeINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
-	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${section},${_varName},"${value}"].NotEqual[${_value}]}) {
+	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${_section},${_varName},"${_value}"].NotEqual[${_value}]}) {
 		/varset ${_varName} ${_value}	
-	 	| /ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
-	 	/ini ${INIClass} ${_section} ${_varName} "${_value}"
+	 	/ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
+	 	| /ini ${INIClass} ${_section} ${_varName} "${_value}"
 	}
 /return
 
@@ -71,28 +71,27 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
  *	INI: 
  *  NOTE: 
  ***|
-sub DeclareIniVar(string name, string varType, string section, string value)
-	| /echo DeclareIniVar(name:${name}, type:${varType}, INIsection:${section}, value:${value})
-	| /echo Setting ${name} ${Ini[${INIClass},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
-	/if (!${Bool[${name}]} || !${Bool[${varType}]} || !${Bool[${section}]}) {
-		/echo ${cbad}-- INVALID INI SETTING/STRING [${name}/${varType}/${section}] --\ax
+sub DeclareIniVar(string _name, string _type, string _section, string _value)
+	| /echo DeclareIniVar(_name:${_name}, type:${_type}, INIsection:${_section}, value:${_value})
+	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]}) {
+		NOUT ${owarning} ${sep} INVALID INI SETTING/STRING [name:${_name}/type:${_type}/section${_section}] --\ax
 		/return
 	}
-	/if (!${Defined[${name}]}) /declare ${name} ${varType} outer
-	/varset ${name} ${Ini[${INIClass},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
-	/if (!${Bool[${Ini[${INIClass},${section}].Find[${name}]}]}) {
-		/ini "${INIClass}" "${section}" "${name.Left[1].Upper}${name.Right[-1]}" "${${name}}" "${${value}}"
+	/if (!${Defined[${_name}]}) /declare ${_name} ${_type} outer
+	/varset ${_name} ${Ini[${INIClass},${_section},${_name.Left[1].Upper}${_name.Right[-1]},"${_value}"]}
+	/if (!${Bool[${Ini[${INIClass},${_section}].Find[${_name}]}]}) {
+		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${${_name}}" "${${_value}}"
 
 	}
 
-	/if (${Me.Book[${Me.Book[${${name}} Rk. III]}].ID}) {
-		/varset ${name} ${Me.Book[${Me.Book[${${name}} Rk. III]}].Name} 
-	} else /if (${Me.Book[${Me.Book[${${name}} Rk. II]}].ID}) {
-		/varset ${name} ${Me.Book[${Me.Book[${${name}} Rk. II]}].Name}
-	} else /if (${Me.CombatAbility[${${name}} Rk. III]}) {
-		/varset ${name} ${${name}} Rk. III
-	} else /if (${Me.CombatAbility[${${name}} Rk. II]}) {
-		/varset ${name} ${${name}} Rk. II
+	/if (${Me.Book[${Me.Book[${${_name}} Rk. III]}].ID}) {
+		/varset ${_name} ${Me.Book[${Me.Book[${${_name}} Rk. III]}].Name} 
+	} else /if (${Me.Book[${Me.Book[${${_name}} Rk. II]}].ID}) {
+		/varset ${_name} ${Me.Book[${Me.Book[${${_name}} Rk. II]}].Name}
+	} else /if (${Me.CombatAbility[${${_name}} Rk. III]}) {
+		/varset ${_name} ${${_name}} Rk. III
+	} else /if (${Me.CombatAbility[${${_name}} Rk. II]}) {
+		/varset ${_name} ${${_name}} Rk. II
 	}
 /return
 
@@ -223,7 +222,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20170919
+	/declare coreBuild	 														int			outer 20170921
 
 	/declare _count 																int 		local
 	/declare combat																	string	outer
@@ -326,7 +325,7 @@ sub set_declares()
 		
 		
 	| core control
-	/declare coreType 															string 	outer |auto|control|echo|expadjust|expmaintain|explevel|find|fixini|invite|killcode|dbcash|raidinvite|relay|reset|rest|verbose|whitewash
+	/declare coreType 															string 	outer |auto|control|echo|expadjust|expmaintain|explevel|fixini|invite|killcode|dbcash|raidinvite|relay|reset|rest|verbose|whitewash
 	/declare coreObscure														bool		outer FALSE
 	/call DeclareIniVar relayTells									string	Common FALSE
 	/call DeclareIniVar coreAuto				 						bool	 	Common FALSE
@@ -926,7 +925,7 @@ sub set_declares()
   /declare brdType																string	outer |line|spiregroup|spireraid
   /declare berType																string	outer |spiregroup|spireraid
   /declare bstType																string	outer |spiregroup|spireraid
-  /declare clrType																string	outer |aggressive|fade|groupheal|grouphot|healpoint|qm|regen|spiregroup|spireraid|xtradius|xttime|yaulp
+  /declare clrType																string	outer |aggressive|fade|groupheal|grouphot|healpoint|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
   /declare druType																string	outer |groupheal|healpoint|spiregroup|spireraid|xtradius|xttime
   /declare encType																string	outer |spiregroup|spireraid
   /declare magType																string	outer |fade|mana|rods|spiregroup|spireraid
@@ -1066,8 +1065,6 @@ sub declare_MAG()
 	/call DeclareIniVar RainNuke1 									string 	Spells "Rain of Cutlasses"
 	/call DeclareIniVar RainNuke2 									string 	Spells "Coronal Rain"
 	/call DeclareIniVar MaloSpell 									string 	Spells "Malosinete"
-	
-	
 	/call DeclareIniVar AAFade											string	Buffs "Dimensional Shield"
 	/call DeclareIniVar useAAFade										int			Buffs 50
 	
@@ -1848,25 +1845,25 @@ sub declare_ROG()
 sub declare_CLR()
 	DEBUG ${cbug}declare_CLR()\ax
 	/call setTimer tHealWard												string	Timer 185s timer_heal_ward
-	/call setTimer tcheck_QM												string	Timer	10s timer_check_QM
+	| /call setTimer tcheck_QM												string	Timer	10s timer_check_QM
 		
-	/declare WorstHurt 													string 	outer FALSE
-	| /declare WorstHurtID 												int 		outer ${Me.ID}
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer FALSE
-	/declare MajorHurt 													int 		outer 0
-	/declare MinorHurt													int    	outer 0 
-	/declare groupHurt 													int 		outer 0
+	/declare WorstHurt 															string 	outer FALSE
+	| /declare WorstHurtID 													int 		outer ${Me.ID}
+	/declare WorstHP 																int 		outer 100
+	/declare WorstClass 														string 	outer FALSE
+	/declare MajorHurt 															int 		outer 0
+	/declare MinorHurt															int    	outer 0 
+	/declare groupHurt 															int 		outer 0
 
 	
-	/declare pWorstHurt 												string 	outer ${Me.DisplayName}
-	/declare pWorstHP														int			outer 100
-	/declare pWorstHurtID												int 		outer ${Me.ID}
-	/declare pWorstClass												string	outer FALSE
-	/declare pMajorHurt													int			outer 0
+	/declare pWorstHurt 														string 	outer ${Me.DisplayName}
+	/declare pWorstHP																int			outer 100
+	/declare pWorstHurtID														int 		outer ${Me.ID}
+	/declare pWorstClass														string	outer FALSE
+	/declare pMajorHurt															int			outer 0
 	
-	/declare WorstManaID												int			outer
-	/declare WorstManaPct												int			outer
+	/declare WorstManaID														int			outer
+	/declare WorstManaPct														int			outer
 	
 	/call DeclareIniVar DivineRezCleric							bool 		Heal TRUE
 	/call DeclareIniVar RandRezDelay								int 		Heal 5
@@ -1902,11 +1899,14 @@ sub declare_CLR()
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar sumWeaponSpell							string	Buffs "Hammer of	Reverence"
 	/call DeclareIniVar sumWeaponItem								string	Buffs "Hammer of	Reverence III"
-	/call DeclareIniVar useQM												bool		Buffs TRUE
-	/call DeclareIniVar useQMPct										int			Buffs 40
 	/call DeclareIniVar AAFade											string	Buffs "Divine Peace"
 	/call DeclareIniVar useAAFade										int			Buffs 50
-	
+
+	/call DeclareIniVar useVP												bool		Buffs TRUE
+	/call DeclareIniVar useVPPct										int			Buffs 40
+	| /call DeclareIniVar useQM												bool		Buffs TRUE
+	| /call DeclareIniVar useQMPct										int			Buffs 40
+
 	/call DeclareIniVar DoNuke					 						int			Spells 0
 	/call DeclareIniVar Nuke1					 							string	Spells FALSE	
 	/call DeclareIniVar Nuke2					 							string	Spells FALSE
@@ -2951,7 +2951,7 @@ sub Bind_buff(string _buffType)
 		/call writeINI switchBuffTell Buffs ${If[${switchBuffTell},FALSE,TRUE]}
 	} else /if (${_buffType.Equal[pet]}) {
 		/if (${Select[${Me.Class.ShortName},NEC,ENC,SHM,DRU,BST,SHD,MAG]}) {
-			/call writeINI switchBuffPet Pet ${If[${switchBufPet},FALSE,TRUE]}
+			/call writeINI switchBuffPet Pet ${If[${switchBuffPet},FALSE,TRUE]}
 		} else {
 			/call writeINI switchBuffPet Pet FALSE
 			/call echos failboat 0 0 0 0
@@ -3425,15 +3425,6 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 			/call clear_combat
 		}
 		OUT Core ${sep} ${cinfo}Automatic\ax ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
-
-
-	| find something in bank or inventory
-	} else /if (${Bool[${_coreType.Equal[find]}]}) {
-		/if (${Bool[${_coreVerbage}]}) {
-			/call check_for_item "${_coreVerbage}"
-		} else /if (!${Bool[${_coreVerbage}]}) {
-			OUT /core find ${cinfo}"NAME OF ITEM"\ax (use quotes around item name)
-		}
 			
 	| enable/disable verbose EQBC Echos
 	} else /if (${Bool[${_coreType.Equal[verbose]}]}) {
@@ -3538,7 +3529,6 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 
 	| delete old INI entries
  	} else /if (${Bool[${_coreType.Find[fixini]}]}) {
- 		OUT Deleting old INI entries
 		/call fix_INI_declares
 
 	} else {
@@ -3762,18 +3752,9 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 			OUT Combat ${sep} ${cinfo}Agro\ax ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
 		}
 		
-		| adjust bold attacks AA
-		/if (${switchAgro}) {
-			/if (${Me.AltAbilityReady[Bold Attacks: Disabled]}) {
-				/call MQ2Cast "Bold Attacks: Disabled" alt
-				OUT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${oenabled}
-			}
-		} else /if (!${switchAgro}) {
-			/if (${Me.AltAbilityReady[Bold Attacks: Enabled]}) {
-				/call MQ2Cast "Bold Attacks: Enabled" alt
-				OUT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${odisabled}
-			}
-		}		
+		/call check_AA_agro		
+		
+			
 
 	| set out of group Main assist 1 or 2
 	} else /if (${Bool[${_combatType.Equal[ma1]}]}) {
@@ -3938,7 +3919,7 @@ sub Bind_port_list(string _class, string _location)
 				/varset _tell TRUE
 			}		
 		/next _count
-		/if (!${_tell}) /call echos failboat
+		/if (!${_tell}) /call echos failboat 0 0 0 0
 	}
 
 /return
