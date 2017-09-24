@@ -16,22 +16,22 @@ sub core_ROG()
 	DEBUGCLASS Loop start: ${cbug}core_ROG()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
 	
-	| /if (!${Me.Combat} && !${SpawnCount[npc xtarget]} && !${Me.Invis}) /call do_SoS TRUE
 	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
 	/if (!${timer_click_poison}) /call click_poison
-	
+	/if (${coreAuto} && ${switchSos}) /call automaticSoS
+
 
 	:killtarget
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
+		/if (${Me.Invis}) /call sneak_attack
+		/call set_combat MELEE
 		/call use_skill_melee
 		/call stick_to_target
 		/call disc_${Me.Class.ShortName}
@@ -55,6 +55,24 @@ sub core_ROG()
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
 		/if (!${Macro.Return}) /goto :killtarget
+	}
+/return
+
+
+
+|***
+ *	DES: execute the target!
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub sneak_attack()
+	DEBUG ${cbug}sneak_attack\ax
+	/if (${Bool[${DiscSneakAttack}]} && !${Me.CombatAbilityReady[${DiscSneakAttack}]}) /return
+	
+	/if (${Target.ID} && ${Me.Invis}) {
+		/call core_cast "${DiscSneakAttack}" disc ${Target2Kill}
+		/doability backstab
 	}
 /return
 
@@ -87,7 +105,7 @@ sub disc_ROG()
 	/call use_skill_melee
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHack}]} && ${Bool[${DiscHack}]}) /call core_cast "${DiscHack}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBladePoison}]} && ${Bool[${DiscBladePoison}]}) /call core_cast "${DiscBladePoison}" disc 0
-	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
+	| /if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill}
 /return
 
@@ -134,40 +152,56 @@ sub patch_heal_ROG()
  *	INI: 
  *  NOTE: Work in progress
  ***|
-sub do_SoS(bool _hide)
-	DEBUGCLASS ${cbug}do_SoS()\ax
+sub automaticSoS()
+	DEBUGCLASS ${cbug}automaticSoS()\ax
 	AMIDEAD
-
 	CHECKTIE
-	CHECKREZ
-	
-	/if (${_hide}) {
-		/varset flagSoS TRUE
-		/if (!${Me.Casting.ID} && ${Me.State.NotEqual[BIND]} && !${Window[TradeWnd].Open} && !${Window[MerchantWnd].Open} && !${Window[BigBankWnd].Open}) {
-			/if (${Me.AbilityReady[Sneak]} && !${Me.Sneaking}) /doability Sneak 
-			/if (${Me.AbilityReady[Hide]}) /doability Hide 
-		}
-	} else /if (!${_hide}) {
-		/varset flagSoS FALSE
-		/makemevisible
-	}
 
+	/if (!${switchSos}) /return
+	/if (${Me.Combat} || ${Me.Stunned} || ${Me.State.Equal[FEIGN]}) /return
+	/if (${Me.Casting.ID} || ${Me.State.Equal[BIND]} || ${Window[TradeWnd].Open} || ${Window[MerchantWnd].Open} || ${Window[BigBankWnd].Open}) /return
+	
+	/declare _sos bool local FALSE
+
+	/if (${Me.Invis} && ${Me.Sneaking} && !${Me.AbilityReady[hide]} && !${Me.AbilityReady[sneak]}) {
+		/return
+	}
+	
+
+	/if (!${Me.Invis} && ${Me.AbilityReady[hide]} && ${Me.Sneaking} && !${Me.AbilityReady[sneak]} ) {
+		/if (${Me.AbilityReady[hide]}) /doability hide
+		/return	
+	} else /if (!${Me.Invis} && ${Me.Sneaking} && !${Me.AbilityReady[sneak]}) {
+		/if (${Me.AbilityReady[sneak]}) /doability sneak
+		/return
+	}
+	
+	/if (!${_sos} && ${Me.AbilityReady[hide]} && ${Me.AbilityReady[sneak]}) {
+		/doability hide
+		/delay 1
+		/doability sneak
+	}
 /return
 
 
-|**
-	${flagSoS}
-	
-
-${Me.AbilityReady[Sneak]}
-${Me.Sneaking}
-/doability Sneak
 
 
-${Me.AbilityReady[Hide]}
-/doability Hide
+${Me.Sneaking} && !${Me.Invis} && !${Me.AbilityReady[sneak]}
 
-**|
+
+   |- Lets hide and sneak if not already and we're set to do so ** 
+
+     /if (${doHideSneak} && ${Me.AbilityReady["Sneak"]} && !${Me.Casting.ID} && ${Me.State.NotEqual[BIND]} && !${Window[TradeWnd].Open} && !${Window[MerchantWnd].Open} && !${Window[BigBankWnd].Open}) /doability "Sneak" 
+     /if (${doHideSneak} && ${Me.AbilityReady["Hide"]} && !${Me.Casting.ID} && ${Me.Sneaking} && (!${Me.Moving} || ${Me.AltAbilityReady[Nimble Evasion]}) && ${Me.State.NotEqual[BIND]} && !${Window[TradeWnd].Open} && !${Window[MerchantWnd].Open} && !${Window[BigBankWnd].Open}) /doability "Hide"
+
+
+
+
+
+
+
+
+
 
 
 
@@ -279,25 +313,17 @@ sub Bind_setROG(string _classType, string _classVerbage)
 		/next _count
 		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
 
+	| auto SOS... or not...
+	} else /if (${Bool[${_classType.Equal[autosos]}]}) {
+		/call writeINI switchSos Common ${If[${switchSos},FALSE,TRUE]}
+		NOUT /rog ${cinfo}autosos\ax ${sep} ${If[${switchSos},${oenabled},${odisabled}]}
+
 
 	} else {
 		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##
 	} 
 	:exit
 /return
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

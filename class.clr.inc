@@ -230,7 +230,7 @@ sub check_heal_group_CLR()
 	| Panic Heal 
   /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} < ${Spell[${healPanic}].MyRange} && ${Me.SpellReady[${healPanic}]}) {
   	/target ID ${WorstHurt}
-  	DEBUG WorstHurt ID:${WorstHurt} .. ME ID:${Me.ID}  .. Target ID:${TargetID}
+  	DEBUG WorstHurt ID:${WorstHurt} .. ME ID:${Me.ID}  .. Target ID:${Target.ID}
     /call core_cast "${healPanic}" 0 ${WorstHurt}
   }
 
@@ -328,7 +328,7 @@ sub check_heal_group_CLR()
   }  
   
   | check for group debuffs
-	/if (${switchHealCure} && ${Group.Members} && ${groupHurt} <= 1) /call cast_cure()
+	/if (${switchHealCure} && ${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure
 	
 	UPDATEHUD
 /return
@@ -401,18 +401,20 @@ sub check_HP_CLR()
 	/varset WorstClass 				CLR
 	/varset MajorHurt					0
 
-	/for _count 0 to ${Group.Members}
-		AMIDEAD
-		SIMPLEEXIT
-		/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
-			/if (${Group.Member[${_count}].Distance}<=${Spell[${healRemedy2}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} || !${WorstHurt}) {
-			/varset WorstHurt ${Group.Member[${_count}].ID} 
-			/varset WorstHP ${Group.Member[${_count}].PctHPs} 
-			/varset WorstClass ${Group.Member[${_count}].Class.ShortName} 
+	/if (${Bool[${Group.Members}]}) {
+		/for _count 0 to ${Group.Members}
+			AMIDEAD
+			SIMPLEEXIT
+			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
+				/if (${Group.Member[${_count}].Distance}<=${Spell[${healRemedy2}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} || !${WorstHurt}) {
+				/varset WorstHurt ${Group.Member[${_count}].ID} 
+				/varset WorstHP ${Group.Member[${_count}].PctHPs} 
+				/varset WorstClass ${Group.Member[${_count}].Class.ShortName} 
+			}
+			/if (${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${HealOverride}*.5) /varcalc MajorHurt ${MajorHurt}+1
 		}
-		/if (${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${HealOverride}*.5) /varcalc MajorHurt ${MajorHurt}+1
+		/next _count
 	}
-	/next _count
 
 	/if (!${WorstHurt}) /return
 

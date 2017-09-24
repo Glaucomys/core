@@ -168,6 +168,7 @@ sub check_engaged()
 	/doevents
 	/declare _isEngaged		bool local FALSE
 	/if (${Me.Invis}) /varset _isEngaged TRUE
+	/if (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /varset _isEngaged FALSE
 	/if (${Bool[${Me.Casting}]} || ${Me.Casting.ID}) /varset _isEngaged TRUE
 	/if (${Me.Moving} || ${Stick.Active}) /varset _isEngaged TRUE
 	/if (${Me.Combat} || ${Me.AutoFire}) /varset _isEngaged TRUE
@@ -888,37 +889,50 @@ sub click_horn_of_unity()
  *  NOTE: 
   ***|
 sub check_buffs_BC()
-	DEBUG ${cbug}check_buffs_BC()\ax
-	AMIDEAD
-	CHECKEXIT
+	SDEBUG ${cbug}check_buffs_BC()\ax
 	/if (${coreAuto} && (!${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]})) /return
+	/if (${coreAuto}) /call create_timer timer_check_buffs_BC ${tBC_Buff}
+	UPDATEHUD "BUFF: BC"	
 
-	/declare _toon int local 
+
+	/declare _toon int local 1
 	/declare _buff int local 
+
 	| each toon
-	/for _toon 1 to ${NetBots.Counts}
-		UPDATEHUD "BUFF: BC"	
+	/while (${_toon} <=${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}) {
+		DEBUG _toon ${_toon} / ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}
 		AMIDEAD
-		/doevents
-		DEBUG [${_toon}]:${NetBots.Client[${_toon}]}
+		CHECKEXIT
 
 		| each buff
 		/for _buff 1 to ${BuffCount}
-			/if (!${Bool[${BCBuff${_buff}Class}]} || !${Bool[${Buff${_buff}}]}) /continue    
-			/if (${Spawn[pc ${NetBots.Client[${_toon}]}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
-			/if (!${NetBots[${NetBots.Client[${_toon}]}].InZone} || ${NetBots[${NetBots.Client[${_toon}]}].Dead}) /continue
 			/doevents
 			AMIDEAD
-			/if (!${Bool[${Buff${_buff}}]} || !${Bool[${Buff${_buff}chk}]} || !${Bool[${BCBuff${_buff}Class}]} || (${Raid.Members} && ${Buff${_buff}noBCinRaid}) || (!${Me.SpellReady[${Buff${_buff}}]} && ${Me.Gem[${Buff${_buff}}]}) || !${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
-			DEBUG spell=${_buff}/${BuffCount}: ${Buff${_buff}chk} Stacks:${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}
-			/if (${Me.CurrentMana} > ${Spell[${Buff${_buff}}].Mana} && ${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]} && ${BCBuff${_buff}Class.Find[${Spawn[${NetBots.Client[${_toon}]}].Class.ShortName}]}) { 
+			/if (!${Bool[${BCBuff${_buff}Class}]} || !${Bool[${Buff${_buff}}]}) /continue    
+			/if (${Spawn[pc ${NetBots.Client[${_toon}]}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
+			/if (!${Bool[${Spawn[${NetBots.Client[${_toon}]}].ID}]} || ${Spawn[${NetBots.Client[${_toon}]}].Dead}) /continue
+				
+			| what is this?
+			/if (!${Bool[${BCBuff${_buff}Class}]}) /continue
+			DEBUG ${_buff} / ${BuffCount} class - ${Bool[${BCBuff${_buff}Class}]}
+			/if (${Raid.Members} && ${Buff${_buff}noBCinRaid}) /continue
+			DEBUG ${_buff} / ${BuffCount} raid - ${Raid.Members} && ${Buff${_buff}noBCinRaid}
+			/if (!${Me.SpellReady[${Buff${_buff}}]} && ${Me.Gem[${Buff${_buff}}]}) /continue
+			DEBUG ${_buff} / ${BuffCount} ready -${Me.SpellReady[${Buff${_buff}}]} && ${Me.Gem[${Buff${_buff}}]}
+			| stacks?
+			/if (!${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
+			DEBUG ${_buff} / ${BuffCount} stack - ${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}
+
+			/if (${Me.CurrentMana} > ${Spell[${Buff${_buff}}].Mana}) { 
   		  OUT BC Buff ${sep} ${csp}${Buff${_buff}}\ax ${sep} [${cpc}${NetBots.Client[${_toon}]}\ax]
 				/call MQ2Cast "${Buff${_buff}}" ${buffGem} 10s -targetid|${NetBots[${NetBots.Client[${_toon}]}].ID} 	
-				/break
+				| /break
 			}
 		/next _buff
-	/next _toon
-	/if (${coreAuto}) /call create_timer timer_check_buffs_BC ${tBC_Buff}
+		/varcalc _toon ${_toon}+1
+	}
+
+	| /next _toon
 	UPDATEHUD FALSE
 /return
 
@@ -1355,7 +1369,7 @@ sub stick_to_target(int _tmpID)
 		/call get_assist_target
 		/if (${Target.ID} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 			
-		/if (!${Stick.Active} && ${Target.ID} && ${isValidTarget} && ${SetStickBehind} && !${Stick.Behind} && !${timer_snap_rechedckID_${Target2Kill}}) {
+		/if (!${Stick.Active} && ${Target.ID} && ${isValidTarget} && ${SetStickBehind} && !${Stick.Behind} && !${timer_snap_recheckID_${Target2Kill}}) {
 			/squelch /stick id ${Target2Kill} ${CombatDistance} snaproll
 		} 
 
@@ -1367,15 +1381,15 @@ sub stick_to_target(int _tmpID)
 		/if (${MoveUtils.Stuck}) {
 			/delay 1
 			/squelch /stick off
-			/call create_timer timer_snap_rechedckID_${Target2Kill} ${tCheck_snap_retry}
+			/call create_timer timer_snap_recheckID_${Target2Kill} ${tCheck_snap_retry}
 			/return
 		}	
 			
-		/if (${Spawn[${Target2Kill}].Distance} < ${CombatDistance} && !${SetStickBehind} && !${timer_snap_rechedckID_${Target2Kill}}) {
+		/if (${Spawn[${Target2Kill}].Distance} < ${CombatDistance} && !${SetStickBehind} && !${timer_snap_recheckID_${Target2Kill}}) {
 			/squelch /stick off
 			/return
 		}
-		/if (!${Stick.Behind} && ${SetStickBehind} && !${timer_snap_rechedckID_${Target2Kill}}) /goto :checkstuck
+		/if (!${Stick.Behind} && ${SetStickBehind} && !${timer_snap_recheckID_${Target2Kill}}) /goto :checkstuck
 	} else {
 		DEBUG ${cbug}stick_to_target()\ax
 		/if (${switchModeHunt}) /varset isValidTarget TRUE
@@ -1434,7 +1448,7 @@ sub get_assist_target()
 		} else /if (${Me.XTarget[2].TargetType.NotEqual[Raid Assist 2 Target]} && ${Raid.Members} && ${Bool[${useSmartAssist2}]}) {
 			/xtarget set 1 raidassist1target
 			/xtarget set 2 Autohater
-		} else /if (${Me.XTarget[1].TargetType.NotEqual[Group Assist Target]} && ${Group.Members} && ${Bool[${useSmartAssistG}]}) {
+		} else /if (${Me.XTarget[1].TargetType.NotEqual[Group Assist Target]} && ${Bool[${Group.Members}]} && ${Bool[${useSmartAssistG}]}) {
 			/xtarget set 1 groupassisttarget
 		}
 		
@@ -1571,7 +1585,7 @@ sub is_target_valid(int _tmpID)
 	/if (${Spawn[${Target.ID}].Type.Equal[PC]}) /varset isValidTarget FALSE
 	/if (${_tmpID} == ${Me.ID} || ${_tmpID} == ${Me.Pet.ID}) /varset isValidTarget FALSE
 
-
+	| /if (${coreAuto} && ${isValidTarget} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
 		
 	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
 /return
@@ -2210,15 +2224,25 @@ sub cast_cure()
 	/call create_timer timer_check_cast_cure ${tCast_Cure}
 	AMIDEAD
 	/doevents
+
+	/if (!${Bool[${Plugin[MQ2debuffs]}]}) {
+		 OUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2debuffs\ax for any curing.
+		/return
+	}
+	
 	UPDATEHUD "CURE"
 
 	| if i'm fine skip to netbots check
 	/if (!${Debuff.Counters}) {
-		/goto :imfinecheckgroup
+		/if (!${Bool[${Group.Members}]} || ${switchPull} || ${switchAgro}) /return
 	} else /if (${Debuff.Counters}) {
 		| cure self only with items
 		
-		/if (${Select[${Me.Class.ShortName},MNK]}) /call core_cast "Purify Body" alt
+		/if (${Select[${Me.Class.ShortName},MNK]}) {
+			/call core_cast "Purify Body" alt
+		} else /if (${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
+			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased}) /call core_cast "Radiant Cure" alt 0
+		}
 		
 		/if (${Debuff.Cursed} && ${Me.ItemReady[${cureCurseItem}]}) {
 			/call core_cast "${cureCurseItem}" item ${Me.ID}
@@ -2231,16 +2255,13 @@ sub cast_cure()
 		}
 	}
 
-	:imfinecheckgroup
-	/if (!${Group.Members}) /return
-	/if (!${Bool[${Plugin[MQ2netbots]}]} || !${Bool[${Plugin[MQ2debuffs]}]}) {
-		/if (!${Bool[${Plugin[MQ2netbots]}]}) OUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2netbots\ax for group curing.
-		/if (!${Bool[${Plugin[MQ2debuffs]}]}) OUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2debuffs\ax for group curing.
+
+	/if (!${Bool[${Plugin[MQ2netbots]}]}) {
+		OUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2netbots\ax for group curing.
 		/return
 	}
 
-	/if (!${Defined[BcClients]}) /declare BcClients ${NetBots.Client}
-	/if (!${Defined[_count]}) /declare _count int local
+	/declare _count int local 0
 	/for _count 1 to ${Math.Calc[${NetBots.Client.Count[ ]}+1]}
 		AMIDEAD
 		/doevents 
@@ -2252,7 +2273,7 @@ sub cast_cure()
 		| 100' 1 min
 		/if (${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt
+				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0
 			}
 			/return
 		}
@@ -2270,7 +2291,7 @@ sub cast_cure()
 		| 0/100' 15 min
 		/if (${Select[${Me.Class.ShortName},CLR,DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt ${Me.ID} 
+				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt 0
 			}
 			/return
 		}
@@ -2299,7 +2320,6 @@ sub cast_cure()
  ***|
 sub cast_free_target(string _tmpSpell, int _tmpID)
 	DEBUGCAST ${cbug}cast_free_target()\ax
-
 	/call core_cast "${_tmpSpell}" 0 ${_tmpID}
 	/squelch /face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
 	/delay 5
@@ -2423,7 +2443,6 @@ sub set_combat(str _mode)
 	UPDATEHUD "${_mode}"
 	/if (${Me.State.NotEqual[STAND]}) /stand
 	/if (${coreAuto} && ${Me.State.Equal[FEIGN]}) /squelch /stand
-	
 		
 	/if (${Select[${_mode},MELEE]}) {
 		/if (!${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
@@ -2871,7 +2890,7 @@ sub update_HUD_notices(string _mode)
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Stick
 		/varset _sep TRUE
 	}
-	/if (${Select[${Me.Class.ShortName},MAG,WIZ]}) {
+	/if (${Select[${Me.Class.ShortName},MAG]}) {
 		/if (${Bool[${useRain}]}) {
 			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} AE
 			/varset _sep TRUE
@@ -3206,7 +3225,7 @@ sub fix_gem_id(string _spellGem)
  *  NOTE:
  ***|
 sub scribe(string _spellname, string _spellgem, bool _wait)
- 	DEBUGCAST ${cbug}scribe(${_spellname}, ${_spellgem}, ${_wait})\ax
+ 	DEBUGCAST ${cbug}scribe("${_spellname}", ${_spellgem}, ${_wait})\ax
 	AMIDEAD
 	CHECKEXIT
 	/call fix_gem_id "${_spellgem}"
@@ -3319,7 +3338,7 @@ sub check_for_corpse()
 
 	UPDATEHUD "REZZING"
 	| clerics first group or raid
-	/if (${SpawnCount[pccorpse cleric raid radius ${maxRezRange}]} && ${Raid.Members} || ${SpawnCount[pccorpse cleric group radius ${maxRezRange}]} && ${Group.Members}) {
+	/if (${SpawnCount[pccorpse cleric raid radius ${maxRezRange}]} && ${Raid.Members} || ${SpawnCount[pccorpse cleric group radius ${maxRezRange}]} && ${Bool[${Group.Members}]}) {
 		/for _count 1 to ${SpawnCount[pccorpse cleric raid radius ${maxRezRange}]}
 		AMIDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse cleric raid radius ${maxRezRange}].ID}}) {
@@ -3860,9 +3879,9 @@ sub do_loot()
 	|***
 	/if (${Raid.Members} && ${Raid.MasterLooter.ID} == ${Me.ID}) {
 		/goto :permissiontoloot
-	} else /if (!${Raid.Members} && ${Group.Members} && ${Group.MasterLooter.ID} == ${Me.ID}) {
+	} else /if (!${Raid.Members} && ${Bool[${Group.Members}]} && ${Group.MasterLooter.ID} == ${Me.ID}) {
 		/goto :permissiontoloot
-	} else /if (!${Raid.Members} && !${Group.Members}) {
+	} else /if (!${Raid.Members} && !${Bool[${Group.Members}]}) {
 		/goto :permissiontoloot
 	| } else /if (${Me.UseAdvancedLooting} && ${Raid.Members} && !${Bool[${Raid.MasterLooter.ID}]} && ${switchOverrideLoot}) {
 	} else /if (${switchOverrideLoot}) {
@@ -3876,7 +3895,7 @@ sub do_loot()
 	| I am not the raid loot master /sigh
 	/if (${Raid.Members} && ${Raid.MasterLooter.ID} != ${Me.ID} && !${switchOverrideLoot}) /return
 
-	/if (!${Raid.Members} && ${Group.Members} && ${Group.MasterLooter.ID} != ${Me.ID} && !${switchOverrideLoot}) /return
+	/if (!${Raid.Members} && ${Bool[${Group.Members}]} && ${Group.MasterLooter.ID} != ${Me.ID} && !${switchOverrideLoot}) /return
 		
 
 	UPDATEHUD "LOOT"
@@ -3890,7 +3909,7 @@ sub do_loot()
 	| _advlChoice is what is listed to do with the items: Leave,Destroy,Keep,Sell,Announce
 	/if (!${Defined[_advlChoice]}) /declare _advlChoice string local
 
-	/if (${Raid.Members} || ${Group.Members}) {
+	/if (${Raid.Members} || ${Bool[${Group.Members}]}) {
 		| Shared List Sorting
 		/for _scount ${AdvLoot.SCount} downto 1
 			/varset currentLootCount ${AdvLoot.SCount}
@@ -4561,7 +4580,8 @@ sub prep_combat()
 	/declare _gokillstuff		bool local TRUE
 	CHECKREZ
 	CLEARCURSOR
-	/if (${coreAuto} && !${Me.Invis}) {
+	 	/if (${coreAuto} && !${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
+		| /if (${coreAuto} && !${Me.Invis}) {
 		/call check1offBuffs
 		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
 			/call is_target_valid ${Target2Kill}
@@ -4757,7 +4777,7 @@ sub check_buff_routines(bool _force)
 	/if (!${coreAuto} && !${_force}) /return
 	/doevents
 	AMIDEAD
-	/if (!${Me.Invis}) {
+	/if (!${Me.Invis} || (${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
 		
 		| check tell request for buffs
 	  /if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
@@ -5245,6 +5265,9 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Common" "SetHunterAgro" NULL
 	/ini "${INIClass}" "Common" "SetPetFarmMode" NULL
 	/ini "${INIClass}" "Movement" "SetIgnoreLOS" NULL
+
+
+	/ini "${INICore}" "General" "QPath" NULL
 	
 	| timer	
 	/ini "${INICore}" "Timer" "tPetFarm_delay" NULL
@@ -5350,7 +5373,6 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Common" "ToastMobCount" NULL
 	/ini "${INIClass}" "Common" "WhentoToast" NULL
 	/ini "${INIClass}" "Common" "AutoToast" NULL
-
 
 	/ini "${INIClass}" "Common" "MyDeathCount" NULL
 	/ini "${INIClass}" "Common" "BCMA" NULL

@@ -401,19 +401,19 @@ sub cast_mez_BRD(int _tmpID)
  *	USE: /call cast_AA_Rallying
  *	INI: 
  *  NOTE: 
- *  AA - Rallying Call
- *  Song - Rallying Call Azia V
+ *  AA - Rallying Solo
+ *  Song - Rallying Solo Azia V
  ***|
 sub cast_AA_Rallying()
- 	DEBUGCAST ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Call]})\ax
+ 	DEBUGCAST ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Solo]})\ax
 	AMIDEAD
 	/doevents
- 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Call]}) /return
+ 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Solo]}) /return
  	/declare _endurancePoint		int local 30
  	/declare _manaPoint		int local 30
 
  	/if (((${Me.PctEndurance} < ${_endurancePoint}) || (${Me.PctMana} < ${_manaPoint})) && ${Select[${Me.CombatState},RESTING]}) {
-		/call core_cast "Rallying Call" alt ${Me.ID}
+		/call core_cast "Rallying Solo" alt ${Me.ID}
 	}
 /return
 

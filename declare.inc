@@ -222,7 +222,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20170921
+	/declare coreBuild	 														int			outer 20170923
 
 	/declare _count 																int 		local
 	/declare combat																	string	outer
@@ -239,9 +239,6 @@ sub set_declares()
 	/declare tmpMode																string	outer FALSE
 	/declare hudDeathCount													int			outer	0
 		
-	| /declare hudIV																	bool		outer FALSE
-	| /declare hudIVU																	bool		outer FALSE
-	
 	/call DeclareCoreIniVar HudName									string	General Core
 	/call DeclareCoreIniVar HudType									string	General normal
 	/call DeclareIniVar HUDTime											bool 		Common TRUE
@@ -255,8 +252,6 @@ sub set_declares()
 	/declare UseRange																bool		outer FALSE
 	/declare currentLootCount												int			outer	0
 	/declare markerDead															bool		outer FALSE
-
-
 
 	/call DeclareCoreIniVar plist										string	Plugin |MQ2Cast|MQ2EQBC|MQ2Exchange|MQ2MoveUtils|MQ2Netbots|MQ2Debuffs
 	/call DeclareCoreIniVar EQBCServer							string	General 127.0.0.1
@@ -494,9 +489,7 @@ sub set_declares()
 	/call DeclareIniVar ResidentrDruid							string	Common |FALSE|FALSE
 	/call DeclareIniVar ResidentWizard							string	Common |FALSE|FALSE
 	/call DeclareIniVar ClassChannel								int			Common FALSE	
-
-
-
+	/call DeclareIniVar switchSos										bool	 	Common FALSE
 
 
 	| spire control
@@ -606,8 +599,6 @@ sub set_declares()
 	/declare ROGspire2													string	outer "Fundament: Second Spire of the Rake"
 	/declare ROGspire3													string	outer "Fundament: Third Spire of the Rake"
 	/declare ROGsynergyAA												string	outer "Blackguard's Synergy"
-
-
 
 
 	| combat controls
@@ -885,10 +876,10 @@ sub set_declares()
   /declare 		pcType											string	outer |pet|swarm|tank|type|build|bag
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD,CLR,WIZ,RNG,BRD,BST]}) {
 		/call DeclareIniVar PcPetengageat							int			Pet 99
-		/call DeclareIniVar switchPcPet								bool 		Pet FALSE
 		/call DeclareIniVar switchPcPettank						bool 		Pet FALSE
 		/call DeclareIniVar PcPettype									string	Pet FALSE
 	}
+	/call DeclareIniVar switchPcPet									bool 		Pet FALSE
 	/call DeclareIniVar switchPcSwarm								bool 		Pet FALSE	
 	/call DeclareIniVar PcSwarmengageat							int			Pet 99
 	/call DeclareIniVar sumFamiliar									string	Pet FALSE
@@ -932,7 +923,7 @@ sub set_declares()
   /declare mnkType																string	outer |spiregroup|spireraid
   /declare necType																string	outer |spiregroup|spireraid
   /declare palType																string	outer |groupheal|harmonions|healpoint|mg|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
-  /declare rogType																string	outer |poison|spiregroup|spireraid
+  /declare rogType																string	outer |autosos|poison|spiregroup|spireraid
   /declare rngType																string	outer |spice|spiregroup|spireraid|summer
   /declare shdType																string	outer |harmoniouns|skin|spiregroup|spireraid|stance
   /declare shmType																string	outer |groupheal|grouphot|healpoint|spiregroup|spireraid|xtradius|xttime
@@ -984,6 +975,7 @@ sub declare_timers()
 	/call create_timer timer_scribe_timer 1
 	/call create_timer timer_try_door 1
 
+	/call setTimer tCheck_Runes											string	Timer	10s		timer_check_runes
 
 	/call setTimer tScorchedEarth_fail							string	Timer	1m 		timer_scorched_earth_fail
 	/call setTimer tCheck_Familiar									string	Timer	30s		timer_Check_Familiar
@@ -1261,8 +1253,8 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
-	/call setTimer tcheck_Skin											string 	Timer 45s timer_check_Steel
-	/call setTimer tcheck_Stance										string 	Timer 3m timer_check_stance
+	/call setTimer tcheck_Skin											string 	Timer 45s timer_check_Skin
+	/call setTimer tcheck_Stance										string 	Timer 3m timer_check_Stance
 
 
 
@@ -1816,6 +1808,7 @@ sub declare_ROG()
 	/call DeclareIniVar DiscHack										string 	Discs "Jugular Hack"	
 	/call DeclareIniVar DiscHiddenBlade							string 	Discs "Hidden Blade"	
 	/call DeclareIniVar DiscBladePoison							string 	Discs "Reefcrawler Blade"	
+	/call DeclareIniVar DiscSneakAttack							string 	Discs "Daggergash"	
 
 	| disable for toast
 	/call DeclareIniVar DiscVision 									string 	Discs "Thief's Vision"	
@@ -1827,6 +1820,7 @@ sub declare_ROG()
 	/call DeclareIniVar DiscRazor 									string 	Discs "Razor's Edge Discipline"	
 	/call DeclareIniVar DiscFrenzy 									string 	Discs "Frenzied Stabbing Discipline"	
 	/call DeclareIniVar DiscTwistedChance						string 	Discs "Twisted Chance Discipline"
+
 	
 	/call DeclareIniVar clickPoisonBuff							string 	Poison "Bite of the Shissar Poison X"
 	/call DeclareIniVar clickPoisonItem							string 	Poison "Consigned Bite of the Shissar XVIII"
@@ -2338,7 +2332,6 @@ sub Event_Song(string line, string _group)
 ***|
 #event Crew "[MQ2] - Crew: #1#"
 sub Event_Crew(string line, string _clist)
-	DEBUG ${cbug}Event_Crew(\ax${exp.Upper}${cbug})\ax
 	/call set_crew ${_clist}
 /return 
 
@@ -3783,6 +3776,7 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 		}
 
 	| Smart Assist engage at %
+	} else /if (${Bool[${_combatType.Equal[smartengage]}]}) {
 		/declare _num int local ${_combatVerbage}
 		/if (${Range.Between[1,100:${Int[${_num}]}]}) {
 			/call writeINI smartengageAt Common ${_num}  
@@ -3982,8 +3976,8 @@ sub Event_send(string line, string _sender, string _location)
 	| send 'em on their way with a valid location request
 	/if (${Defined[${_location}]}) {
 		/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
-		/call scribe "${${_location}}" ${buffGem} TRUE
-		/call core_cast "${${_location}}" 0 ${Spawn[pc ${_sender}].ID}
+		/call scribe ${${_location}} ${buffGem} TRUE
+		/call core_cast ${${_location}} 0 ${Spawn[pc ${_sender}].ID}
 	} 
 /return
 

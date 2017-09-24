@@ -188,22 +188,24 @@ sub check_splash_group_PAL()
 	/varset groupHurt					0
 	
 	| lets see whos hurt
-	/for _count 0 to ${Group.Members}
-		AMIDEAD
-		CHECKEXIT
-	 	/doevents
+	/if (${Bool[${Group.Members}]}) {
+		/for _count 0 to ${Group.Members}
+			AMIDEAD
+			CHECKEXIT
+		 	/doevents
 
-		/if ((!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID})) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} && (${Group.Member[${_count}].Distance} < ${Spell[${splashPanic}].MyRange} || ${Group.Member[${_count}].Distance} < ${Spell[${splashGroup}].MyRange})) {
-			/varset WorstHurt ${Group.Member[${_count}].ID}
-			/varset WorstHP ${Group.Member[${_count}].PctHPs}
-			/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
-		} 
-		
-		| set count for # of toons hurt
-		/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
-			/varcalc groupHurt ${groupHurt}+1
-		}
-  /next _count
+			/if ((!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID})) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} && (${Group.Member[${_count}].Distance} < ${Spell[${splashPanic}].MyRange} || ${Group.Member[${_count}].Distance} < ${Spell[${splashGroup}].MyRange})) {
+				/varset WorstHurt ${Group.Member[${_count}].ID}
+				/varset WorstHP ${Group.Member[${_count}].PctHPs}
+				/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
+			} 
+			
+			| set count for # of toons hurt
+			/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
+				/varcalc groupHurt ${groupHurt}+1
+			}
+	  /next _count
+	}
   
 	| bail if ??
 	/if (${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]}) /return

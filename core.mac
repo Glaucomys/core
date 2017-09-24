@@ -54,7 +54,7 @@
 	
 		
 	Common Used Variables:
-	coreAuto							bool			automatic or manual Mode
+	coreAuto						bool			automatic or manual Mode
 	Target2Kill					int				the ID of the mob that should be the focus of your wanton destruction
 	isValidTarget				bool			is ths a valid Target
 	timer_???						string		Prefix for running timers. [Timers] in the Toon INI(s) will hold most base set times.
@@ -94,7 +94,7 @@
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
 #define NOUT "/echo ${c-}-\ax"
 #define HUDPATH ".\..\MQ2HUD.ini core"
-#define MQLOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
+#define LOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
 #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
 #define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
@@ -107,29 +107,29 @@
 
 
 
-#include TC\declare.inc
-#include TC\common.inc
-#include TC\MQ2Cast_Spell_Routines.inc
-#include TC\mode.inc
-#include TC\events.inc
-#include TC\test.inc
-#include TC\class.ber.inc
-#include TC\class.brd.inc
-#include TC\class.bst.inc
-#include TC\class.clr.inc
-#include TC\class.dru.inc
-#include TC\class.enc.inc
-#include TC\class.mag.inc
-#include TC\class.mnk.inc
-#include TC\class.nec.inc
-#include TC\class.pal.inc
-#include TC\class.rng.inc
-#include TC\class.rog.inc
-#include TC\class.shd.inc
-#include TC\class.shm.inc
-#include TC\class.war.inc
-#include TC\class.wiz.inc
-#include TC\hud.inc
+#include tc\declare.inc
+#include tc\common.inc
+#include tc\MQ2Cast_Spell_Routines.inc
+#include tc\mode.inc
+#include tc\events.inc
+#include tc\test.inc
+#include tc\class.ber.inc
+#include tc\class.brd.inc
+#include tc\class.bst.inc
+#include tc\class.clr.inc
+#include tc\class.dru.inc
+#include tc\class.enc.inc
+#include tc\class.mag.inc
+#include tc\class.mnk.inc
+#include tc\class.nec.inc
+#include tc\class.pal.inc
+#include tc\class.rng.inc
+#include tc\class.rog.inc
+#include tc\class.shd.inc
+#include tc\class.shm.inc
+#include tc\class.war.inc
+#include tc\class.wiz.inc
+#include tc\hud.inc
 
 
  
@@ -161,7 +161,7 @@ sub main()
 
 	AMIDEAD
 
-  /if (${Bool[${mqlog}]}) /mqlog ---- Starting Core:${coreBuild}
+	LOG .. Starting Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
   /if (${switchOverrideLos}) NOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
 
 	OUT ${cgood}Ready\ax
@@ -231,13 +231,15 @@ sub main()
 		| check constant Disc buffs
 		/if (${coreAuto} && (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]})) /call check_Disc_now
 
-		| do we pull or assist		
-		/if (${coreAuto} && !${Me.Invis} && (!${SafeZone} || ${switchOverrideSafezone})) {
-			/if (!${switchPull}) {
-				/call get_assist_target	
-			} else /if (${switchPull} && !${Target2Kill}) {	
-				DEBUG get target <= ${MobAgro} = ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]}		
-				/call get_target
+		| do we pull or assist	
+		/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {	
+			/if (${coreAuto} && (!${SafeZone} || ${switchOverrideSafezone})) {
+				/if (!${switchPull}) {
+					/call get_assist_target	
+				} else /if (${switchPull} && !${Target2Kill}) {	
+					DEBUG get target <= ${MobAgro} = ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]}		
+					/call get_target
+				}
 			}
 		}
 
@@ -303,25 +305,14 @@ sub base_preperation()
 	/squelch /hud ${HudType}
 	/squelch /loadhud ${HudName}
 			
+	| forcs sos switch for non rogues
+	/if (${switchSos} && !${Select[${Me.Class.ShortName},ROG]}) /call writeINI switchSos Common FALSE
 		
 	| KillCode Warning for stupid fucks that like to AFK farm
 	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE,0]}) {
-		| /mqclear
 		OUT ${sep} Hey.. You!
 		OUT ${owarning} ${sep} FIX: \aw/core killcode=\ax${remoteKillKey}
 		OUT ${cbad}CHANGE THIS\ax
 	}		
-	
 		
-	| auto melee skills
-	| /if (${Bool[${kick}]} && !${Skill[Kick].Auto}) /autoskill kick
-	| /if (${Bool[${bash}]} && !${Skill[Bash].Auto}) /autoskill bash
-	| /if (${Bool[${frenzy}]} && !${Skill[Frenzy].Auto}) /autoskill frenzy
-	| /if (${Bool[${backstab}]} && !${Skill[Backstab].Auto}) /autoskill backstab
-	| /if (${Bool[${dragonpunch}]} && !${Skill[dragon punch].Auto}) /autoskill dragon punch
-	| /if (${Bool[${eaglestrike}]} && !${Skill[eagle strike].Auto}) /autoskill eagle strike
-	| /if (${Bool[${tigerclaw}]} && !${Skill[tiger claw].Auto}) /autoskill tiger claw
-	| /if (${Bool[${flyingkick}]} && !${Skill[flying kick].Auto}) /autoskill flying kick
-	| /if (${Bool[${roundkick}]} && !${Skill[round kick].Auto}) /autoskill round kick
-	
 /return

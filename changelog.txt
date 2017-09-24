@@ -6,6 +6,30 @@
  * WHITEWASH means a '/core whitewash' needs to be run to reset the aliases
  * HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
  ***|
+  
+Video: https://vimeo.com/235171246
+
+
+
+20170923
+- #Declare MQLOG declare issue. renamed to LOG
+- bug in /t for ports. is fixed. wizards and druids will send you to far off places
+- cast_cure()
+  -- added in some more aggressive self curing for the healer classes
+- class.rog.inc
+  -- /rog [autosos] - enable/disable using SOS all the damn time 
+  -- will now use sneak attack line of discs 
+- check_buffs_BC()
+  - rewrote. had to account for changing tot he netbots that eqmule has precompiled
+
+
+
+20170922
+- unbroke the /cc smartengage command. i had previously umm. broke it..
+- class.brd.inc
+  -- changed Rallying call to Rallying Solo
+- class.clr.inc
+  -- cast_cure call typo
 
 
 20170921
@@ -44,7 +68,6 @@ DB patch Sep 20, 2017
   -- since they fucked up virulent tallon. can add it back in the class.ini->[pet] buffs like so
     -- PetBuff1=Frenzied Burnout
     -- PetBuff1chk=Virulent Talon
-
 
  
 20170919

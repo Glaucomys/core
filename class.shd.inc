@@ -152,7 +152,7 @@ sub get_agro_SHD()
 	}
 
 	| AE lifetap	
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]} && ${Me.SpellReady[${AeLifeTap}]}) /call core_cast "${AeLifeTap}" 0 ${Target2Kill}
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]} && ${Me.SpellReady[${AELifeTap}]}) /call core_cast "${AELifeTap}" 0 ${Target2Kill}
 	
 	| fake hate
 	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill}
