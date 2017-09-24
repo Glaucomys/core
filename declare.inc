@@ -222,7 +222,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20170923
+	/declare coreBuild	 														int			outer 20170924
 
 	/declare _count 																int 		local
 	/declare combat																	string	outer

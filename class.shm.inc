@@ -41,9 +41,9 @@ sub core_SHM()
 	} else /if (${Select[${combat},HEAL]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target.ID}
-		/if (${switchdeBuffCripple}) /call cast_cripple_${Me.Class.ShortName} ${Target.ID}
-		/if (${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Turgur's Swarm"
+		/if (${Target2Kill} && ${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
+		/if (${Target2Kill} && ${switchdeBuffCripple}) /call cast_cripple_${Me.Class.ShortName} ${Target.ID}
+		/if (${Target2Kill} && ${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Turgur's Swarm"
 		/call disc_${Me.Class.ShortName}
 		/call is_target_valid ${Target2Kill}
 		/if (${isValidTarget}) {
@@ -99,49 +99,6 @@ sub clickDPS_SHM()
 	/if (${Me.ItemReady[${Epic}]} && !${Me.Song[Prophet's Gift of the Ruchu].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 3)  /call core_cast "${Epic}" item
 /return
 	
-
-
-|***
- *	DES: AA Slow
- *	USE: auto
- *	INI: 
- *  NOTE: 
-
-sub cast_AA_slow_SHM(int _tmpID)
-	DEBUGCLASS ${cbug}cast_AA_slow_SHM(${_tmpID})\ax
-	AMIDEAD
-
-	/doevents
-	/call check_exit TRUE
-	/if (${Bool[${Macro.Return}]} || ${timer_slow_${_tmpID}}) /return
-
-	| check for overwrite slows
-	/declare _tmpSlow string local ${Target.Slowed}
-	/if (${Target.Slowed.Duration})
-		/if (${_tmpSlow.Find[Undermining]}) /call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
-		/return
-	}
-
-	/declare _resistCount int local 0
-	:loopslow
-	AMIDEAD
-
-	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[Turgur's Swarm].MyRange}) {
-		/call core_cast "Turgur's Swarm" alt ${Target2Kill}
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_slow_${_tmpID} ${Spell[Turgur's Swarm].Duration.TotalSeconds}s
-		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST,CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}+1
-			/if (${_resistCount} >= 3) {
-				/call create_timer timer_slow_${_tmpID} ${Spell[Turgur's Swarm].Duration.TotalSeconds}m
-			} else {
-				/goto :loopslow
-			}
-		}
-	}
-
-/return
- ***|
 
 
 |***

@@ -9,6 +9,11 @@
  ***|
   
 
+20170924
+- cast_AA_slow()
+  -- missed another variavle that needed predefining. never gonna end.
+- check_buff_bc()
+  -- was ignoring the class lists
 
 
 20170923

@@ -912,8 +912,10 @@ sub check_buffs_BC()
 			/if (${Spawn[pc ${NetBots.Client[${_toon}]}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
 			/if (!${Bool[${Spawn[${NetBots.Client[${_toon}]}].ID}]} || ${Spawn[${NetBots.Client[${_toon}]}].Dead}) /continue
 				
-			| what is this?
+			| no class to buff?
 			/if (!${Bool[${BCBuff${_buff}Class}]}) /continue
+			| targets class not listed
+			/if (!${BCBuff${_buff}Class.Find[${Spawn[${NetBots.Client[${_toon}]}].Class.ShortName}]}) /continue
 			DEBUG ${_buff} / ${BuffCount} class - ${Bool[${BCBuff${_buff}Class}]}
 			/if (${Raid.Members} && ${Buff${_buff}noBCinRaid}) /continue
 			DEBUG ${_buff} / ${BuffCount} raid - ${Raid.Members} && ${Buff${_buff}noBCinRaid}
@@ -3011,7 +3013,7 @@ sub update_HUD_notices(string _mode)
  *  NOTE: 
  ***|
 sub cast_AA_slow(int _tmpID, string _tmpSpell)
-	DEBUGCAST ${cbug}cast_AA_slow(${_tmpID}, ${_tmpSpell})\ax
+	DEBUG ${cbug}cast_AA_slow(${_tmpID}, ${_tmpSpell})\ax
 	/if (${timer_slow_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -3026,7 +3028,7 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
 
 	/declare _resistCount int local 0
 	
-	/while (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_tmpSpell}].MyRange} && !{timer_slow_${_tmpID}}) {
+	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_tmpSpell}].MyRange} && !${timer_slow_${_tmpID}}) {
 		AMIDEAD
 		/call core_cast "${_tmpSpell}" alt ${_tmpID}
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
@@ -4656,6 +4658,7 @@ sub prep_combat()
 		} else /if (${Select[${Me.Class.ShortName},SHM]}) {
 			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
 			/if (${switchdeBuffMalo} && !${Defined[timer_malo_${Target2Kill}]}) /call create_timer timer_malo_${Target2Kill} 1
+			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
 
 		} else /if (${Select[${Me.Class.ShortName},WAR]}) {
 
