@@ -889,7 +889,7 @@ sub click_horn_of_unity()
  *  NOTE: 
   ***|
 sub check_buffs_BC()
-	SDEBUG ${cbug}check_buffs_BC()\ax
+	DEBUG ${cbug}check_buffs_BC()\ax
 	/if (${coreAuto} && (!${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]})) /return
 	/if (${coreAuto}) /call create_timer timer_check_buffs_BC ${tBC_Buff}
 	UPDATEHUD "BUFF: BC"	
@@ -1066,6 +1066,7 @@ sub do_rest()
 			/if (${Select[${Me.Class.ShortName},WAR]}) {
 			} else /if (${Select[${Me.Class.ShortName},MNK]}) {
 			} else /if (${Select[${Me.Class.ShortName},ROG]}) {
+				/if (${coreAuto} && ${switchSos}) /call automaticSoS
 			} else /if (${Select[${Me.Class.ShortName},BER]}) {
 			}
 			
@@ -3017,7 +3018,7 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
 	/doevents
 
 	| check for overwrite slows
-	/if (!${Defined[_tmpSlow]}) /declare _tmpSlow string local ${Target.Slowed}
+	/declare _tmpSlow string local ${Target.Slowed}
 	/if (${Target.Slowed.Duration}) {
 		/if (${_tmpSlow.Find[Undermining]}) /call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
 		/return

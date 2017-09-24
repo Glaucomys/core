@@ -800,11 +800,9 @@ sub set_declares()
 	| buffs
 	/call DeclareIniVar BuffRemove									string	Buffs "|Illusion: Gnoll Reaver|Illusion: Darkfell Gnoll Reaver|Illusion: Blackburrow Gnoll Reaver|Illusion: Mucktail Gnoll Reaver|Illusion: Direwind Gnoll Reaver|Illusion: Human Pirate|Illusion: Ogre Pirate"
 
-  /declare 		buffType												string	outer |stop|self|item|combat|bc|raid|tell|pet
-	/declare		switchBuff											bool		outer FALSE
-	/declare		switchBuffStop									bool		outer FALSE
-	| /declare		switchBuffType							string	outer FALSE
-
+  /declare buffType																string	outer |stop|self|item|combat|bc|raid|tell|pet
+	/declare switchBuff															bool		outer FALSE
+	/declare switchBuffStop													bool		outer FALSE
 	/call DeclareIniVar switchBuffItem	 						bool		Buffs FALSE 
 	/call DeclareIniVar switchBuffCombat 						bool		Buffs FALSE 
 	/call DeclareIniVar switchBuffPet 							bool 		Pet FALSE 
@@ -821,7 +819,7 @@ sub set_declares()
 		/call DeclareIniVar switchBuffTell						bool		Buffs FALSE
 
 		| bc/tell buffs
-		/declare BuffCount												int 		outer 15
+		/declare BuffCount															int 		outer 15
 		/for _count 1 to ${BuffCount}
 			/call DeclareIniVar Buff${_count}							string 	Buffs FALSE
 			/call DeclareIniVar Buff${_count}chk					string 	Buffs FALSE
@@ -2739,6 +2737,7 @@ sub Bind_cast_AA_invis()
 #bind click_primary_anchor /primary
 sub Bind_click_primary_anchor()
 	/if (${Me.ItemReady[Primary Anchor Transport Device]}) {
+		/if (${Me.Invis}) /makemevisible
 		/if (${Me.Casting.ID}) /stopcast
 		/call core_cast "Primary Anchor Transport Device" item 0
 	}
@@ -2755,6 +2754,7 @@ sub Bind_click_primary_anchor()
 #bind click_secondary_anchor /secondary
 sub Bind_click_secondary_anchor()
 	/if (${Me.ItemReady[Secondary Anchor Transport Device]}) {
+		/if (${Me.Invis}) /makemevisible
 		/if (${Me.Casting.ID}) /stopcast
 		/call core_cast "Secondary Anchor Transport Device" item 0
 	}
@@ -2930,18 +2930,25 @@ sub Bind_buff(string _buffType)
 				/call writeINI switchBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower} Buffs FALSE  
 			}
 		/next _count
+	| self
 	} else /if (${_buffType.Equal[self]}) {
 		/call writeINI switchBuffSelf Buffs ${If[${switchBuffSelf},FALSE,TRUE]}
+	| item
 	} else /if (${_buffType.Equal[item]}) {
 		/call writeINI switchBuffItem Buffs ${If[${switchBuffItem},FALSE,TRUE]}
+	| combat
 	} else /if (${_buffType.Equal[combat]}) {
 		/call writeINI switchBuffCombat Buffs ${If[${switchBuffCombat},FALSE,TRUE]}
+	| bc
 	} else /if (${_buffType.Equal[bc]}) {
 		/call writeINI switchBuffBc Buffs ${If[${switchBuffBc},FALSE,TRUE]}
+	| raid
 	} else /if (${_buffType.Equal[raid]}) {
 		/call writeINI switchBuffRaid Buffs ${If[${switchBuffRaid},FALSE,TRUE]}
+	| tell
 	} else /if (${_buffType.Equal[tell]}) {
 		/call writeINI switchBuffTell Buffs ${If[${switchBuffTell},FALSE,TRUE]}
+	| pet
 	} else /if (${_buffType.Equal[pet]}) {
 		/if (${Select[${Me.Class.ShortName},NEC,ENC,SHM,DRU,BST,SHD,MAG]}) {
 			/call writeINI switchBuffPet Pet ${If[${switchBuffPet},FALSE,TRUE]}
@@ -3005,6 +3012,8 @@ sub Bind_cursor(string _cursorType, string _time)
 sub Bind_rez(string _rezType, string _verbage)
 	DEBUG ${cbug}Bind_rez(type: ${_rezType}, pct: ${_verbage})\ax
 	/declare _count int local 0
+	/declare _listout string local
+	/declare _sep bool local FALSE
 	
 	/if (${Bool[${rezType.Find[${_rezType}]}]} && ${_rezType.NotEqual[stop]} && ${_rezType.NotEqual[pct]} && ${_rezType.NotEqual[range]}) {
 		/if (${Defined[switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}]}) {
@@ -3027,24 +3036,24 @@ sub Bind_rez(string _rezType, string _verbage)
 		/if (${Range.Between[10,96:${Int[${_verbage}]}]}) {
 			/if (${rezPct.Find[${_verbage}]}) /call writeINI minRezPct Common ${_verbage}
 		}
-		/declare _listout string local
-		/declare _sep bool local FALSE
+		/varset _sep FALSE
 		/for _count 1 to ${rezPct.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${minRezPct} == ${rezPct.Arg[${_count},|]},${cgood},${cinfo}]}${rezPct.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		OUT /rez pct [${_listout}]
+		VOUT /rez pct [${_listout}]
+		/return
 	} else /if (${_rezType.Equal[range]}) {
 		/if (${Range.Between[1,110:${Int[${_verbage}]}]}) {
 			/call writeINI maxRezRange Heal ${_verbage}
 			| OUT /rez range [${cinfo}${_verbage}\ax]
 		} else {
-			OUT /rez range [${cinfo}${maxRezRange}\ax] allowable range is ${cinfo}1 - 110\ax
+			VOUT /rez range [${cinfo}${maxRezRange}\ax] allowable range is ${cinfo}1 - 110\ax
 			/return
 		}
 	} 
-	/declare _listout string local
-	/declare _sep bool local FALSE
+
+	/varset _sep FALSE
 	/for _count 1 to ${rezType.Count[|]}
 		/if (${rezType.Arg[${_count},|].Equal[pct]}) {
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}pct[${cgood}${minRezPct}\ax]\ax
@@ -3055,7 +3064,7 @@ sub Bind_rez(string _rezType, string _verbage)
 		}
 		/varset _sep TRUE
 	/next _count
-	OUT /rez [${_listout}] [${cinfo}##\ax]]			
+	VOUT /rez [${_listout}] [${cinfo}##\ax]		
 /return
 
 

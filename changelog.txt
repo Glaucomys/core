@@ -5,9 +5,9 @@
  *
  * WHITEWASH means a '/core whitewash' needs to be run to reset the aliases
  * HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
+ * Video: https://vimeo.com/235171246
  ***|
   
-Video: https://vimeo.com/235171246
 
 
 
@@ -20,7 +20,7 @@ Video: https://vimeo.com/235171246
   -- /rog [autosos] - enable/disable using SOS all the damn time 
   -- will now use sneak attack line of discs 
 - check_buffs_BC()
-  - rewrote. had to account for changing tot he netbots that eqmule has precompiled
+  - rewrote. had to account for changing to the netbots that eqmule has precompiled
 
 
 
