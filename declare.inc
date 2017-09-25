@@ -648,7 +648,7 @@ sub set_declares()
 	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
    
  	| Movement control
-  /declare movementType														string	outer |arc|behind|fast|home|leash|radius
+  /declare movementType														string	outer |arc|behind|fast|home|leash|mount|radius
 	/call DeclareIniVar HomeSet											bool		Movement FALSE
 	/call DeclareIniVar HomeRadius									int 		Movement 5
 	/call DeclareIniVar HomeLeash										int 		Movement 40
@@ -761,7 +761,7 @@ sub set_declares()
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) {
 
 		/call DeclareIniVar PetTank 									bool 		Pet FALSE
-		/call DeclareIniVar PetTypeSpell 							string 	Pet FALSE
+		| /call DeclareIniVar PetTypeSpell 							string 	Pet FALSE
 		/call DeclareIniVar useSummonWeps 						bool 		Pet TRUE
 		/call DeclareIniVar EpicClick 								string 	Pet FALSE
 		/call DeclareIniVar EpicPetBuff 							string 	Pet FALSE
@@ -2511,7 +2511,7 @@ sub Bind_setCombatHere()
 #Event CantLoot "#*#may not loot this corpse#*#"
 sub Event_CantLoot
    DEBUG Event_CantLoot Can't loot ${Target.DisplayName} ${Target.ID}
-   /varset CantLootID ${Target.ID}
+   | /varset CantLootID ${Target.ID}
 /return
 
 
@@ -3267,7 +3267,7 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 		
 	| pc type
 	} else /if (${Bool[${_pcType.Equal[type]}]}) {
-		/call writeINI PetTypeSpell Pet ${_pcString}
+		/call writeINI PcPettype Pet ${_pcString}
 	
 		
 		
@@ -4053,7 +4053,27 @@ sub Bind_setMovementControls(string _movementType, string _movementVerbage)
 		} else {
 			OUT /movement arc [${cinfo}${SetFaceArc}\ax] Facing Movement buffer range ${cinfo}1 - 45\ax
 		}	
-
+		
+	| i need mounts
+	} else /if (${Bool[${_movementType.Equal[mount]}]}) {
+		/if (!${Bool[${_movementVerbage}]}) {
+			VOUT /movement mount [${cinfo}on\ax ${sep} ${cinfo}off\ax]
+		} else /if (${Bool[${_movementVerbage.Equal[off]}]}) {
+			/if (!${Bool[${Me.Mount.ID}]}) {
+				/return
+			} else /if (${Bool[${Me.Mount.ID}]}) {
+				/dismount
+				/return
+			}
+		} else /if (${Bool[${_movementVerbage.Equal[on]}]}) {
+			/if (${Bool[${Me.Mount.ID}]}) /return
+			/if (${Zone.Indoor}) {
+				VOUT Go outside..
+				/return
+			}			
+			/if (${Me.ItemReady[${mount}]}) /call core_cast "${mount}" item 0
+		}
+		
 	} else {
 		/call echos listtype movement movement 0 0 0
 	} 

@@ -14,6 +14,9 @@
   -- missed another variavle that needed predefining. never gonna end.
 - check_buff_bc()
   -- was ignoring the class lists
+- /movement [mount]
+  -- /movement mount [on] - summons mount you have on your keyring as listed in Toon.ini->[Common]->mount=
+  -- /movement mount [off] - dismounts. i know not needed. but for the sake of having it.
 
 
 20170923
