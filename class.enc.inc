@@ -1,3 +1,4 @@
+
 |***
  *	class.enc.inc
  *	Core Enchanter Include
@@ -29,7 +30,29 @@ sub core_ENC()
 	/if (!${Macro.Return}) /return
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
+		/call set_combat MELEE
+		/call send_pet
+		/call stick_to_target
+		/if (${switchdeBuffTash} && !${timer_tash_${Target2Kill}}) /call cast_tash ${Target2Kill}
+		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call cast_slow ${Target2Kill}
+		/if (${switchdeBuffCripple} && ${timer_cripple_${Target2Kill}} && (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID})) /call cast_cripple ${Target2Kill}
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${doclickItem}) /call click_item
+		/call disc_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/call send_pet
+		/call stick_to_target
+		/if (${switchdeBuffTash} && !${timer_tash_${Target2Kill}}) /call cast_tash ${Target2Kill}
+		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call cast_slow ${Target2Kill}
+		/if (${switchdeBuffCripple} && ${timer_cripple_${Target2Kill}} && (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID})) /call cast_cripple ${Target2Kill}
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${doclickItem}) /call click_item
+		/call disc_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke}) /call cast_nuke			
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/call send_pet
@@ -42,14 +65,16 @@ sub core_ENC()
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},HEAL]}) {
+		/call set_combat HEAL
+		/call send_pet
 	} else /if (${Select[${combat},DUAL]}) {
 		/doevents
 		AMIDEAD
 		CHECKTIE
 		/call get_target_ENC
 		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
-		/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
-		/call list_delete mobList ${Target2Kill}
+		| /if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
+		/if (${Bool[${mobList}]}) /call list_delete mobList ${Target2Kill}
 		/return
 		:loop
 		/doevents
@@ -80,9 +105,9 @@ sub core_ENC()
 		/if (${doclickItem}) /call click_item
 		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
-	/call use_mod_rod
-	/if (${switchBuffItem}) /call check_crystals
 	/if (${coreAuto}) {	
+		/call use_mod_rod
+		/if (${switchBuffItem}) /call check_crystals
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
@@ -100,21 +125,35 @@ sub core_ENC()
  *	INI: 
  *  NOTE: 
  ***|
-sub debuff_mobs
+sub debuff_mobs()
+ DEBUG ${cbug}debuff_mobs()\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
 	CHECKTIE
+	
 	/declare _count int local 0
 	/declare _tmpID string local 
+	/declare _loopCount int local 0
 	
-	
-	/if (${mobList.Find[|]} > 1) /varset mobList ${mobList.Right[-${Math.Calc[${mobList.Find[|]}-1]}]}
-	
-	/for _count 1 to ${mobList.Count[|]}
-		/varset _tmpID ${mobList.Arg[${_count},|.Left[-1]}
-	
-		UPDATEHUD DEBUFF
+	/if (${mobList.Find[|]} > 1) {
+		/varset mobList ${mobList.Right[-${Math.Calc[${mobList.Find[|]}-1]}]}
+		/varset _loopCount ${mobList.Count[|]}
+	} else /if (${mobList.Find[|]} < 1) {
+		/varset _tmpID ${Target2Kill}
+		/varset _loopCount 1
+		
+	}
+
+	/for _count 1 to ${_loopCount}
+		
+		/if (${mobList.Find[|]} > 1) {
+			/varset _tmpID ${mobList.Arg[${_count},|.Left[-1]}
+		} else /if (${mobList.Find[|]} < 1) {
+			/varset _tmpID ${Target2Kill}
+		}	
+		
+		UPDATEHUD "DEBUFF"
 		/squelch /target ID ${_tmpID}
 		
 		/if (${switchdeBuffTash} && !${timer_tash_${_tmpID}}) {
@@ -128,7 +167,7 @@ sub debuff_mobs
 			/call check_for_adds
 			/if (${addList.Count[|]}) /return
 		}
-		/if (${switchdeBuffCripple} && ${timer_cripple_${_tmpID}}) {
+		/if (${switchdeBuffCripple} && !${timer_cripple_${_tmpID}}) {
 			/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
 			/call check_for_adds
 			/if (${addList.Count[|]}) /return
@@ -384,7 +423,7 @@ sub mez_adds()
 					/call core_cast "Beam of Slumber" alt 0				
 				} 
 			}
-			/call cast_mez ${_tmpID}
+			/if (!${timer_mez_${_tmpID}}) /call cast_mez ${_tmpID}
 		}
 		/call list_delete addList ${_tmpID}
 		| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
@@ -402,11 +441,15 @@ sub mez_adds()
  *  NOTE: 
  ***|
 sub cast_mez(int _tmpID)
-	/doevents
+	DEBUG ${cbug}cast_mez(ID: ${_tmpID})\ax
+	DEBUG ${Target.ID} - ${timer_mez_${_tmpID}}
+	/if (${timer_mez_${_tmpID}}) /return
 	/declare _resistCount int local 0
+
 	:loopmez
 	AMIDEAD
-	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
+	/doevents
+	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
 
 	| check for mez immune list mobs
 	/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
@@ -417,6 +460,7 @@ sub cast_mez(int _tmpID)
 	}
 	
 	/if (${Target.Mezzed.Duration} && ${Spell[${Target.Mezzed}].Name.Find[${spellMez}]}) {
+		DEBUG target mezed: ${Spell[${Target.Mezzed}].Name.Find[${spellMez}]}
 		/call create_timer timer_mez_${_tmpID} ${Target.Mezzed.Duration.TotalSeconds}s
 		/return
 	} else /if (${Target.PctHPs} < 90) {
@@ -427,6 +471,7 @@ sub cast_mez(int _tmpID)
 	/if (${Me.CurrentMana} > ${Spell[${spellMez}].Mana}) {
 		/delay 2.25s ${Me.SpellReady[${spellMez}]}
 		/call core_cast "${spellMez}" 0 ${_tmpID} check_for_adds
+		DEBUG ${spellMez} -> ${castReturn}
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
 			/if (${Select[${castReturn},CAST_IMMUNE]}) {
@@ -455,6 +500,8 @@ sub cast_mez(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_tash(int _tmpID)
+	DEBUG ${cbug}cast_tash(ID: ${_tmpID})\ax
+	/if (${timer_tash_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -466,13 +513,23 @@ sub cast_tash(int _tmpID)
 		/return
 	}
 	
-	/if (${Target.Distance} <= ${Spell[${spellTash}].MyRange} && ${Target.LineOfSight}) {
+	/if (${Target.Distance} <= ${Spell[${spellTash}].MyRange} && ${Target.LineOfSight} && ${Me.Gem[${spellTash}]}) {
 		/call core_cast "${spellTash}" 0 ${_tmpID} check_for_adds
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
-			/return
 		}
+	} else /if (${Target.Distance} <= ${Spell[Tashan's Lingering Cry].MyRange} && ${Target.LineOfSight} && ${Me.AltAbilityReady[Tashan's Lingering Cry]}) {
+		/call core_cast "Tashan's Lingering Cry" alt ${_tmpID} check_for_adds
+		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
+		}	
 	}
+
+	
+	
+	
+	
+	
 /return
 
 
@@ -532,6 +589,8 @@ sub cast_slow(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_cripple(int _tmpID)
+	DEBUG ${cbug}cast_cripple(ID: ${_tmpID})\ax 
+	/if (${timer_cripple_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -552,8 +611,11 @@ sub cast_cripple(int _tmpID)
 	}	
 	
 	:loopcripple
-	/if (${Target.Distance} <= ${Spell[${spellCripple}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellCripple}].Mana} && ${Target.LineOfSight}) {
+	/if (${Spawn[${Target.ID}].Distance} <= ${Spell[${spellCripple}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellCripple}].Mana} && ${Target.LineOfSight}) {
+		
 		/call core_cast "${spellCripple}" 0 ${_tmpID} check_for_adds
+		
+		
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
 		} else /if (${Select[${castReturn},CAST_IMMUNE]}) {
@@ -612,7 +674,7 @@ sub is_attacking(int _tmpID)
 	/if (${_ani} == 129) /varset _isAttacking TRUE
 	/if (${_ani} == 144) /varset _isAttacking TRUE
 	/if (${_ani} == 146) /varset _isAttacking FALSE
-	DEBUGCLASS ${cbad}Unknown Animation\ax #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name}).
+	DEBUGCLASS ${cbad}Unknown Animation\ax #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name})
 /return ${Bool[${_isAttacking}]}	
 
 

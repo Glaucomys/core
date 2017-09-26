@@ -611,9 +611,9 @@ sub check_aura()
 		/return
 	}
 
-	/if (!${Defined[_count]}) /declare _count int local
-	/if (!${Defined[_aura]}) /declare _aura int local
-	/if (!${Defined[_found]}) /declare _found bool false
+	/declare _count int local
+	/declare _aura int local
+	/declare _found bool false
 
 	/for _aura 1 to 2
 		/if (${Bool[${Aura${_aura}Spell}]}) {
@@ -1571,7 +1571,6 @@ sub is_target_valid(int _tmpID)
 			/call clear_combat
 		}
 	}
-
 	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${switchPull} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && !${switchOverrideEngageat}) {
 		/delay 1
 		/varset isValidTarget FALSE
@@ -1762,7 +1761,7 @@ sub cast_nuke_rain()
  ***|
 sub cast_malo_tash(int _tmpID)
 	DEBUGCAST ${cbug}cast_malo_tash(\ax${cinfo}${_tmpID}\ax${cbug})\ax
-	/if (!${switchdeBuffMalo} && !${switchdeBuffTash} || !${Target.ID}) /return
+	/if (!${switchdeBuffMalo} && !${switchdeBuffTash}) /return
 	AMIDEAD
 	CHECKEXIT
 	/call is_target_dead
@@ -3477,7 +3476,7 @@ sub cast_rez(int _tmpID, string _rezAA)
 	
 	| can we AA res or token?
 	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[${_rezAA}]} && ${switchRezEmergency})) {	
-		ECHOCHANNEL Rezzing: ${Spawn[${_tmpID}].DisplayName}
+		ECHOCHANNEL Rezzing (${Me.Class.ShortName}): ${Spawn[${_tmpID}].DisplayName}
 
 		| res the damn person
 		/if (!${switchRezEmergency}) {
@@ -3637,7 +3636,7 @@ sub list_add(string _listName, string _tmpID)
  ***|
 sub list_delete(string _listName, string _tmpID)
 	DEBUGARRAY ${cbug}list_delete(list: ${_listName}, ID:${_tmpID})\ax
-	/if (${${_listName}.Equal[NULL]} || ${${_tmpID}.Equal[NULL]} || !${${_listName}.Find[${_tmpID}]}) /return
+	/if (${Bool[${${_listName}.Equal[NULL]}]} || ${Bool[${${_tmpID}.Equal[NULL]}]} || !${Bool[${${_listName}.Find[${_tmpID}]}]}) /return
 
 	/varset _tmpID |${_tmpID}
 	/declare _a int local
@@ -3693,6 +3692,11 @@ sub check_for_adds()
 	:loopnextmob
 	/if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los playerstate 4].ID}) {
 		/varset _tmpID ${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable ${If[${switchOverrideLos},,los]} playerstate 4].ID}
+			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
+			/if (${switchdeBuffTash} && !${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
+			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${_tmpID}]}) /call create_timer timer_slow_${_tmpID} 1
+			/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${_tmpID}]}) /call create_timer timer_cripple_${_tmpID} 1
+			/if (${switchdeBuffMezz} && !${Defined[timer_mez_${_tmpID}]}) /call create_timer timer_mez_${_tmpID} 1
 		| /if (${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Distance}<=${MobAgro} && ${Spawn[id ${_tmpID}].LineOfSight} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[${_tmpID}].DisplayName.Length}>1 && ${Spawn[${_tmpID}].Type.NotEqual[Untargetable]}) {
 		/if (${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Distance}<=${MobAgro} && ${Spawn[id ${_tmpID}].LineOfSight} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Untargetable]}) {
 			/if (!${timer_mez_${_tmpID}}) {
@@ -3789,7 +3793,7 @@ sub check_buffs_tell()
 	/if (${coreAuto}) /call create_timer timer_check_buffs_tell ${tTell_Buff}
 
 	/for _count 1 to ${queueCount}
-		DEBUGARRAY queue count: ${queueCount}
+		DEBUGARRAY Tell queue count: ${queueCount}
 		AMIDEAD
 		CHECKEXIT
 		/if (${queueList[${_count},2]} < ${_tmpVAR} && ${Spawn[${queueList[${_count},1]}].ID} && !${Spawn[${queueList[${_count},1]}].Dead} && (${Spawn[${queueList[${_count},1]}].Distance} <  ${Spell[${Buff${queueList[${_count},2]}}].MyRange} || ${Spawn[${queueList[${_count},1]}].Distance} < ${Spell[${Buff${queueList[${_count},2]}}].AERange}) && ${Me.CurrentMana} > ${Spell[${Buff${_tmpVAR}}].Mana}) {
@@ -4613,6 +4617,7 @@ sub prep_combat()
 
 		} else /if (${Select[${Me.Class.ShortName},BRD]}) {
 			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
+			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
 
 		} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1

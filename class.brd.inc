@@ -27,8 +27,10 @@ sub core_BRD()
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
+		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
 		/if (${Bool[${Target2Kill}]}) /call disc_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
+		| /if (${DoDoT}) /call bard_dot
 		/if (${DoNuke}) /call bard_nuke
 		/call pulse
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -91,10 +93,9 @@ sub disc_BRD()
 	/call is_target_dead
 	/if (${Macro.Return}) /return
 	/call stick_to_target
-	/if ((${Me.AltAbilityReady[Selo's Kick]} || ${Me.AltAbilityReady[Banestrike]} || ${Me.AltAbilityReady[Cacophony]} || ${Me.AltAbilityReady[Bladed Song]} || ${Me.AltAbilityReady[Boastful Bellow]}) && ${Me.Casting.ID}) /call pulse_stop
+	/if ((${Me.AltAbilityReady[Banestrike]} || ${Me.AltAbilityReady[Cacophony]} || ${Me.AltAbilityReady[Bladed Song]} || ${Me.AltAbilityReady[Boastful Bellow]}) && ${Me.Casting.ID}) /call pulse_stop
 	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0
 		/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
-	/if (${Me.AltAbilityReady[Selo's Kick]}) /call core_cast "Selo's Kick" alt ${Target2Kill}
 	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill}
 	/if (${Me.AltAbilityReady[Cacophony]}) /call core_cast "Cacophony" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt ${Target2Kill}
@@ -179,17 +180,13 @@ sub mem_song_line(string _line)
 
 
 
-
-
-
-
 |***
  *	DES: Sing "Pulse" a single song
  *	USE: /call pulse [gem##] 
  *	INI: 
  *  NOTE:
  ***|
- sub pulse()
+sub pulse()
  	DEBUGCLASS ${cbug}pulse()\ax
 
 	/declare _pulseSong			bool local FALSE
@@ -205,7 +202,10 @@ sub mem_song_line(string _line)
 			CHECKEXIT
 			/doevents
 			/call is_target_dead
-			/if (${Macro.Return}) /return
+		/if (${Macro.Return}) }
+			/call pulse_stop
+			/return
+		}
 			/call stick_to_target
 			| /if (${Me.Casting.ID}) /stopcast
 			/call pulse_valid ${_index}
@@ -246,10 +246,10 @@ sub pulse_valid(_gem)
 sub pulse_stop()
 	DEBUGCLASS ${cbug}pulse_stop()\ax 
 	
-	/stopcast		
-	/delay 2
+	| /stopcast		
+	| /delay 2
 	/while (${Me.Casting.ID}) {
-		/delay 1
+		/delay 5
 		/stopcast
 	}
 /return
@@ -267,7 +267,7 @@ sub core_sing(_spellgem)
 	CHECKEXIT
 	/doevents
 	/call fix_gem_id "${_spellgem}"
-	/declare _gem			int local ${Macro.Return}
+	/declare _gem int local ${Macro.Return}
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /return	
 	/call stick_to_target
 	/if (${Me.Casting.ID}) {
@@ -278,8 +278,6 @@ sub core_sing(_spellgem)
 	/melody ${_gem}
 	| /delay 25
 	/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
-	
-	
 	/delay 2
 	/call pulse_stop
 /return
@@ -308,6 +306,38 @@ sub bard_nuke()
 		}
 	/next _count
 /return
+
+
+
+
+|***
+ *	DES: Cast nukes
+ *	USE: /call bard_nuke
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub bard_dot()
+	DEBUGCLASS ${cbug}bard_dot()\ax
+	/call get_assist_target
+	/declare _count int local
+	/for _count 1 to ${DoDoT}
+		AMIDEAD
+		CHECKEXIT
+		/doevents
+		/call is_target_dead
+		/if (${Macro.Return}) /return
+		/if (${Target.BuffDuration[${DoT${_count}}]} >= 2) /return
+		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${DoT${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${DoT${_count}}].MyRange} && ${Me.CurrentMana} >= ${DoT[${Nuke${_count}}].Mana}) {
+			/call stick_to_target
+			/call core_sing ${Me.Gem[${DoT${_count}}]}
+		}
+	/next _count
+/return
+
+
+${Me.SpellReady[${DoT1}]}
+
+
 
 
 
@@ -441,6 +471,35 @@ sub synergy_BRD()
 	/call use_glyph
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn	
+/return
+
+
+
+|***
+ *	DES: AA Slow
+ *	USE: /call pulse_slow [TARGET ID]
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub pulse_slow(int _tmpID)
+	DEBUG ${cbug}pulse_slow(ID ${_tmpID})\ax
+	/if (${timer_slow_${_tmpID}}) /return
+	AMIDEAD
+	CHECKEXIT
+	/doevents
+	/call is_target_dead
+	/if (${Macro.Return}) /return
+		
+	| dont waste time if its slowed already
+	/if (${Target.Slowed.Duration}) {
+		DEBUG Target Slowed: ${Target.Slowed.Duration.TotalSeconds}s
+		/call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
+		/return
+	}
+	
+	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${spellSlow}].MyRange} && !${timer_slow_${_tmpID}}) {
+		/call core_sing ${Me.Gem[${spellSlow}]}
+	}
 /return
 
 

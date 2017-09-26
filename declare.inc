@@ -222,7 +222,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20170924
+	/declare coreBuild	 														int			outer 20170926
 
 	/declare _count 																int 		local
 	/declare combat																	string	outer
@@ -1718,12 +1718,17 @@ sub declare_BRD()
 	
 	/call DeclareIniVar songDicho										string	Song "Dichotomic Psalm"
 	
-	/call DeclareIniVar DoNuke					 						int			Song 1
-	/call DeclareIniVar Nuke1												string 	Song "Tsaph's Insult"
+	/call DeclareIniVar DoNuke					 						int			Song 0
+	/call DeclareIniVar Nuke1												string 	Song FALSE
 	/call DeclareIniVar Nuke2												string 	Song FALSE
-	
+
+	/call DeclareIniVar DoDoT						 						int			Song 0
+	/call DeclareIniVar DoT1												string 	Song FALSE
+	/call DeclareIniVar DoT2												string 	Song FALSE
+
 	/call DeclareIniVar spellMez										string 	Song "Slumber of Silisia"
 	/call DeclareIniVar spellpbaeMez								string	Song "Wave of Torpor"	
+	/call DeclareIniVar spellSlow										string	Song "Requiem of Time"	
 /return	
 
 
@@ -1807,6 +1812,9 @@ sub declare_ROG()
 	/call DeclareIniVar DiscHiddenBlade							string 	Discs "Hidden Blade"	
 	/call DeclareIniVar DiscBladePoison							string 	Discs "Reefcrawler Blade"	
 	/call DeclareIniVar DiscSneakAttack							string 	Discs "Daggergash"	
+	/call DeclareIniVar DiscShadowHunter						string 	Discs "Shadow-Hunters Dagger"	
+	/call DeclareIniVar DiscDisassociative					string 	Discs "Disassociative Puncture"	
+	
 
 	| disable for toast
 	/call DeclareIniVar DiscVision 									string 	Discs "Thief's Vision"	

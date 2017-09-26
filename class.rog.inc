@@ -96,6 +96,10 @@ sub disc_ROG()
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0
 	/if (${Target.ID} && ${Me.AltAbilityReady[Twisted Shank]}) /call core_cast "Twisted Shank" alt ${Target2Kill}
 	/if (${Target.ID} && ${Me.AltAbilityReady[Absorbing Agent]}) /call core_cast "Absorbing Agent" alt ${Target2Kill}
+	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscShadowHunter}]}) /call core_cast "${DiscShadowHunter}" disc ${Target2Kill}
+	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscDisassociative}]}) /call core_cast "${DiscDisassociative}" disc ${Target2Kill}
+	
+	
 	| /if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]}) /call core_cast "Dirty Fighting" alt ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBleed}]} && ${Bool[${DiscBleed}]}) /call core_cast "${DiscBleed}" disc ${Target2Kill}

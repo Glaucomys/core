@@ -9,9 +9,24 @@
  ***|
   
 
+20170926
+- class.enc.inc
+  -- debuff_mobs() rewrite
+    -- should auto switch between single mobs and groups
+  -- fixed the undeclared mass mezzing/debuff list control variables 
+
+
+20170925
+- class.brd.inc
+  -- /debug slow will turn on bard slowing. slows current target only
+  -- removed selo's kick. now part of kick skill
+- class.rog.inc
+  -- added EoK disc shadow-hunter dagger to spam dps
+
+
 20170924
 - cast_AA_slow()
-  -- missed another variavle that needed predefining. never gonna end.
+  -- missed another variable that needed predefining. never gonna end.
 - check_buff_bc()
   -- was ignoring the class lists
 - /movement [mount]

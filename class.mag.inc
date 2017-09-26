@@ -37,9 +37,9 @@ sub core_MAG()
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
+		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
 		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
 		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
-		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
