@@ -38,6 +38,7 @@ sub core_NEC()
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
+		/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]} && ${Target.Body.Name.Equal[Undead]}) /call cast_AA_slow ${Target2Kill} "Death's Malaise"
 		/call disc_${Me.Class.ShortName}
 		/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill}
 		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
@@ -46,7 +47,7 @@ sub core_NEC()
 		/call click_DPS_${Me.Class.ShortName}
 		/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
 		/if (${DoNuke}) /call cast_nuke
-		/if (${DoDoT}) /call cast_DOT_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
 
 		/if (${doclickItem}) /call click_item TRUE
 		/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
@@ -77,7 +78,7 @@ sub core_NEC()
  *	USE: /call cast_DOT_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: 
- ***|
+
 sub cast_DOT_NEC()
 	DEBUGCAST ${cbug}cast_DOT_NEC(count ${DoDoT})\ax
 	/call get_assist_target
@@ -93,7 +94,7 @@ sub cast_DOT_NEC()
 		}
 	/next _count
 /return
-
+ ***|
 
 
 
@@ -128,22 +129,8 @@ sub disc_NEC()
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
 
-
-
 	| aa wake the dead
 	/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill}
-		
-
-	| undead slow
-	| Death's  Malaise
-	
-	
-	| necro res
-	| Convergence / Essence Emerald
-	
-	| /if (${switchHealSelf} && ${Me.PctHPs} < 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Leech Touch]}) /call core_cast "Leech Touch" alt ${Target2Kill}
-	| /if (${switchHealSelf} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0
-	
 /return
 
 
@@ -178,7 +165,6 @@ sub cast_blood(int _tmpID)
 	/call is_target_dead
 	/if (${Macro.Return}) /return
 	/call core_cast "${spellBlood}" 0 ${_tmpID}	
-		
 /return
 
 

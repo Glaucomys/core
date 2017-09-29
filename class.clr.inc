@@ -48,6 +48,7 @@ sub core_CLR()
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},HEAL]}) {
+		| /if (${switchLockMA}) /call lock_ma
 		CHECKREZ
 		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
@@ -643,7 +644,7 @@ sub auto_control_swap()
  *	DES: Cleric burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
- *	NOTE: you will find nothing of value here. go look at class.clr.inc
+ *	NOTE: you will find little of value here.
  ***| 
 sub synergy_CLR()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
@@ -655,6 +656,69 @@ sub synergy_CLR()
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn
 /return
+
+
+
+
+
+ |***
+ *	DES: locks working target to the established MA
+ *	USE: /clr lock | /call lock_ma
+ *	INI: 
+ *	NOTE: 
+sub lock_ma()
+/return
+	DEBUG ${cbug}lock_ma()\ax
+	/if (${SafeZone} && !${switchOverrideSafezone} || !${autoCore}) /return
+	AMIDEAD
+	CHECKEXIT
+	/declare _tmpID int local 0
+	
+	
+	/if (${Bool[${Group.Members}]} && !${Raid.Members}) {
+		/if (${Spawn[pc ${Group.MainAssist}].ID}) /varset _tmpID ${Spawn[pc ${Group.MainAssist}].ID}		
+	
+	
+	${Me.GroupAssistTarget}
+	
+		/if (${Spawn[pc ${MA1}].ID}) {
+			/varset _targetID 
+		} else /if (!${Spawn[pc ${MA1}].ID} && ${Spawn[pc ${MA2}].ID}) {
+			
+		}
+				
+		
+	} else /if (${Raid.Members}) {
+
+				${Me.RaidAssistTarget[1]}
+				${Me.RaidAssistTarget[2]}
+				${Me.RaidAssistTarget[3]}
+
+
+
+
+		
+	}
+	
+	/if (${_tmpID}) /target ID ${_tmpID}
+		
+/return
+
+
+
+
+${Me.TargetOfTarget}: Target of target (moved to character type) 
+
+bool spawn.Assist: Current Raid or Group assist target? 
+int spawn.Mark: Current Raid or Group marked npc mark number (raid first) 
+
+${Me.RaidAssistTarget[]} Current raid assist target (1-3) 
+${Me.GroupAssistTarget} Current group assist target 
+${Me.RaidMarkNPC[]} Current raid marked NPC (1-3) 
+${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
+
+ ***| 
+
 
 
 
@@ -778,6 +842,13 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 		} else {
 			NOUT /clr fade [${useAAFade}##\ax]
 		}
+
+	| loch on MA
+	} else /if (${Bool[${_classType.Equal[lock]}]}) {
+		/call writeINI switchLockMA Heal ${If[${switchLockMA},FALSE,TRUE]}
+	 	/call echos switch "Lock to MA" switchLockMA 0 0
+
+
 	
 	} else {
 		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##

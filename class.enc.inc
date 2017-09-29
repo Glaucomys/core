@@ -292,7 +292,7 @@ sub check_crystals()
 	CHECKEXIT
 	/doevents
 	CHECKTIE
-
+-=
 	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]} && ${Me.AltAbilityReady[${mannaCrystal}]}) {
 		/call core_cast "${mannaCrystal}" alt 0 check_for_adds
 		/delay 20s !${Me.Casting.ID}

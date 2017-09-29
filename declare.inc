@@ -222,7 +222,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20170926
+	/declare coreBuild	 														int			outer 20170929
 
 	/declare _count 																int 		local
 	/declare combat																	string	outer
@@ -606,7 +606,7 @@ sub set_declares()
 	/call DeclareIniVar combat					 						string	Common melee
 	/call DeclareIniVar MA1			 										string 	Common FALSE
 	/call DeclareIniVar MA2			 										string 	Common FALSE
-	/call DeclareIniVar MobAgro											int 		Common 10
+	/call DeclareIniVar MobAgro											int 		Common 60
 	/call DeclareIniVar engageAt 										int 		Common 98
 	/call DeclareIniVar smartengageAt 							int 		Common 98
 	/call DeclareIniVar	useSmartAssist1							bool		Common FALSE 
@@ -616,7 +616,7 @@ sub set_declares()
 	/call DeclareIniVar switchPull									bool		Common FALSE
 	/call DeclareIniVar CombatDistance							int			Movement 15
 	/call DeclareCoreIniVar combatRadius						string	General 30
-	/call DeclareIniVar zradius											int			Common 50	
+	/call DeclareIniVar zradius											int			Common 60	
 		
 			
 	| rez	control
@@ -914,7 +914,7 @@ sub set_declares()
   /declare brdType																string	outer |line|spiregroup|spireraid
   /declare berType																string	outer |spiregroup|spireraid
   /declare bstType																string	outer |spiregroup|spireraid
-  /declare clrType																string	outer |aggressive|fade|groupheal|grouphot|healpoint|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
+  /declare clrType																string	outer |aggressive|fade|groupheal|grouphot|healpoint|lock|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
   /declare druType																string	outer |groupheal|healpoint|spiregroup|spireraid|xtradius|xttime
   /declare encType																string	outer |spiregroup|spireraid
   /declare magType																string	outer |fade|mana|rods|spiregroup|spireraid
@@ -1183,10 +1183,14 @@ sub declare_ENC()
 	/call DeclareIniVar Nuke4					 							string	Spells FALSE
 	
 	/call DeclareIniVar DoDoT								 				int			Spells 0
-	/call DeclareIniVar DoT1					 							string	Spells FALSE
-	/call DeclareIniVar DoT2					 							string	Spells FALSE
-	/call DeclareIniVar DoT3					 							string	Spells FALSE
-	/call DeclareIniVar DoT4					 							string	Spells FALSE
+	/call DeclareIniVar DoT1							 					string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 /return	
 
 
@@ -1283,10 +1287,14 @@ sub declare_SHD()
 	/call DeclareIniVar Nuke1 											string 	Spells "Touch of Holmein"
 	/call DeclareIniVar Nuke2 											string 	Spells "Touch of Lutzen"
 	/call DeclareIniVar Nuke3 											string 	Spells FALSE
-	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	 
 	/call DeclareIniVar HpTapSpell 									string 	Spells "Touch of Lanys"
 	/call DeclareIniVar HpTapSpellRecourse 					string 	Spells "Gift of Lanys"
@@ -1368,9 +1376,13 @@ sub declare_PAL()
 
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
-	/call DeclareIniVar DoT2					 							string	Spells FALSE
-	/call DeclareIniVar DoT3					 							string	Spells FALSE
-	/call DeclareIniVar DoT4					 							string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	
 
 	/call DeclareIniVar ChallengeSpell							string 	Spells "Impose for Honor"
@@ -1508,11 +1520,15 @@ sub declare_RNG()
 	/call DeclareIniVar switchNukeSummer		 				bool		Spells TRUE
 	
 
-	/call DeclareIniVar DoDoT								 				int			Spells 2
-	/call DeclareIniVar DoT1					 							string	Spells "Blisterbeetle Swarm"
-	/call DeclareIniVar DoT2					 							string	Spells "Vespid Swarm"
-	/call DeclareIniVar DoT3					 							string	Spells FALSE
-	/call DeclareIniVar DoT4					 							string	Spells FALSE
+	/call DeclareIniVar DoDoT								 				int			Spells 0
+	/call DeclareIniVar DoT1							 					string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	/call DeclareIniVar DoTSwarmDS		 							string	Spells "Swarm of Glistenwings"
 	/call DeclareIniVar DoTSwarmDSdeBuff 						string	Spells "Glistenwing Swarm"
 	
@@ -1556,9 +1572,13 @@ sub declare_DRU()
 	/call DeclareIniVar Nuke4							 					string	Spells FALSE
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
-	/call DeclareIniVar DoT3							 					string	Spells FALSE	
-	/call DeclareIniVar DoT4					 							string	Spells FALSE	
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	
 	/declare MajorHurt 													int 		outer 0
 	/declare WorstHurt 													string 	outer FALSE
@@ -1665,9 +1685,14 @@ sub declare_SHM()
 	/call DeclareIniVar Nuke2					 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells FALSE
 	/call DeclareIniVar DoDoT						 						int			Spells 0
-	/call DeclareIniVar DoT1					 							string	Spells FALSE
-	/call DeclareIniVar DoT2					 							string	Spells FALSE
-	/call DeclareIniVar DoT3					 							string	Spells FALSE
+	/call DeclareIniVar DoT1							 					string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	/call DeclareIniVar spellCripple 								string 	Spells "Crippling Counterbias"
 
 	/call DeclareIniVar CaniPercent				 					int			Spells 60 /cani
@@ -1767,9 +1792,13 @@ sub declare_BST()
 
 	/call DeclareIniVar DoDoT						 						int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
-	/call DeclareIniVar DoT2					 							string	Spells FALSE
-	/call DeclareIniVar DoT3					 							string	Spells FALSE
-	/call DeclareIniVar DoT4					 							string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	
 	/call DeclareIniVar FastHeal			 							string	Spells "Sabhattin's Mending" 
 	/call DeclareIniVar FastHealPCT		 							int			Spells 60
@@ -1846,6 +1875,8 @@ sub declare_CLR()
 	DEBUG ${cbug}declare_CLR()\ax
 	/call setTimer tHealWard												string	Timer 185s timer_heal_ward
 	| /call setTimer tcheck_QM												string	Timer	10s timer_check_QM
+	/call DeclareIniVar switchLockMA								bool 		Heal FALSE
+	
 		
 	/declare WorstHurt 															string 	outer FALSE
 	| /declare WorstHurtID 													int 		outer ${Me.ID}

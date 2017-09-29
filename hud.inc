@@ -176,7 +176,7 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "rez2" "19,162,61,255,0,0,${If[${switchRezTake},,[         ]]}"
 	/noparse /ini HUDPATH "rez3" "19,162,61,0,255,0,${If[${switchRezTake},[         ],]}"
 	/noparse /ini HUDPATH "rez4" "19,197,61,255,0,0,${If[${switchRezGive},,[      ]]}"
-	/noparse /ini HUDPATH "rez5" "19,197,61,0,255,0,${If[${switchRezGive},[      ],]}"
+	/noparse /ini HUDPATH "rez5" "19,197,61,0,255,0,${If[${switchRezGive},[      ][       ],]}"
 	/noparse /ini HUDPATH "rez6" "19,167,62,255,255,255,${If[${coreBuild},${hudDeathCount},]}"
 	/noparse /ini HUDPATH "rez7" "19,200,62,0,255,0,${If[${switchRezCombat},C,]}"
 	/noparse /ini HUDPATH "rez8" "19,200,62,25,25,25,${If[${switchRezCombat},,C]}"
@@ -184,6 +184,10 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "rez10" "19,208,62,25,25,25,${If[${switchRezEveryone},,E]}"
 	/noparse /ini HUDPATH "rez11" "19,215,62,0,255,0,${If[${switchRezEmergency},!,]}"
 	/noparse /ini HUDPATH "rez12" "19,215,62,25,25,25,${If[${switchRezEmergency},,!]}"
+	/noparse /ini HUDPATH "rez13" "19,225,62,255,255,255,${If[${switchRezGive},${maxRezRange},]}"
+	
+	
+	
 
 	| HUD WARNING/OVERIDE notices
 	/noparse /ini HUDPATH "hudwarning0" "3,110,1,100,149,237,[                                                     ]"

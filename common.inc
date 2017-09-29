@@ -1700,7 +1700,7 @@ sub cast_DOT()
 		/call is_target_dead
 		/if (${Macro.Return}) /return
 
-		/if ((${Target.BuffDuration[${DoT${_count}}]} <= 2 && ${Spawn[${Target.Buff[${DoT${_count}}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}}].ID}) {
+		/if ((${Target.BuffDuration[${DoT${_count}chk}].Duration.TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
 			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
 		}
 	/next _count
@@ -2542,7 +2542,7 @@ sub check_buffs_raid()
 						AMIDEAD
 						/if (!${Spell[${Target.Buff[${_y}]}].WillStack[${Spell[${Buff${_x}}]}]} && ${Target.Buff[${_y}].ID}) {
 							/call create_timer timer_Raid_Buffs${Spell[${Buff${_x}chk}].ID}${Raid.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
-							/goto :next
+							/return
 						}
 					/next _y
 					/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
@@ -3882,28 +3882,10 @@ sub do_loot()
 	/doevents
 	/if (${Stick.Active} || !${Me.FreeInventory} || !${Me.UseAdvancedLooting}) /return
 
-	| are we allowed to loot or not? i mean seriously.. make up your mind.
-	|***
-	/if (${Raid.Members} && ${Raid.MasterLooter.ID} == ${Me.ID}) {
-		/goto :permissiontoloot
-	} else /if (!${Raid.Members} && ${Bool[${Group.Members}]} && ${Group.MasterLooter.ID} == ${Me.ID}) {
-		/goto :permissiontoloot
-	} else /if (!${Raid.Members} && !${Bool[${Group.Members}]}) {
-		/goto :permissiontoloot
-	| } else /if (${Me.UseAdvancedLooting} && ${Raid.Members} && !${Bool[${Raid.MasterLooter.ID}]} && ${switchOverrideLoot}) {
-	} else /if (${switchOverrideLoot}) {
-		/goto :permissiontoloot
-	} else {
-		/return
-	}
-	***|
-
-
 	| I am not the raid loot master /sigh
 	/if (${Raid.Members} && ${Raid.MasterLooter.ID} != ${Me.ID} && !${switchOverrideLoot}) /return
-
 	/if (!${Raid.Members} && ${Bool[${Group.Members}]} && ${Group.MasterLooter.ID} != ${Me.ID} && !${switchOverrideLoot}) /return
-		
+
 
 	UPDATEHUD "LOOT"
 
@@ -3922,6 +3904,7 @@ sub do_loot()
 			/varset currentLootCount ${AdvLoot.SCount}
 			/varset _advlItem ${AdvLoot.SList[${_scount}].Name}
 			/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
+			DEBUG ${_scount}/${AdvLoot.SCount} ${AdvLoot.SList[${_scount}].Name} = ${_advlChoice}
 
 			| Does it exist in the loot.ini (check to see if there is a choice for it)
 			/if (${AdvLoot.SList[${_scount}].ID} && !${Select[${_advlChoice},Leave,Keep,Destroy,Sell,Announce,Ignore]}) {
@@ -4645,6 +4628,8 @@ sub prep_combat()
 			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
 			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
 			/if (${switchdeBuffMalo} && !${Defined[timer_malo_${Target2Kill}]}) /call create_timer timer_malo_${Target2Kill} 1
+			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
+
 
 		} else /if (${Select[${Me.Class.ShortName},PAL]}) {
 			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
@@ -4951,9 +4936,10 @@ sub check_for_item(string _verbage)
  *  NOTE:
  ***| 	
 sub core_reset()
+/return
 	DEBUG ${cbug}core_reset()\ax
 	OUT ${cgood}Reloading Core INIs\ax
-	/call declare_base
+	/call set_declares
 	/call check_plugin
 	/call echos startup 0 0 0 0
 	/call declare_common

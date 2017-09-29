@@ -7,7 +7,31 @@
  * HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
  * Video: https://vimeo.com/235171246
  ***|
+
+
+20170929
+- class.nec.inc
+  -- will now slow undead mobs with Death's Malaise if enabled
+- DOTS
+  -- all dots now conform with necro changes. there is a DOT to be cast and a DOT to be checked against
+  -- all timer checks now function off of .Duration.TotalSeconds and not the standard timer 1/10 timer
+  -- DOTs will be reapplied when they reach the half tick mark (3 seconds). or as close to the loop gets to <= 3 seconds
+  -- DOT caculations are only applied top DOTS that YOU cast on the mob. not other casters dots with same name
   
+
+20170928
+- i will make this fucker loot diamonds
+- check_buff_raid()
+  -- missed a /goto :next .. 
+- class.wiz.inc
+  -- burn changes. no longer alternates Fury of Kerafyrm and Fury of Ro. they both get used now
+
+
+20170927
+HUDUPDATE
+- added /rez range ## to the HUD 
+- i broke the bards pulse().. it is now unbroke..
+
 
 20170926
 - class.enc.inc
@@ -44,7 +68,6 @@
   -- will now use sneak attack line of discs 
 - check_buffs_BC()
   - rewrote. had to account for changing to the netbots that eqmule has precompiled
-
 
 
 20170922

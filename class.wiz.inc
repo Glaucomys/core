@@ -217,8 +217,8 @@ sub synergy_WIZ()
 	/call cast_AA_spire
 
 	| boost spell type damage
-	/if (${Me.AltAbilityReady[Fury of Kerafyrm]} && !${Bool[${Me.Buff[Fury of Ro]}]}) /call core_cast "Fury of Kerafyrm" alt 0
-	/if (${Me.AltAbilityReady[Fury of Ro]} && !${Bool[${Me.Buff[Fury of Kerafyrm]}]}) /call core_cast "Fury of Ro" alt 0
+	/if (${Me.AltAbilityReady[Fury of Kerafyrm]}) /call core_cast "Fury of Kerafyrm" alt 0
+	/if (${Me.AltAbilityReady[Fury of Ro]}) /call core_cast "Fury of Ro" alt 0
 
 	/if (${Me.AltAbilityReady[Arcane Destruction]}) /call core_cast "Arcane Destruction" alt 0
 	

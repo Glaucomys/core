@@ -30,12 +30,19 @@ sub core_BRD()
 		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
 		/if (${Bool[${Target2Kill}]}) /call disc_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
-		| /if (${DoDoT}) /call bard_dot
+		/if (${DoDoT}) /call bard_dot
 		/if (${DoNuke}) /call bard_nuke
 		/call pulse
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
+		/call set_combat NUKE
+		/call send_pet
+		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
+		/if (${DoDoT}) /call bard_dot
+		/if (${DoNuke}) /call bard_nuke
 	} else /if (${Select[${combat},HEAL]}) {
+		/call set_combat HEAL
+		/call pulse
 	} else /if (${Select[${combat},DUAL]}) {
 		/call get_assist_target
 		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
@@ -95,7 +102,7 @@ sub disc_BRD()
 	/call stick_to_target
 	/if ((${Me.AltAbilityReady[Banestrike]} || ${Me.AltAbilityReady[Cacophony]} || ${Me.AltAbilityReady[Bladed Song]} || ${Me.AltAbilityReady[Boastful Bellow]}) && ${Me.Casting.ID}) /call pulse_stop
 	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0
-		/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
+	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
 	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill}
 	/if (${Me.AltAbilityReady[Cacophony]}) /call core_cast "Cacophony" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt ${Target2Kill}
@@ -154,7 +161,7 @@ sub cast_servant_swarm(int _tmpID)
 
 |***
  *	DES: memorize songs
- *	USE: /call mem_song_line []
+ *	USE: /call mem_song_line [] | /brd line [TANK|CASTER|MELEE|MIX|OTHER]
  *	INI: [Song] -> line[TANK|CASTER|MELEE|MIX]
  *  NOTE:
  ***|
@@ -202,10 +209,10 @@ sub pulse()
 			CHECKEXIT
 			/doevents
 			/call is_target_dead
-		/if (${Macro.Return}) }
-			/call pulse_stop
-			/return
-		}
+			/if (${Macro.Return}) {
+				/call pulse_stop
+				/return
+			}
 			/call stick_to_target
 			| /if (${Me.Casting.ID}) /stopcast
 			/call pulse_valid ${_index}
@@ -245,9 +252,6 @@ sub pulse_valid(_gem)
  ***|
 sub pulse_stop()
 	DEBUGCLASS ${cbug}pulse_stop()\ax 
-	
-	| /stopcast		
-	| /delay 2
 	/while (${Me.Casting.ID}) {
 		/delay 5
 		/stopcast
@@ -270,10 +274,7 @@ sub core_sing(_spellgem)
 	/declare _gem int local ${Macro.Return}
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /return	
 	/call stick_to_target
-	/if (${Me.Casting.ID}) {
-		| /call Interrupt
-		/stopcast
-	}
+	/if (${Me.Casting.ID}) /stopcast
 	VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
 	/melody ${_gem}
 	| /delay 25
@@ -333,11 +334,6 @@ sub bard_dot()
 		}
 	/next _count
 /return
-
-
-${Me.SpellReady[${DoT1}]}
-
-
 
 
 
