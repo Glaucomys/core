@@ -117,8 +117,8 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 		/call echo_bitch EQBC
 
 	| info
-	} else /if (${_type.Equal[info]}) {
-		OUT Instructions ${sep} ${cinfo}https://github.com/exspes007/core/wiki\ax
+	} else /if (${_type.Equal[wiki]}) {
+		OUT WIKI ${sep} ${cinfo}https://github.com/exspes007/core/wiki\ax
 
 	| override switches
 	}	else /if (${_type.Equal[override]}) {
@@ -707,7 +707,7 @@ sub check_buffs_item()
 	AMIDEAD
 	CHECKEXIT
 	UPDATEHUD "BUFF: Items"
-	/if (!${Defined[_count]}) /declare _count int	local
+	/declare _count int	local 0
 	
 	/if (${Me.State.NotEqual[Bind]} && !${Me.Moving}) {
 		/for _count 1 to ${ClickItem}
@@ -751,8 +751,8 @@ sub remove_unwanted_buffs()
 	DEBUG ${cbug}remove_unwanted_buffs()${cbug}
 	AMIDEAD
 	/doevents
-	/if (!${Defined[_count]}) /declare _count int local
-	/if (!${Defined[_remove]}) /declare _remove string local ${BuffRemove}
+	/declare _count int local 0
+	/declare _remove string local ${BuffRemove}
 	/for _count 1 to ${_remove.Count[|]}
 		/doevents
 		AMIDEAD
@@ -772,7 +772,8 @@ sub remove_unwanted_buffs()
  *  NOTE: 
  ***|
 sub check_buffs_self()
-	DEBUG ${cbug}check_buffs_self()\ax
+	DEBUG ${cbug}check_buffs_self(switch:${switchBuffSelf}, timer: ${timer_check_buffs_self})\ax
+	/if (${coreAuto} && !${timer_check_buffs_self}) /call create_timer timer_check_buffs_self ${tSelf_Buff}
 	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
 	/declare _count int local 0
 
@@ -781,6 +782,10 @@ sub check_buffs_self()
 		AMIDEAD
 		CHECKEXIT
 		CHECKTIE
+		
+		| check for non gold subs
+		/if (!${Select[${Me.Subscription},GOLD]}) /varset Buff${_count}chk ${Ini[${INIClass},buffs,Buff${_count}chk]}
+		
 		/if (!${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]} && ${Spell[${Buff${_count}}].Stacks} && ${Bool[${Buff${_count}self}]} && ${Bool[${Buff${_count}}]}) {
 			/if (!${Me.SpellReady[${Buff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
 	 		  /if (${Me.Book[${Buff${_count}}]} && ${Me.CurrentMana} > ${Spell[${Buff${_count}}].Mana}) /call core_cast "${Buff${_count}}" ${buffGem} ${Me.ID}
@@ -792,7 +797,6 @@ sub check_buffs_self()
 	/if (${coreAuto} && ${switchShrink}) /call check_shrink
 	/if (${Bool[${BuffRemove}]}) /call remove_unwanted_buffs	
 	/if ((${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
-	/if (${coreAuto}) /call create_timer timer_check_buffs_self ${tSelf_Buff}
 	/if (${Target.ID}) /squelch /target clear
 	UPDATEHUD FALSE	
 /return
@@ -855,7 +859,7 @@ sub check_no_cast_buffs()
 	DEBUG ${cbug}check_no_cast_buffs()\ax
 	AMIDEAD
 	/doevents
-	/if (!${Defined[_count]}) /declare _count int local
+	/declare _count int local 0
 	/varset canCast TRUE
 	/for _count 1 to ${noCastWith.Count[|]}
 		AMIDEAD
@@ -894,7 +898,6 @@ sub check_buffs_BC()
 	/if (${coreAuto}) /call create_timer timer_check_buffs_BC ${tBC_Buff}
 	UPDATEHUD "BUFF: BC"	
 
-
 	/declare _toon int local 1
 	/declare _buff int local 
 
@@ -906,6 +909,7 @@ sub check_buffs_BC()
 
 		| each buff
 		/for _buff 1 to ${BuffCount}
+			/if (!${Range.Between[1,${BuffCount}:${Int[${_buff}]}]}) /continue
 			/doevents
 			AMIDEAD
 			/if (!${Bool[${BCBuff${_buff}Class}]} || !${Bool[${Buff${_buff}}]}) /continue    
@@ -952,7 +956,7 @@ sub check_ammo()
 	CHECKEXIT
 	/call create_timer timer_Check_Ammo ${tCheck_Ammo}
 	/if (${Cursor.Name.Equal[${RangeItemSummon}]}) {
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 		/return
 	}	
 	/if (!${Bool[${RangeItem}]} || !${Bool[${RangeItemSummon}]} || ${Me.Invis}) /return
@@ -962,7 +966,7 @@ sub check_ammo()
 		/if (${Me.AltAbilityReady[${RangeItem}]}) /call core_cast "${RangeItem}" alt ${Me.ID}
 		/if (${Me.CombatAbilityReady[${RangeItem}]} || ${Select[${Me.Class.ShortName},BER]}) /call core_cast "${RangeItem}" disc ${Me.ID}
 		/delay 10s !${Me.Casting.ID}
-		CLEARCURSOR TRUE
+		/call sort_cursor TRUE
 	}
 /return
 
@@ -1083,8 +1087,6 @@ sub do_rest()
 
 			/if (${Select[${Me.Class.ShortName},CLR]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-				| /if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez}) /call core_cast "Veturika's Perseverance" alt 0
-				| /if (${Me.AltAbilityReady[Quiet Miracle]} && !${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
 			} else /if (${Select[${Me.Class.ShortName},DRU]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 			} else /if (${Select[${Me.Class.ShortName},SHM]}) {
@@ -1191,7 +1193,7 @@ sub click_item(bool _clickEpic)
 	/if (${Bool[${Macro.Return}]} || ${Spawn[${Target.ID}].PctHPs} < 15*.${tmpHealOverride}) /return
 	/if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0
 
-	/if (!${Defined[_count]}) /declare _count int local
+	/declare _count int local 0
 	/for _count 1 to ${doclickItem}
 		/doevents
 		AMIDEAD
@@ -1266,7 +1268,7 @@ sub set_xtarget()
 	OUT Sorting XTargets ${sep} ${cinfo}${tXHeal}\ax
 	/declare _x 				int 		local
 	/declare _b 				int 		local
-	/declare _count 		int			local
+	/declare _count 		int			local 0
 	
 	| reset extended target slots	
 	/for _x 1 to 13
@@ -1356,7 +1358,7 @@ sub set_xtarget()
  ***|
 sub stick_to_target(int _tmpID)
 	DEBUG ${cbug}stick_to_target()\ax Setting Stick to: [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] @ ${CombatDistance}% agro distance
-	/if (${Select[${combat},RANGE,NUKE,HEAL]}) /return
+	/if (${Select[${combat},RANGE,NUKE,HEAL]} || !${coreAuto}) /return
 
 	/if (!${Bool[${Plugin[MQ2MoveUtils]}]}) {
 		OUT Plugin \a-w$MQ2MoveUtils\ax is missing.
@@ -1700,7 +1702,7 @@ sub cast_DOT()
 		/call is_target_dead
 		/if (${Macro.Return}) /return
 
-		/if ((${Target.BuffDuration[${DoT${_count}chk}].Duration.TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
+		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
 			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
 		}
 	/next _count
@@ -1808,7 +1810,7 @@ sub cast_AA_banestrike(int _tmpID)
 	/if (${Macro.Return}) /return
 	/call is_target_valid ${_tmpID}
 	/if (!${isValidTarget}) /return
-	/if (${Bool[${_tmpID}]}) /call core_cast "Banestrike" alt ${_tmpID}
+	/if (${Bool[${_tmpID}]}) /call core_cast "Banestrike" alt ${_tmpID} FALSE
 /return
 
 
@@ -2022,14 +2024,14 @@ sub use_glyph()
 
 |***
  *	DES: spell/disc/aa/item cast wrapper
- *	USE: /call core_cast "SPELLNAME" [alt|disc|gem#|item|0|NULL] [MobID|0|NULL] [subname]
+ *	USE: /call core_cast "SPELLNAME" [alt|disc|gem#|item|0|NULL] [MobID|0|NULL] [subname|FALSE]
  *	USE: /call core_cast "SPELLNAME" NULL NULL if you want to let the sub decide what you have to cast/use.
  *	INI: 
  *  NOTE: MQ2Cast ["spell name"|"item name"|"AA name"|"AA#"] [[item|slotname]|alt|gem#] [give up time][s|m] [custom subroutine name] [-targetid|###] [-maxtries|#] [-recast|#] [-setin|setname] [-bandolier|setname]
  *  NOTE2: How about we quit making changes to this....
  ***|
 sub core_cast(string _spell, string _type, int _tmpID, string _sub)
-	DEBUGCAST ${cbug}core_cast(\ax${cinfo}SPELL:${_spell}, TYPE:${_type}, ID:${_tmpID}, SUB:${_sub}\ax${cbug})\ax
+	DEBUG ${cbug}core_cast(\ax spell:${cinfo}${_spell}\ax, type:${cinfo}${_type}\ax, ID:${cinfo}${_tmpID}\ax, sub:${cinfo}${_sub}\ax ${cbug})\ax
 	/doevents
 	AMIDEAD
 	/declare _bail string local FALSE
@@ -2059,6 +2061,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 			/varset _type disc
 		}
 	}
+	
 	
 	| READY CHECKS
 	| dead?
@@ -2093,7 +2096,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	/if (${Bool[${_bail}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /goto :cooldown
 	| /if (${Bool[${_bail}]}) /goto :cooldown
 	
-	| do not have the spell in the book... seriously why do we wven try
+	| do not have the spell in the book... seriously why do we even try
 	/if (!${Select[${_type},alt,item,disc]} && !${Bool[${Me.Book[${_spell}]}]} && !${Me.AltAbilityReady[${_spell}]}) {
 	DEBUGCAST ${owarning} ${sep} _bail = ${_bail} for ${_spell}
 		/varset _bail do_not_have
@@ -2759,7 +2762,7 @@ sub odds_and_ends()
 sub check_exit()
 	DEBUG ${cbug}check_exit()\ax
 	| AMIDEAD
-	| /doevents
+	/doevents
 
 	| invis 
 	/if (${Me.Invis}) /return TRUE
@@ -2898,6 +2901,7 @@ sub update_HUD_notices(string _mode)
 			/varset _sep TRUE
 		}	
 	}
+	|***
 	/if (${Select[${Me.Class.ShortName},CLR]}) {
 		/if (${Bool[${useVP}]}) {
 			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} VP[${useVPPct}]
@@ -2910,6 +2914,7 @@ sub update_HUD_notices(string _mode)
 			/varset _sep TRUE
 		}		
 	}	
+	***|
 
 	| Mode Notice
 	DEBUG HUD: Mode Notice
@@ -3476,7 +3481,7 @@ sub cast_rez(int _tmpID, string _rezAA)
 	
 	| can we AA res or token?
 	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[${_rezAA}]} && ${switchRezEmergency})) {	
-		ECHOCHANNEL Rezzing (${Me.Class.ShortName}): ${Spawn[${_tmpID}].DisplayName}
+		| ECHOCHANNEL Rezzing (${Me.Class.ShortName}): ${Spawn[${_tmpID}].DisplayName}
 
 		| res the damn person
 		/if (!${switchRezEmergency}) {
@@ -3498,6 +3503,8 @@ sub cast_rez(int _tmpID, string _rezAA)
 				/call create_timer timer_corpse_${_tmpID} 45s
 			}
 		}
+		ECHOCHANNEL ${Me.Class.ShortName} Rez: ${Spawn[${_tmpID}].DisplayName}
+
 
 	}
 /return
@@ -3515,7 +3522,7 @@ sub set_combat_here()
 	/if (!${Bool[${Group.Members}]}) /return
 	UPDATEHUD "HERE"
 
-	OUT ${owarning} ${sep} COMBAT.. Right NOW!
+	OUT ${owarning} ${sep} COMBAT ${sep} Right NOW!
 
 	| clear all pending events
 	/doevents flush
@@ -5110,7 +5117,7 @@ sub click_item_burn()
 |***
  *	DES: cast whatever spire you set for burns
  *	USE: /call cast_AA_spire
- *	INI: classINI - [Buffs] - spireGroup & spreRaid
+ *	INI: classINI - [Buffs] - spireGroup & spireRaid
  *  NOTE: 
  ***|
 sub cast_AA_spire()
@@ -5118,11 +5125,11 @@ sub cast_AA_spire()
 	CHECKEXIT
 	/if (${Raid.Members} && ${Bool[${${Me.Class.ShortName}spire${spireRaid}}]}) {
 		/if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireRaid}}]} && !${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireRaid}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireRaid}}].Stacks}) {
-			/call core_cast "${${Me.Class.ShortName}spire${spireRaid}}" alt 0
+			/call core_cast "${${Me.Class.ShortName}spire${spireRaid}}" alt 0 FALSE
 		}
 	} else /if (!${Raid.Members} && ${Bool[${${Me.Class.ShortName}spire${spireGroup}}]}) {
 		/if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireGroup}}]} && !${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].Stacks}) {
-			/call core_cast "${${Me.Class.ShortName}spire${spireGroup}}" alt 0
+			/call core_cast "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
 		}
 	}
 /return
@@ -5183,6 +5190,17 @@ sub check_AA_agro()
 				OUT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${oenabled}
 			}			
 		}
+		
+		| ranger ferocious kicks
+		/if (${Select[${Me.Class.ShortName},RNG]}) {
+			/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Enabled]}) {
+				/call MQ2Cast "Ferocious Kick Subtlety: Enabled" alt
+				OUT AA ${sep} ${cinfo}Ferocious Kick Subtlety\ax ${sep} ${odisabled}
+			}
+		}
+
+		
+		
 
 	| turn agro OFF
 	} else /if (!${switchAgro}) {
@@ -5200,6 +5218,17 @@ sub check_AA_agro()
 				OUT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${odisabled}
 			}			
 		}
+
+		| ranger ferocious kicks
+		/if (${Select[${Me.Class.ShortName},RNG]}) {
+			/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Disabled]}) {
+				/call MQ2Cast "Ferocious Kick Subtlety: Disabled" alt
+				OUT AA ${sep} ${cinfo}Ferocious Kick Subtlety\ax ${sep} ${oenabled}
+			}
+		}
+
+
+
 		
 	}
 /return
@@ -5231,11 +5260,320 @@ sub cast_challenge(int _tmpID)
 
 
 
+|***
+ *	DES: validates buffs are ready to be cast/can be cast
+ *	USE: /call ${validate_buff[[spell|alt|disc|item], inisub, name]
+ *	INI: 
+ *  NOTE: will sort silver subscriptions as well.
+ ***|
+sub validate_buff(string _type, string _inisub, string _spell)
+	DEBUG ${cbug}validate_buff(type:${_type}, ini:${_inisub}, name:${_spell})\ax
+	DEBUG ${_spell} - ${${_spell}}
+
+	| check spell
+	/if (${_type.Equal[spell]}) {
+		/if (!${Bool[${${_spell}}]}) /return FALSE
+		/if (!${Bool[${Me.Book[${${_spell}}]}]}) /return FALSE
+		/if (${Me.PctMana} < ${Spell[${_spell}].Mana}) /varreturn FALSEt
+		| check for non gold subs
+		/if (${Select[${Me.Subscription},SILVER]}) {
+			/varset _spell ${Ini[${INIClass},${_inisub},${_spell}]}
+			/if (${Bool[${Me.Buff[${_spell}].Duration}]}) /return FALSE
+			/if (${Bool[${Me.Song[${_spell}].Duration}]}) /return FALSE
+			/if (!${Spell[${_spell}].Stacks}) /return FALSE
+		} else {
+			/if (${Bool[${Me.Buff[${${_spell}}].Duration}]}) /return FALSE
+			/if (${Bool[${Me.Song[${${_spell}}].Duration}]}) /return FALSE
+			/if (!${Spell[${${_spell}}].Stacks}) /return FALSE
+		}
+		
+	| check alt abilitie
+	} else /if (${_type.Equal[alt]}) {
+		/if (!${Me.AltAbilityReady[${${_spell}}]}) /return FALSE
+		/if (${Bool[${Me.Buff[${${_spell}}]}]}) /return FALSE
+		/if (${Me.PctMana} < ${Spell[${${_spell}}].Mana}) /return FALSE
+	
+	| check disc
+	} else /if (${_type.Equal[disc]}) {
+		/if (!${Bool[${${_spell}}]}) /return FALSE
+		/if (!${Me.CombatAbilityReady[${${_spell}}]}) /return FALSE
+		/if (${Spell[${${_spell}}].EnduranceCost} > ${Me.CurrentEndurance}) /return FALSE
+		/if (${Bool[${Me.Song[${${_spell}}].Duration}]}) /return FALSE
+		/if (${Bool[${Me.Buff[${_spell}].Duration}]}) /return FALSE
+
+
+	| check item
+	} else /if (${_type.Equal[item]}) {
+
+
+	}
+	DEBUG
+/return TRUE
+
+
+
+|***
+ *	DES: validates casting of "things on a target
+  *	USE: /call ${validate_cast[[spell|alt|disc|item], inisub, name, ID]
+ *	INI: 
+ *  NOTE: will sort silver subscriptions as well.
+ ***|
+sub validate_cast(string _type, string _spell, int _tmpID)
+	DEBUG ${cbug}validate_cast(type:${_type}, name:${_spell}, Id:${_tmpID})\ax
+	
+	/if (${Target.Type.Equal[Corpse]} || ${Spawn[${_tmpID}].Type.Equal[corpse]}) /return FALSE
+	/if (${Bool[${_tmpID}]} && !${Target.ID}) /return FALSE
+
+	/if (${_type.Equal[spell]}) {
+		/if (!${Bool[${Me.Book[${_spell}]}]}) /return FALSE
+		/if (!${Me.SpellReady[${_spell}]}) /return FALSE
+		/if ((${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) || ${Me.Moving} || ${AdvPath.Following}) /return FALSE
+		/if (${Me.Casting.ID}) /return FALSE
+		/if (${_tmpID} != 0) {
+			/if (!${switchOverrideLos} && !${Spawn[${_tmpID}].LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE
+			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		}
+		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
+
+		| spell stacks ?
+		| /if (!${Select[${_type},alt,item,disc]} && !${Spell[${_spell}].Stacks}) /return FALSE
+
+		| restist types vs core.zone.inc
+		/if (!${Spell[${_spell}].SpellType.Equal[Beneficial]} && ${_tmpID} != 0) {
+			/if (${NoDiseaseList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Disease]}) /return FALSE
+			/if (${NoMagicList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Magic]}) /return FALSE
+			/if (${NoPoisonList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Poison]}) /return FALSE
+			/if (${NoFireList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Fire]}) /return FALSE
+			/if (${NoColdList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Cold]}) /return FALSE
+			/if (${NoCorruptionList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Corruption]}) /return FALSE
+		}
+		
+	| check alt ability
+	} else /if (${_type.Equal[alt]}) {
+		/if (!${Me.AltAbilityReady[${_spell}]}) /return FALSE
+		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
+		/if (${_tmpID} != 0 && ${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+	
+	| check disc
+	} else /if (${_type.Equal[disc]}) {
+		/if (!${Me.CombatAbilityReady[${_spell}]}) /return FALSE
+		/if (${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
+		/if (${_tmpID} != 0 && ${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+
+	| check item
+	} else /if (${_type.Equal[item]}) {
+		/if (!${Me.ItemReady[${_spell}]}) /return FALSE
+		/if (${_tmpID} != 0 && (${Target.Distance} > ${Spell[${_spell}].MyRange} || ${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range})) /return FALSE
+
+
+	} else /if (${_type.Equal[pulse]}) {
+
+	}
+
+/return TRUE
 
 
 
 
 
+|***
+ *	DES: spell/disc/aa/item cast wrapper
+ *	USE: /call core_cast "SPELLNAME" [alt|disc|gem#|item|0|NULL] [MobID|0|NULL] [subname|FALSE]
+ *	USE: /call core_cast "SPELLNAME" NULL NULL if you want to let the sub decide what you have to cast/use.
+ *	INI: 
+ *  NOTE: MQ2Cast ["spell name"|"item name"|"AA name"|"AA#"] [[item|slotname]|alt|gem#] [give up time][s|m] [custom subroutine name] [-targetid|###] [-maxtries|#] [-recast|#] [-setin|setname] [-bandolier|setname]
+ *  NOTE2: How about we quit making changes to this....
+ ***|
+sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
+	DEBUG ${cbug}core_cast(\ax spell:${cinfo}${_spell}\ax, type:${cinfo}${_type}\ax, ID:${cinfo}${_tmpID}\ax, sub:${cinfo}${_sub}\ax ${cbug})\ax
+	/doevents
+	AMIDEAD
+	/declare _bail string local FALSE
+	
+	| preemptive gtfo for this particular spell
+	| /if (${Bool[${timer_${_tmpID}_${Spell[${_spell}].ID}}]}) /goto :cooldown
+	
+	| make sure we have our target 
+	/if (${Bool[${_tmpID}]} && ${Target.ID} != ${_tmpID}) {
+		DEBUGCAST fixing target to ID:${_tmpID} ${sep} ${Spawn[ID ${_tmpID}].DisplayName}
+		/tar id ${_tmpID}
+		/delay 1s ${Target.ID} == ${_tmpID}
+	}
+	
+	| used to let /call core_cast "whatever" NULL NULL
+	| figure out what the toon has and use that.
+	/if (${_type.Equal[NULL]} && !${Bool[${_tmpID}]}) {
+		DEBUGCAST fixing cast type and target id NULL/NULL
+		| /varset _tmpID 0
+		/if (${Bool[${Me.Book[${_spell}]}]}) {
+			/varset _type ${buffGem}
+		} else /if (${Me.ItemReady[${_spell}]}) {
+			/varset _type item
+		} else /if (${Me.AltAbilityReady[${_spell}]}) {
+			/varset _type alt
+		} else /if (${Me.CombatAbilityReady[${_spell}]}) {
+			/varset _type disc
+		}
+	}
+	
+	
+	| skip needing a target
+	/if (${_tmpID} == 0 || ${Spell[${_spell}].SpellType.Equal[Self]}) /goto :notarget
+	
+	/if (!${Spawn[${_tmpID}].ID} && !${timer_spellcast_nomob_ID}) {
+		OUT You tried to cast ${csp}${_spell}\ax on something that doesn't exist.
+		/varset castReturn CAST_NOTREADY
+		/call create_timer timer_spellcast_nomob_ID 60s
+	}
+
+
+	| bailing on this spell. its either out of range, immune or something..
+	/if (${Bool[${_bail}]}) DEBUGCAST ${owarning} ${sep} _bail = ${_bail} immune too ${_spell}
+	/if (${Bool[${_bail}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} || ${_tmpID})) /goto :cooldown
+
+	:notarget
+	AMIDEAD
+	DEBUGCAST ${cbug}(\ax\awSPELL:${_spell}, TYPE:${_type}, ID:${_tmpID}, SUB:${_sub}\ax${cbug})\ax
+
+	| Passed all checks. lets cast some shits..
+	DEBUGCAST passed all checks
+
+	| output echos
+	| Spell
+	/if (!${Select[${_type},alt,item,disc]}) {
+		/if (${_tmpID} == 0) {
+			OUT Spell ${sep} ${csp}${_spell}\ax
+			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
+		} else /if (${_tmpID} != 0 && ${Target.ID}) {
+			/if (${Me.Song[Gift of Mana (${GoMLevel})].ID}) /call cast_nuke_GoM ${_tmpID}
+			DEBUGCAST MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
+			OUT Spell ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} ${If[${Bool[${_sub}]},${_sub},]} -targetid|${_tmpID}
+		}
+		/goto :cooldown
+	| AA
+	} else /if (${Select[${_type},alt]}) {
+		/if (${_tmpID} == 0) {
+			OUT AA ${sep} ${csp}${_spell}\ax
+			/call MQ2Cast "${_spell}" alt 
+		} else /if (${_tmpID} != 0 && ${Target.ID}) {
+			OUT AA ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			/call MQ2Cast "${_spell}" alt -targetid|${_tmpID}
+		}
+		/goto :cooldown
+	| item
+	} else /if (${Select[${_type},item]}) {
+		/if (${_tmpID} == 0) {
+			OUT Item ${sep} ${citem}${_spell}\ax
+			/call MQ2Cast "${_spell}" item
+		} else /if (${_tmpID} != 0 && ${Target.ID}) {
+			OUT Item ${sep} ${citem}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			/call MQ2Cast "${_spell}" item -targetid|${_tmpID}
+		}
+		/goto :cooldown
+	| disc
+	} else /if (${Select[${_type},disc]}) {
+		/if (${_tmpID} == 0) OUT Disc ${sep} ${csp}${_spell}\ax
+		/if (${_tmpID} != 0 && ${Target.ID}) OUT Disc ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[ID ${_tmpID}].DisplayName}\ax]
+		/disc ${_spell}
+		/delay 5s !${Me.Casting.ID}
+		/goto :cooldown
+	}
+	DEBUGCAST ${csp}${_spell}\ax ${sep}${sep}${sep}${sep} ${sepO} ${castReturn} ${sepC}
+
+	| cooldown
+	:cooldown
+	AMIDEAD
+	/if (!${Select[${_type},alt,item,disc]}) {
+		/delay 2 !${Me.SpellReady[${_spell}]}
+	} else /if (${Select[${_type},item]}) {
+		/delay 2 !${Me.ItemReady[${_spell}]}
+	} else /if (${Select[${_type},alt]}) {
+		/delay 2 !${Me.AltAbilityReady[${_spell}]}
+	} else /if (${Select[${_type},disc]}) {
+		/delay 2 !${Me.CombatAbilityReady[${_spell}]}
+	}
+
+	DEBUGCAST ${cbug}core_cast(\ax${cinfo}SPELL:${_spell})\ax ${sep} bail:${_bail}
+/return ${Bool[${Macro.Return}]}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+|***
+ *	DES: check to see if current class is a static pet user
+ *	USE: /if (${validate_petclass[]) /dowhatever
+ *	INI: 
+ *	NOTE: 
+ ***|
+sub validate_petclass()
+	/declare _pass bool local TRUE
+	/if (!${Me.Class.PetClass} && !${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD) {
+		/call echos failboat 0 0 0 0
+		/varset _pass FAIL
+	}
+/return ${_pass}
 
 
 
@@ -5417,4 +5755,34 @@ sub fix_INI_declares()
 
 
 
+${Nuke3.Right[1]}
+
+${Nuke3.Left[-1]}
+
+${Me.Book[${Me.Book[${Nuke3}]}].Name}
+
+${Me.Book[${Nuke3}].Rank}
+
+${Spell[Heartshear].Rank}
+
+
+
+
+|***
+ *	DES: removes ranks from spell names. returns the name only
+ *	USE: /call spell_remove_rank [spellname]
+ *	INI: 
+ *	NOTE:
+ ***|
+sub spell_remove_rank(string _spell)
+	/if (${Spell[${_spell}].Rank} == 3) {
+		/varset _spell ${_spell.Left[-8]}	
+	} else /if (${Spell[${_spell}].Rank} == 2) 
+		/varset _spell ${_spell.Left[-7]}	
+	} else /if (${Spell[${_spell}].Rank} == 1) 
+		/varset _spell ${_spell}
+	} else /if (${Spell[${_spell}].Rank} == 0) 
+		/varset _spell ${_spell}
+	}
+/return ${_spell}
 

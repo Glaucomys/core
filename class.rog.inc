@@ -90,29 +90,42 @@ sub disc_ROG()
 	/doevents
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /return
+	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill}
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Target.ID} && ${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	/call use_skill_melee
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0
-	/if (${Target.ID} && ${Me.AltAbilityReady[Twisted Shank]}) /call core_cast "Twisted Shank" alt ${Target2Kill}
-	/if (${Target.ID} && ${Me.AltAbilityReady[Absorbing Agent]}) /call core_cast "Absorbing Agent" alt ${Target2Kill}
+
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0
+	/if (${validate_buff[disc, discs, DiscVision]}) /call core_cast "${DiscVision}" disc 0
+
+	/if (${Target.ID} && ${Me.AltAbilityReady[${TwistedShank}]}) /call core_cast "${TwistedShank}" alt ${Target2Kill}
+	/if (${Target.ID} && ${Me.AltAbilityReady[${AbsorbingAgent}]}) /call core_cast "${AbsorbingAgent}" alt ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscShadowHunter}]}) /call core_cast "${DiscShadowHunter}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscDisassociative}]}) /call core_cast "${DiscDisassociative}" disc ${Target2Kill}
 	
-	
-	| /if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]}) /call core_cast "Dirty Fighting" alt ${Target2Kill}
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBleed}]} && ${Bool[${DiscBleed}]}) /call core_cast "${DiscBleed}" disc ${Target2Kill}
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPlay}]} && ${Bool[${DiscPlay}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPlay}]} && ${Bool[${DiscPlay}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
+	/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
+	
+	
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPhantom}]} && ${Bool[${DiscPhantom}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill}
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHiddenBlade}]} && ${Bool[${DiscHiddenBlade}]}) /call core_cast "${DiscHiddenBlade}" disc 0
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHiddenBlade}]} && ${Bool[${DiscHiddenBlade}]}) /call core_cast "${DiscHiddenBlade}" disc 0
+	/if (${validate_buff[disc, discs, DiscHiddenBlade]}) /call core_cast "${DiscHiddenBlade}" disc 0
+
+
 	/call use_skill_melee
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHack}]} && ${Bool[${DiscHack}]}) /call core_cast "${DiscHack}" disc ${Target2Kill}
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBladePoison}]} && ${Bool[${DiscBladePoison}]}) /call core_cast "${DiscBladePoison}" disc 0
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBladePoison}]} && ${Bool[${DiscBladePoison}]}) /call core_cast "${DiscBladePoison}" disc 0
+	/if (${validate_buff[disc, discs, DiscBladePoison]}) /call core_cast "${DiscBladePoison}" disc 0
+
+
 	| /if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill}
 /return
 
+
+
+/if (${validate_buff[disc, discs, runeBrimstone]}) /call core_cast "${runeBrimstone}" disc 0
 
 
 |***
@@ -189,26 +202,6 @@ sub automaticSoS()
 
 
 
-
-${Me.Sneaking} && !${Me.Invis} && !${Me.AbilityReady[sneak]}
-
-
-   |- Lets hide and sneak if not already and we're set to do so ** 
-
-     /if (${doHideSneak} && ${Me.AbilityReady["Sneak"]} && !${Me.Casting.ID} && ${Me.State.NotEqual[BIND]} && !${Window[TradeWnd].Open} && !${Window[MerchantWnd].Open} && !${Window[BigBankWnd].Open}) /doability "Sneak" 
-     /if (${doHideSneak} && ${Me.AbilityReady["Hide"]} && !${Me.Casting.ID} && ${Me.Sneaking} && (!${Me.Moving} || ${Me.AltAbilityReady[Nimble Evasion]}) && ${Me.State.NotEqual[BIND]} && !${Window[TradeWnd].Open} && !${Window[MerchantWnd].Open} && !${Window[BigBankWnd].Open}) /doability "Hide"
-
-
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: 
  *	USE: /call click_poison OR /poison
@@ -253,7 +246,8 @@ sub synergy_ROG()
 		/delay 5
 		/if (${Me.ActiveDisc.Name.Equal[${DiscPlay}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :loopmakestop
 	}
-		
+
+	/if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]}) /call core_cast "Dirty Fighting" alt ${Target2Kill}
 	/if (${Me.CombatAbilityReady[Dichotomic Weapons]}) /call core_cast "Dichotomic Weapons" disc 0
 	/call use_skill_melee
 	/if (${Me.AltAbilityReady[Focused Rake's Rampage]}) /call core_cast "Focused Rake's Rampage" alt 0

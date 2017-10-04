@@ -197,23 +197,19 @@ sub check_rune_ENC()
 	AMIDEAD
 	CHECKEXIT
 	UPDATEHUD "BUFF: Rune"
-	/if (${Me.AltAbilityReady[${runeVeil}]} && !${Bool[${Me.Buff[Veil of Mindshadow]}]}) /call core_cast "${runeVeil}" alt 0
-	/if (${Me.AltAbilityReady[${runeEldritch}]} && !${Bool[${Me.Buff[Eldritch Rune]}]}) /call core_cast "${runeEldritch}" alt 0
-	/if (${Me.AltAbilityReady[${runeSpray}]}) /call core_cast "${runeSpray}" alt 0
-	/if (${Me.AltAbilityReady[${runeReactive}]}) /call core_cast "${runeReactive}" alt 0
-	/if (${Bool[${runeAuspice}]} && ${Me.SpellReady[${runeAuspice}]}) {
-		/if (${Bool[${runeAuspice}]} && !${Bool[${Me.Buff[${runeAuspice}]}]}) /call core_cast "${runeAuspice}" 0 ${Me.ID}
-		/if (${Me.SpellReady[${runeAuspice}]}) /call check_rune_auspice
-	}
-	/if (${Bool[${runeWard}]} && ${Me.SpellReady[${runeWard}]} && !${Me.Buff[${runeWard}].ID}) /call core_cast "${runeWard}" 0 0
-	/if (${Me.AltAbilityReady[${runeMind}]} && ${Me.PctMana} > 60) /call core_cast "${runeMind}" alt 0
-	/if (${Bool[${runeEntAuspice}]} && !${Me.Buff[${runeEntAuspice}].ID} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID}
-
-	/if (${Bool[${runePoly}]} && !${Bool[${Me.Buff[${runePoly}]}]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID}
-	/if (${Bool[${runeBrimstone}]} && !${Bool[${Me.Buff[${runeBrimstone}]}]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID}
-
-	/if (${Bool[${runeShieldofFate}]} && !${Bool[${Me.Buff[${runeShieldofFate}]}]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
-
+	/if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0
+	/if (${validate_buff[alt, rune, runeEldritch]}) /call core_cast "${runeEldritch}" 0 0
+	/if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0
+	/if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0
+	/if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0
+	/if (${validate_buff[spell, rune, runeAuspice]}) /call core_cast "${runeAuspice}" 0 ${Me.ID}
+	/if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID}
+	/if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0
+	/if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID}
+	/if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID}
+	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
+	/if (${validate_buff[spell, rune, runeLegion]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID}
+	/if (${Me.SpellReady[${runeAuspice}]}) /call check_rune_auspice
 	UPDATEHUD FALSE
 /return
 

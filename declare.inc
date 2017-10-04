@@ -96,6 +96,11 @@ sub DeclareIniVar(string _name, string _type, string _section, string _value)
 /return
 
 
+| usage: /echo ${Me.Subscription} returns a pStringType "UNKNOWN","FREE","SILVER" or "GOLD"
+
+
+${Select[${Me.Subscription}],GOLD}
+
 
 |***
  *	DES: creates INI entries for core.ini
@@ -231,7 +236,7 @@ sub set_declares()
 	/declare canCast																bool		outer	TRUE
 
 	| HUD controls
-	/declare hudType																string	outer |time|update|broadcasts|delete
+	/declare hudType																string	outer |time|update|broadcast|delete
 	/declare hudNotice															string	outer FALSE
 	/declare hudWarning															string	outer	FALSE
 	/declare hudTarNotice														string	outer FALSE
@@ -306,6 +311,11 @@ sub set_declares()
  	| /declare postlink												string	outer ""	
  	/declare ocombat																string	outer "\amCombat\ax"	
 	/declare oremove																string	outer "${cbad}Removing\ax"
+
+	| ? colors
+	/declare wikiswitch															string outer [\a-wswitch\ax]
+	/declare wikitarget															string outer [\a-wTARGET\ax]
+	/declare wikiname																string outer [\a-wName\ax]
 
  	 	
 	| various lists for .. you know..lists and stuff.
@@ -1856,6 +1866,10 @@ sub declare_ROG()
 	/call DeclareIniVar DiscFrenzy 									string 	Discs "Frenzied Stabbing Discipline"	
 	/call DeclareIniVar DiscTwistedChance						string 	Discs "Twisted Chance Discipline"
 
+
+	/call DeclareIniVar TwistedShank								string 	Discs "Twisted Shank"
+	/call DeclareIniVar AbsorbingAgent							string 	Discs "Absorbing Agent"
+	
 	
 	/call DeclareIniVar clickPoisonBuff							string 	Poison "Bite of the Shissar Poison X"
 	/call DeclareIniVar clickPoisonItem							string 	Poison "Consigned Bite of the Shissar XVIII"
@@ -1981,7 +1995,7 @@ sub whitewash()
 
 	| Misc commands
 	/varset _todelete[4] |maxlevel|autoadjustexp|oneoff|userain|crew|autologin|usebuffkill
-	/varset _todelete[5] |pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel
+	/varset _todelete[5] |pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel|core
 	/varset _todelete[6] |mirror|maintexplvl|autocontrol|echoaugments|relay|givecoin|stop
 
 	| heal
@@ -2819,19 +2833,6 @@ sub Bind_watchspawn(string _spawn)
 		/if (!${Bool[${_spawn}]}) /call writeINI watchSpawn Common FALSE
 	}
 /return
-
-
-	
- |***
- *	DES: entry point for finding something in inventory or bank
- *	USE: /findathing
- *	INI: 
- *  NOTE: you gotta tell it what you want to find. no i'm not kidding, it doesn't just magically know. 
- ***|
-#bind findathing /findathing
-sub Bind_findathing(string _verbage)
-	/call check_for_item "${_verbage}"
-/return	
   
   
 
@@ -2844,10 +2845,21 @@ sub Bind_findathing(string _verbage)
 #bind override /override
 sub Bind_override(string _overrideType)
 	DEBUG ${cbug}Bind_override(type: ${_overrideType})\ax
-	/declare _count int local 0
-	
+	/declare _count		int local
+	/declare _bind string local override
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}	
 	/if (${Bool[${overrideType.Find[${_overrideType}]}]} && ${_overrideType.NotEqual[stop]}) {
-		/echo switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}
+		| /echo switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}
 		/if (${Defined[switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}]}) {
 			/call writeINI switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower} Override ${If[${switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}},FALSE,TRUE]}  
 		} 
@@ -2876,10 +2888,24 @@ sub Bind_override(string _overrideType)
  *  NOTE:
  ***| 	
 #bind deBuff /debuff
-sub Bind_deBuff(string _debuffType)
+sub Bind_deBuff(string _debuffType, string _verbage)
 	DEBUG ${cbug}Bind_deBuff(type: ${_debuffType})\ax
-	/declare _count int local 0
-	
+	/declare _count		int local
+	/declare _bind string local deBuff
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/echo ${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/echo helpo
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+					
 	/if (${Bool[${deBuffType.Find[${_debuffType}]}]} && ${_debuffType.NotEqual[stop]}) {
 		/if (${Defined[switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}]}) {
 			/call writeINI switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower} Buffs ${If[${switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}},FALSE,TRUE]}  
@@ -2919,7 +2945,19 @@ sub Bind_deBuff(string _debuffType)
 sub Bind_heal(string _healType, int _healInt)
 	DEBUG ${cbug}Bind_heal(type: ${_healType})\ax
 	/declare _count		int local
-	
+	/declare _bind string local heal
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+				
 	/if (${Bool[${healType.Find[${_healType}]}]} && ${_healType.NotEqual[stop]} && ${_healType.NotEqual[override]}) {
 		/if (${Defined[switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}]}) {
 			/call writeINI switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower} Heal ${If[${switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}},FALSE,TRUE]}  
@@ -2959,10 +2997,23 @@ sub Bind_heal(string _healType, int _healInt)
  *  NOTE:
  ***| 	
 #bind buff /buff
-sub Bind_buff(string _buffType)
+sub Bind_buff(string _buffType, string _verbage)
 	DEBUG ${cbug}Bind_buff(type: ${_buffType})\ax
 	/declare _count int local 0
+	/declare _bind string local buff
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
 	
+	| stop	
 	/if (${_buffType.Equal[stop]}) {
 		/for _count 1 to ${buffType.Count[|]}
 			/if (${switchBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower}}) {
@@ -3007,7 +3058,6 @@ sub Bind_buff(string _buffType)
 
 
 
-
 |***
  *	DES: cursor control
  *	USE: /cursor []
@@ -3015,17 +3065,30 @@ sub Bind_buff(string _buffType)
  *  NOTE: 
  ***| 
 #bind cursor /cursor
-sub Bind_cursor(string _cursorType, string _time)
+sub Bind_cursor(string _cursorType, string _verbage)
 	DEBUG ${cbug}Bind_cursor(type: ${_cursorType})\ax
 	/declare _properType string local
-	
+	/declare _count int local 0
+	/declare _bind string local cursor
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+		
 	/if (${_cursorType.Equal[auto]}) {
 		/call writeINI switchAutoCursor Common ${If[${switchAutoCursor},FALSE,TRUE]}  
 		OUT Cursor ${sep} ${cinfo}Auto\ax ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
 		/if (${timer_auto_cursor_pause}) /varset timer_auto_cursor_pause 1
 	} else /if (${_cursorType.Equal[pause]}) {
-		/call create_timer timer_auto_cursor_pause ${If[${Bool[${_time}]},${_time},30s]}
-		OUT Cursor ${sep} ${cinfo}Pause\ax ${sep} ${If[${Bool[${_time}]},${_time},30s]}
+		/call create_timer timer_auto_cursor_pause ${If[${Bool[${_verbage}]},${_verbage},30s]}
+		OUT Cursor ${sep} ${cinfo}Pause\ax ${sep} ${If[${Bool[${_verbage}]},${_verbage},30s]}
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.Equal[what]}) {
 		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.NotEqual[what]} && ${_cursorType.NotEqual[auto]}) {
@@ -3053,7 +3116,19 @@ sub Bind_rez(string _rezType, string _verbage)
 	/declare _count int local 0
 	/declare _listout string local
 	/declare _sep bool local FALSE
-	
+	/declare _bind string local rez
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+		
 	/if (${Bool[${rezType.Find[${_rezType}]}]} && ${_rezType.NotEqual[stop]} && ${_rezType.NotEqual[pct]} && ${_rezType.NotEqual[range]}) {
 		/if (${Defined[switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}]}) {
 			/call writeINI switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower} Heal ${If[${switchRez${_rezType.Left[1].Upper}${_rezType.Right[-1].Lower}},FALSE,TRUE]}
@@ -3116,13 +3191,24 @@ sub Bind_rez(string _rezType, string _verbage)
  *  NOTE: 
  ***| 
 #bind listControl /lc
-sub Bind_listControl(string _list)
+sub Bind_listControl(string _list, string _verbage)
 	DEBUG ${cbug}Bind_listControl (control: ${_list})\ax
 	/declare _properType 			string local
 	/declare _count 					int local 0
 	/declare _listchanged 		bool local FALSE
 	/declare _validName				bool local FALSE
 
+	| get help
+	/if (${listType.Find[${_list}]} && ${_verbage.Equal[info]}) {
+		VOUT /lc ${cinfo}${_list.Lower}\ax ${sep} ${Ini[${INIWiki},lc,${_list.Lower}]}
+		/return
+	}	else /if (${_list.Equal[info]}) {
+		/for _count 1 to ${listType.Count[|]}
+			VOUT /lc ${cinfo}${listType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},lc,${listType.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+	
 	| disable all commands but safezone while in a safezone
 	/if (${SafeZone} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
 		OUT ${onotice} ${sep} List Control is disabled while in a Safe Zone.
@@ -3233,9 +3319,22 @@ sub Bind_listControl(string _list)
  *  NOTE: starts/ends debugs
  ***|
 #bind debug /debug
-sub Bind_debug(string _debugType)
+sub Bind_debug(string _debugType, string _verbage)
 	DEBUG ${cbug}Bind_debug(Debug: ${_debugType})\ax
 	/declare _count int local 0
+	/declare _bind string local debug
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+			
 	/if (${Bool[${debugType.Find[${_debugType}]}]} && ${_debugType.NotEqual[stop]}) {
 		/if (${Defined[switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}]}) {
 			/call writeINI switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower} debug ${If[${switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}},FALSE,TRUE]}  
@@ -3262,6 +3361,19 @@ sub Bind_debug(string _debugType)
 sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 	DEBUG ${cbug}Bind_petControl(type: ${_pcType}, #: ${_verbage})\ax
 
+	/declare _count int local 0
+	/declare _bind string local pc
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
 	| build and buff
 	/if (${Bool[${_pcType.Find[build]}]}) {
 		/call check_pet
@@ -3269,6 +3381,7 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 
 	| pet/engage#
 	} else /if (${Bool[${_pcType.Equal[pet]}]}) {
+		/if (!${validate_petclass[]}) /return
 		/if (!${Bool[${_verbage}]}) {
 			/call writeINI switchPcPet Pet ${If[${switchPcPet},FALSE,TRUE]}
 			/call echos switch "Use Pet" switchPcPet 0 0
@@ -3301,17 +3414,17 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 		
 	| pc tank
 	} else /if (${Bool[${_pcType.Equal[tank]}]}) {
+		/if (!${validate_petclass[]}) /return
 		/call writeINI switchPcPettank Pet ${If[${switchPcPettank},FALSE,TRUE]}
 		/call echos switch "Pet Tank" switchPcPettank	0 0
 		
 	| pc type
 	} else /if (${Bool[${_pcType.Equal[type]}]}) {
 		/call writeINI PcPettype Pet ${_pcString}
-	
-		
 		
 	| pc bag ##
 	} else /if (${Bool[${_pcType.Equal[bag]}]}) {
+		/if (!${validate_petclass[]}) /return
 		/if (${Range.Between[1,10:${Int[${_verbage}]}]}) {
 			/call writeINI PetBagSlotNumber Pet ${_verbage}
 			/call echos number "Pet Weapons Slot" ${_verbage} 0 0
@@ -3355,7 +3468,20 @@ sub Event_SendPets(string line, int _tmpID)
 #bind setTieControl /tc
 sub Bind_setTieControl(string _tcType, string _verbage)
 	DEBUG ${cbug}Bind_setsetTieControl()\ax
+	/declare _count int local 0
+	/declare _bind string local tc
 
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+	
 	| set time to toon name
 	/if (${Bool[${_tcType.Equal[name]}]}) {
 		/if (${SetTieToon.NotEqual[${_verbage}]} && ${_verbage.NotEqual[${Me.DisplayName}]}) {	
@@ -3408,8 +3534,21 @@ sub Bind_setTie()
  *  NOTE:
  ***| 	
 #bind burn /burn
-sub Bind_burn(string _burnType, int _burnNum)
+sub Bind_burn(string _burnType, string _verbage)
 	DEBUG ${cbug}Bind_burn()\ax
+	/declare _count int local 0
+	/declare _bind string local burn
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
 
 	| Burn Automatic on/off
 	/if (${Bool[${_burnType.Find[auto]}]}) {
@@ -3418,20 +3557,20 @@ sub Bind_burn(string _burnType, int _burnNum)
 
 	| Mob count #
 	} else /if (${Bool[${_burnType.Equal[count]}]}) {
-	 	/if (${Range.Between[1,99:${Int[${_burnNum}]}]}) {
-			/call writeINI burnCount Common ${_burnNum} 
-			/call echos number "Burn # Mob Count" ${_burnNum} 0 0
+	 	/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI burnCount Common ${_verbage} 
+			/call echos number "Burn # Mob Count" ${_verbage} 0 0
 		} else {
-			OUT /burn count [${cinfo}##\ax] of mobs in range [${cbug}${burnCount}\ax] ${cinfo}1 - 99\ax
+			OUT /burn count [${cinfo}${burnCount}\ax] when # of mobs in range ${cinfo}1 - 99\ax
 		}
 
 	| Burn Engage at %
 	} else /if (${Bool[${_burnType.Equal[engageatat]}]}) {
-	 	/if (${Range.Between[1,99:${Int[${_burnNum}]}]}) {
-			/call writeINI burnEngageat Common ${_burnNum} 
-			/call echos number "Burn health enagage %" ${_burnNum} 0 0
+	 	/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI burnEngageat Common ${_verbage} 
+			/call echos number "Burn health enagage %" ${_verbage} 0 0
 		} else {
-			OUT /burn engageat [${cinfo}##\ax] % of mobs health to engage Burn [${cbug}${burnEngageat}\ax] ${cinfo}1 - 99\ax
+			OUT /burn engageat [${cinfo}${burnEngageat}\ax] % of mobs health to engage burn ${cinfo}1 - 99\ax
 		}
 
 	| force constant burning
@@ -3454,8 +3593,22 @@ sub Bind_burn(string _burnType, int _burnNum)
  *  NOTE:
  ***|
 #bind setCore /core
-sub Bind_setCore(string _coreType, string _coreVerbage)
-	DEBUG ${cbug}Bind_setCore(type:${_coreType}, verbage:${_coreVerbage})\ax
+sub Bind_setCore(string _coreType, string _verbage)
+	DEBUG ${cbug}Bind_setCore(type:${_coreType}, verbage:${_verbage})\ax
+
+	/declare _count int local 0
+	/declare _bind string local core
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
 
 	| core auto/manual
 	/if (${Bool[${_coreType.Equal[auto]}]}) {
@@ -3479,9 +3632,9 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 
 	| set the kill code
 	} else /if (${Bool[${_coreType.Equal[killcode]}]}) {
-		/if (${Bool[${_coreVerbage}]}) {
-			/call DeclareCoreIniVar NA remoteKillKey General ${_coreVerbage} 
-			OUT Core ${sep} ${cinfo}Remote Kill Code\ax ${sep} ${_coreVerbage}
+		/if (${Bool[${_verbage}]}) {
+			/call DeclareCoreIniVar NA remoteKillKey General ${_verbage} 
+			OUT Core ${sep} ${cinfo}Remote Kill Code\ax ${sep} ${_verbage}
 		} else {
 			OUT Current killcode: ${cinfo}${remoteKillKey}\ax
 		}
@@ -3491,7 +3644,7 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 		/call whitewash
 		
 	} else /if (${Bool[${_coreType.Equal[rest]}]}) {
-		/declare _num int local ${_coreVerbage}
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[0,99:${Int[${_num}]}]}) {
 			/call writeINI autoRest Common ${_num}  
 			/call echos number "Auto Rest" ${If[${_num},${_num},${autoRest}]} 0 0
@@ -3499,18 +3652,18 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 
 	| set control toon
 	} else /if (${Bool[${_coreType.Equal[control]}]}) {
-		/if (${Bool[${_coreVerbage}]}) {
-			/call writeINI toonControl Common ${_coreVerbage.Left[1].Upper}${_coreVerbage.Right[-1].Lower}
-		} else /if (!${Bool[${_coreVerbage}]}) {
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI toonControl Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI toonControl Common FALSE
 		}
 		OUT Control Toon ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
 
 	| enable/disable relay tells
 	} else /if (${Bool[${_coreType.Equal[relay]}]}) {
-		/if (${Bool[${_coreVerbage}]}) {
-			/call writeINI relayTells Common ${_coreVerbage.Left[1].Upper}${_coreVerbage.Right[-1].Lower}
-		} else /if (!${Bool[${_coreVerbage}]}) {
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI relayTells Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI relayTells Common FALSE
 		}
 		OUT Relay Tells ${sep} ${If[${Bool[${relayTells}]},${cgood}${relayTells}\ax,${odisabled}]}
@@ -3536,7 +3689,7 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 
 	| set echo channel
 	} else /if (${Bool[${_coreType.Equal[echo]}]}) {
-		/declare _num int local ${_coreVerbage}
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,9:${Int[${_num}]}]}) {
 			/call writeINI echoChannel Common ${_num} 0 0
 		} 
@@ -3545,7 +3698,7 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 
 	| exp max level
 	} else /if (${Bool[${_coreType.Equal[expmaintain]}]}) {
-		/declare _num int local ${_coreVerbage}
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,99:${Int[${_num}]}]}) {
 			/call writeINI MaintExpLvl Common ${_num} 
 			/call echos number "Maintain $ of EXP in level" ${_num} 0 0
@@ -3555,7 +3708,7 @@ sub Bind_setCore(string _coreType, string _coreVerbage)
 
 	| exp maintain level
 	} else /if (${Bool[${_coreType.Equal[explevel]}]}) {
-		/declare _num int local ${_coreVerbage}
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,105:${Int[${_num}]}]}) {
 			/call writeINI MaxLevel Common ${_num} 
 			/call echos number "Max EXP Level" ${_num} 0 0
@@ -3620,10 +3773,9 @@ sub Bind_info()
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
 		/varset _sep TRUE
 	/next _count
-	/echo
-	/call echos info 0 0 0 0
+	/call echos wiki 0 0 0 0
 	OUT ${_listout}
-	/echo
+	OUT /command ${cinfo}info\ax for details
 /return  	
 
 
@@ -3700,21 +3852,35 @@ sub Bind_ts(string _tsType)
  *  NOTE:
  ***|
 #bind setCombatControl /cc
-sub Bind_setCombatControl(string _combatType, string _combatVerbage)
-	DEBUG ${cbug}Bind_setCombatControl(type:${_combatType}, verbage:${_combatVerbage})\ax
+sub Bind_setCombatControl(string _ccType, string _verbage)
+	DEBUG ${cbug}Bind_setCombatControl(type:${_ccType}, verbage:${_verbage})\ax
+
+	/declare _count int local 0
+	/declare _bind string local cc
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
 
 	| force manual combat routines
-	/if (${Bool[${_combatType.Equal[force]}]}) {
-		/if (${Bool[${_combatVerbage}]}) {
+	/if (${Bool[${_ccType.Equal[force]}]}) {
+		/if (${Bool[${_verbage}]}) {
 			/if (${Target.ID} && (${Target.ID} != ${Me.ID}) && (${Target.ID} != ${Me.Pet.ID})) {
 				| engage Melee combat
-				/if (${Bool[${_combatVerbage.Equal[melee]}]}) {
+				/if (${Bool[${_verbage.Equal[melee]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat MELEE
 					/varset Target2Kill ${Target.ID}
 					OUT Combat ${sep} ${cinfo}Melee\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 				| engage Range combat
-				} else /if (${Bool[${_combatVerbage.Equal[range]}]}) {
+				} else /if (${Bool[${_verbage.Equal[range]}]}) {
 					/if (${Target.Distance} > 31) {
 						/varset isValidTarget TRUE
 						/varset combat RANGE
@@ -3722,7 +3888,7 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 						OUT Combat ${sep} ${cinfo}Range\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 					} 
 				| engage Nuke combat
-				} else /if (${Bool[${_combatVerbage.Equal[nuke]}]}) {
+				} else /if (${Bool[${_verbage.Equal[nuke]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
@@ -3745,33 +3911,34 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 				
 			}
 
+
 	| set Melee combat
-	} else /if (${Bool[${_combatType.Equal[melee]}]}) {
-		/call writeINI combat Common ${_combatType.Upper}
+	} else /if (${Bool[${_ccType.Equal[melee]}]}) {
+		/call writeINI combat Common ${_ccType.Upper}
 		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Range combat
-	} else /if (${Bool[${_combatType.Equal[range]}]}) {
-		/call writeINI combat Common ${_combatType.Upper}
+	} else /if (${Bool[${_ccType.Equal[range]}]}) {
+		/call writeINI combat Common ${_ccType.Upper}
 		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Nuke combat
-	} else /if (${Bool[${_combatType.Equal[nuke]}]}) {
-		/call writeINI combat Common ${_combatType.Upper}
+	} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
+		/call writeINI combat Common ${_ccType.Upper}
 		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Heal combat
-	} else /if (${Bool[${_combatType.Equal[heal]}]}) {
-		/call writeINI combat Common ${_combatType.Upper}
+	} else /if (${Bool[${_ccType.Equal[heal]}]}) {
+		/call writeINI combat Common ${_ccType.Upper}
 		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Dual combat
-	} else /if (${Bool[${_combatType.Equal[dual]}]}) {
-		/call writeINI combat Common ${_combatType.Upper}
+	} else /if (${Bool[${_ccType.Equal[dual]}]}) {
+		/call writeINI combat Common ${_ccType.Upper}
 		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Pull
-	} else /if (${Bool[${_combatType.Equal[pull]}]}) {
+	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
 		OUT Combat ${sep} ${cinfo}Pull\ax ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
 		/if (${switchPull}) {
@@ -3781,14 +3948,14 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 		}
 
 	| agro/agro range ##
-	} else /if (${Bool[${_combatType.Equal[agro]}]}) {
-		/declare _num int local ${_combatVerbage}
-		/if (${Bool[${_combatVerbage}]} && ${Range.Between[1,400:${Int[${_num}]}]}) {
+	} else /if (${Bool[${_ccType.Equal[agro]}]}) {
+		/declare _num int local ${_verbage}
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,400:${Int[${_num}]}]}) {
 			/call writeINI MobAgro Common ${_num} 
 			/call echos number "Combat Agro Range" ${_num} 0 0
-		} else /if (${Bool[${_combatVerbage}]} && !${Range.Between[1,400:${Int[${_num}]}]})  {
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,400:${Int[${_num}]}]})  {
 			OUT /cc agro [${cinfo}${MobAgro}\ax] allowable range is ${cinfo}1 - 400\ax
-		} else /if (!${Bool[${_combatVerbage}]}) {
+		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchAgro Common ${If[${switchAgro},FALSE,TRUE]}
 			OUT Combat ${sep} ${cinfo}Agro\ax ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
 		}
@@ -3798,24 +3965,24 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 			
 
 	| set out of group Main assist 1 or 2
-	} else /if (${Bool[${_combatType.Equal[ma1]}]}) {
-		/if (${Bool[${_combatVerbage}]}) {
-			/call writeINI MA1 Common ${_combatVerbage.Left[1].Upper}${_combatVerbage.Right[-1].Lower}
-		} else /if (!${Bool[${_combatVerbage}]})  {
+	} else /if (${Bool[${_ccType.Equal[ma1]}]}) {
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI MA1 Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]})  {
 			/call writeINI MA1 Common FALSE
 		} 				
 		OUT MA1 ${sep} ${If[${Bool[${MA1}]},${cinfo}${MA1}\ax,${odisabled}]}
-	} else /if (${Bool[${_combatType.Equal[ma2]}]}) {		
-		/if (${Bool[${_combatVerbage}]}) {
-			/call writeINI MA2 Common ${_combatVerbage.Left[1].Upper}${_combatVerbage.Right[-1].Lower}
-		} else /if (!${Bool[${_combatVerbage}]})  {
+	} else /if (${Bool[${_ccType.Equal[ma2]}]}) {		
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI MA2 Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]})  {
 			/call writeINI MA2 Common FALSE
 		} 				
 		OUT MA2 ${sep} ${If[${Bool[${MA2}]},${cinfo}${MA2}\ax,${odisabled}]}	
 
 	| MA1/2 engage at %
-	} else /if (${Bool[${_combatType.Equal[engage]}]}) {
-		/declare _num int local ${_combatVerbage}
+	} else /if (${Bool[${_ccType.Equal[engage]}]}) {
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,100:${Int[${_num}]}]}) {
 			/call writeINI engageAt Common ${_num}  
 			/call echos number "MA Engage at" ${If[${_num},${_num},${engageAt}]} 0 0
@@ -3824,8 +3991,8 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 		}
 
 	| Smart Assist engage at %
-	} else /if (${Bool[${_combatType.Equal[smartengage]}]}) {
-		/declare _num int local ${_combatVerbage}
+	} else /if (${Bool[${_ccType.Equal[smartengage]}]}) {
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,100:${Int[${_num}]}]}) {
 			/call writeINI smartengageAt Common ${_num}  
 			/call echos number "Smart Assist Engage at" ${If[${_num},${_num},${smartengageAt}]} 0 0
@@ -3834,8 +4001,8 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 		}
 
 	| set melee combat distance to target
-	} else /if (${Bool[${_combatType.Equal[combatdistance]}]}) {
-		/declare _num int local ${_combatVerbage}
+	} else /if (${Bool[${_ccType.Equal[combatdistance]}]}) {
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,50:${Int[${_num}]}]}) {
 			/call writeINI CombatDistance Movement ${_num}
 			/call echos number "Melee Combat Distance" ${_num} 0 0
@@ -3844,8 +4011,8 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 		}
 
 	| set fake safe radius
-	} else /if (${Bool[${_combatType.Equal[saferadius]}]}) {
-		/declare _num int local ${_combatVerbage}
+	} else /if (${Bool[${_ccType.Equal[saferadius]}]}) {
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,99:${Int[${_num}]}]}) {
 			/call writeINI combatRadius Common ${_num}
 			/call echos number "Fake Safe Combat Radius" ${_num} 0 0
@@ -3854,8 +4021,8 @@ sub Bind_setCombatControl(string _combatType, string _combatVerbage)
 		}
 	
 	| set Z radius
-	} else /if (${Bool[${_combatType.Equal[zradius]}]}) {
-		/declare _num int local ${_combatVerbage}
+	} else /if (${Bool[${_ccType.Equal[zradius]}]}) {
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
 			/call writeINI zradius Common ${_num} 
 			/call echos number "Set ZRadius" ${_num} 0 0
@@ -4038,8 +4205,22 @@ sub Event_send(string line, string _sender, string _location)
  *  NOTE:
  ***|
 #bind setMovementControls /movement
-sub Bind_setMovementControls(string _movementType, string _movementVerbage)
+sub Bind_setMovementControls(string _movementType, string _verbage)
 	DEBUG ${cbug}Bind_setMovementControls(type:${_mcType}, verbage:${_mcVerbage})\ax
+
+	/declare _count int local 0
+	/declare _bind string local movement
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
 
 	| set home on or off
 	/if (${Bool[${_movementType.Equal[home]}]}) {
@@ -4065,7 +4246,7 @@ sub Bind_setMovementControls(string _movementType, string _movementVerbage)
 
 	| set home radius
 	} else /if (${Bool[${_movementType.Equal[radius]}]}) {
-		/declare _num int local ${_movementVerbage}
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
 			/call writeINI HomeRadius Movement ${_num} 
 			/call echos number "Home Radius" ${_num} 0 0
@@ -4075,7 +4256,7 @@ sub Bind_setMovementControls(string _movementType, string _movementVerbage)
 
 	| set leash range
 	} else /if (${Bool[${_movementType.Equal[leash]}]}) {
-		/declare _num int local ${_movementVerbage}
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
 			/call writeINI HomeLeash Movement ${_num} 
 			/call echos number "Leash to Home" ${_num} 0 0
@@ -4085,7 +4266,7 @@ sub Bind_setMovementControls(string _movementType, string _movementVerbage)
 
 	| set facing arc
 	} else /if (${Bool[${_movementType.Equal[arc]}]}) {
-		/declare _num int local ${_movementVerbage}
+		/declare _num int local ${_verbage}
 		/if (${Range.Between[1,45:${Int[${_num}]}]}) {
 			/call writeINI SetFaceArc Movement ${_num} 
 			/call echos number "Facing Arc Buffer" ${_num} 0 0
@@ -4095,22 +4276,22 @@ sub Bind_setMovementControls(string _movementType, string _movementVerbage)
 		
 	| i need mounts
 	} else /if (${Bool[${_movementType.Equal[mount]}]}) {
-		/if (!${Bool[${_movementVerbage}]}) {
+		/if (!${Bool[${_verbage}]}) {
 			VOUT /movement mount [${cinfo}on\ax ${sep} ${cinfo}off\ax]
-		} else /if (${Bool[${_movementVerbage.Equal[off]}]}) {
+		} else /if (${Bool[${_verbage.Equal[off]}]}) {
 			/if (!${Bool[${Me.Mount.ID}]}) {
 				/return
 			} else /if (${Bool[${Me.Mount.ID}]}) {
 				/dismount
 				/return
 			}
-		} else /if (${Bool[${_movementVerbage.Equal[on]}]}) {
+		} else /if (${Bool[${_verbage.Equal[on]}]}) {
 			/if (${Bool[${Me.Mount.ID}]}) /return
 			/if (${Zone.Indoor}) {
 				VOUT Go outside..
 				/return
 			}			
-			/if (${Me.ItemReady[${mount}]}) /call core_cast "${mount}" item 0
+			/if (${Me.ItemReady[${mount}]}) /call core_cast "${mount}" item 0 FALSE
 		}
 		
 	} else {

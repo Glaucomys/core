@@ -81,7 +81,7 @@
 		
 ***|
 
-#turbo 60
+#turbo 55
 | #warning
 #define DEBUG "/if (${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGCAST "/if (${switchDebugCasting} || ${switchDebugCore}) /echo [\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax]"
@@ -146,6 +146,7 @@ sub main()
  	/declare INIClass 										string 	outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
 	/declare INIZone		     							string 	outer tc\core.zone.ini
 	/declare INILoot											string  outer	tc\core.loot.ini
+	/declare INIWiki		     							string 	outer tc\core.wiki.ini
 	/declare INIBlurb											string	outer tc\core.blurb.ini
 	/declare INIAugDump     							string 	outer tc\core.augmentdump.ini
 	/call set_declares
@@ -164,6 +165,7 @@ sub main()
 	LOG .. Starting Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
   /if (${switchOverrideLos}) NOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
 
+	OUT Commands ${sep} ${cinfo}/info\ax
 	OUT ${cgood}Ready\ax
   
 	:loopmain

@@ -14,11 +14,22 @@
  *  NOTE:
  ***| 
 #bind hud /hc
-sub Bind_hud(string _hcType)
+sub Bind_hud(string _hcType, string _hcVerbage)
 	DEBUG ${cbug}Bind_hud()\ax
+	/declare _count int local 0
+
+	| get help
+	/if (${hudType.Find[${_hcType}]} && ${_hcVerbage.Equal[?]}) {
+		VOUT /hc ${cinfo}${_hcType.Lower}\ax ${sep} ${Ini[${INIWiki},hc,${_hcType.Lower}]}
+		/return
+	}	
+	/if (${_hcType.Equal[?]}) {
+		/for _count 1 to ${hudType.Count[|]}
+			VOUT /hc ${cinfo}${hudType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},hc,${hudType.Arg[${_count},|]}]}
+		/next _count
 	
 	| adjust hud clock
-	/if (${Bool[${_hcType.Find[time]}]}) {
+	} else /if (${Bool[${_hcType.Find[time]}]}) {
 		/varset HUDTime ${If[${HUDTime},FALSE,TRUE]}
 		/if (${HUDTime}) VOUT Hud Showing ${cinfo}Real Life\ax time.
 		/if (!${HUDTime}) VOUT Hud Showing ${cinfo}In Game\ax time.
@@ -29,7 +40,7 @@ sub Bind_hud(string _hcType)
 		
 	| update hud broadcasting	
 	} else /if (${Bool[${_hcType.Find[broadcast]}]}) {
-		/call Event_SetVar NA setBroadcast Common ${If[${Bool[${setBroadcast}]},FALSE,TRUE]}
+		/call writeINI setBroadcast Common ${If[${Bool[${setBroadcast}]},FALSE,TRUE]}
 		/if (${setBroadcast.Equal[FALSE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "DISABLED"
 		/if (${setBroadcast.Equal[TRUE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "${coreAuto}"
 		/call echos switch "Adjusting Broadcast Status" setBroadcast
@@ -38,8 +49,8 @@ sub Bind_hud(string _hcType)
 	} else /if (${Bool[${_hcType.Find[delete]}]}) {
 		NOUT Deleteing HUD ${sep}
 		/ini ".\..\MQ2HUD.ini" "core" NULL NULL
+
 	} else {
-		
 		/call echos listtype hc hud
 	} 
 /return

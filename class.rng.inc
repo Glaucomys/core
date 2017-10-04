@@ -104,13 +104,13 @@ sub disc_RNG()
 
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${Me.SpellReady[${DoTSwarmDS}]} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast "${DoTSwarmDS}" 0 ${Target2Kill}
+	/if (${Me.SpellReady[${DoTSwarmDS}]} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast "${DoTSwarmDS}" 0 ${Target2Kill} FALSE
 	/if (${Target.ID} && ${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 	/if (${Target.ID} && !${timer_Elemental_Arrow}) /call cast_AA_elemental_arrows ${Target2Kill}
 	/call use_skill_melee
-	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${switchAgro}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
-	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill}
-	/if (${Target.ID} && ${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill}
+	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${switchAgro}) /call core_cast "${DiscJolt}" disc ${Target2Kill} FALSE
+	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
+	/if (${Target.ID} && ${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill} FALSE
 /return
 
 
@@ -172,11 +172,9 @@ sub get_agro_RNG()
 	CHECKEXIT
 	/doevents
 	/if (${switchAgro}) {
-		/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Enabled]}) /call core_cast "Ferocious Kick Subtlety: Enabled" alt 0
 		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill}
 	}
 	/if (!${switchAgro}) {
-			/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Disabled]}) /call core_cast "Ferocious Kick Subtlety: Disabled" alt 0
 	}
 	/call use_skill_melee
 /return
@@ -197,7 +195,7 @@ sub cast_AA_elemental_arrows(int _tmpID)
 	/call use_skill_melee
 	/if (${Bool[${ElementalArrow}]}) {
 		/if (!${Bool[${Target.Buff["Elemental Arrow: Ice"]}]} && !${Bool[${Target.Buff["Elemental Arrow: Fire"]}]} && !${Bool[${Target.Buff[${GlacialArow}]}]} && !${Bool[${Target.Buff[${VolatileArrow}]}]}) {
-			/call core_cast "${ElementalArrow}" alt ${_tmpID}
+			/call core_cast "${ElementalArrow}" alt ${_tmpID} FALSE
 			/call create_timer timer_Elemental_Arrow 25s
 			/return
 		} else {
@@ -206,7 +204,7 @@ sub cast_AA_elemental_arrows(int _tmpID)
 	}
 	/if (${Bool[${GlacialArow}]}) {
 		/if (!${Bool[${Target.Buff["Elemental Arrow: Ice"]}]} && !${Bool[${Target.Buff[${GlacialArow}]}]}) {
-			/call core_cast "${GlacialArow}" alt ${_tmpID}
+			/call core_cast "${GlacialArow}" alt ${_tmpID} FALSE
 			/call create_timer timer_Elemental_Arrow 25s
 			/return
 		} else {
@@ -215,7 +213,7 @@ sub cast_AA_elemental_arrows(int _tmpID)
 	}	
 	/if (${Bool[${VolatileArrow}]}) {
 		/if (!${Bool[${Target.Buff["Elemental Arrow: Fire"]}]} && !${Bool[${Target.Buff[${VolatileArrow}]}]}) {
-			/call core_cast "${VolatileArrow}" alt ${_tmpID}
+			/call core_cast "${VolatileArrow}" alt ${_tmpID} FALSE
 			/call create_timer timer_Elemental_Arrow 25s
 			/return
 		}	else {
@@ -258,7 +256,7 @@ sub cast_nuke_summer(int _tmpID)
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
 	/call is_target_dead
 	/if (${Macro.Return}) /return		
-	/call core_cast "${NukeSummer}" 0 ${_tmpID}
+	/call core_cast "${NukeSummer}" 0 ${_tmpID} FALSE
 /return
 
 
@@ -277,44 +275,44 @@ sub synergy_RNG()
 	
 	| mele disc
 	/if (${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-		/call core_cast "Empowered Blades" alt 0 
+		/call core_cast "Empowered Blades" alt 0 FALSE
 	} else /if (${Me.CombatAbilityReady[${DiscMele}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-		/call core_cast "${DiscMele}" disc 0
+		/call core_cast "${DiscMele}" disc 0 FALSE
 	} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]}) {
 		/call use_glyph
 	} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-		/call core_cast "${Epic}" item 0
+		/call core_cast "${Epic}" item 0 FALSE
 	}
 	
 	/call cast_AA_spire
 	
 	| proc
 	/if (${Me.AltAbilityReady[Imbued Ferocity]} && !${Bool[${Me.Buff[${RNGspire1}]}]}) {
-		/call core_cast "Imbued Ferocity" alt 0
+		/call core_cast "Imbued Ferocity" alt 0 FALSE
 	}
 
 	| cheeta
-	/if (${Me.AltAbilityReady[${RNGcheetah}]}) /call core_cast "${RNGcheetah}" alt 0 	
+	/if (${Me.AltAbilityReady[${RNGcheetah}]}) /call core_cast "${RNGcheetah}" alt 0 FALSE
 	
 	| att buffs
 	/if (${Me.AltAbilityReady[Outrider's Accuracy]} && !${Bool[${Me.Buff[Outrider's Attack]}]}) {
-		/call core_cast "Outrider's Accuracy" alt 0
+		/call core_cast "Outrider's Accuracy" alt 0 FALSE
 	} else /if (${Me.AltAbilityReady[Outrider's Attack]}  && !${Bool[${Me.Song[Outrider's Accuracy]}]} && !${Me.AltAbilityReady[Outrider's Accuracy]} ) {
-		/call core_cast "Outrider's Attack" alt 0
+		/call core_cast "Outrider's Attack" alt 0 FALSE
 	}
 	
 	| guardian buff
 	/if (${Me.AltAbilityReady[Guardian of the Forest]} && !${Bool[${Me.Song[${RNGgroupguardian}]}]}) {  
-		/call core_cast "Guardian of the Forest" alt 0
+		/call core_cast "Guardian of the Forest" alt 0 FALSE
 	} else /if (${Me.AltAbilityReady[${RNGgroupguardian}]} && !${Bool[${Me.Song[Guardian of the Forest]}]} && !${Me.AltAbilityReady[Guardian of the Forest]}) {
-		/call core_cast "${RNGgroupguardian}" alt 0
+		/call core_cast "${RNGgroupguardian}" alt 0 FALSE
 	}
 		
 	| swarm
-	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Pack Hunt]}) /call core_cast "Pack Hunt" alt ${Target2Kill}    
+	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Pack Hunt]}) /call core_cast "Pack Hunt" alt ${Target2Kill} FALSE   
 	
 	| ae regen 
-	/if (!${Bool[${DiscHeal}]} && !${Bool[${Me.Song[Bladespur Reflection]}]} && ${Me.CombatAbilityReady[${DiscHeal}]}) /call core_cast "${DiscHeal}" disc ${Target2Kill}
+	/if (!${Bool[${DiscHeal}]} && !${Bool[${Me.Song[Bladespur Reflection]}]} && ${Me.CombatAbilityReady[${DiscHeal}]}) /call core_cast "${DiscHeal}" disc ${Target2Kill} FALSE
 	
 		
 	/call synergy_click_Circle
@@ -330,8 +328,8 @@ sub synergy_RNG()
  *  NOTE:
  ***|
 #bind setRNG /rng
-sub Bind_setRNG(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setRNG(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${Select[${Me.Class.ShortName},RNG]}) {
 		/call echo_bitch EQBC
 		/return
@@ -346,8 +344,8 @@ sub Bind_setRNG(string _classType, string _classVerbage)
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/declare _listout 	string 	local
 		/declare _sep 			bool 		local

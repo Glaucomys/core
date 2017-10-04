@@ -254,9 +254,9 @@ sub check_heal_group_CLR()
 	| check for personal debuffs
 	/if (${switchHealCure} && ${Debuff.Count}) {
 		| AA Purified Spirits SELF ONLY 0' range 2 min
-		/if (${Me.AltAbilityReady[Purified Spirits]}) /call core_cast "Purified Spirits" alt ${Me.ID} 
+		/if (${Me.AltAbilityReady[Purified Spirits]}) /call core_cast "Purified Spirits" alt ${Me.ID} FALSE
 		| AA Radient Cure SELF ONLY 100' range 1 min
-		/if (${Me.AltAbilityReady[Radiant Cure]}) /call core_cast "Radiant Cure" alt ${Me.ID} 
+		/if (${Me.AltAbilityReady[Radiant Cure]}) /call core_cast "Radiant Cure" alt 0 FALSE 
 	}
 	
 	AMIDEAD
@@ -265,16 +265,17 @@ sub check_heal_group_CLR()
 	| AA heal stuffs
   /if (${groupHurt} && !${SafeZone}) {
 	  /if (${groupHurt} == 2) {
-		  /if (${Me.AltAbilityReady[Beacon of Life]}) /call core_cast "Beacon of Life" alt ${Me.ID}
+		  /if (${Me.AltAbilityReady[Beacon of Life]}) /call core_cast "Beacon of Life" alt 0 FALSE
 		} else /if (${groupHurt} == 3) {
-		 	/if (${Me.AltAbilityReady[Channeling the Divine]}) /call core_cast "Channeling the Divine" alt ${Me.ID}
+		 	/if (${Me.AltAbilityReady[Channeling the Divine]}) /call core_cast "Channeling the Divine" alt 0 FALSE
 		} else /if (${groupHurt} == 4) {
- 			/if (${Me.AltAbilityReady[Healing Frenzy]}) /call core_cast "Healing Frenzy" alt ${Me.ID}
+ 			/if (${Me.AltAbilityReady[Healing Frenzy]}) /call core_cast "Healing Frenzy" alt 0 FALSE
+ 			/if (${Me.AltAbilityReady[Fury of Life]}) /call core_cast "Fury of Life" alt 0 FALSE
  		} else /if (${groupHurt} >= 5) {
-			/if (${Me.AltAbilityReady[Exquisite Benediction]}) /call core_cast "Exquisite Benediction" alt ${Me.ID}
-			/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt ${Me.ID}
+			/if (${Me.AltAbilityReady[Exquisite Benediction]}) /call core_cast "Exquisite Benediction" alt 0 FALSE
+			/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0 FALSE
 		} else /if (${groupHurt} == 6) {
-			/if (${Me.AltAbilityReady[Divine Retribution]}) /call core_cast "Divine Retribution" alt ${Me.ID}
+			/if (${Me.AltAbilityReady[Divine Retribution]}) /call core_cast "Divine Retribution" alt 0 FALSE
 			/call use_glyph
 		}
   } 

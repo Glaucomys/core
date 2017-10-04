@@ -9,6 +9,19 @@
  ***|
 
 
+
+20171001
+- more wiki entries added
+- class.rog.inc
+  -- adjustted some self only discs tot he new vlaidation function
+
+
+20170930
+- ${buff_validate[type, inisub, name]} returns true/false
+  -- validates all self buffs: manna cost, in book, stacks, duration.
+  -- works on silver subscriptions
+
+
 20170929
 - class.nec.inc
   -- will now slow undead mobs with Death's Malaise if enabled
@@ -17,6 +30,9 @@
   -- all timer checks now function off of .Duration.TotalSeconds and not the standard timer 1/10 timer
   -- DOTs will be reapplied when they reach the half tick mark (3 seconds). or as close to the loop gets to <= 3 seconds
   -- DOT caculations are only applied top DOTS that YOU cast on the mob. not other casters dots with same name
+- active Wiki
+  -- created core.wiki.ini
+  -- /command ? to get some helps..
   
 
 20170928

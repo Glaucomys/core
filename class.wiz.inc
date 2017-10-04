@@ -174,15 +174,14 @@ sub Event_gtfo(string line, string _sender)
 sub check_rune_WIZ()
 	DEBUGCLASS ${cbug}check_rune_WIZ()\aw
 	AMIDEAD
-
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
-	/if (!${Me.Buff[${runeMagiWard}].ID} && ${FindItemCount[Peridot]} && ${Spell[${runeMagiWard}].Stacks}) /call core_cast "${runeMagiWard}" ${buffGem} 0
-	/if (!${Bool[${Me.Buff[${runeShieldofFate}].ID}]} && ${Spell[${runeShieldofFate}].Stacks}) /call core_cast "${runeShieldofFate}" ${buffGem} 0
-	/if (!${Me.Buff[${runeCrystalwing}].ID} && ${Spell[${runeCrystalwing}].Stacks}) /call core_cast "${runeCrystalwing}" ${buffGem} 0
-	/if (!${Me.Buff[${runeGuard}].ID} && ${Spell[${runeGuard}].Stacks}) /call core_cast "${runeGuard}" ${buffGem} 0
-	UPDATEHUD
 	/call create_timer timer_check_runes ${tCheck_Runes}
+	/if (${buff_validate[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0
+	/if (${buff_validate[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0
+	/if (${buff_validate[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0
+	/if (${buff_validate[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0
+	UPDATEHUD FALSE
 /return
 
 
@@ -295,8 +294,8 @@ shield of consequence
  *  NOTE:
  ***|
 #bind setWIZ /wiz
-sub Bind_setWIZ(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setWIZ(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${Select[${Me.Class.ShortName},WIZ]}) {
 		/call echo_bitch EQBC
 		/return
@@ -306,12 +305,10 @@ sub Bind_setWIZ(string _classType, string _classVerbage)
 	
 	| 
 	/if (${Bool[${_classType.Equal[line]}]}) {
-
-
 		| mem a line of spells.-
-		/if (${Bool[${lineType.Find[${_classVerbage.Lower}]}]}) {
-			SDEBUG ${lineType.Find[${_classVerbage.Lower}]}
-			/call writeINI lineCurrent Spell ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
+		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
+			SDEBUG ${lineType.Find[${_verbage.Lower}]}
+			/call writeINI lineCurrent Spell ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 			/delay 2
 			/call mem_spell_line ${lineCurrent}
 		}
@@ -327,8 +324,8 @@ sub Bind_setWIZ(string _classType, string _classVerbage)
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/declare _listout 	string 	local
 		/declare _sep 			bool 		local
@@ -342,5 +339,4 @@ sub Bind_setWIZ(string _classType, string _classVerbage)
 	} else {
 		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return

@@ -81,7 +81,13 @@ sub disc_PAL()
 	
 	
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
-	/if (${Me.CombatAbilityReady[${DiscFastRune}]} && ${Bool[${DiscFastRune}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFastRune}].EnduranceCost}) /call core_cast "${DiscFastRune}" disc
+	| /if (${Me.CombatAbilityReady[${DiscFastRune}]} && ${Bool[${DiscFastRune}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFastRune}].EnduranceCost}) /call core_cast "${DiscFastRune}" disc
+	
+	/if (${validate_buff[disc, discs, DiscFastRune]}) /call core_cast "${DiscFastRune}" disc 0
+	
+	
+	
+	
 
 	| Hand of Piety AA Group heal	
 	/if (${switchHealSelf} && ${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0
@@ -128,13 +134,15 @@ sub get_agro_PAL()
 	| AE Stuns
 	/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 60 playerstate 4 targetable]}
 	/if  (${mobAECount} > 1) {
-		/if (!${Bool[${Raid.Members}]} && ${Me.AltAbilityReady[${AAAELodestar}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill} cast_break
+		/if (!${Bool[${Raid.Members}]} && ${validate_cast[alt, ${AAAELodestar}, ${Target2Kill}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill} cast_break
 	} else /if (${mobAECount} > 3) {
-		/if (!${Bool[${Raid.Members}]} && ${Me.AltAbilityReady[${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill} cast_break
+		/if (!${Bool[${Raid.Members}]} && ${validate_cast[alt, ${AAAELodestar}, ${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill} cast_break
 	}
 
 	| chain stun
-	/if (${Bool[${chainStun}]} && ${Me.AltAbilityReady[${chainStun}]} && ${Me.CurrentMana} > ${Spell[${chainStun}].Mana}) /call core_cast "${chainStun}" alt ${Target2Kill} cast_break
+	| /if (${Bool[${chainStun}]} && ${Me.AltAbilityReady[${chainStun}]} && ${Me.CurrentMana} > ${Spell[${chainStun}].Mana}) /call core_cast "${chainStun}" alt ${Target2Kill} cast_break
+	
+	/if (${validate_cast[alt, ${chainStun}, ${Target2Kill}]}) /call core_cast "${chainStun}" alt ${Target2Kill} cast_break
 
 	| AA pet hate (the little sword thingie)
 	/if (${Me.AltAbilityReady[Projection of Piety]} && (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} || ${Me.PctAggro} < 80)) /call core_cast "Projection of Piety" alt ${Target2Kill} cast_break
@@ -263,12 +271,13 @@ sub check_steel()
 	CHECKEXIT
 
 	/if (${SafeZone} && !${switchOverrideSafezone} || !${switchSteel}) /return
-	/if (!${Bool[${Me.Song[${Steel}]}]} && ${Me.SpellReady[${Steel}]}) {
+	/if (${validate_buff[spell, buffs, Steel]}) {
 		/call core_cast "${Steel}" 0
 		/call create_timer timer_check_Steel ${tcheck_Steel}
 	}
 /return
 
+	| /if (${validate_buff[spell, buffs, Steel]}) /call core_cast "${Steel}" 0 0
 
 
  |***
