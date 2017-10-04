@@ -1701,6 +1701,8 @@ sub cast_DOT()
 		CHECKEXIT
 		/call is_target_dead
 		/if (${Macro.Return}) /return
+		
+		/if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
 
 		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
 			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
@@ -5499,6 +5501,24 @@ sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
 
 
 
+|***
+ *	DES: removes ranks from spell names. returns the name only
+ *	USE: /call spell_remove_rank [spellname]
+ *	INI: 
+ *	NOTE:
+ ***|
+sub spell_remove_rank(string _spell)
+	/if (${Spell[${_spell}].Rank} == 3) {
+		/varset _spell ${_spell.Left[-8]}	
+	} else /if (${Spell[${_spell}].Rank} == 2) 
+		/varset _spell ${_spell.Left[-7]}	
+	} else /if (${Spell[${_spell}].Rank} == 1) 
+		/varset _spell ${_spell}
+	} else /if (${Spell[${_spell}].Rank} == 0) 
+		/varset _spell ${_spell}
+	}
+/return ${_spell}
+
 
 
 
@@ -5752,37 +5772,4 @@ sub fix_INI_declares()
 /return
 
 
-
-
-
-${Nuke3.Right[1]}
-
-${Nuke3.Left[-1]}
-
-${Me.Book[${Me.Book[${Nuke3}]}].Name}
-
-${Me.Book[${Nuke3}].Rank}
-
-${Spell[Heartshear].Rank}
-
-
-
-
-|***
- *	DES: removes ranks from spell names. returns the name only
- *	USE: /call spell_remove_rank [spellname]
- *	INI: 
- *	NOTE:
- ***|
-sub spell_remove_rank(string _spell)
-	/if (${Spell[${_spell}].Rank} == 3) {
-		/varset _spell ${_spell.Left[-8]}	
-	} else /if (${Spell[${_spell}].Rank} == 2) 
-		/varset _spell ${_spell.Left[-7]}	
-	} else /if (${Spell[${_spell}].Rank} == 1) 
-		/varset _spell ${_spell}
-	} else /if (${Spell[${_spell}].Rank} == 0) 
-		/varset _spell ${_spell}
-	}
-/return ${_spell}
 
