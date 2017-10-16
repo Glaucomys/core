@@ -134,11 +134,11 @@ sub check_harvest()
 
 	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID}) /return
 
-	/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride} && ${Me.SpellReady[${GatherSpell}]}) {
+	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.SpellReady[${GatherSpell}]}) {
 		/call core_cast "${GatherSpell}" 0 0
 		/return
 	}
-	/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Harvest of Druzzil]}) {
+	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Harvest of Druzzil]}) {
 		/call core_cast "Harvest of Druzzil" alt 0
 		/return
 	}
@@ -159,7 +159,7 @@ sub Event_gtfo(string line, string _sender)
 	  /delay 10s ${Me.AltAbilityReady[Exodus]}
 	  /if (${Me.Invis}) /makemevisible
 	  ECHOCHANNEL Fuck this place in particular..
-	 	/call core_cast "Exodus" alt 0
+	 	/call core_cast "Exodus" alt 0 FALSE
 	}
 /return
 
@@ -177,10 +177,10 @@ sub check_rune_WIZ()
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
 	/call create_timer timer_check_runes ${tCheck_Runes}
-	/if (${buff_validate[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0
-	/if (${buff_validate[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0
-	/if (${buff_validate[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0
-	/if (${buff_validate[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0
+	/if (${buff_validate[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE
+	/if (${buff_validate[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE
+	/if (${buff_validate[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE
+	/if (${buff_validate[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE
 	UPDATEHUD FALSE
 /return
 
@@ -198,43 +198,43 @@ sub synergy_WIZ()
 	/doevents
 	
 	| shhhhh..
-	/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0
+	/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0 FALSE
 
 	| next 45 spells +51% crit rate
-	/if (${Me.AltAbilityReady[Frenzied Devastation]}) /call core_cast "Frenzied Devastation" alt 0
+	/if (${Me.AltAbilityReady[Frenzied Devastation]}) /call core_cast "Frenzied Devastation" alt 0 FALSE
 	| increase chance to land
-	/if (${Me.AltAbilityReady[Focus of Arcanum]}) /call core_cast "Focus of Arcanum" alt 0
+	/if (${Me.AltAbilityReady[Focus of Arcanum]}) /call core_cast "Focus of Arcanum" alt 0 FALSE
 
 
 	| alternate twincast
 	/if (${Me.AltAbilityReady[Improved Twincast]} && !${Me.Buff[${TwincastSpell}].ID}) {
-		/call core_cast "Improved Twincast" alt 0
+		/call core_cast "Improved Twincast" alt 0 FALSE
 	} else /if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID}) {
-		/call core_cast "${TwincastSpell}" 0 0
+		/call core_cast "${TwincastSpell}" 0 0 FALSE
 	}
 	
 	/call cast_AA_spire
 
 	| boost spell type damage
-	/if (${Me.AltAbilityReady[Fury of Kerafyrm]}) /call core_cast "Fury of Kerafyrm" alt 0
-	/if (${Me.AltAbilityReady[Fury of Ro]}) /call core_cast "Fury of Ro" alt 0
+	/if (${Me.AltAbilityReady[Fury of Kerafyrm]}) /call core_cast "Fury of Kerafyrm" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Fury of Ro]}) /call core_cast "Fury of Ro" alt 0 FALSE
 
-	/if (${Me.AltAbilityReady[Arcane Destruction]}) /call core_cast "Arcane Destruction" alt 0
+	/if (${Me.AltAbilityReady[Arcane Destruction]}) /call core_cast "Arcane Destruction" alt 0 FALSE
 	
 	| increase damage
-	/if (${Me.AltAbilityReady[Arcane Fury]}) /call core_cast "Arcane Fury" alt 0
+	/if (${Me.AltAbilityReady[Arcane Fury]}) /call core_cast "Arcane Fury" alt 0 FALSE
 	
 	| aww baby
-	/if (${Me.AltAbilityReady[Mana Burn]} && (${Target.ID} != ${Me.ID})) /call core_cast "Mana Burn" alt ${Target2Kill}
+	/if (${switchManaBurn} && ${Me.AltAbilityReady[Mana Burn]} && (${Target.ID} != ${Me.ID})) /call core_cast "Mana Burn" alt ${Target2Kill} FALSE
 
 	| swarm pet
-	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Call of Xuzl]}) /call core_cast "Call of Xuzl" alt ${Target2Kill}    
+	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Call of Xuzl]}) /call core_cast "Call of Xuzl" alt ${Target2Kill} FALSE
 
 	| ditch agrgro on named
-	/if (!${switchAgro} && ${Me.PctAggro} > 80 && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mind Crash]}) /call core_cast "Mind Crash" alt ${Target2Kill}
+	/if (!${switchAgro} && ${Me.PctAggro} > 80 && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mind Crash]}) /call core_cast "Mind Crash" alt ${Target2Kill} FALSE
 	
 	| epic 2.0
-	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0
+	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0 FALSE
 
 	/call use_glyph	
 	/call synergy_click_Circle
@@ -296,15 +296,35 @@ shield of consequence
 #bind setWIZ /wiz
 sub Bind_setWIZ(string _classType, string _verbage)
 	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${Select[${Me.Class.ShortName},WIZ]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[WIZ]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	/declare _count int local 0
-
+	| gather enable/disable /pct
+	/if (${Bool[${_classType.Find[gather]}]}) {
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			/call writeINI GatherPercent Spells ${_classVerbage} 
+			/call echos number "Gather Mana %" ${_classVerbage} 0 0
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			NOUT /${Me.Class.ShortName} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}	else /if (!${Bool[${_classVerbage}]}) {
+			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
+			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
+		}			
 	
 	| 
-	/if (${Bool[${_classType.Equal[line]}]}) {
+	} else /if (${Bool[${_classType.Equal[line]}]}) {
 		| mem a line of spells.-
 		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
 			SDEBUG ${lineType.Find[${_verbage.Lower}]}
@@ -319,7 +339,11 @@ sub Bind_setWIZ(string _classType, string _verbage)
 			/varset _sep TRUE
 		/next _count
 		VOUT /wiz line [${_listout}]	
-		
+
+	| enable / disable manaburn AA
+	} else /if (${Bool[${_classType.Equal[manaburn]}]}) {
+		/call writeINI switchManaBurn Spells ${If[${switchManaBurn},FALSE,TRUE]}
+		/call echos switch "Mana Burn" switchManaBurn 0 0
 		
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {

@@ -105,8 +105,11 @@ sub disc_ROG()
 	
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBleed}]} && ${Bool[${DiscBleed}]}) /call core_cast "${DiscBleed}" disc ${Target2Kill}
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPlay}]} && ${Bool[${DiscPlay}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
-	/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
-	
+
+
+	/if (!${NameList.Find[${Target.DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
+		/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
+	}	
 	
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPhantom}]} && ${Bool[${DiscPhantom}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill}
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHiddenBlade}]} && ${Bool[${DiscHiddenBlade}]}) /call core_cast "${DiscHiddenBlade}" disc 0
@@ -203,7 +206,7 @@ sub automaticSoS()
 
 
 |***
- *	DES: 
+ *	DES: keep poisons running
  *	USE: /call click_poison OR /poison
  *	INI: 
  *  NOTE: 
@@ -212,16 +215,25 @@ sub click_poison()
 	DEBUGCLASS ${cbug}click_poison(${FindItemCount[${clickPoisonItem}]} <= ${clickPoisonCount})\ax
 	CHECKEXIT
 	CHECKTIE
+	/declare _count int local 0
+	/declare _found bool local FALSE
 	
 	| keep a stock on hand
 	/if (${FindItemCount[${clickPoisonItem}]} < ${clickPoisonCount} && ${Me.ItemReady[${clickPoisonDispenser}]}) {
 		DEBUGCLASS click ${clickPoisonDispenser}
-		/call core_cast "${clickPoisonDispenser}" item ${Me.ID}
+		/call core_cast "${clickPoisonDispenser}" item ${Me.ID} FALSE
 		/call sort_cursor TRUE
 	}
 	
-	| give us the buff
-	/if (!${Bool[${Me.Buff[${clickPoisonBuff}]}]} && ${Me.ItemReady[${clickPoisonItem}]}) /call MQ2Cast "${clickPoisonItem}" item -targetid|${Me.ID}
+	| check the buffs
+	/for _count 1 to ${clickPoisonBuff.Count[|]}
+		AMIDEAD
+		/doevents
+		/if (${Bool[${Me.Buff[${clickPoisonBuff.Arg[${_count},|]}]}]}) /varset _found TRUE
+	/next _count		
+
+	/if (!${_found} && ${Me.ItemReady[${clickPoisonItem}]}) /call core_cast "${clickPoisonItem}" item ${Me.ID} FALSE
+
 
 	/call create_timer timer_click_poison ${tClick_Poison}
 /return
@@ -250,7 +262,13 @@ sub synergy_ROG()
 	/if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]}) /call core_cast "Dirty Fighting" alt ${Target2Kill}
 	/if (${Me.CombatAbilityReady[Dichotomic Weapons]}) /call core_cast "Dichotomic Weapons" disc 0
 	/call use_skill_melee
-	/if (${Me.AltAbilityReady[Focused Rake's Rampage]}) /call core_cast "Focused Rake's Rampage" alt 0
+	
+	/if (!${AEMelee}) {
+		/if (${Me.AltAbilityReady[Focused Rake's Rampage]}) /call core_cast "Focused Rake's Rampage" alt 0 FALSE
+	} else /if (${AEMelee}) {
+		/if (${Me.AltAbilityReady[Rake's Rampage]}) /call core_cast "Rake's Rampage" alt 0 FALSE
+	}
+
 	/if (${Me.CombatAbilityReady[${DiscPinPoint}]}) /call core_cast "${DiscPinPoint}" disc ${Target2Kill}
 	/if (${Me.AltAbilityReady[Envenomed Blades]}) /call core_cast "Envenomed Blades" alt 0
 	/if (${Bool[${Target2Kill}]} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill}
@@ -279,12 +297,22 @@ sub synergy_ROG()
 #bind setROG /rog
 sub Bind_setROG(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setROG(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},ROG]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[ROG]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	/declare _count int local 0
-
+	
 	| set poison
 	/if (${Bool[${_classType.Equal[poison]}]}) {
 		/declare _num int local ${_classVerbage}
@@ -294,7 +322,7 @@ sub Bind_setROG(string _classType, string _classVerbage)
 			/call writeINI clickPoisonCount Poison ${_num}
 			VOUT Rogue Poison Keep ${sep} ${cinfo}${_num}\ax
 		} else /if (!${Bool[${_num}]} || !${Range.Between[1,100:${Int[${_num}]}]}) {
-			NOUT /rog poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
+			NOUT /${Me.Class.ShortName.Lower} poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
 		}
 
 	| spire control
@@ -316,6 +344,10 @@ sub Bind_setROG(string _classType, string _classVerbage)
 		/call writeINI switchSos Common ${If[${switchSos},FALSE,TRUE]}
 		NOUT /rog ${cinfo}autosos\ax ${sep} ${If[${switchSos},${oenabled},${odisabled}]}
 
+	| AE or Focused Melee
+	} else /if (${Bool[${_classType.Equal[ae]}]}) {
+		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
+		NOUT /${Me.Class.ShortName.Lower}  ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
 
 	} else {
 		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##

@@ -126,7 +126,7 @@ sub core_ENC()
  *  NOTE: 
  ***|
 sub debuff_mobs()
- DEBUG ${cbug}debuff_mobs()\ax
+	DEBUG ${cbug}debuff_mobs()\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -156,32 +156,46 @@ sub debuff_mobs()
 		UPDATEHUD "DEBUFF"
 		/squelch /target ID ${_tmpID}
 		
-		/if (${switchdeBuffTash} && !${timer_tash_${_tmpID}}) {
-			/call cast_tash ${_tmpID}
-			/call check_for_adds
-			/if (${addList.Count[|]}) /return
+		| tash
+		/if (${switchdeBuffTash} && ${Defined[timer_tash_${_tmpID}]}) {
+			/if (!${timer_tash_${_tmpID}}) {
+				/call cast_tash ${_tmpID}
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
 		}
-		/if (${switchdeBuffSlow} && !${timer_slow_${_tmpID}}) {
-			DEBUGCLASS SLOWING ID ${_tmpID}
-			/call cast_slow ${_tmpID}
-			/call check_for_adds
-			/if (${addList.Count[|]}) /return
+		
+		| slow
+		/if (${switchdeBuffSlow} && ${Defined[timer_slow_${_tmpID}]}) {
+			/if (!${timer_slow_${_tmpID}}) {
+				DEBUGCLASS SLOWING ID ${_tmpID}
+				/call cast_slow ${_tmpID}
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
 		}
-		/if (${switchdeBuffCripple} && !${timer_cripple_${_tmpID}}) {
-			/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
-			/call check_for_adds
-			/if (${addList.Count[|]}) /return
+		
+		| cripple
+		/if (${switchdeBuffCripple} && ${Defined[timer_cripple_${_tmpID}]}) {		
+			/if (!${timer_cripple_${_tmpID}}) {
+				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
 		}
-		/if (${switchdeBuffEradicate} && !${timer_eradicate_${Target2Kill}}) {
-			/call cast_eradicate_magic ${_tmpID}
-			/call check_for_adds
-			/if (${addList.Count[|]}) /return
+		
+		| eradicate
+		/if (${switchdeBuffEradicate} && ${Defined[timer_eradicate_${Target2Kill}]}) {
+			/if (!${timer_eradicate_${Target2Kill}}) {
+				/call cast_eradicate_magic ${_tmpID}
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
 		}
 	/next _count
 
 	UPDATEHUD FALSE
 /return
-
 
 
 
@@ -197,18 +211,18 @@ sub check_rune_ENC()
 	AMIDEAD
 	CHECKEXIT
 	UPDATEHUD "BUFF: Rune"
-	/if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0
-	/if (${validate_buff[alt, rune, runeEldritch]}) /call core_cast "${runeEldritch}" 0 0
-	/if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0
-	/if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0
-	/if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0
-	/if (${validate_buff[spell, rune, runeAuspice]}) /call core_cast "${runeAuspice}" 0 ${Me.ID}
-	/if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID}
-	/if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0
-	/if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID}
-	/if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID}
-	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID}
-	/if (${validate_buff[spell, rune, runeLegion]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID}
+	/if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0 FALSE
+	/if (${validate_buff[alt, rune, runeEldritch]}) /call core_cast "${runeEldritch}" 0 0 FALSE
+	/if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0 FALSE
+	/if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0 FALSE
+	/if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0 FALSE
+	/if (${validate_buff[spell, rune, runeAuspice]}) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE
+	/if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE
+	/if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0 FALSE
+	/if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID} FALSE
+	/if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE
+	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE
+	/if (${validate_buff[spell, rune, runeLegion]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID} FALSE
 	/if (${Me.SpellReady[${runeAuspice}]}) /call check_rune_auspice
 	UPDATEHUD FALSE
 /return
@@ -269,9 +283,9 @@ sub disc_ENC()
 	CHECKTIE
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
-	/if (${Me.AltAbilityReady[Crippling Aurora]} ) /call core_cast "Crippling Aurora" alt 0
-	/if (${Me.AltAbilityReady[Phantasmal Opponent]} && ${switchPcSwarm} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /call core_cast "Phantasmal Opponent" alt 0
-	/if (${Me.AltAbilityReady[Chromatic Haze]}) /call core_cast "Chromatic Haze" alt 0
+	/if (${Me.AltAbilityReady[Crippling Aurora]} ) /call core_cast "Crippling Aurora" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Phantasmal Opponent]} && ${switchPcSwarm} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /call core_cast "Phantasmal Opponent" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Chromatic Haze]}) /call core_cast "Chromatic Haze" alt 0 FALSE
 /return
 
 
@@ -303,9 +317,9 @@ sub check_crystals()
 	}
 	/call sort_cursor TRUE
 
-	/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${Bool[${mannaCrystal}]} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) /call core_cast "${mannaCrystal} IV" item
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Fundament: Second Spire of Enchantment]}) /call core_cast "Fundament: Second Spire of Enchantment" alt
-	/if (${Me.PctMana} < 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Gather Mana]}) /call core_cast "Gather Mana" alt	
+	/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${Bool[${mannaCrystal}]} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) /call core_cast "${mannaCrystal} IV" item 0 FALSE
+	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Fundament: Second Spire of Enchantment]}) /call core_cast "Fundament: Second Spire of Enchantment" alt 0 FALSE
+	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Gather Mana]}) /call core_cast "Gather Mana" alt	0 FALSE
 /return
 
 
@@ -514,18 +528,13 @@ sub cast_tash(int _tmpID)
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
 		}
-	} else /if (${Target.Distance} <= ${Spell[Tashan's Lingering Cry].MyRange} && ${Target.LineOfSight} && ${Me.AltAbilityReady[Tashan's Lingering Cry]}) {
-		/call core_cast "Tashan's Lingering Cry" alt ${_tmpID} check_for_adds
+	} else /if (${Target.Distance} <= ${Spell[Bite of Tashani].MyRange} && ${Target.LineOfSight} && ${Me.AltAbilityReady[Bite of Tashani]}) {
+		/call core_cast "Bite of Tashani" alt ${_tmpID} check_for_adds
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
 		}	
 	}
 
-	
-	
-	
-	
-	
 /return
 
 
@@ -537,7 +546,7 @@ sub cast_tash(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_slow(int _tmpID)
-	DEBUGCLASS ${cbug}cast_slow(int ${_tmpID})\ax
+	DEBUG ${cbug}cast_slow(int ${_tmpID})\ax
 	AMIDEAD
 	/doevents
 	/declare _tmpSlow string local ${Target.Slowed}
@@ -573,7 +582,23 @@ sub cast_slow(int _tmpID)
 				/goto :loopslow
 			}
 		}
+	}	else /if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[Dreary Deeds].MyRange}) {
+		/delay 2.25s ${Me.AltAbility[Dreary Deeds]}
+		/call core_cast "Dreary Deeds" alt ${_tmpID} check_for_adds	
+	
+		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+			/call create_timer timer_slow_${_tmpID} ${Spell[Dreary Deeds].Duration.TotalSeconds}s
+		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
+			/varcalc _resistCount ${_resistCount}+1
+			/if (${_resistCount} >= 3) {
+				/call create_timer timer_slow_${_tmpID} 10000s
+			} else {
+				/goto :loopslow
+			}
+		}		
+		
 	}
+	
 /return
 
 
@@ -732,15 +757,32 @@ sub synergy_ENC()
 #bind setENC /enc
 sub Bind_setENC(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},ENC]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[ENC]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	/declare _count	int local 0
-
-	| 
-	/if (${Bool[${_classType.Find[TEST]}]}) {
-		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+	| gather enable/disable /pct
+	/if (${Bool[${_classType.Find[gather]}]}) {
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			/call writeINI GatherPercent Spells ${_classVerbage} 
+			/call echos number "Gather Mana %" ${_classVerbage} 0 0
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			NOUT /${Me.Class.ShortName} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}	else /if (!${Bool[${_classVerbage}]}) {
+			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
+			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
+		}			
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {

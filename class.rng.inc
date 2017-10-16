@@ -330,12 +330,22 @@ sub synergy_RNG()
 #bind setRNG /rng
 sub Bind_setRNG(string _classType, string _verbage)
 	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${Select[${Me.Class.ShortName},RNG]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[RNG]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}
-	/declare _count	int local 0
-	
+	}	
+		
 	| enable/disable summer line of spells
 	/if (${Bool[${_classType.Find[summer]}]}) {
 		/call writeINI switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
@@ -357,11 +367,12 @@ sub Bind_setRNG(string _classType, string _verbage)
 
 	| mgb spice
 	} else /if (${Bool[${_classType.Find[spice]}]}) {
+		/stopcast
 		/delay 2s !${Me.Casting.ID}
 		/call cast_AA_auspice
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower}
+		/call echos listtype ${_bind} ${_bind}
 	} 
 /return
 

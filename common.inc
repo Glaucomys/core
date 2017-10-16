@@ -33,7 +33,7 @@ sub check_one_mind()
  ***|
 sub check_plugin()
 	DEBUG ${cbug}check_plugin()\ax
-	/declare _count int local
+	/declare _count int local 0
 	/declare _plug string local ${Ini[${INICore},plugin,plist]}
 
 	/for _count 1 to ${_plug.Count[|]}
@@ -445,8 +445,8 @@ sub check_pet()
 	DEBUG ${cbug}check_pet()\ax
 	AMIDEAD
 	CHECKEXIT
-	/if (${switchBuffPet} && !${timer_check_pet_buffs}) /call check_pet_buffs
 	/if (!${Me.Pet.ID}) /call cast_summon_pet
+	/if (${switchBuffPet} && !${timer_check_pet_buffs}) /call check_pet_buffs
 	/if (${Me.Pet.ID} && ${useSummonWeps} && (!${Bool[${Me.Pet.Equipment[primary]}]} || !${Bool[${Me.Pet.Equipment[offhand]}]} || ${Me.Pet.Equipment[primary]} == 10855)) {
 		/if (!${Select[${Me.Class.ShortName},MAG]} && !${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
 			/call tell_resident_mage weapons
@@ -477,65 +477,95 @@ sub cast_summon_weapons()
 	DEBUG ${cbug}cast_summon_weapons()\ax
 	AMIDEAD
 	/doevents
-	/declare _count int local
+	/declare _count int local 0
 	
 	/if (!${Me.Pet.ID}) /return
 	/if (${Select[${Me.Class.ShortName},MAG]} && !${FindItem[${summonedWepClosedBag}].ID} && !${FindItem[${summonedWepName}].ID}) {
 		DEBUG mage needs bag
-		/call core_cast "${summonedWepSpell}" ${buffGem} ${Me.ID}
+		/call core_cast "${summonedWepSpell}" ${buffGem} ${Me.ID} FALSE
 		/delay 20s !${Me.Casting.ID}
+		/delay 5
 		/call sort_cursor TRUE
 	}
 	/delay 5
 	
-	/if (${FindItem[${summonedWepClosedBag}].ID}) {
-		DEBUGCAST have a bag. best not in hands
+	/if (${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
+		AMIDEAD
+		DEBUG Found ${summonedWepClosedBag}
+		DEBUG have a bag. best not in hands
 		/call sort_cursor TRUE
 		/delay 2s !${Cursor.ID}
+		/delay 5
+		DEBUG Exchange ${FindItem[${summonedWepClosedBag}].ID} pack${PetBagSlotNumber}
 		/squelch /exchange ${FindItem[${summonedWepClosedBag}].ID} pack${PetBagSlotNumber}
-		/delay 2s !${Cursor.ID}
-		/nomodkey /itemnotify ${FindItem[${summonedWepClosedBag}].InvSlot} rightmouseup
-		DEBUGCAST open the dumb bag
-		/delay 3s !${Me.Casting.ID}
-		/delay 2s
 		/call sort_cursor TRUE
-	}
+		/delay 2s !${Cursor.ID}
+		/delay 5
+		/call core_cast "${summonedWepClosedBag}" item 0 FALSE
+		DEBUG open the dumb bag
+		/delay 3s !${Me.Casting.ID}
+		/delay 5
+		/delay 2s
+		/call sort_cursor TRUE		
+		/delay 5
 
-	/if (${Bool[${FindItem[Pouch of Quellious].InvSlot}]}) {
-		DEBUGCAST give the demannding pet his shit
-		/nomodkey /itemnotify ${FindItem[Pouch of Quellious].InvSlot} rightmouseup
-		/delay 1s
-		/for _count 1 to 2
-			/if (${FindItem[${summonedWepName}].ID}) {
-				/nomodkey /itemnotify ${FindItem[${summonedWepName}].InvSlot} leftmouseup
-				/delay 3s ${Bool[${Cursor.ID}]}
-				/call give_to_pet
-				/delay 3s !${Bool[${Cursor.ID}]}
-				/delay 1s
+		DEBUG Pouch of Quellious time
+		/if (${Bool[${FindItem[Pouch of Quellious]}]}) {
+			AMIDEAD
+			DEBUG give the demanding pet his shit
+			/nomodkey /itemnotify ${FindItem[Pouch of Quellious].InvSlot} rightmouseup
+			/delay 1s
+			/for _count 1 to 2
+				/if (${Bool[${FindItem[${summonedWepName}]}]}) {
+					/nomodkey /itemnotify ${FindItem[${summonedWepName}].InvSlot} leftmouseup
+					/delay 3s ${Bool[${Cursor.ID}]}
+					/delay 1s
+					/call give_to_pet
+					/delay 3s !${Bool[${Cursor.ID}]}
+					/delay 1s
+				}
+			/next _count
+			/if (${Window[GiveWnd].Open}) {
+				/nomodkey /notify GiveWnd GVW_Give_Button leftmouseup
+				/keypress ESC
+				/keypress ESC
 			}
-		/next _count
-		/if (${Window[GiveWnd].Open}) {
-			/nomodkey /notify GiveWnd GVW_Give_Button leftmouseup
-			/keypress ESC
-			/keypress ESC
+
+			DEBUG destroy the bag
+			/while (${Bool[${FindItem[Pouch of Quellious]}]}) {
+				/delay 1s
+				/nomodkey /itemnotify ${FindItem[=Pouch of Quellious].InvSlot} leftmouseup
+				/delay 1s ${Cursor.Name.Equal["Pouch of Quellious"]}
+				/delay 1s
+				/if (${Cursor.Name.Equal["Pouch of Quellious"]}) /destroy
+			}
 		}
-		/if (${FindItem[Pouch of Quellious].InvSlot}) {
-			:loopdestroy
-			/delay 1s
-			/nomodkey /itemnotify ${FindItem[=Pouch of Quellious].InvSlot} leftmouseup
-			/delay 1s ${Cursor.Name.Equal["Pouch of Quellious"]}
-			/delay 1s
-			/if (${Cursor.Name.Equal["Pouch of Quellious"]}) /destroy
-			/if (${FindItem[Pouch of Quellious].InvSlot}) /goto :loopdestroy
+		
+		| cose the window
+		/while (${Window[InventoryWindow].Open}) {
+			AMIDEAD
+			/nomodkey /keypress inventory
+			/delay 1s !${Window[InventoryWindow].Open}
 		}
+
 	}
-	:loopclosewindow
-	/if (${Window[InventoryWindow].Open}) {
-		/nomodkey /keypress inventory
-		/delay 1s !${Window[InventoryWindow].Open}
-		/if (${Window[InventoryWindow].Open}) /goto :loopclosewindow
-	}
+		
+
 /return
+
+ /useitem ${FindItem[Pouch of Quellious].ItemSlot} ${FindItem[Summoned: Large Modulation Shard].ItemSlot2}
+
+${Range.Between[23,32:${Int[${FindItem[${summonedWepClosedBag}].ItemSlot}]}]}
+
+${summonedWepClosedBag}
+${FindItem[${summonedWepClosedBag}].ItemSlot}
+
+		| /while (${Cursor.ID}) {
+		| 	/autoinventory 
+		| 	/delay 1s !${Cursor.ID}
+		| }
+
+
 
 
 
@@ -714,6 +744,7 @@ sub check_buffs_item()
 			/doevents
 			AMIDEAD
 			/if (${UseItem[${_count}]}&& ${Me.FreeBuffSlots} >= 1 && ${FindItem[${SelfItem[${_count}]}].ID} && ${Cast.Ready[${SelfItem[${_count}]}]} && !${Me.Buff[${SpellItem[${_count}]}].ID} && ${Spell[${SpellItem[${_count}]}].Stacks}) { 
+				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 				/call core_cast "${SelfItem[${_count}]}" item 0
 				/delay 5s !${Me.ItemReady[${SelfItem[${_count}]}]}
 				/delay 10s !${Me.Casting.ID}
@@ -739,7 +770,8 @@ sub check_buffs_item()
 	UPDATEHUD FALSE
 /return
 
-
+${Me.ItemReady[Gore-Splattered Shoulders]}
+${Me.ItemReady[Gore-Splattered Shoulders]}
 
 |***
  *	DES: Checks current buffs. NOT SONGS. IF one is found to match the INI listing per character, it is removed.
@@ -787,11 +819,12 @@ sub check_buffs_self()
 		/if (!${Select[${Me.Subscription},GOLD]}) /varset Buff${_count}chk ${Ini[${INIClass},buffs,Buff${_count}chk]}
 		
 		/if (!${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]} && ${Spell[${Buff${_count}}].Stacks} && ${Bool[${Buff${_count}self}]} && ${Bool[${Buff${_count}}]}) {
+			/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 			/if (!${Me.SpellReady[${Buff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
-	 		  /if (${Me.Book[${Buff${_count}}]} && ${Me.CurrentMana} > ${Spell[${Buff${_count}}].Mana}) /call core_cast "${Buff${_count}}" ${buffGem} ${Me.ID}
-				/if (${Me.AltAbility[${Buff${_count}}].ID}) /call core_cast "${Buff${_count}}" alt 0
-				/if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID}
-			}
+ 		  /if (${Me.Book[${Buff${_count}}]} && ${Me.CurrentMana} > ${Spell[${Buff${_count}}].Mana}) /call core_cast "${Buff${_count}}" ${buffGem} ${Me.ID}
+			/if (${Me.AltAbility[${Buff${_count}}].ID}) /call core_cast "${Buff${_count}}" alt 0
+			/if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID}
+		}
 	/next _count
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
 	/if (${coreAuto} && ${switchShrink}) /call check_shrink
@@ -880,6 +913,7 @@ sub click_horn_of_unity()
 	DEBUG ${cbug}click_horn_of_unity()\ax
 	/if (!${Bool[${switchHorn}]} || ${SafeZone} && !${switchOverrideSafezone} || ${Bool[${timer_zone_pause}]}) /return
 	/if (${Me.ItemReady[Miniature Horn of Unity]} && !${Bool[${Me.Song[Blessing of Unity]}]} && (${Me.PctHPs} < 95*.${tmpHealOverride} || ${Me.PctMana} < 95*.${tmpHealOverride})) {
+		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/call core_cast "Miniature Horn of Unity" item 0 
 	}
 /return
@@ -902,7 +936,7 @@ sub check_buffs_BC()
 	/declare _buff int local 
 
 	| each toon
-	/while (${_toon} <=${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}) {
+	/while (${_toon} <= ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}) {
 		DEBUG _toon ${_toon} / ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}
 		AMIDEAD
 		CHECKEXIT
@@ -930,6 +964,7 @@ sub check_buffs_BC()
 			DEBUG ${_buff} / ${BuffCount} stack - ${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}
 
 			/if (${Me.CurrentMana} > ${Spell[${Buff${_buff}}].Mana}) { 
+				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
   		  OUT BC Buff ${sep} ${csp}${Buff${_buff}}\ax ${sep} [${cpc}${NetBots.Client[${_toon}]}\ax]
 				/call MQ2Cast "${Buff${_buff}}" ${buffGem} 10s -targetid|${NetBots[${NetBots.Client[${_toon}]}].ID} 	
 				| /break
@@ -961,10 +996,11 @@ sub check_ammo()
 	}	
 	/if (!${Bool[${RangeItem}]} || !${Bool[${RangeItemSummon}]} || ${Me.Invis}) /return
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]}) {
+		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (${Me.Book[${RangeItem}]}) /call core_cast "${RangeItem}" ${buffGem} ${Me.ID}
 		/if (${Me.ItemReady[${RangeItem}]}) /call core_cast "${RangeItem}" item ${Me.ID}
 		/if (${Me.AltAbilityReady[${RangeItem}]}) /call core_cast "${RangeItem}" alt ${Me.ID}
-		/if (${Me.CombatAbilityReady[${RangeItem}]} || ${Select[${Me.Class.ShortName},BER]}) /call core_cast "${RangeItem}" disc ${Me.ID}
+		/if (${Me.CombatAbilityReady[${RangeItem}]} || ${Select[${Me.Class.ShortName},BER]}) /call core_cast "${RangeItem}" disc ${Me.ID} FALSE
 		/delay 10s !${Me.Casting.ID}
 		/call sort_cursor TRUE
 	}
@@ -983,8 +1019,8 @@ sub check_shrink()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.Height} > 2.04 && ${Me.ItemReady[${shrinkItem}]}) {
-		/if (${Me.Book[${shrinkItem}]}) /call core_cast "${shrinkItem}" ${buffGem} ${Me.ID}
-		/if (${Me.ItemReady[${shrinkItem}]}) /call core_cast "${shrinkItem}" item ${Me.ID}
+		/if (${Me.Book[${shrinkItem}]}) /call core_cast "${shrinkItem}" ${buffGem} ${Me.ID} FALSE
+		/if (${Me.ItemReady[${shrinkItem}]}) /call core_cast "${shrinkItem}" item ${Me.ID} FALSE
 	}
 /return
 
@@ -1063,7 +1099,7 @@ sub do_rest()
 			} else /if (${Select[${Me.Class.ShortName},RNG]}) {
 			} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			} 
-		
+
 		| Melee: WAR,MNK,ROG,BER
 		} else /if (${MeleeList.Find[${Me.Class.ShortName}]} && !${CastList.Find[${Me.Class.ShortName}]}) {
 			DEBUG REST WAR,MNK,ROG,BER
@@ -1200,7 +1236,7 @@ sub click_item(bool _clickEpic)
 		CHECKTIE
 		/call is_target_dead
 		/if (${Macro.Return}) /return
-		/if (${Me.ItemReady[${clickItem${_count}}]}) /call core_cast "${clickItem${_count}}" item ${Target2Kill}
+		/if (${Me.ItemReady[${clickItem${_count}}]}) /call core_cast "${clickItem${_count}}" item ${Target2Kill} FALSE
 
 	/next _count
 /return
@@ -1831,7 +1867,7 @@ sub get_target_2kill()
 	/if (!${Macro.Return} && ${Target.ID} != ${Target2Kill} || ${Spawn[id ${Target2Kill}].Distance} > ${MobAgro}) {
 		/target ID ${Target2Kill}
 		| /delay 2 ${Target.ID} == ${Target2Kill}
-		/if (${Target.ID} != ${Target2Kill}) /goto :gettarget
+		| /if (${Target.ID} != ${Target2Kill}) /goto :gettarget
 	}	
 	/if (${coreAuto} && ${Target.Distance} > ${MobAgro}) /call clear_combat
 /return
@@ -1902,9 +1938,9 @@ sub cast_AA_snare(int _tmpID)
 		
 		| pally live or dead snare
 		/if (${Select[${Me.Class.ShortName},PAL]} && ${Target.Body.Name.Equal[Undead]}) {
-			/call core_cast "Halt the Dead" alt ${_tmpID}
+			/call core_cast "Halt the Dead" alt ${_tmpID} FALSE
 		} /if (${Select[${Me.Class.ShortName},PAL]} && !${Target.Body.Name.Equal[Undead]}){
-			/call core_cast "Shackles of Tunare" alt ${_tmpID}
+			/call core_cast "Shackles of Tunare" alt ${_tmpID} FALSE
 		}
 		
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
@@ -1933,9 +1969,9 @@ sub click_BP()
 	/if (!${Me.ItemReady[${Breastplate1}]} && !${Me.ItemReady[${Breastplate2}]}) /return
 	/if (${Bool[${Me.Song[${Breastplate1effect}]}]} || ${Bool[${Me.Buff[${Breastplate2effect}]}]}) /return
 	/if (!${Bool[${Me.Song[${Breastplate1effect}]}]} && ${Me.ItemReady[${Breastplate2}]} && ${Spell[${Breastplate2effect}].Stacks}) {
-		/call core_cast "${Breastplate2}" item 0
+		/call core_cast "${Breastplate2}" item 0 FALSE
 	} else /if (!${Bool[${Me.Buff[${Breastplate2effect}]}]} && ${Me.ItemReady[${Breastplate1}]} && ${Spell[${Breastplate1effect}].Stacks}) {
-		/call core_cast "${Breastplate1}" item 0
+		/call core_cast "${Breastplate1}" item 0 FALSE
 	}
 /return
 
@@ -1954,18 +1990,28 @@ sub use_mod_rod()
 	CHECKEXIT
 		
 	| use all the rods!!
-	/if (${Me.PctHPs} > 50*.${tmpHealOverride}) {
-		/if (${Me.ItemReady[Summoned: Giant Modulation Shard]} && ${Me.PctMana} < 80*.${tmpHealOverride}) /call core_cast "Summoned: Giant Modulation Shard" item 0
-		/if (${Me.ItemReady[Summoned: Large Modulation Shard]} && ${Me.PctMana} < 80*.${tmpHealOverride}) /call core_cast "Summoned: Large Modulation Shard" item 0
-		/if (${Me.ItemReady[Summoned: Medium Modulation Shard]} && ${Me.PctMana} < 80*.${tmpHealOverride}) /call core_cast "Summoned: Medium Modulation Shard" item 0
-		/if (${Me.ItemReady[Summoned: Small Modulation Shard]} && ${Me.PctMana} < 80*.${tmpHealOverride}) /call core_cast "Summoned: Small Modulation Shard" item 0
-		/if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.PctMana} < 70*.${tmpHealOverride}) /call core_cast "Wand of Pelagic Transvergence" item 0
-		/if (${Me.ItemReady[Wand of Phantasmal Transvergence]} && ${Me.PctMana} < 70*.${tmpHealOverride}) /call core_cast "Wand of Phantasmal Transvergence" item 0
-		/if (${Me.ItemReady[Rod of Arcane Transvergence]} && ${Me.PctMana} < 70*.${tmpHealOverride}) /call core_cast "Rod of Arcane Transvergence" item 0
-		/if (${Me.ItemReady[Rod of Spectral Transvergence]} && ${Me.PctMana} < 70*.${tmpHealOverride}) /call core_cast "Rod of Spectral Transvergence" item 0
-		/if (${Me.ItemReady[Rod of Ethereal Transvergence]} && ${Me.PctMana} < 70*.${tmpHealOverride}) /call core_cast "Rod of Ethereal Transvergence" item 0
-		/if (${Me.ItemReady[Rod of Mystical Transvergence]} && ${Me.PctMana} < 70*.${tmpHealOverride}) /call core_cast "Rod of Mystical Transvergence" item 0
+	/if (${Me.PctMana} < 70*.${tmpHealOverride}) {
+		/if (${Me.ItemReady[Summoned: Giant Modulation Shard]} && ${Me.CurrentHPs} > 37500) /call core_cast "Summoned: Giant Modulation Shard" item 0 FALSE
+		/if (${Me.ItemReady[Summoned: Large Modulation Shard]} && ${Me.CurrentHPs} > 23100) /call core_cast "Summoned: Large Modulation Shard" item 0 FALSE
+		/if (${Me.ItemReady[Summoned: Medium Modulation Shard]} && ${Me.CurrentHPs} > 15100) /call core_cast "Summoned: Medium Modulation Shard" item 0 FALSE
+		/if (${Me.ItemReady[Summoned: Small Modulation Shard]} && ${Me.CurrentHPs} > 7600) /call core_cast "Summoned: Small Modulation Shard" item 0 FALSE
+		/if (${Me.ItemReady[Summoned: Modulating Rod]} && ${Me.CurrentHPs}>325) /call core_cast "Summoned: Modulating Rod" item 0 FALSE
+
+		/if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 12850) /call core_cast "Wand of Pelagic Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Wand of Phantasmal Modulation]} && ${Me.CurrentHPs} > 11100) /call core_cast "Wand of Phantasmal Modulation" item 0 FALSE 
+		/if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 3594) /call core_cast "Wand of Pelagic Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Wand of Phantasmal Transvergence]} && ${Me.CurrentHPs} > 3138) /call core_cast "Wand of Phantasmal Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Wand of Temporal Mastery]} && ${Me.CurrentHPs} > 1686) /call core_cast "Wand of Temporal Mastery" item 0 FALSE
+		/if (${Me.ItemReady[Wand of Elemental Transvergence]} && ${Me.CurrentHPs} > 920) /call core_cast "Wand of Elemental Transvergence" item 0 FALSE
+
+		/if (${Me.ItemReady[Rod of Arcane Transvergence]} && ${Me.CurrentHPs} > 2530) /call core_cast "Rod of Arcane Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Rod of Spectral Transvergence]} && ${Me.CurrentHPs} > 1720) /call core_cast "Rod of Spectral Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Rod of Ethereal Transvergence]} && ${Me.CurrentHPs} > 1320) /call core_cast "Rod of Ethereal Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Rod of Mechamagical Mastery]} && ${Me.CurrentHPs} > 1400) /call core_cast "Rod of Mechamagical Mastery" item 0 FALSE
+		/if (${Me.ItemReady[Rod of Prime Transvergence]} && ${Me.CurrentHPs} > 1000) /call core_cast "Rod of Prime Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Rod of Mystical Transvergence]} && ${Me.CurrentHPs} > 550) /call core_cast "Rod of Mystical Transvergence" item 0 FALSE
 	}
+
 	
 	| ask for a rod cause i'm fu'kn lazy...
 	/if (!${Select[${Me.Class.ShortName},MAG]} && !${Bool[${FindItem[Modulation Shard]}]}) {
@@ -2018,7 +2064,7 @@ sub use_glyph()
 	AMIDEAD
 	/if (!${Bool[${useGlyph}]} || !${Raid.Members}) /return
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
-	/if (${Me.AltAbilityReady[${useGlyph}]}) /call core_cast "${useGlyph}" alt 0
+	/if (${Me.AltAbilityReady[${useGlyph}]}) /call core_cast "${useGlyph}" alt 0 FALSE
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
 /return
 
@@ -2630,6 +2676,14 @@ sub set_tie()
 	/squelch /face ID ${Spawn[pc ${SetTieToon}].ID} ${If[${SetFaceFast},fast,]}
 	/squelch /stick ID ${Spawn[pc ${SetTieToon}].ID} ${SetTieDistance} UW
 
+	| FORCE EMULATE FOLLOW.. HATE DOING THIS
+	| /while (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${SetTieLock}) {
+	| 	AMIDEAD
+	| 	/doevents
+	| 	/delay 1
+	| }
+
+
 	:okweremoving
 	AMIDEAD
 	/doevents
@@ -2692,13 +2746,13 @@ sub protect_always_xt()
 
 
 
- |***
- *	DES: check and claim Free Station Cash
- *	USE: manual
- *	Credit: v1.0 - Initial release on Macroquest VIP forums - Dewey2461 on 7-7-2014 [butchered by me]
- *	INI: 
- *  NOTE: 
- ***|
+|***
+*	DES: check and claim Free Station Cash
+*	USE: manual
+*	Credit: v1.0 - Initial release on Macroquest VIP forums - Dewey2461 on 7-7-2014 [butchered by me]
+*	INI: 
+*  NOTE: 
+***|
 sub check_free_ingame_cash()
 	DEBUG ${cbug}check_free_ingame_cash()\ax
 	/doevents
@@ -2732,11 +2786,11 @@ sub check_free_ingame_cash()
 
 
 
- |***
- *	DES: will click items and autoinventory the result on a timer.
- *	USE: /call odds_and_ends
- *	INI: [Odds]
- *  NOTE: good for poisons, foods, whatevers.
+|***
+*	DES: will click items and autoinventory the result on a timer.
+*	USE: /call odds_and_ends
+*	INI: [Odds]
+*  NOTE: good for poisons, foods, whatevers.
 ***|
 sub odds_and_ends()
 	DEBUGCAST ${cbug}odds_and_ends(${doclickOdds})\ax
@@ -2755,7 +2809,7 @@ sub odds_and_ends()
 
 
 
- |***
+|***
  *	DES: If the followng criteria are met, the calling function will be skipped.
  *	USE: /call check_exit [TRUE|NULL] 
  *	INI: 
@@ -2816,15 +2870,13 @@ sub check_exit()
 
 
 
- |***
+|***
  *	DES: Updates Notice sction of HUD.
  *	USE: auto
  *	INI: 
  *  NOTE: 
  ***|
 sub update_HUD_notices(string _mode)
-	DEBUG ${cbug}update_HUD_notices\ax
-	
 	DEBUG ${cbug}update_HUD_notices()\ax
 	/declare _count 				int 		local 0
 	/declare _index 				int 		local 0
@@ -2836,7 +2888,7 @@ sub update_HUD_notices(string _mode)
 	/varset hudWarning
 	/varset hudTarNotice
 	/if (!${timer_check_status}) /call broadcast_status
-	
+	/doevents	
 	/if (${Bool[${_mode}]}) {
 		/varset tmpMode "${_mode}"
 	} else /if (!${Bool[${_mode}]} || ${_mode.Equal[NULL]}) {
@@ -3088,97 +3140,6 @@ sub cast_AA_yaulp()
 	} else /if (!${Me.ItemReady[Darkened Donal's Helm of Mourning]} && ${Me.AltAbilityReady[Yaulp (Lesser)]}) {
 		/if (!${Spell[Yaulp (Lesser)].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
 		/if (${Me.PctMana} < 98*.${tmpHealOverride} || (${Me.Combat} &&${Select[${Me.Class.ShortName},PAL]})) /call core_cast "Yaulp (Lesser)" alt 0
-	}
-/return
-
-
-
-|***
- *	DES: builds your group
- *	USE: /crew [main|main2|...] {you can rename these} 
- *	INI: core.ini [group] - main|idiotgroup|rejects|....
- *  NOTE: you can rename the groups. i'd suggest using main as your primary. it is referenced elsewhere.
- *	/grouproles set [NAME] [#]
- *	1=MainTank .. 					${GroupTank}
- *	2=MainAssist ..		 			${GroupAssist}
- *	3=Puller .. 						${GroupPuller}
- *	4=MarkNpc .. 						${GroupMark}
- *	5=MasterLooter .. 			${GroupLooter}
- *	/makeleader [NAME] .. 	${GroupLeader}
- ***|
-sub set_crew(string _crewNumber)
- 	DEBUG ${cbug}set_crew(${Ini[${INICore},Group,_crewNumber]})\ax
-
-	/declare _count 				int local
-	/declare _clist 				string local ${Ini[${INICore},Group,${_crewNumber}]}
-	
-	| disband raid if exists
-	/if (${Raid.Members}) {
-		/for _count 1 to ${_clist.Count[|]}
-			/if (${Bool[${Raid.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //raiddisband
-			/delay 2s !${Bool[${Group.GroupSize}]}
-			/delay 1
-		/next _count	
-	}
-	
-	| disband group if exists
-	/if (${Group.GroupSize}) {
-		/for _count 1 to ${_clist.Count[|]}
-			/if (${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //disband
-			/delay 2s !${Bool[${Group.GroupSize}]}
-			/delay 1
-		/next _count			
-	}
-
-	| invite the members in the list
-	/for _count 1 to ${_clist.Count[|]}
-		AMIDEAD
-		/if (!${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) {
-			OUT Inviting ${sep} ${cpc}${_clist.Arg[${_count},|]}\ax
-			/invite ${_clist.Arg[${_count},|]}
-		}	
-	/next _count	
-	/delay 1s
-	/delay 12s ${Group.GroupSize} == ${_clist.Count[|]}
-	/if (${Group.GroupSize} != ${_clist.Count[|]}) {
-		OUT ${owarning} ${sep} Group failed to form properly.
-		/return
-	}
-	
-	| set Group Main Tank
-	/if (${Bool[${GroupTank}]} && !${Group.Member[${GroupTank}].Offline}) {
-		/delay 5
-		/if (${Group.Member[${GroupTank}].Index}) /grouproles set ${GroupTank} 1
-	}
-	
-	| set Group Main Assist
-	/if (${Bool[${GroupAssist}]} && !${Group.Member[${GroupAssist}].Offline}) {
-		/delay 5
-		/if (${Group.Member[${GroupAssist}].Index}) /grouproles set ${GroupAssist} 2
-	}
-	
-	| set Group Puller
-	/if (${Bool[${GroupPuller}]} && !${Group.Member[${GroupPuller}].Offline}) {
-		/delay 5
-		/if (${Group.Member[${GroupPuller}].Index}) /grouproles set ${GroupPuller} 3
-	}
-	
-	| set Group MarkNPC
-	/if (${Bool[${GroupMark}]} && !${Group.Member[${GroupMark}].Offline}) {
-		/delay 5
-		/if (${Group.Member[${GroupMark}].Index}) /grouproles set ${GroupMark} 4
-	}
-	
-	| set Group Master Looter
-	/if (${Bool[${GroupLooter}]} && !${Group.Member[${GroupLooter}].Offline}) {
-		/delay 5
-		/if (${Group.Member[${GroupLooter}].Index}) /grouproles set ${GroupLooter} 5
-	}
-
-	| set Group leader ... last to make sure all roles are set
-	/if (${Bool[${GroupLeader}]} && !${Group.Member[${GroupLeader}].Offline}) {
-		/delay 5
-		/if (${Group.Member[${Group.Leader}].Index} != ${Group.Member[${GroupLeader}].Index}) /makeleader ${GroupLeader}
 	}
 /return
 
@@ -3525,6 +3486,9 @@ sub set_combat_here()
 	UPDATEHUD "HERE"
 
 	OUT ${owarning} ${sep} COMBAT ${sep} Right NOW!
+	
+	| shut the bard up..
+	/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 
 	| clear all pending events
 	/doevents flush
@@ -3802,6 +3766,8 @@ sub check_buffs_tell()
 	/if (${coreAuto}) /call create_timer timer_check_buffs_tell ${tTell_Buff}
 
 	/for _count 1 to ${queueCount}
+		/if (!${Range.Between[1,${queueCount}:${Int[${_count}]}]}) /continue
+
 		DEBUGARRAY Tell queue count: ${queueCount}
 		AMIDEAD
 		CHECKEXIT
@@ -3814,6 +3780,7 @@ sub check_buffs_tell()
 	| /if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || !${Me.Gem[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || (${BuffGem${_tmpVAR}.Equal[item]} && ${FindItem[${Buff${_tmpVAR}}].TimerReady} < 30)) {
 	/if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || !${Me.Gem[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || (${FindItem[${Buff${_tmpVAR}}].TimerReady} < 30)) {
 	| /if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || ${Me.ItemReady[${Buff${_tmpVAR}}]}) {
+		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/target id ${_tmpID}
 		/delay 5s ${Target.ID}==${_tmpID}
 		/if (${Target.ID}!=${_tmpID} || !${Target.ID}) /return
@@ -3964,7 +3931,7 @@ sub do_loot()
 				} else /if (${AdvLoot.PList[${_pcount}].NoDrop} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
 					OUT Cursor ${sep} ${cinfo}${_advlItem}\ax = ${oleave} loot file [no drop].
 					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Leave
-					/goto :looppersonalitem
+					| /goto :looppersonalitem
 				} else {
 					OUT Cursor ${sep} ${cinfo}${_advlItem}\ax = ${okeep} loot file [default].
 					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Keep
@@ -4213,10 +4180,12 @@ sub check_disc_now()
 
 	| nowDisc1
 	/if (${Bool[${DiscNow1}]} && ${Me.CombatAbilityReady[${DiscNow1}]} && ${Spell[${DiscNow1}].Stacks}) {
+		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (!${Bool[${Me.Buff[${DiscNow1.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow1.Left[-7]}]}]}) /call core_cast "${DiscNow1}" disc 0
 	}
 	| nowDisc2
 	/if (${Bool[${DiscNow2}]} && ${Me.CombatAbilityReady[${DiscNow2}]} && ${Spell[${DiscNow2}].Stacks}) {
+		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (!${Bool[${Me.Buff[${DiscNow2.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow2.Left[-7]}]}]}) /call core_cast "${DiscNow2}" disc 0
 	}	
 /return
@@ -5521,66 +5490,6 @@ sub spell_remove_rank(string _spell)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: check to see if current class is a static pet user
  *	USE: /if (${validate_petclass[]) /dowhatever
@@ -5589,11 +5498,36 @@ sub spell_remove_rank(string _spell)
  ***|
 sub validate_petclass()
 	/declare _pass bool local TRUE
-	/if (!${Me.Class.PetClass} && !${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD) {
+	/if (!${Me.Class.PetClass} && !${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) {
 		/call echos failboat 0 0 0 0
 		/varset _pass FAIL
 	}
 /return ${_pass}
+
+
+
+|***
+ *	DES: check specific class ONLY
+ *	USE: /if (${validate_class[CLS]) /dowhatever
+ *	INI: 
+ *	NOTE: 
+ ***|
+sub validate_class(string _class)
+	/declare _pass bool local TRUE
+	/if (!${Select[${Me.Class.ShortName},${_class.Upper}]}) {
+		/call echos failboat 0 0 0 0
+		/varset _pass FAIL
+	}
+/return ${_pass}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5604,7 +5538,6 @@ sub validate_petclass()
  *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
  ***|
 sub fix_INI_declares()
-	VOUT ${onotice} ${sep} Deleting old INI entries
 
 	/ini "${INIClass}" "Common" "SetModeInvis" NULL
 	/ini "${INIClass}" "Common" "SetScorchedEarthMode" NULL
@@ -5618,7 +5551,6 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Common" "SetHunterAgro" NULL
 	/ini "${INIClass}" "Common" "SetPetFarmMode" NULL
 	/ini "${INIClass}" "Movement" "SetIgnoreLOS" NULL
-
 
 	/ini "${INICore}" "General" "QPath" NULL
 	
@@ -5767,8 +5699,8 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Buffs" "useQMPct" NULL
 	/ini "${INIClass}" "Timer" "tcheck_QM" NULL
 
+	VOUT ${onotice} ${sep} INI Housekeeping ${sep} ${cgood}DONE\ax
 
-	VOUT ${onotice} ${sep} Deleting old INI entries ${sep} ${cgood}DONE\ax
 /return
 
 

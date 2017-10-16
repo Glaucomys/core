@@ -9,11 +9,74 @@
  ***|
 
 
+20171016
+- LOT more added to /info
+- /pc [*] - pet class validation now
+- core.ini->[Genera]->autoinihousekeeping set to true to auto clean INIs every mac start
+
+
+
+20171014
+WHITEWASH
+- lot more changes to pet weapons. these things are turning out to be a pain in the ass
+- MQ2Cast_Spell_Routines.inc
+  -- added a LOT of death checks. gonna see what happens
+- class.rog.inc
+  -- poisons will chack vs a list now before reapplying default leg poisons. EXAMPLE
+    -- ClickPoisonBuff=|Bite of the Shissar Poison X|Tallon's Tactic Poison IV|Tallon's Tactic Poison V|Vallon's Tactic Poison IV|Vallon's Tactic Poison V|Mana Poison Coat|Hero's Toxin Poison I|Hero's Toxin Poison II
+    -- ClickPoisonItem=Consigned Bite of the Shissar XVIII
+    -- ClickPoisonDispenser=Selrach's Shadowscale Leggings
+    -- ClickPoisonCount=60
+  -- will (should) not waste knife play on named while frenzied stabbing is available
+- /core auto [on|off]
+  -- /core auto [on] - force automatic mode on
+  -- /core auto [off] - force automatic mode off
+- alias /on and /off
+  -- now points to /core auto[on|off]
+- class.mag.inc
+  -- minor updates to casting routines  
+
+
+20171010
+- fixed an error in spire logic. dont realy need double "
+- class.wiz.inc
+  -- /wiz [manaburn] enable/disable AA Mana Burn for burns
+- minor adjustments to the mage pet weapon give thingie
+
+
+20171008
+- class.enc.inc
+  -- fixed a typo in the debuffs
+
+
+20171007
+WHITEWASH
+- rewrite to /crew
+  -- core.ini->[group] server specific now
+  -- reduced to the three roles we use. hell with the rest
+
+
+20171006
+- class.pal.inc
+  -- added in Holy Guardian as third def disc for rotation
+
+
+20171005
+- class.enc.inc / class.wiz.inc / class.mag.inc
+  -- /class [gather] - enable/disable all gather skills
+  -- /class [gather ##] - % to gather at if enabled
+- use_mod_rod()
+  - validates HP bu rod type before trying to use it
+- class.brd.inc
+  -- bug hunting. just wants to stop and smell flowers.
+- class.rog.inc
+  -- /rog [ae] - enable/disable melee AE skills
+
 
 20171001
 - more wiki entries added
 - class.rog.inc
-  -- adjustted some self only discs tot he new vlaidation function
+  -- adjustted some self only discs to the new validation function
 
 
 20170930

@@ -239,12 +239,32 @@ sub check_heal_group_CLR()
   /if (${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.${tmpHealOverride}*.5 || ${groupHurt} > 2) {
     /call cast_divine_arbitration
   }
+  
+  
+  | Forced Group Heals ONLY
+	/if (${switchForceGroupHeal}) {
+		/doevents
+		/if ( ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+			/if (${Me.SpellReady[${healWholeGroup}]}) {
+				/call core_cast "${healWholeGroup}" 0 0 check_HP_${Me.Class.ShortName}
+			} else /if (${Me.SpellReady[${healWholeGroup2}]}) {
+				/call core_cast "${healWholeGroup2}" 0 0 check_HP_${Me.Class.ShortName}
+			} else /if (${Me.SpellReady[${healWholeGroup3}]}) {
+				/call core_cast "${healWholeGroup3}" 0 0 check_HP_${Me.Class.ShortName}
+			}
+		}
+		| if forced group healing. restart heal cycle at this point.
+		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+		/return
+	}
     
   | Group Heal
   /if (${useGroupHeal} && ${groupHurt} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
     /call core_cast "${healWholeGroup}" 0 0 check_HP_${Me.Class.ShortName}
     /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /return
   } 
+  
+  
 	AMIDEAD
  	/doevents
   
@@ -332,7 +352,7 @@ sub check_heal_group_CLR()
   | check for group debuffs
 	/if (${switchHealCure} && ${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure
 	
-	UPDATEHUD
+	UPDATEHUD FALSE
 /return
 
 
@@ -381,7 +401,7 @@ sub check_heal_XTarget_CLR()
       }
     }
   /next _count
-	UPDATEHUD
+	UPDATEHUD FALSE
 /return
 
 
@@ -725,23 +745,38 @@ ${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
 
 |***
  *	DES: Class controls
- *	USE: /clr [] [##]
+ *	USE: /clr []
  *	INI: 
  *  NOTE:
  ***|
 #bind setCLR /clr
 sub Bind_setCLR(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},CLR]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[CLR]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	/declare _count int local 0
-
+	
 	| enable/disable lead with aggerssive heals
 	/if (${Bool[${_classType.Equal[aggressive]}]}) {
 		/call writeINI switchHealAggressive Spells ${If[${switchHealAggressive},FALSE,TRUE]}
 		/call echos heal "Aggressive" switchHealAggressive 0 0
+
+	| lock group heals
+	} else /if (${Bool[${_classType.Equal[forcegroupheal]}]}) {
+	 	/call writeINI switchForceGroupHeal Heal ${If[${switchForceGroupHeal},FALSE,TRUE]}  
+	 	/call echos switch "Force Group Heals" switchForceGroupHeal 0 0
 
 	| mgb celestial regen
 	} else /if (${Bool[${_classType.Equal[regen]}]}) {
@@ -760,7 +795,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		
 	
 	| set XTar heal radius
@@ -769,7 +804,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			NOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 		
 	| set XT Heal refresh Time
@@ -778,19 +813,17 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			NOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 	
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
-		/if (${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
+		/if (${Range.Between:${Int[${_classVerbage}]}]}) {
 			/call writeINI tXHeal Timer ${_classVerbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+			NOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
-
-		
 		
 	| to Yaulp or not		
 	 } else /if (${Bool[${_classType.Equal[yaulp]}]}) {
@@ -803,7 +836,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI useVPPct Buffs ${_classVerbage} 
 			/call echos number "Veturika's Perseverance" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /clr qm [${cinfo}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			NOUT /${_bind} vp [${cinfo}${useVPPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else /if (!${Bool[${_classVerbage}]}) {
 			/call writeINI useVP Buffs ${If[${useVP},FALSE,TRUE]}  
 			/call echos switch "Veturika's Perseverance ${sep} ${useVPPct}%" useVP 0 0
@@ -829,7 +862,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI PetPoint Heal ${_num}
 			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
 		} else {
-			VOUT /clr healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
+			VOUT /${_bind} healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
 		}
 
 	| set AA fade use %	
@@ -839,12 +872,12 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI useAAFade Buffs ${_num}
 			VOUT Fade Combat ${sep} ${cinfo}${_num}\ax
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /clr fade [${useAAFade}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			NOUT /${_bind} fade [${cinfo}${useAAFade}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		} else {
-			NOUT /clr fade [${useAAFade}##\ax]
+			NOUT /${_bind} fade [${cinfo}${useAAFade}\ax]
 		}
 
-	| loch on MA
+	| lock on MA
 	} else /if (${Bool[${_classType.Equal[lock]}]}) {
 		/call writeINI switchLockMA Heal ${If[${switchLockMA},FALSE,TRUE]}
 	 	/call echos switch "Lock to MA" switchLockMA 0 0
@@ -852,7 +885,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 
 	
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##
+		/call echos listtype ${_bind} ${_bind} 0 ##
 	} 
 /return
 

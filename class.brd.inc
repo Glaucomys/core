@@ -100,13 +100,14 @@ sub disc_BRD()
 	/call is_target_dead
 	/if (${Macro.Return}) /return
 	/call stick_to_target
-	/if ((${Me.AltAbilityReady[Banestrike]} || ${Me.AltAbilityReady[Cacophony]} || ${Me.AltAbilityReady[Bladed Song]} || ${Me.AltAbilityReady[Boastful Bellow]}) && ${Me.Casting.ID}) /call pulse_stop
-	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0
-	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
-	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill}
-	/if (${Me.AltAbilityReady[Cacophony]}) /call core_cast "Cacophony" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[Boastful Bellow]}) /call core_cast "Boastful Bellow" alt ${Target2Kill}
+	/if (${Me.Casting.ID}) /call pulse_stop
+	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
+	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill} FALSE
+	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Cacophony]}) /call core_cast "Cacophony" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Boastful Bellow]}) /call core_cast "Boastful Bellow" alt ${Target2Kill} FALSE
+
 /return
 
 
@@ -139,18 +140,23 @@ sub cast_servant_swarm(int _tmpID)
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
-	
 	/if (${Spawn[${_tmpID}].LineOfSight} && ${Target.PctHPs} > 10 && ${Spawn[${_tmpID}].Distance} < ${MobAgro}) {
-		/pet swarm
+		/call is_target_dead
+		/if (${Macro.Return}) /return
+
+		/call get_target_2kill
+		/if (${Target.ID}) /pet swarm
+
 		/if (${Me.AltAbilityReady[${ServantNukeAA1}]}) {
+			/if (${Me.Casting.ID}) /call pulse_stop
 			/call core_cast "${ServantNukeAA1}" alt ${_tmpID}
 			/return
 		} else /if (${Me.AltAbilityReady[${ServantNukeAA2}]}) {
+			/if (${Me.Casting.ID}) /call pulse_stop
 			/call core_cast "${ServantNukeAA2}" alt ${_tmpID}
 			/return
 		} else /if (${Me.SpellReady[${songServantNuke}]}) {
+			/if (${Me.Casting.ID}) /call pulse_stop
 			/call core_sing ${Me.Gem[${songServantNuke}]}
 			/return
 		}
@@ -194,29 +200,43 @@ sub mem_song_line(string _line)
  *  NOTE:
  ***|
 sub pulse()
- 	DEBUGCLASS ${cbug}pulse()\ax
+ 	SDEBUG ${cbug}pulse()\ax
 
 	/declare _pulseSong			bool local FALSE
 	/declare _count 				int local
 	/declare _index 				int local	
-	/declare _list[1] 			string ${song${songList.Upper}List}
+	/declare _list[1] 			string ${line${lineCurrent.Left[1].Upper}${lineCurrent.Right[-1].Lower}}
+
+
+| ${line${lineCurrent.Left[1].Upper}${lineCurrent.Right[-1].Lower}}
+| ${song${songList.Upper}List}
+
 
 	UPDATEHUD "PULSE: Song"
 	
 	/for _count 1 to ${_list.Size}
+		AMIDEAD
+		CHECKEXIT
+		/doevents
+		/call is_target_dead
+		/if (${Macro.Return}) {
+			/call pulse_stop
+			/return
+		}
 		/for _index 1 to ${_list[${_count}].Count[|]}
 			AMIDEAD
-			CHECKEXIT
+			| CHECKEXIT
 			/doevents
 			/call is_target_dead
 			/if (${Macro.Return}) {
 				/call pulse_stop
 				/return
 			}
-			/call stick_to_target
-			| /if (${Me.Casting.ID}) /stopcast
 			/call pulse_valid ${_index}
-			/if (${Macro.Return}) /call core_sing ${_index}
+			/if (${Macro.Return}) {
+				/call pulse_stop
+				/call core_sing ${_index}
+			}
 		/next _index	
 	/next _count	
 
@@ -239,7 +259,7 @@ sub pulse_valid(_gem)
 	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (!${Me.SpellReady[${Me.Gem[${_gem}].Name}]}) /varset _pulseSong FALSE
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
-	DEBUGCLASS VALID CAST: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
+	SDEBUG VALID PULSE: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
 /return ${Bool[${_pulseSong}]}
 
 
@@ -253,7 +273,7 @@ sub pulse_valid(_gem)
 sub pulse_stop()
 	DEBUGCLASS ${cbug}pulse_stop()\ax 
 	/while (${Me.Casting.ID}) {
-		/delay 5
+		/delay 1
 		/stopcast
 	}
 /return
@@ -270,6 +290,8 @@ sub core_sing(_spellgem)
 	AMIDEAD
 	CHECKEXIT
 	/doevents
+	/call is_target_dead
+	/if (${Macro.Return}) /return
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem int local ${Macro.Return}
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /return	
@@ -292,7 +314,7 @@ sub core_sing(_spellgem)
  *  NOTE: 
  ***|
 sub bard_nuke()
-	DEBUGCLASS ${cbug}bard_nuke()\ax
+	SDEBUG ${cbug}bard_nuke()\ax
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoNuke}
@@ -318,7 +340,7 @@ sub bard_nuke()
  *  NOTE: 
  ***|
 sub bard_dot()
-	DEBUGCLASS ${cbug}bard_dot()\ax
+	SDEBUG ${cbug}bard_dot()\ax
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoDoT}
@@ -431,10 +453,10 @@ sub cast_mez_BRD(int _tmpID)
  *  Song - Rallying Solo Azia V
  ***|
 sub cast_AA_Rallying()
- 	DEBUGCAST ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Solo]})\ax
+ 	DEBUGCLASS ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Solo]})\ax
+ 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Solo]}) /return
 	AMIDEAD
 	/doevents
- 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Solo]}) /return
  	/declare _endurancePoint		int local 30
  	/declare _manaPoint		int local 30
 
@@ -452,17 +474,20 @@ sub cast_AA_Rallying()
  *	NOTE: 
  ***| 
 sub synergy_BRD()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
+	/call is_target_dead
+	/if (${Macro.Return}) /return
+	/if (${Me.Casting.ID}) /call pulse_stop
 	
- 	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0
- 	/if (${Me.CombatAbilityReady[Thousand Blades]}) /call core_cast "Thousand Blades" disc 0	
-	/if (${Me.AltAbilityReady[Fierce Eye]}) /call core_cast "Fierce Eye" alt 0
+ 	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0 FALSE
+ 	/if (${Me.CombatAbilityReady[Thousand Blades]}) /call core_cast "Thousand Blades" disc 0 FALSE	
+	/if (${Me.AltAbilityReady[Fierce Eye]}) /call core_cast "Fierce Eye" alt 0 FALSE
 	/call cast_AA_spire
-	/if (${Me.AltAbilityReady[Funeral Dirge]}) /call core_cast "Funeral Dirge" alt 0
-	/if (${Me.AltAbilityReady[Quick Time]} && !${Me.Song[Ruaabri's Fury].ID}) /call core_cast "Quick Time" alt 0
+	/if (${Me.AltAbilityReady[Funeral Dirge]}) /call core_cast "Funeral Dirge" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Quick Time]} && !${Me.Song[Ruaabri's Fury].ID}) /call core_cast "Quick Time" alt 0 FALSE
 
 	/call use_glyph
 	/call synergy_click_Circle
@@ -478,7 +503,7 @@ sub synergy_BRD()
  *  NOTE: 
  ***|
 sub pulse_slow(int _tmpID)
-	DEBUG ${cbug}pulse_slow(ID ${_tmpID})\ax
+	DEBUGCLASS ${cbug}pulse_slow(ID ${_tmpID})\ax
 	/if (${timer_slow_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -500,6 +525,47 @@ sub pulse_slow(int _tmpID)
 
 
 
+
+
+
+
+
+sub validate_pulse(string _type, string _spell)
+	DEBUGCLASS ${cbug}validate_pulse(type: ${_type}, ${_spell})\ax
+	
+
+	/if (${_type.Equal[alt]} && ${Me.AltAbilityReady[${_spell}]}) {
+		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
+		/call pulse_stop
+		
+		
+	}	else /if (${_type.Equal[spell]} && ${Me.SpellReady[${_spell}]}) {
+		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
+		/call pulse_stop
+		
+		
+		
+		
+		
+
+	} else /if (${_type.Equal[disc]} && ${Me.CombatAbilityReady[${_spell}]}) {
+		/call pulse_stop
+	
+	}
+
+
+/return TRUE
+
+
+
+
+
+
+
+
+
+
+
 |***
  *	DES: Class controls
  *	USE: /brd []
@@ -508,18 +574,27 @@ sub pulse_slow(int _tmpID)
  ***|
 #bind setBRD /brd
 sub Bind_setBRD(string _classType, string _classVerbage)
-	SDEBUG ${cbug}Bind_setBRD(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},BRD]}) {
-		/call echo_bitch EQBC
+	DEBUGCLASS ${cbug}Bind_setBRD(type:${_classType}, verbage:${_classVerbage})\ax
+	/if (!${validate_class[BRD]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}
-	/declare _count	int local 0
-	
+	}	
 	| enable/disable sets bard song line
 	/if (${Bool[${_classType.Equal[line]}]}) {
 
 		/if (${Bool[${lineType.Find[${_classVerbage.Lower}]}]}) {
-			SDEBUG ${lineType.Find[${_classVerbage.Lower}]}
+			DEBUGCLASS ${lineType.Find[${_classVerbage.Lower}]}
 			/call writeINI lineCurrent Song ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
 			/delay 2
 			/call mem_song_line ${lineCurrent}

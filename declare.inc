@@ -227,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20170929
+	/declare coreBuild	 														int			outer 20171016
 
 	/declare _count 																int 		local
 	/declare combat																	string	outer
@@ -264,6 +264,7 @@ sub set_declares()
 	/call DeclareCoreIniVar mqlog										string	General FALSE
 	/call DeclareCoreIniVar minMobPullLvl						int			General 1
 	/call DeclareCoreIniVar maxMobPullLvl						int			General 150
+	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
 	/call DeclareIniVar verbose											bool		Common TRUE
 
 		
@@ -316,6 +317,8 @@ sub set_declares()
 	/declare wikiswitch															string outer [\a-wswitch\ax]
 	/declare wikitarget															string outer [\a-wTARGET\ax]
 	/declare wikiname																string outer [\a-wName\ax]
+	/declare wikispire															string outer [\ar0\ax\a-w|1|2|3\ax]
+	/declare wikipct																string outer [\a-w1,99\ax]
 
  	 	
 	| various lists for .. you know..lists and stuff.
@@ -361,13 +364,15 @@ sub set_declares()
 		
 	| /declare status_check_string						string	outer NULL
 	
-	/call DeclareCoreIniVar main										string	Group |FALSE|FALSE
-	/call DeclareCoreIniVar GroupLeader							string	Group FALSE
-	/call DeclareCoreIniVar GroupTank								string	Group FALSE
-	/call DeclareCoreIniVar GroupAssist							string	Group FALSE
-	/call DeclareCoreIniVar GroupPuller							string	Group FALSE
-	/call DeclareCoreIniVar GroupLooter							string	Group FALSE
-	/call DeclareCoreIniVar GroupMark								string	Group FALSE
+	| set /crew stuffs
+	/call DeclareCoreIniVar main													string	Group |FALSE|FALSE
+	/call DeclareCoreIniVar main2													string	Group |FALSE|FALSE
+	/call DeclareCoreIniVar ${MacroQuest.Server}Leader		string	Group FALSE
+	/call DeclareCoreIniVar ${MacroQuest.Server}Assist		string	Group FALSE
+	/call DeclareCoreIniVar ${MacroQuest.Server}Looter		string	Group FALSE
+	
+	
+	
 
 	| /here settings
 	/call DeclareCoreIniVar combatWAR								string	Here MELEE
@@ -509,106 +514,106 @@ sub set_declares()
 	
 
 	| Cleric
-	/declare CLRspire1															string	outer "Fundament: First Spire of Divinity"
-	/declare CLRspire2															string	outer "Fundament: Second Spire of Divinity"
-	/declare CLRspire3															string	outer "Fundament: Third Spire of Divinity"
-	/declare CLRsynergyAA														string	outer "Templar's Synergy"
+	/declare CLRspire1															string	outer Fundament: First Spire of Divinity
+	/declare CLRspire2															string	outer Fundament: Second Spire of Divinity
+	/declare CLRspire3															string	outer Fundament: Third Spire of Divinity
+	/declare CLRsynergyAA														string	outer Templar's Synergy
 
 	| Druid
-	/declare DRUspire1															string	outer "Fundament: First Spire of Nature"
-	/declare DRUspire2															string	outer "Fundament: Second Spire of Nature"
-	/declare DRUspire3															string	outer "Fundament: Third Spire of Nature"
-	/declare DRUsynergyAA														string	outer "Preserver's Synergy"
+	/declare DRUspire1															string	outer Fundament: First Spire of Nature
+	/declare DRUspire2															string	outer Fundament: Second Spire of Nature
+	/declare DRUspire3															string	outer Fundament: Third Spire of Nature
+	/declare DRUsynergyAA														string	outer Preserver's Synergy
 
 	| Shaman
-	/declare SHMspire1															string	outer "Fundament: First Spire of Ancestors"
-	/declare SHMspire2															string	outer "Fundament: Second Spire of Ancestors"
-	/declare SHMspire3															string	outer "Fundament: Third Spire of Ancestors"
-	/declare SHMsynergyAA														string	outer "Luminary's Synergy"
+	/declare SHMspire1															string	outer Fundament: First Spire of Ancestors
+	/declare SHMspire2															string	outer Fundament: Second Spire of Ancestors
+	/declare SHMspire3															string	outer Fundament: Third Spire of Ancestors
+	/declare SHMsynergyAA														string	outer Luminary's Synergy
 
 	| Warrior
-	/declare WARspire1													string	outer "Fundament: First Spire of the Warlord"
-	/declare WARspire2													string	outer "Fundament: Second Spire of the Warlord"
-	/declare WARspire3													string	outer "Fundament: Third Spire of the Warlord"
-	/declare WARsynergyAA												string	outer "Myrmidon's Synergy"
+	/declare WARspire1															string	outer Fundament: First Spire of the Warlord
+	/declare WARspire2															string	outer Fundament: Second Spire of the Warlord
+	/declare WARspire3															string	outer Fundament: Third Spire of the Warlord
+	/declare WARsynergyAA														string	outer Myrmidon's Synergy
 
 	| Shadow Knight
-	/declare SHDspire1													string	outer "Fundament: First Spire of the Reavers"
-	/declare SHDspire2													string	outer "Fundament: Second Spire of the Reavers"
-	/declare SHDspire3													string	outer "Fundament: Third Spire of the Reavers"
-	/declare SHDsynergyAA												string	outer "Knight's Synergy"
+	/declare SHDspire1															string	outer Fundament: First Spire of the Reavers
+	/declare SHDspire2															string	outer Fundament: Second Spire of the Reavers
+	/declare SHDspire3															string	outer Fundament: Third Spire of the Reavers
+	/declare SHDsynergyAA														string	outer Knight's Synergy
 
 	| Paladin
-	/declare PALspire1													string	outer "Fundament: First Spire of Holiness"
-	/declare PALspire2													string	outer "Fundament: Second Spire of Holiness"
-	/declare PALspire3													string	outer "Fundament: Third Spire of Holiness"
-	/declare PALsynergyAA												string	outer "Knight's Synergy"
+	/declare PALspire1															string	outer Fundament: First Spire of Holiness
+	/declare PALspire2															string	outer Fundament: Second Spire of Holiness
+	/declare PALspire3															string	outer Fundament: Third Spire of Holiness
+	/declare PALsynergyAA														string	outer Knight's Synergy
 
 	| Magician
-	/declare MAGspire1													string	outer "Fundament: First Spire of the Elements"
-	/declare MAGspire2													string	outer "Fundament: Second Spire of the Elements"
-	/declare MAGspire3													string	outer "Fundament: Third Spire of the Elements"
-	/declare MAGsynergyAA												string	outer "Conjurer's Synergy"
+	/declare MAGspire1															string	outer Fundament: First Spire of the Elements
+	/declare MAGspire2															string	outer Fundament: Second Spire of the Elements
+	/declare MAGspire3															string	outer Fundament: Third Spire of the Elements
+	/declare MAGsynergyAA														string	outer Conjurer's Synergy
 
 	| Enchanter	
-	/declare ENCspire1													string	outer "Fundament: First Spire of Enchantment"
-	/declare ENCspire2													string	outer "Fundament: Second Spire of Enchantment"
-	/declare ENCspire3													string	outer "Fundament: Third Spire of Enchantment"
-	/declare ENCIoG															string	outer "Illusions of Grandeur"
-	/declare ENCMC															string	outer "Mental Contortion"
-	/declare ENCsynergyAA												string	outer "Begulier's Synergy"
-	
+	/declare ENCspire1															string	outer Fundament: First Spire of Enchantment
+	/declare ENCspire2															string	outer Fundament: Second Spire of Enchantment
+	/declare ENCspire3															string	outer Fundament: Third Spire of Enchantment
+	/declare ENCIoG																	string	outer Illusions of Grandeur
+	/declare ENCMC																	string	outer Mental Contortion
+	/declare ENCsynergyAA														string	outer Begulier's Synergy
+		
 	| Wizard 
-	/declare WIZspire1													string	outer "Fundament: First Spire of the Arcanum"
-	/declare WIZspire2													string	outer "Fundament: Second Spire of the Arcanum"
-	/declare WIZspire3													string	outer "Fundament: Third Spire of the Arcanum"
-	/declare WIZmannaburn												string	outer "Manna Burn"
-	/declare WIZsynergyAA												string	outer "Evoker's Synergy"
+	/declare WIZspire1															string	outer Fundament: First Spire of the Arcanum
+	/declare WIZspire2															string	outer Fundament: Second Spire of the Arcanum
+	/declare WIZspire3															string	outer Fundament: Third Spire of the Arcanum
+	/declare WIZmannaburn														string	outer Manna Burn
+	/declare WIZsynergyAA														string	outer Evoker's Synergy
 
 	| Necromancer
-	/declare NECspire1													string	outer "Fundament: First Spire of Necromancy"
-	/declare NECspire2													string	outer "Fundament: Second Spire of Necromancy"
-	/declare NECspire3													string	outer "Fundament: Third Spire of Necromancy"
-	/declare NECsynergyAA												string	outer "Defiler's Synergy"
+	/declare NECspire1													string	outer Fundament: First Spire of Necromancy
+	/declare NECspire2													string	outer Fundament: Second Spire of Necromancy
+	/declare NECspire3													string	outer Fundament: Third Spire of Necromancy
+	/declare NECsynergyAA												string	outer Defiler's Synergy
 
 	| Ranger
-	/declare RNGspire1													string	outer "Fundament: First Spire of the Pathfinders"
-	/declare RNGspire2													string	outer "Fundament: Second Spire of the Pathfinders"
-	/declare RNGspire3													string	outer "Fundament: Third Spire of the Pathfinders"
-	/declare RNGauspice													string	outer "Auspice of the Hunter"
-	/declare RNGcheetah													string	outer "Scarlet Cheetah's Fang"
-	/declare RNGgroupguardian										string	outer "Group Guardian of the Forest"
-	/declare RNGsynergyAA												string	outer "Outrider's Synergy"
+	/declare RNGspire1													string	outer Fundament: First Spire of the Pathfinders
+	/declare RNGspire2													string	outer Fundament: Second Spire of the Pathfinders
+	/declare RNGspire3													string	outer Fundament: Third Spire of the Pathfinders
+	/declare RNGauspice													string	outer Auspice of the Hunter
+	/declare RNGcheetah													string	outer Scarlet Cheetah's Fang
+	/declare RNGgroupguardian										string	outer Group Guardian of the Forest
+	/declare RNGsynergyAA												string	outer Outrider's Synergy
 
 	| Bard
-	/declare BRDspire1													string	outer "Fundament: First Spire of the Minstrel"
-	/declare BRDspire2													string	outer "Fundament: Second Spire of the Minstrel"
-	/declare BRDspire3													string	outer "Fundament: Third Spire of the Minstrel"
-	/declare BRDsynergyAA												string	outer "Troubadour's Synergy"
+	/declare BRDspire1													string	outer Fundament: First Spire of the Minstrel
+	/declare BRDspire2													string	outer Fundament: Second Spire of the Minstrel
+	/declare BRDspire3													string	outer Fundament: Third Spire of the Minstrel
+	/declare BRDsynergyAA												string	outer Troubadour's Synergy
 
 	| Monk
-	/declare MONspire1													string	outer "Fundament: First Spire of the Sensei"
-	/declare MONspire2													string	outer "Fundament: Second Spire of the Sensei"
-	/declare MONspire3													string	outer "Fundament: Third Spire of the Sensei"
+	/declare MONspire1													string	outer Fundament: First Spire of the Sensei
+	/declare MONspire2													string	outer Fundament: Second Spire of the Sensei
+	/declare MONspire3													string	outer Fundament: Third Spire of the Sensei
 	/declare MONsynergyAA												string	outer 
 
 	| Beastlord
-	/declare BSTspire1													string	outer "Fundament: First Spire of the Savage Lord"
-	/declare BSTspire2													string	outer "Fundament: Second Spire of the Savage Lord"
-	/declare BSTspire3													string	outer "Fundament: Third Spire of the Savage Lord"
-	/declare BSTsynergyAA												string	outer "Primalist's Synergy"
+	/declare BSTspire1													string	outer Fundament: First Spire of the Savage Lord
+	/declare BSTspire2													string	outer Fundament: Second Spire of the Savage Lord
+	/declare BSTspire3													string	outer Fundament: Third Spire of the Savage Lord
+	/declare BSTsynergyAA												string	outer Primalist's Synergy
 
 	| Berzerker
-	/declare BERspire1													string	outer "Fundament: First Spire of Savagery"
-	/declare BERspire2													string	outer "Fundament: Second Spire of Savagery"
-	/declare BERspire3													string	outer "Fundament: Third Spire of Savagery"
-	/declare BERsynergyAA												string	outer "Fury's Synergy"
+	/declare BERspire1													string	outer Fundament: First Spire of Savagery
+	/declare BERspire2													string	outer Fundament: Second Spire of Savagery
+	/declare BERspire3													string	outer Fundament: Third Spire of Savagery
+	/declare BERsynergyAA												string	outer Fury's Synergy
 
 	| Rogue
-	/declare ROGspire1													string	outer "Fundament: First Spire of the Rake"
-	/declare ROGspire2													string	outer "Fundament: Second Spire of the Rake"
-	/declare ROGspire3													string	outer "Fundament: Third Spire of the Rake"
-	/declare ROGsynergyAA												string	outer "Blackguard's Synergy"
+	/declare ROGspire1													string	outer Fundament: First Spire of the Rake
+	/declare ROGspire2													string	outer Fundament: Second Spire of the Rake
+	/declare ROGspire3													string	outer Fundament: Third Spire of the Rake
+	/declare ROGsynergyAA												string	outer Blackguard's Synergy
 
 
 	| combat controls
@@ -652,10 +657,14 @@ sub set_declares()
 	/call DeclareIniVar watchSpawn									string	Common FALSE 
 		
 	| tie control
-  /declare tcType																	string	outer |name|time|distance
+  /declare tcType																	string	outer |distance|lock|name|time
 	/call DeclareIniVar SetTieToon 									string 	Movement FALSE
 	/declare SetTie       													bool 		outer FALSE
 	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
+	/call DeclareIniVar SetTieLock	 								bool 		Movement FALSE
+	
+	| follow
+	/declare SetFollow															bool 		outer FALSE
    
  	| Movement control
   /declare movementType														string	outer |arc|behind|fast|home|leash|mount|radius
@@ -922,21 +931,21 @@ sub set_declares()
 	
 	| CLASS controls
   /declare brdType																string	outer |line|spiregroup|spireraid
-  /declare berType																string	outer |spiregroup|spireraid
+  /declare berType																string	outer |ae|spiregroup|spireraid
   /declare bstType																string	outer |spiregroup|spireraid
-  /declare clrType																string	outer |aggressive|fade|groupheal|grouphot|healpoint|lock|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
+  /declare clrType																string	outer |aggressive|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
   /declare druType																string	outer |groupheal|healpoint|spiregroup|spireraid|xtradius|xttime
-  /declare encType																string	outer |spiregroup|spireraid
-  /declare magType																string	outer |fade|mana|rods|spiregroup|spireraid
+  /declare encType																string	outer |gather|spiregroup|spireraid
+  /declare magType																string	outer |fade|gather|mana|rods|spiregroup|spireraid
   /declare mnkType																string	outer |spiregroup|spireraid
   /declare necType																string	outer |spiregroup|spireraid
   /declare palType																string	outer |groupheal|harmonions|healpoint|mg|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
-  /declare rogType																string	outer |autosos|poison|spiregroup|spireraid
+  /declare rogType																string	outer |ae|autosos|poison|spiregroup|spireraid
   /declare rngType																string	outer |spice|spiregroup|spireraid|summer
   /declare shdType																string	outer |harmoniouns|skin|spiregroup|spireraid|stance
   /declare shmType																string	outer |groupheal|grouphot|healpoint|spiregroup|spireraid|xtradius|xttime
   /declare warType																string	outer |spiregroup|spireraid
-  /declare wizType																string	outer |spiregroup|spireraid
+  /declare wizType																string	outer |gather|manaburn|spiregroup|spireraid
   
   
 	| cursor
@@ -1051,6 +1060,8 @@ sub declare_MAG()
 	/call DeclareIniVar ElementRodName 							string 	Rods "Summoned: Exigent Minion XXI"
 
 	/call DeclareIniVar GatherSpell									string 	Spells "Gather Magnitude"
+	/call DeclareIniVar switchGather			 					bool		Spells TRUE
+	/call DeclareIniVar GatherPercent			 					int			Spells 60
 	/call DeclareIniVar DoNuke					 						int			Spells 2
 	/call DeclareIniVar Nuke1 											string 	Spells "Spear of Blistersteel"
 	/call DeclareIniVar Nuke2 											string 	Spells "Spear of Molten Shieldstone"
@@ -1081,6 +1092,7 @@ sub declare_MAG()
  ***|
 sub declare_WIZ()
 	/call DeclareIniVar GatherSpell									string 	Spells "Quietscent Harvest"
+	/call DeclareIniVar switchGather			 					bool		Spells TRUE
 	/call DeclareIniVar GatherPercent			 					int			Spells 60
 	/call DeclareIniVar DoNuke										 	int			Spells 5
 	/call DeclareIniVar Nuke1 											string 	Spells "Cloudburst Stormstrike"
@@ -1092,6 +1104,7 @@ sub declare_WIZ()
 	/call DeclareIniVar Nuke7 											string 	Spells FALSE
 	/call DeclareIniVar Nuke8 											string 	Spells FALSE
 	/call DeclareIniVar tempPet						 					string	Pet "Yulin's Pyroblade"
+	/call DeclareIniVar switchManaBurn		 					bool		Spells TRUE
 	
 	
 	/declare fay 																string	outer "Translocate: Fay"
@@ -1157,6 +1170,9 @@ sub declare_ENC()
 	/declare mobList														string	outer
 	/declare addList 														string 	outer
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer |5|8|12|17|18|42|44|80|106|129|144
+
+	/call DeclareIniVar switchGather			 					bool		Spells TRUE
+	/call DeclareIniVar GatherPercent			 					int			Spells 60
 
 	/call DeclareIniVar runeVeil			 							string	Rune "Veil of Mindshadow"
 	/call DeclareIniVar runeEldritch	 							string	Rune "Eldritch Rune"
@@ -1354,6 +1370,8 @@ sub declare_PAL()
 	/call DeclareIniVar DiscFastRune	 							string	Discs "Repel"
 	/call DeclareIniVar DiscArmor			 							string	Discs "Armor of Ardency"
 	/call DeclareIniVar DiscGuard			 							string	Discs "Skalber Mantle"
+	/call DeclareIniVar DiscHoly			 							string	Discs "Holy Guardian Discipline"
+	
 	/call DeclareIniVar DiscUnflinching							string	Discs "Unflinching Affirmation"
 	/call DeclareIniVar DiscJudgement								string	Discs "Inquisitors Judgement"
 	/call DeclareIniVar DiscHate										string	Discs "Projection of Piety"
@@ -1840,6 +1858,9 @@ sub declare_MNK()
 sub declare_ROG()
 	| keep on cooldown
 	/call setTimer tClick_Poison										string	Timer 30s 	timer_click_poison
+	/call DeclareIniVar AEMelee					 						bool	 	Discs FALSE
+
+
 
 	/call DeclareIniVar DiscRest				 						string 	Discs "Breather"
 	/call DeclareIniVar DiscAggro 									string 	Discs "Disorientation"
@@ -1871,9 +1892,9 @@ sub declare_ROG()
 	/call DeclareIniVar AbsorbingAgent							string 	Discs "Absorbing Agent"
 	
 	
-	/call DeclareIniVar clickPoisonBuff							string 	Poison "Bite of the Shissar Poison X"
-	/call DeclareIniVar clickPoisonItem							string 	Poison "Consigned Bite of the Shissar XVIII"
-	/call DeclareIniVar clickPoisonDispenser				string 	Poison "Selrach's Shadowscale Leggings"
+	/call DeclareIniVar clickPoisonBuff							string 	Poison |Bite of the Shissar Poison X|Tallon's Tactic Poison IV|Tallon's Tactic Poison V|Vallon's Tactic Poison IV|Vallon's Tactic Poison V|Mana Poison Coat|Hero's Toxin Poison I|Hero's Toxin Poison II
+	/call DeclareIniVar clickPoisonItem							string 	Poison Consigned Bite of the Shissar XVIII
+	/call DeclareIniVar clickPoisonDispenser				string 	Poison Selrach's Shadowscale Leggings
 	/call DeclareIniVar clickPoisonCount						int		 	Poison 60
 /return	
 
@@ -1921,7 +1942,9 @@ sub declare_CLR()
 	/call DeclareIniVar setDivinetoGroupHeal				bool		Heal FALSE
 
   /call DeclareIniVar healWholeGroup							string 	Heal "Word of Greater Reformation"
-  /call DeclareIniVar healWholeGroupHoT						string 	Heal "Ardent Acquittal"
+  /call DeclareIniVar healWholeGroup2							string 	Heal "Syllable of Convalescence"
+  /call DeclareIniVar healWholeGroup3							string 	Heal "Word of Convalescence"
+  /call DeclareIniVar healWholeGroupHoT						string 	Heal "Elixir of the Seas"
   /call DeclareIniVar healRemedy1									string 	Heal "Spiritual Remedy"
   /call DeclareIniVar healRemedy2									string 	Heal "Graceful Remedy"
   /call DeclareIniVar healHoT 										string 	Heal "Ardent Elixir"
@@ -1940,6 +1963,8 @@ sub declare_CLR()
 	/call DeclareIniVar CRTXT												string	Heal "Celestial Regeneration (+11100HP / tic)"
 	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
+	/call DeclareIniVar switchForceGroupHeal				bool		Heal FALSE
+	
 		
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar sumWeaponSpell							string	Buffs "Hammer of	Reverence"
@@ -2050,7 +2075,6 @@ sub set_alias()
   /if (!${Bool[${Alias[/stop]}]}) 					/squelch /alias /stop 											/bc stop
 	/if (!${Bool[${Alias[/blurb]}]}) 					/squelch /alias /blurb 											OUT Blurb: 
  	/if (!${Bool[${Alias[/clean]}]}) 					/squelch /alias /clean 											OUT Clean this mess up.
-	/if (!${Bool[${Alias[/crew]}]}) 					/squelch /alias /crew 											OUT Crew: 
   /if (!${Bool[${Alias[/bcsay]}]}) 					/squelch /alias /bcsay 											/bc bcsay
   /if (!${Bool[${Alias[/echoaugments]}]}) 	/squelch /alias /echoaugments								OUT Echo Augment file!
   /if (!${Bool[${Alias[/autologin]}]}) 			/squelch /alias /autologin									/plugin mq2autologin unload
@@ -2062,8 +2086,8 @@ sub set_alias()
   /if (!${Bool[${Alias[/buy]}]}) 						/squelch /alias /buy												/echo Buy:
   /if (!${Bool[${Alias[/sell]}]}) 					/squelch /alias /sell												/echo Sell:
 
-	/if (!${Bool[${Alias[/on]}]}) 						/noparse /squelch /alias /on       		    	/bca //varset coreAuto TRUE
-	/if (!${Bool[${Alias[/off]}]}) 						/noparse /squelch /alias /off						    /bca //varset coreAuto FALSE
+	/if (!${Bool[${Alias[/on]}]}) 						/noparse /squelch /alias /on       		    	/bca //core auto on
+	/if (!${Bool[${Alias[/off]}]}) 						/noparse /squelch /alias /off						    /bca //core auto off
 	/if (!${Bool[${Alias[/zonereset]}]}) 			/noparse /squelch /alias /zonereset			    /bc zonereset
 
 	/if (!${Bool[${Alias[/givecoin]}]}) 			/noparse /squelch /alias /givecoin			    OUT Bribe Time:
@@ -2072,17 +2096,6 @@ sub set_alias()
 
 	/if (!${Bool[${Alias[/gtfo]}]}) 					/noparse /squelch /alias /gtfo    			 		/bc gtfo
 	/if (!${Bool[${Alias[/lesson]}]}) 				/noparse /squelch /alias /lesson   			 		/bc lesson
-
-	| /if (!${Bool[${Alias[/autocontrol]}]})		/noparse /squelch /alias /autocontrol				OUT Setting Automatic Control Toon swapping!
-
-	|***
-	/if (${Select[${Me.Class.ShortName},DRU]}) {
-		/if (!${Bool[${Alias[/wood]}]}) 				/squelch /alias /wood 											/bc wood
-	}
-	/if (${Select[${Me.Class.ShortName},SHM]}) {
-		/if (!${Bool[${Alias[/aid]}]}) 					/squelch /alias /aid 												/bc aid
-	}
-	***|
 /return
 
 
@@ -2375,15 +2388,6 @@ sub Event_Song(string line, string _group)
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
 		/call mem_song_set ${_group}
 	}
-/return 
-
-|***
-*	DES: Invites Crew 
-*	USE: /crew [name1|name2|so on]
-***|
-#event Crew "[MQ2] - Crew: #1#"
-sub Event_Crew(string line, string _clist)
-	/call set_crew ${_clist}
 /return 
 
 
@@ -3376,6 +3380,8 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 	}
 	| build and buff
 	/if (${Bool[${_pcType.Find[build]}]}) {
+		/if (!${validate_petclass[]}) /return
+		/call writeINI switchPcPet Pet TRUE
 		/call check_pet
 		/if (${Me.Pet.ID}) /call check_pet_buffs	
 
@@ -3488,6 +3494,13 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 			/call writeINI SetTieToon Movement ${_verbage}	
 			/call echos	string "Set Tie Toon" _verbage 0 0
 		}
+
+	| forced tied
+	| we like bsdm
+	} else /if (${Bool[${_tcType.Equal[lock]}]}) {
+		/call writeINI SetTieLock Movement ${If[${SetTieLock},FALSE,TRUE]}
+		VOUT /tc lock ${sep} ${If[${SetTieLock},${oenabled},${odisabled}]}
+
 	| set tie time
 	} else /if (${Bool[${_tcType.Equal[time]}]}) {
 		/if (${Range.Between[5,50:${Int[${_verbage}]}]}) {
@@ -3612,14 +3625,21 @@ sub Bind_setCore(string _coreType, string _verbage)
 
 	| core auto/manual
 	/if (${Bool[${_coreType.Equal[auto]}]}) {
-		/call writeINI coreAuto Common ${If[${coreAuto},FALSE,TRUE]}
+		
+		/if (${Bool[${_verbage.Equal[on]}]}) {
+			/call writeINI coreAuto Common TRUE
+		} else /if (${Bool[${_verbage.Equal[off]}]}) {
+			/call writeINI coreAuto Common FALSE
+		} else {
+			/call writeINI coreAuto Common ${If[${coreAuto},FALSE,TRUE]}
+		}
 		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}  
 		/if (!${coreAuto}) { 
 			/call set_stop TRUE
 			/call clear_combat
 		}
 		OUT Core ${sep} ${cinfo}Automatic\ax ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
-			
+
 	| enable/disable verbose EQBC Echos
 	} else /if (${Bool[${_coreType.Equal[verbose]}]}) {
 		/call writeINI verbose Common ${If[${verbose},FALSE,TRUE]}
@@ -4297,7 +4317,85 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	} else {
 		/call echos listtype movement movement 0 0 0
 	} 
+/return
 
 
+
+|***
+ *	DES: builds your group
+ *	USE: /crew [main|main2|...] {you can rename these} 
+ *	INI: core.ini [group] - main|idiotgroup|rejects|....
+ *  NOTE: you can rename the groups. i'd suggest using main as your primary. it is referenced elsewhere.
+ *	/grouproles set [NAME] [#]
+ *	1=MainTank .. 					${GroupTank}
+ *	2=MainAssist ..		 			${GroupAssist}
+ *	3=Puller .. 						${GroupPuller}
+ *	4=MarkNpc .. 						${GroupMark}
+ *	5=MasterLooter .. 			${GroupLooter}
+ *	/makeleader [NAME] .. 	${GroupLeader}
+ ***|
+ #bind crew /crew
+sub Bind_crew(string _crewNumber)
+ 	DEBUG ${cbug}Bind_crew(${Ini[${INICore},Group,_crewNumber]})\ax
+
+	/declare _count 				int local
+	/declare _clist 				string local ${Ini[${INICore},Group,${_crewNumber}]}
+	
+	| disband raid if exists
+	/if (${Raid.Members}) {
+		/for _count 1 to ${_clist.Count[|]}
+			/if (${Me.Name.Equal[${_clist.Arg[${_count},|]}]}) /continue
+			| /if (${Bool[${Raid.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //raiddisband
+			/bct ${_clist.Arg[${_count},|]} //raiddisband
+			/delay 2
+		/next _count	
+		/if (${Raid.Members}) /raiddisband
+	}
+	
+	| disband group if exists
+	| /if (${Group.GroupSize}) {
+		/for _count 1 to ${_clist.Count[|]}
+			| /if (${Me.Name.Equal[${_clist.Arg[${_count},|]}]}) /continue
+			| /if (${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //disband
+			/bct ${_clist.Arg[${_count},|]} //disband
+			/delay 1
+		/next _count			
+	| }
+	
+	/delay 2s
+
+	| invite the members in the list
+	/for _count 1 to ${_clist.Count[|]}
+		AMIDEAD
+		/if (!${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) {
+			OUT Inviting ${sep} ${cpc}${_clist.Arg[${_count},|]}\ax
+			/invite ${_clist.Arg[${_count},|]}
+		}	
+	/next _count
+		
+	/delay 1s
+	/delay 12s ${Group.GroupSize} == ${_clist.Count[|]}
+	/if (${Group.GroupSize} != ${_clist.Count[|]}) {
+		OUT ${owarning} ${sep} Group failed to form properly.
+		/return
+	}
+	
+	| set Group Main Assist
+	/if (${Bool[${${MacroQuest.Server}Assist}]} && !${Group.Member[${${MacroQuest.Server}Assist}].Offline}) {
+		/delay 5
+		/if (${Group.Member[${${MacroQuest.Server}Assist}].Index}) /grouproles set ${${MacroQuest.Server}Assist} 2
+	}
+
+	| set Group Master Looter
+	/if (${Bool[${${MacroQuest.Server}Looter}]} && !${Group.Member[${${MacroQuest.Server}Looter}].Offline}) {
+		/delay 5
+		/if (${Group.Member[${${MacroQuest.Server}Looter}].Index}) /grouproles set ${${MacroQuest.Server}Looter} 5
+	}
+
+	| set Group leader ... last to make sure all roles are set
+	/if (${Bool[${${MacroQuest.Server}Leader}]} && !${Group.Member[${${MacroQuest.Server}Leader}].Offline}) {
+		/delay 5
+		/if (${Group.Member[${Group.Leader}].Index} != ${Group.Member[${${MacroQuest.Server}Leader}].Index}) /makeleader ${${MacroQuest.Server}Leader}
+	}
 /return
 

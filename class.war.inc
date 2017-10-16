@@ -22,7 +22,7 @@ sub core_WAR()
 
 	:killtarget
 	/call prep_combat
-	/if (!${Bool[${Macro.Return}]}) /goto :exit
+	/if (!${Bool[${Macro.Return}]}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
@@ -43,7 +43,6 @@ sub core_WAR()
 		/call is_target_dead
 		/if (!${Bool[${Macro.Return}]}) /goto :killtarget
 	}
-	:exit
 /return
 
 
@@ -60,9 +59,9 @@ sub disc_WAR()
 
 	/doevents
 	/call check_exit TRUE
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /return
 	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /return
 	/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
@@ -80,7 +79,6 @@ sub disc_WAR()
 
 	/if (${Me.CombatAbilityReady[${DiscField}]} && ${Me.CurrentEndurance} > ${Spell[${DiscField}].EnduranceCost} && !${Me.Song[${DiscField}].ID} ) /call core_cast "${DiscField}" disc 0
 
-	:exit
 /return
 
 
@@ -98,7 +96,7 @@ sub get_agro_WAR()
 	/doevents
 	CHECKEXIT
 	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /goto :exit
+	/if (${Bool[${Macro.Return}]}) /return
 	/if (${Me.AltAbilityReady[${AARageoftheForsaken}]} && ${Target.Distance} <= ${Spell[${AARageoftheForsaken}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AARageoftheForsaken}" alt ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscInsult}]} && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscInsult}" disc ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscWade}]} && ${Me.CurrentEndurance} > ${Spell[${DiscWade}].EnduranceCost} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscWade}" disc 0
@@ -107,7 +105,6 @@ sub get_agro_WAR()
 	/if (${Me.CombatAbilityReady[${DiscShout}]} && ${Me.CurrentEndurance} > ${Spell[${DiscShout}].EnduranceCost} ) /call core_cast "${DiscShout}" disc 0
 	/if (${Me.AltAbilityReady[${AABlastofAnger}]} && ${Target.Distance} <= ${Spell[${AABlastofAnger}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AABlastofAnger}" alt ${Target2Kill}
 	/if (${Me.AltAbilityReady[${AAAETaunt}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50 targetable]} >= 2) /call core_cast "${AAAETaunt}" alt 0
-	:exit
 /return
 
 
@@ -131,7 +128,6 @@ sub patch_heal_WAR()
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0
-	:exit
 /return
 
 
@@ -148,7 +144,6 @@ sub click_DPS_WAR()
 
 	/doevents
 	/call click_horn_of_unity 	
-	:exit
 /return
 
 
@@ -165,7 +160,7 @@ sub synergy_WAR()
 
 	/doevents
 	/call check_exit
-	/if (${Bool[${Macro.Return}]}) /goto :exit	
+	/if (${Bool[${Macro.Return}]}) /return	
 	
 	
 	/if (${Me.CombatAbilityReady[${DiscAttention}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAttention}].EnduranceCost}) /call core_cast "${DiscAttention}" disc ${Target2Kill}
@@ -187,7 +182,6 @@ sub synergy_WAR()
 	/call use_glyph
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn
-	:exit	
 /return
 
 
@@ -201,12 +195,21 @@ sub synergy_WAR()
 #bind setWAR /war
 sub Bind_setWAR(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setWAR(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},WAR]}) {
-		/call echo_bitch EQBC
-		/goto :exit
-	}
+	/if (!${validate_class[WAR]}) /return
+
 	/declare _count int local 0
-	
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
+		/return
+	}	
 	| enable/disable summer line of spells
 	/if (${Bool[${_classType.Find[TEST]}]}) {
 		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
@@ -229,5 +232,4 @@ sub Bind_setWAR(string _classType, string _classVerbage)
 	} else {
 		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
 	} 
-	:exit
 /return

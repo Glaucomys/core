@@ -86,9 +86,6 @@ sub disc_PAL()
 	/if (${validate_buff[disc, discs, DiscFastRune]}) /call core_cast "${DiscFastRune}" disc 0
 	
 	
-	
-	
-
 	| Hand of Piety AA Group heal	
 	/if (${switchHealSelf} && ${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0
 	| dpsheal
@@ -293,19 +290,21 @@ sub synergy_PAL()
 
 	| defensive	
 	/if (${Me.CombatAbilityReady[${DiscArmor}]} && ${Me.CurrentEndurance} > ${Spell[${DiscArmor}].EnduranceCost}) {
-		/call core_cast "${DiscArmor}" disc 0
+		/call core_cast "${DiscArmor}" disc 0 FALSE
 	} else /if (!${Me.CombatAbilityReady[${DiscGuard}]} && ${Me.CurrentEndurance} > ${Spell[${DiscGuard}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
-		/call core_cast "${DiscGuard}" disc 0
-	} 
-
+		/call core_cast "${DiscGuard}" disc 0 FALSE
+	} else /if (!${Me.CombatAbilityReady[${DiscHoly}]} && ${Me.CurrentEndurance} > ${Spell[${DiscHoly}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
+		/call core_cast "${DiscHoly}" disc 0 FALSE
+	}
+	
 	/call cast_AA_spire	
 
-	/if (${Me.AltAbilityReady[${AAJudgement}]}) /call core_cast "${AAJudgement}" alt
-	/if (${Me.AltAbilityReady[${AAValorousRage}]}) /call core_cast "${AAValorousRage}" alt
-	/if (${Me.AltAbilityReady[${AAShield}]}) /call core_cast "${AAShield}" alt
+	/if (${Me.AltAbilityReady[${AAJudgement}]}) /call core_cast "${AAJudgement}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AAValorousRage}]}) /call core_cast "${AAValorousRage}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AAShield}]}) /call core_cast "${AAShield}" alt 0 FALSE
 	
 	| epic 2.0
-	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0
+	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0 FALSE
 	
 	
 | aa Thunder of Karna | spell damage	
@@ -327,12 +326,21 @@ sub synergy_PAL()
 #bind setPAL /pal
 sub Bind_setPAL(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setPAL(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},PAL]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[PAL]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}
-	/declare _count	int local 0
-	
+	}	
 	| to Yaulp or not		
 	/if (${Bool[${_classType.Find[yaulp]}]}) {
 		/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  

@@ -436,12 +436,21 @@ sub synergy_DRU()
 #bind setDRU /dru
 sub Bind_setDRU(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setDRU(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},DRU]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[DRU]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	/declare _count	int local 0
-
 	
 	| use group Heals
 	/if (${Bool[${_classType.Equal[groupheal]}]}) {

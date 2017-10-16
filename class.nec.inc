@@ -265,12 +265,21 @@ sub synergy_NEC()
 #bind setNEC /nec
 sub Bind_setNEC(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setNEC(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${Select[${Me.Class.ShortName},NEC]}) {
-		/call echo_bitch EQBC
+	/if (!${validate_class[NEC]}) /return
+
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	/declare _count	int local 0
-
 	
 	/if (${Bool[${_classType.Equal[TEST]}]}) {
 		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
@@ -287,10 +296,10 @@ sub Bind_setNEC(string _classType, string _classVerbage)
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
+		/call echos listtype ${_bind} ${_bind} 0 0
 	} 
 /return

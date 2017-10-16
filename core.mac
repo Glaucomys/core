@@ -171,6 +171,7 @@ sub main()
 	:loopmain
   	DEBUG ${cbug}:loopmain (Core: ${coreBuild})\ax
 	  AMIDEAD
+	  /doevents
   
 		/if (!${timer_check_EQBC}) /call check_one_mind
 		
@@ -244,7 +245,7 @@ sub main()
 				}
 			}
 		}
-
+		/doevents
 		/call core_${Me.Class.ShortName}
 	/goto :loopmain
 /return
@@ -258,6 +259,11 @@ sub main()
  *  NOTE: You are free to adjust these. If you do not like, simply comment them out. it will not "hurt" the script.
  ***|
 sub base_preperation()
+
+	| clean INIs?
+	/if (${autoinihousekeeping}) /call fix_INI_declares
+
+
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
 	| /call Event_SetVar NA SetTie Movement FALSE
