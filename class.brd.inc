@@ -207,11 +207,6 @@ sub pulse()
 	/declare _index 				int local	
 	/declare _list[1] 			string ${line${lineCurrent.Left[1].Upper}${lineCurrent.Right[-1].Lower}}
 
-
-| ${line${lineCurrent.Left[1].Upper}${lineCurrent.Right[-1].Lower}}
-| ${song${songList.Upper}List}
-
-
 	UPDATEHUD "PULSE: Song"
 	
 	/for _count 1 to ${_list.Size}
@@ -575,8 +570,10 @@ sub validate_pulse(string _type, string _spell)
 #bind setBRD /brd
 sub Bind_setBRD(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setBRD(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[BRD]}) /return
+	/if (!${validate_class[|BRD]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -605,7 +602,7 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${lineCurrent.Equal[${lineType.Arg[${_count},|]}]},${cgood},${cinfo}]}${lineType.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /brd line [${_listout}]	
+		VOUT /${_bind} line [${_listout}]	
 
 
 	| spire control
@@ -614,16 +611,18 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_classVerbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return

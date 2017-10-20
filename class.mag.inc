@@ -267,8 +267,10 @@ sub synergy_MAG()
 #bind setMAG /mag
 sub Bind_setMAG(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setMAG(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[MAG]}) /return
+	/if (!${validate_class[|MAG]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -329,8 +331,6 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_classVerbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
@@ -353,7 +353,11 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 		}
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return
 

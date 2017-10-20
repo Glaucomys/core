@@ -241,6 +241,99 @@ sub synergy_WIZ()
 	/if (${doclickItemBurn}) /call click_item_burn
 	
 /return
+
+
+
+|***
+ *	DES: Class controls
+ *	USE: /wiz []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind setWIZ /wiz
+sub Bind_setWIZ(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_verbage})\ax
+	/if (!${validate_class[|WIZ]}) /return
+
+	/declare _sep bool local
+	/declare _listout string local
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+
+	| get help
+	/if (${_classType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
+		/return
+	}
+	| gather enable/disable /pct
+	/if (${Bool[${_classType.Find[gather]}]}) {
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			/call writeINI GatherPercent Spells ${_classVerbage} 
+			/call echos number "Gather Mana %" ${_classVerbage} 0 0
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			NOUT /${Me.Class.ShortName} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}	else /if (!${Bool[${_classVerbage}]}) {
+			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
+			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
+		}			
+	
+	| 
+	} else /if (${Bool[${_classType.Equal[line]}]}) {
+		| mem a line of spells.-
+		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
+			SDEBUG ${lineType.Find[${_verbage.Lower}]}
+			/call writeINI lineCurrent Spell ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+			/delay 2
+			/call mem_spell_line ${lineCurrent}
+		}
+		/declare _listout 	string 	local
+		/declare _sep 			bool 		local
+		/for _count 1 to ${lineType.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${lineCurrent.Equal[${lineType.Arg[${_count},|]}]},${cgood},${cinfo}]}${lineType.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} line [${_listout}]	
+
+	| enable / disable manaburn AA
+	} else /if (${Bool[${_classType.Equal[manaburn]}]}) {
+		/call writeINI switchManaBurn Spells ${If[${switchManaBurn},FALSE,TRUE]}
+		/call echos switch "Mana Burn" switchManaBurn 0 0
+		
+	| spire control
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
+		} 
+		/for _count 1 to ${typeSpire.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
+
+
+	} else {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
+	} 
+/return
+
+
+
+
+
+
+
+| hold for wiz burn adjustmetns... someday
+
 	
 
 frostbound alliance - XXXX
@@ -284,83 +377,3 @@ shield of consequence
 1267 - Force of Ice
 577 - concussive intuition
 15073 - banestrike
-
-
-
-|***
- *	DES: Class controls
- *	USE: /wiz []
- *	INI: 
- *  NOTE:
- ***|
-#bind setWIZ /wiz
-sub Bind_setWIZ(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${validate_class[WIZ]}) /return
-
-	/declare _count int local 0
-	/declare _bind string local ${Me.Class.ShortName.Lower}
-
-	| get help
-	/if (${_classType.Equal[info]}) {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
-		/next _count
-		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
-		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
-		/return
-	}
-	| gather enable/disable /pct
-	/if (${Bool[${_classType.Find[gather]}]}) {
-		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/call writeINI GatherPercent Spells ${_classVerbage} 
-			/call echos number "Gather Mana %" ${_classVerbage} 0 0
-		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
-		}	else /if (!${Bool[${_classVerbage}]}) {
-			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
-			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
-		}			
-	
-	| 
-	} else /if (${Bool[${_classType.Equal[line]}]}) {
-		| mem a line of spells.-
-		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
-			SDEBUG ${lineType.Find[${_verbage.Lower}]}
-			/call writeINI lineCurrent Spell ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
-			/delay 2
-			/call mem_spell_line ${lineCurrent}
-		}
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
-		/for _count 1 to ${lineType.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${lineCurrent.Equal[${lineType.Arg[${_count},|]}]},${cgood},${cinfo}]}${lineType.Arg[${_count},|]}\ax   
-			/varset _sep TRUE
-		/next _count
-		VOUT /wiz line [${_listout}]	
-
-	| enable / disable manaburn AA
-	} else /if (${Bool[${_classType.Equal[manaburn]}]}) {
-		/call writeINI switchManaBurn Spells ${If[${switchManaBurn},FALSE,TRUE]}
-		/call echos switch "Mana Burn" switchManaBurn 0 0
-		
-	| spire control
-	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
-		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_verbage}
-		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
-		/for _count 1 to ${typeSpire.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
-			/varset _sep TRUE
-		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
-
-
-	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
-	} 
-/return

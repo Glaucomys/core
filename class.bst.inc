@@ -283,8 +283,10 @@ sub synergy_BST()
 #bind setBST /bst
 sub Bind_setBST(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setBST(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[BST]}) /return
+	/if (!${validate_class[|BST]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -300,7 +302,6 @@ sub Bind_setBST(string _classType, string _classVerbage)
 	}
 	
 	/if (${Bool[${_classType.Equal[TEST]}]}) {
-		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
 
 
 	| spire control
@@ -315,9 +316,13 @@ sub Bind_setBST(string _classType, string _classVerbage)
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return

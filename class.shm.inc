@@ -432,8 +432,10 @@ sub synergy_SHM()
 #bind setSHM /shm
 sub Bind_setSHM(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setSHM(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[SHM]}) /return
+	/if (!${validate_class[|SHM]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -467,7 +469,7 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 			/call writeINI PetPoint Heal ${_num}
 			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
 		} else {
-			VOUT /shm healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
+			VOUT /${_bind} healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
 		}
 
 	| set XTar heal radius
@@ -476,7 +478,7 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			NOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 
 	| set XT refresh list Time
@@ -485,7 +487,7 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 			/call writeINI tXHeal Timer ${_classVerbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+			NOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
 
 	| spire control
@@ -494,16 +496,18 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_classVerbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 	 	
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return

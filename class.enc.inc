@@ -603,6 +603,17 @@ sub cast_slow(int _tmpID)
 
 
 
+sub setDeclare_ENC()
+	/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
+	/if (${switchdeBuffTash} && !${Defined[timer_tash_${Target2Kill}]}) /call create_timer timer_tash_${Target2Kill} 1
+	/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
+	/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${Target2Kill}]}) /call create_timer timer_cripple_${Target2Kill} 1
+	/if (${switchdeBuffMezz} && !${Defined[timer_mez_${Target2Kill}]}) /call create_timer timer_mez_${Target2Kill} 1
+}
+
+
+
+
 |***
  *	DES: cripples the target
  *	USE: /call cast_cripple [ID] | /debuff cripple
@@ -757,8 +768,10 @@ sub synergy_ENC()
 #bind setENC /enc
 sub Bind_setENC(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[ENC]}) /return
+	/if (!${validate_class[|ENC]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -778,7 +791,7 @@ sub Bind_setENC(string _classType, string _classVerbage)
 			/call writeINI GatherPercent Spells ${_classVerbage} 
 			/call echos number "Gather Mana %" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			NOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else /if (!${Bool[${_classVerbage}]}) {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
 			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
@@ -790,16 +803,18 @@ sub Bind_setENC(string _classType, string _classVerbage)
 		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_classVerbage}
 		} 
-		/declare _listout 	string 	local 
-		/declare _sep 			bool 		local FALSE
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return

@@ -16,14 +16,31 @@
  *  NOTE: starts/ends non-standard modes
  ***|
 #bind mode /mode
-sub Bind_mode(string _modeType, int _modeCount)
+sub Bind_mode(string _modeType, string _verbage)
+	DEBUGMODE ${ctar}Bind_mode()\ax
+
+	/declare _sep bool local
+	/declare _listout string local
+	/declare _count int local 0
+	/declare _bind string local mode
+
+	| get help
+	/if (${_modeType.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_modeType}]}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_modeType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_modeType.Lower}]}
+		/return
+	}	
+
 	
 	| set mode agro range
 	/if (${Bool[${_modeType.Find[agro]}]}) {
-		/declare _num int local ${_modeCount}
-		/if (${Range.Between[1,999999:${Int[${_num}]}]}) {
-			/call writeINI setModeAgro Common ${_num}  
-			/call echos number "Mode Agro Range" ${_num} 0 0
+		/if (${Range.Between[1,999999:${Int[${_verbage}]}]}) {
+			/call writeINI setModeAgro Common ${_verbage}  
+			/call echos number "Mode Agro Range" ${_verbage} 0 0
 		} else {
 			NOUT /mode agro [${cinfo}${setModeAgro}\ax] allowable range is ${cinfo}1 - 99999\ax
 		}	
@@ -46,12 +63,9 @@ sub Bind_mode(string _modeType, int _modeCount)
 		/call switch_clear_mode
 		/call set_stop TRUE
 		/call clear_combat
-	} else /if (!${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
-		:namefail
-		/call echos listtype mode mode 0 0
 	} else {
-		/goto :namefail
-	}
+		/call echos listtype mode mode 0 0
+	} 
 	
 	/varset switchOverrideLos ${Ini[${INIClass},"Override","switchOverrideLos"]}
 	/varset switchOverrideEngageat ${Ini[${INIClass},"Override","switchOverrideEngageat"]}
@@ -94,6 +108,7 @@ sub switch_clear_mode()
  *  NOTE: 
  ***|
 sub do_mode()
+	DEBUGMODE ${ctar}do_mode()\ax
 	AMIDEAD
 
 	CLEARCURSOR TRUE

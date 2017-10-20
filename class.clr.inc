@@ -752,8 +752,10 @@ ${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
 #bind setCLR /clr
 sub Bind_setCLR(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[CLR]}) /return
+	/if (!${validate_class[|CLR]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -885,7 +887,11 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 
 	
 	} else {
-		/call echos listtype ${_bind} ${_bind} 0 ##
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return
 

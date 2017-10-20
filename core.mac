@@ -106,7 +106,6 @@
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
 
-
 #include tc\declare.inc
 #include tc\common.inc
 #include tc\MQ2Cast_Spell_Routines.inc
@@ -131,8 +130,6 @@
 #include tc\class.wiz.inc
 #include tc\hud.inc
 
-
- 
 
 |***
  *	DES: Main .. duhh..
@@ -262,7 +259,6 @@ sub base_preperation()
 
 	| clean INIs?
 	/if (${autoinihousekeeping}) /call fix_INI_declares
-
 
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid

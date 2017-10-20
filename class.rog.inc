@@ -107,6 +107,13 @@ sub disc_ROG()
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPlay}]} && ${Bool[${DiscPlay}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
 
 
+	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
+		/if (${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :skipDiscPlay
+		/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
+		:skipDiscPlay
+	}
+
+
 	/if (!${NameList.Find[${Target.DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
 		/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0
 	}	
@@ -297,8 +304,10 @@ sub synergy_ROG()
 #bind setROG /rog
 sub Bind_setROG(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setROG(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[ROG]}) /return
+	/if (!${validate_class[|ROG]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -322,7 +331,7 @@ sub Bind_setROG(string _classType, string _classVerbage)
 			/call writeINI clickPoisonCount Poison ${_num}
 			VOUT Rogue Poison Keep ${sep} ${cinfo}${_num}\ax
 		} else /if (!${Bool[${_num}]} || !${Range.Between[1,100:${Int[${_num}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
+			NOUT /${_bind} poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
 		}
 
 	| spire control
@@ -331,28 +340,29 @@ sub Bind_setROG(string _classType, string _classVerbage)
 		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_classVerbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
 	| auto SOS... or not...
 	} else /if (${Bool[${_classType.Equal[autosos]}]}) {
 		/call writeINI switchSos Common ${If[${switchSos},FALSE,TRUE]}
-		NOUT /rog ${cinfo}autosos\ax ${sep} ${If[${switchSos},${oenabled},${odisabled}]}
+		NOUT /${_bind} ${cinfo}autosos\ax ${sep} ${If[${switchSos},${oenabled},${odisabled}]}
 
 	| AE or Focused Melee
 	} else /if (${Bool[${_classType.Equal[ae]}]}) {
 		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
-		NOUT /${Me.Class.ShortName.Lower}  ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
+		NOUT /${_bind} ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
-	:exit
 /return
 
 

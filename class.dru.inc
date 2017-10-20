@@ -1,8 +1,9 @@
 |***
-	class.dru.inc
-	Core Druid Include
-
-***|
+ *	class.dru.inc
+ *	Core Druid Include
+ *
+ *	
+ ***|
 
 
 
@@ -73,8 +74,8 @@ sub core_DRU()
 			/if (${doclickItem}) /call click_item
 		}
 	}
-	/call use_mod_rod
 	/if (${coreAuto}) {	
+		/call use_mod_rod
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
@@ -101,9 +102,8 @@ sub disc_DRU()
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
-	/if (${Me.AltAbilityReady[Storm Strike]}) /call core_cast "Storm Strike" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[Season's Wrath]}) /call core_cast "Season's Wrath" alt ${Target2Kill}
-	:exit
+	/if (${Me.AltAbilityReady[Storm Strike]}) /call core_cast "Storm Strike" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Season's Wrath]}) /call core_cast "Season's Wrath" alt ${Target2Kill} FALSE
 /return
 
 
@@ -117,11 +117,10 @@ sub disc_DRU()
 sub patch_heal_DRU()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]}) /call core_cast "Convergence of Spirits" alt ${Me.ID}
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0
-	:exit
+	/if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]}) /call core_cast "Convergence of Spirits" alt ${Me.ID} FALSE
+	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
+	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0 FALSE
 /return
 
 
@@ -138,10 +137,9 @@ sub click_DPS_DRU()
 	/doevents
 	/call is_target_dead
 	/if (${Macro.Return} || !${Target.ID}) /return
-	/if (${Bool[${Epic}]} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID})  /call core_cast "${Epic}" item ${Target2Kill}
+	/if (${Bool[${Epic}]} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID})  /call core_cast "${Epic}" item ${Target2Kill} FALSE
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0
-	:exit
+	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0 FALSE
 /return
 
 
@@ -167,7 +165,6 @@ sub cast_AA_ro(int _tmpID)
 			/call create_timer timer_ro_${_tmpID} ${Spell[${debuffRo}].Duration.TotalSeconds}s
 		}		
 	}
-	:exit
 /return
 
 
@@ -272,15 +269,13 @@ sub check_heal_group_DRU()
 	| Adrenaline / Sanavida Heal 
 	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healAdrenaline}]} || ${Me.SpellReady[${healSanavida}]})) {
 		/if (${Me.SpellReady[${healAdrenaline}]}) {
-			/call core_cast "${healAdrenaline}" 0 ${WorstHurt} 
+			/call core_cast "${healAdrenaline}" 0 ${WorstHurt}  FALSE
 		} else /if (${Me.SpellReady[${healSanavida}]}) {
-			/call core_cast "${healSanavida}" 0 ${WorstHurt}
+			/call core_cast "${healSanavida}" 0 ${WorstHurt} FALSE
 		} 
 		/goto :loopheal
 	}  
-  
- 	:exit
- 	UPDATEHUD
+   	UPDATEHUD
 /return
 
 
@@ -303,18 +298,18 @@ sub check_healXTarget_DRU()
 
     /if (${Spawn[${Me.XTarget[${_count}].ID}].ID} && (${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} || ${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].CleanName}]}) && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
       /if (${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= 45 && ${Spawn[${Me.XTarget[${_count}].ID}].Distance} <= ${Spell[${healPanic}].MyRange} && ${Me.SpellReady[${healPanic}]}) {
-        /call core_cast "${healPanic}" 0 ${Me.XTarget[${_count}].ID}
+        /call core_cast "${healPanic}" 0 ${Me.XTarget[${_count}].ID} FALSE
       } else /if (${Spawn[${Me.XTarget[${_count}].ID}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healRenewal1}]} || ${Me.SpellReady[${healRenewal2}]} && || ${Me.SpellReady[${healRenewal3}]})) {
         /if (${Me.SpellReady[${healRenewal1}]}) {
-          /call core_cast "${healRenewal1}" 0 ${Me.XTarget[${_count}].ID}
+          /call core_cast "${healRenewal1}" 0 ${Me.XTarget[${_count}].ID} FALSE
         } else /if (${Me.SpellReady[${healRenewal2}]}) {
-          /call core_cast "${healRenewal2}" 0 ${Me.XTarget[${_count}].ID}
+          /call core_cast "${healRenewal2}" 0 ${Me.XTarget[${_count}].ID} FALSE
         } 
       } else /if (${Spawn[${Me.XTarget[${_count}].ID}].Distance} <= ${Spell[${healIntervention1}].MyRange} && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]})) {
         /if (${Me.SpellReady[${InterventionSpell1}]}) {
-          /call core_cast "${healIntervention1}" 0 ${Me.XTarget[${_count}].ID}
+          /call core_cast "${healIntervention1}" 0 ${Me.XTarget[${_count}].ID} FALSE
         } else /if (${Me.SpellReady[${healIntervention2}]}) {
-          /call core_cast "${healIntervention2}" 0 ${Me.XTarget[${_count}].ID}
+          /call core_cast "${healIntervention2}" 0 ${Me.XTarget[${_count}].ID} FALSE
         } 
       } 
     }
@@ -358,9 +353,9 @@ sub check_pet_heal_DRU()
 
 	/if (${pWorstHurtID} == ${Me.ID}) /return
 	/if (${Spawn[${pWorstHurtID}].PctHPs} < ${${pWorstClass}Point}*.${tmpHealOverride} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Me.SpellReady[${healRenewal1}]}) {
-		/call core_cast "${healRenewal1}" 0 ${pWorstHurtID} 
+		/call core_cast "${healRenewal1}" 0 ${pWorstHurtID} FALSE
 	} else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${${pWorstClass}Point}*.${tmpHealOverride} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRenewal2}].MyRange} && ${Me.SpellReady[${healRenewal2}]}) {
-		/call core_cast "${healRenewal2}" 0 ${pWorstHurtID} 
+		/call core_cast "${healRenewal2}" 0 ${pWorstHurtID} FALSE
 	}
 
 /return
@@ -376,11 +371,10 @@ sub check_pet_heal_DRU()
 sub cast_AA_spirit_wood()
 	DEBUGCLASS ${cbug}cast_AA_wood()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Spirit of the Wood]},${cgood}Wood\ax,${cbad}Wood\ax]}
 	AMIDEAD
-
 	/doevents
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Spirit of the Wood]} && !${Bool[${Me.Song[Spirit of the Wood]}]}) {
-		/call core_cast "Mass Group Buff" alt 0
-		/call core_cast "Spirit of the Wood" alt 0
+		/call core_cast "Mass Group Buff" alt 0 FALSE
+		/call core_cast "Spirit of the Wood" alt 0 FALSE
 	} else /if (${Bool[${Me.Song[Spirit of the Wood]}]}) {
 		NOUT ${owarning} ${sep} trying to cast Spirit of the Wood while its running.	
 	}		
@@ -400,26 +394,26 @@ sub synergy_DRU()
 	/doevents
 	
 	| swarm pets
-	/if (${Me.AltAbilityReady[Natures Guardian]}) /call core_cast "Natures Guardian" alt ${Target2Kill}
-	| /if (${Me.AltAbilityReady[Spirits of Nature]}) /call core_cast "Spirits of Nature" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[Natures Guardian]}) /call core_cast "Natures Guardian" alt ${Target2Kill} FALSE
+	| /if (${Me.AltAbilityReady[Spirits of Nature]}) /call core_cast "Spirits of Nature" alt ${Target2Kill} FALSE
 	
 	| defense
-	/if (${Me.AltAbilityReady[Protection of Direwood]}) /call core_cast "Protection of Direwood" alt 0
-	/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0
+	/if (${Me.AltAbilityReady[Protection of Direwood]}) /call core_cast "Protection of Direwood" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0 FALSE
 
 	| damage boost
-	/if (${Me.AltAbilityReady[Distructive Vortex]}) /call core_cast "Distructive Vortex" alt 0
-	/if (${Me.AltAbilityReady[Natures Fury]}) /call core_cast "Natures Fury" alt 0
-	/if (${Me.AltAbilityReady[Group Spirit of the Black Wolf]}) /call core_cast "Group Spirit of the Black Wolf" alt 0
-	/if (${Me.AltAbilityReady[Seasons Wrath]}) /call core_cast "Seasons Wrath" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[Distructive Vortex]}) /call core_cast "Distructive Vortex" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Natures Fury]}) /call core_cast "Natures Fury" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Group Spirit of the Black Wolf]}) /call core_cast "Group Spirit of the Black Wolf" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Seasons Wrath]}) /call core_cast "Seasons Wrath" alt ${Target2Kill} FALSE
 	
 	| heal boost
-	/if (${Me.AltAbilityReady[Nature's Blessing]}) /call core_cast "Nature's Blessing" alt 0
+	/if (${Me.AltAbilityReady[Nature's Blessing]}) /call core_cast "Nature's Blessing" alt 0 FALSE
 
 	/call cast_AA_spire
 	
 	| AA AE heal
-	/if (${useGroupHeal} && ${Me.AltAbilityReady[Nature's Boon]}) /call core_cast "Nature's Boon" alt 0
+	/if (${useGroupHeal} && ${Me.AltAbilityReady[Nature's Boon]}) /call core_cast "Nature's Boon" alt 0 FALSE
 
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn
@@ -436,8 +430,10 @@ sub synergy_DRU()
 #bind setDRU /dru
 sub Bind_setDRU(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setDRU(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[DRU]}) /return
+	/if (!${validate_class[|DRU]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -495,8 +491,6 @@ sub Bind_setDRU(string _classType, string _classVerbage)
 		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_classVerbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
@@ -504,7 +498,10 @@ sub Bind_setDRU(string _classType, string _classVerbage)
 		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
 
 	} else {
-		/call echos listtype ${Me.Class.ShortName.Lower} ${Me.Class.ShortName.Lower} 0 ##
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
-	:exit
 /return

@@ -18,9 +18,7 @@ sub core_RNG()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
-
 	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
 
 	:killtarget
@@ -330,8 +328,10 @@ sub synergy_RNG()
 #bind setRNG /rng
 sub Bind_setRNG(string _classType, string _verbage)
 	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${validate_class[RNG]}) /return
+	/if (!${validate_class[|RNG]}) /return
 
+	/declare _sep bool local
+	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
 
@@ -357,13 +357,11 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
 	| mgb spice
 	} else /if (${Bool[${_classType.Find[spice]}]}) {
@@ -372,7 +370,11 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/call cast_AA_auspice
 
 	} else {
-		/call echos listtype ${_bind} ${_bind}
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return
 

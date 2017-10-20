@@ -47,10 +47,10 @@ sub Event_SetaliasVar(string line, string _varName, string _section, string _val
 sub setTimer(string _name, string _type, string _section, string _value, string _my_timer)
 	| DEBUG setTimer(name:${_name}, type:${_type}, INIsection:${_section}, value:${_value}, Timer_Name:${_my_timer})
 	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]} || !${Bool[${_my_timer}]}) {
-		/if (!${Bool[${_name}]}) OUT ${ocaution} ${sep} BAD variable Name. 
-		/if (!${Bool[${_type}]}) OUT ${ocaution} ${sep} BAD variable Type. 
-		/if (!${Bool[${_section}]}) OUT ${ocaution} ${sep} BAD INI Section.
-		/if (!${Bool[${_my_timer}]}) OUT ${ocaution} ${sep} BAD Timer Name. 
+		/if (!${Bool[${_name}]}) VOUT ${ocaution} ${sep} BAD variable Name. 
+		/if (!${Bool[${_type}]}) VOUT ${ocaution} ${sep} BAD variable Type. 
+		/if (!${Bool[${_section}]}) VOUT ${ocaution} ${sep} BAD INI Section.
+		/if (!${Bool[${_my_timer}]}) VOUT ${ocaution} ${sep} BAD Timer Name. 
 		/return
 	}
 
@@ -95,11 +95,6 @@ sub DeclareIniVar(string _name, string _type, string _section, string _value)
 	}
 /return
 
-
-| usage: /echo ${Me.Subscription} returns a pStringType "UNKNOWN","FREE","SILVER" or "GOLD"
-
-
-${Select[${Me.Subscription}],GOLD}
 
 
 |***
@@ -152,7 +147,7 @@ sub check_zone_INI(string _sender)
 	DEBUG ${cbug}check_zone_INI()\ax 
 	/if (${Bool[${_sender}]} && !${Spawn[pc ${_sender}].ID}) /return
 
-	/declare _count 						int local	
+	/declare _count 						int local	0
 	/declare _listtype 					string local	
 	/declare _list 							string local ${ZoneFileList}
 	/declare _tmpString					string local
@@ -227,9 +222,9 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171016
+	/declare coreBuild	 														int			outer 20171020
 
-	/declare _count 																int 		local
+	/declare _count 																int 		local 0
 	/declare combat																	string	outer
 		
 	/declare isValidTarget													bool		outer FALSE
@@ -265,6 +260,7 @@ sub set_declares()
 	/call DeclareCoreIniVar minMobPullLvl						int			General 1
 	/call DeclareCoreIniVar maxMobPullLvl						int			General 150
 	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
+	/call DeclareCoreIniVar smartasserrors					string	General TRUE
 	/call DeclareIniVar verbose											bool		Common TRUE
 
 		
@@ -321,13 +317,13 @@ sub set_declares()
 	/declare wikipct																string outer [\a-w1,99\ax]
 
  	 	
-	| various lists for .. you know..lists and stuff.
+	| lists for .. you know..lists and stuff.
+	/declare AllClassList														string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
 	/declare MeleeList    		  										string 	outer |WAR|ROG|BST|MNK|SHD|PAL|BER|BRD|RNG
 	/declare CastList																string 	outer |BST|SHD|PAL|RNG|CLR|DRU|SHM|ENC|WIZ|NEC|MAG
-	/declare PetList																string 	outer |ENC|DRU|SHM|SHD|CLR|WIZ|RNG|BRD|BST|MAG
-	/declare HealerList															string 	outer |CLR|DRU|SHM
-	/declare RezerList															string 	outer |CLR|DRU|SHM|PAL
-	/declare AllClassList														string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
+	/declare PetList																string 	outer |ENC|DRU|SHM|SHD|WIZ|BRD|BST|MAG
+	/declare HealerList															string 	outer |CLR|DRU|SHM|PAL
+	/declare RezerList															string 	outer |CLR|DRU|SHM|PAL|NEC
 	/declare AASnareList														string 	outer |RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL
 	/declare AAEradicateList												string 	outer |RNG|DRU|NEC|WIZ|ENC|MAG
 		
@@ -338,7 +334,7 @@ sub set_declares()
 	/call DeclareIniVar relayTells									string	Common FALSE
 	/call DeclareIniVar coreAuto				 						bool	 	Common FALSE
 	/call DeclareCoreIniVar remoteKillKey						string	General "CHANGE ME" 
-	/call DeclareCoreIniVar ${Me.DisplayName}				int			DeathCount 0
+	/call DeclareCoreIniVar ${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}				int			DeathCount 0
 	/call DeclareCoreIniVar invitelist							string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
 	/call DeclareIniVar toonControl			 						string	Common FALSE
@@ -399,7 +395,7 @@ sub set_declares()
 	/call DeclareCoreIniVar emptyHands							bool		Here	TRUE
 	/call DeclareCoreIniVar hereZRadius							int			Here	30
 	
-	/declare bitchcount															int			outer	20	
+	/declare bitchcount															int			outer	22	
 	/declare bitch1																	string	outer	"Seriously... Again..."
 	/declare bitch2																	string	outer	"Did your parents ever ask you to run away from home?"
 	/declare bitch3																	string	outer	"Aha, I see the Fuck-Up Fairy has visited us again!"
@@ -420,7 +416,17 @@ sub set_declares()
 	/declare bitch18																string	outer	"I'll never forget the first time we met. Although, I'll keep trying."
 	/declare bitch19																string	outer	"Roses are red. Violets are blue. You're an idiot."
 	/declare bitch20																string	outer	"Sometimes, when I close my eyes, I... can't see you."
-		
+	/declare bitch21																string 	outer "Shock me. Say something intelligent."
+	/declare bitch22																string 	outer "I'm typing this with my middle finger."
+	/declare bitch23																string 	outer ""
+	/declare bitch24																string 	outer ""
+	/declare bitch25																string 	outer ""
+	/declare bitch26																string 	outer ""
+	/declare bitch27																string 	outer ""
+	/declare bitch28																string 	outer ""
+	/declare bitch29																string 	outer ""
+	/declare bitch30																string 	outer ""
+
 	| hide switches for /hidecorpse command
 	/call DeclareCoreIniVar hideNone								bool		hide FALSE
 	/call DeclareCoreIniVar hideAll									bool		hide FALSE
@@ -564,56 +570,56 @@ sub set_declares()
 	/declare ENCsynergyAA														string	outer Begulier's Synergy
 		
 	| Wizard 
-	/declare WIZspire1															string	outer Fundament: First Spire of the Arcanum
-	/declare WIZspire2															string	outer Fundament: Second Spire of the Arcanum
-	/declare WIZspire3															string	outer Fundament: Third Spire of the Arcanum
+	/declare WIZspire1															string	outer Fundament: First Spire of Arcanum
+	/declare WIZspire2															string	outer Fundament: Second Spire of Arcanum
+	/declare WIZspire3															string	outer Fundament: Third Spire of Arcanum
 	/declare WIZmannaburn														string	outer Manna Burn
 	/declare WIZsynergyAA														string	outer Evoker's Synergy
 
 	| Necromancer
-	/declare NECspire1													string	outer Fundament: First Spire of Necromancy
-	/declare NECspire2													string	outer Fundament: Second Spire of Necromancy
-	/declare NECspire3													string	outer Fundament: Third Spire of Necromancy
-	/declare NECsynergyAA												string	outer Defiler's Synergy
+	/declare NECspire1															string	outer Fundament: First Spire of Necromancy
+	/declare NECspire2															string	outer Fundament: Second Spire of Necromancy
+	/declare NECspire3															string	outer Fundament: Third Spire of Necromancy
+	/declare NECsynergyAA														string	outer Defiler's Synergy
 
 	| Ranger
-	/declare RNGspire1													string	outer Fundament: First Spire of the Pathfinders
-	/declare RNGspire2													string	outer Fundament: Second Spire of the Pathfinders
-	/declare RNGspire3													string	outer Fundament: Third Spire of the Pathfinders
-	/declare RNGauspice													string	outer Auspice of the Hunter
-	/declare RNGcheetah													string	outer Scarlet Cheetah's Fang
-	/declare RNGgroupguardian										string	outer Group Guardian of the Forest
-	/declare RNGsynergyAA												string	outer Outrider's Synergy
+	/declare RNGspire1															string	outer Fundament: First Spire of the Pathfinders
+	/declare RNGspire2															string	outer Fundament: Second Spire of the Pathfinders
+	/declare RNGspire3															string	outer Fundament: Third Spire of the Pathfinders
+	/declare RNGauspice															string	outer Auspice of the Hunter
+	/declare RNGcheetah															string	outer Scarlet Cheetah's Fang
+	/declare RNGgroupguardian												string	outer Group Guardian of the Forest
+	/declare RNGsynergyAA														string	outer Outrider's Synergy
 
 	| Bard
-	/declare BRDspire1													string	outer Fundament: First Spire of the Minstrel
-	/declare BRDspire2													string	outer Fundament: Second Spire of the Minstrel
-	/declare BRDspire3													string	outer Fundament: Third Spire of the Minstrel
-	/declare BRDsynergyAA												string	outer Troubadour's Synergy
+	/declare BRDspire1															string	outer Fundament: First Spire of the Minstrel
+	/declare BRDspire2															string	outer Fundament: Second Spire of the Minstrel
+	/declare BRDspire3															string	outer Fundament: Third Spire of the Minstrel
+	/declare BRDsynergyAA														string	outer Troubadour's Synergy
 
 	| Monk
-	/declare MONspire1													string	outer Fundament: First Spire of the Sensei
-	/declare MONspire2													string	outer Fundament: Second Spire of the Sensei
-	/declare MONspire3													string	outer Fundament: Third Spire of the Sensei
-	/declare MONsynergyAA												string	outer 
+	/declare MONspire1															string	outer Fundament: First Spire of the Sensei
+	/declare MONspire2															string	outer Fundament: Second Spire of the Sensei
+	/declare MONspire3															string	outer Fundament: Third Spire of the Sensei
+	/declare MONsynergyAA														string	outer 
 
 	| Beastlord
-	/declare BSTspire1													string	outer Fundament: First Spire of the Savage Lord
-	/declare BSTspire2													string	outer Fundament: Second Spire of the Savage Lord
-	/declare BSTspire3													string	outer Fundament: Third Spire of the Savage Lord
-	/declare BSTsynergyAA												string	outer Primalist's Synergy
+	/declare BSTspire1															string	outer Fundament: First Spire of the Savage Lord
+	/declare BSTspire2															string	outer Fundament: Second Spire of the Savage Lord
+	/declare BSTspire3															string	outer Fundament: Third Spire of the Savage Lord
+	/declare BSTsynergyAA														string	outer Primalist's Synergy
 
 	| Berzerker
-	/declare BERspire1													string	outer Fundament: First Spire of Savagery
-	/declare BERspire2													string	outer Fundament: Second Spire of Savagery
-	/declare BERspire3													string	outer Fundament: Third Spire of Savagery
-	/declare BERsynergyAA												string	outer Fury's Synergy
+	/declare BERspire1															string	outer Fundament: First Spire of Savagery
+	/declare BERspire2															string	outer Fundament: Second Spire of Savagery
+	/declare BERspire3															string	outer Fundament: Third Spire of Savagery
+	/declare BERsynergyAA														string	outer Fury's Synergy
 
 	| Rogue
-	/declare ROGspire1													string	outer Fundament: First Spire of the Rake
-	/declare ROGspire2													string	outer Fundament: Second Spire of the Rake
-	/declare ROGspire3													string	outer Fundament: Third Spire of the Rake
-	/declare ROGsynergyAA												string	outer Blackguard's Synergy
+	/declare ROGspire1															string	outer Fundament: First Spire of the Rake
+	/declare ROGspire2															string	outer Fundament: Second Spire of the Rake
+	/declare ROGspire3															string	outer Fundament: Third Spire of the Rake
+	/declare ROGsynergyAA														string	outer Blackguard's Synergy
 
 
 	| combat controls
@@ -635,10 +641,10 @@ sub set_declares()
 		
 			
 	| rez	control
-  /declare 		rezType													string	outer |stop|combat|emergency|everyone|give|pct|range|take
-  /declare 		rezPct													string	outer |10|20|35|50|60|75|90|93|96
-	/declare 		flagCallNeedRez									bool		outer FALSE
-	/declare		switchRez												bool		outer FALSE
+  /declare rezType																string	outer |stop|combat|emergency|everyone|give|pct|range|take
+  /declare rezPct																	string	outer |10|20|35|50|60|75|90|93|96
+	/declare flagCallNeedRez												bool		outer FALSE
+	/declare switchRez															bool		outer FALSE
 	/call DeclareIniVar switchRezTake 							bool 		Heal TRUE 
 	/call DeclareIniVar switchRezEmergency					bool		Heal FALSE
 	/call DeclareIniVar minRezPct										int			Common 90
@@ -729,9 +735,9 @@ sub set_declares()
 
 
 	| overrides
-  /declare overrideType												string	outer |stop|safezone|los|exclude|name|engageat|loot|safelist
-	/declare switchOverride											bool		outer FALSE
-	/declare switchOverrideStop									bool		outer FALSE
+  /declare overrideType														string	outer |stop|safezone|los|exclude|name|engageat|loot|safelist
+	/declare switchOverride													bool		outer FALSE
+	/declare switchOverrideStop											bool		outer FALSE
   /call DeclareIniVar switchOverrideLos						bool		Override FALSE
   | /call DeclareIniVar switchOverridePve					bool		Override FALSE
   /call DeclareIniVar switchOverrideSafezone			bool		Override FALSE
@@ -751,7 +757,7 @@ sub set_declares()
 		/call DeclareIniVar frenzy										bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},ROG]}) {
-		/declare flagSoS													bool	outer FALSE
+		/declare flagSoS															bool		outer FALSE
 		/call DeclareIniVar backstab									bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
@@ -773,14 +779,13 @@ sub set_declares()
 	/call DeclareIniVar clickDrinkItem							string 	Meal FALSE
 	/call DeclareIniVar clickDrinkCount							int		 	Meal 0
 	/call DeclareIniVar tClick_FoodDrink						string	Timer 10m
-		/call create_timer timer_click_food ${tClick_FoodDrink}
-		/call create_timer timer_click_drink ${tClick_FoodDrink}
+	/call create_timer timer_click_food ${tClick_FoodDrink}
+	/call create_timer timer_click_drink ${tClick_FoodDrink}
 
 
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) {
 
 		/call DeclareIniVar PetTank 									bool 		Pet FALSE
-		| /call DeclareIniVar PetTypeSpell 							string 	Pet FALSE
 		/call DeclareIniVar useSummonWeps 						bool 		Pet TRUE
 		/call DeclareIniVar EpicClick 								string 	Pet FALSE
 		/call DeclareIniVar EpicPetBuff 							string 	Pet FALSE
@@ -1107,51 +1112,51 @@ sub declare_WIZ()
 	/call DeclareIniVar switchManaBurn		 					bool		Spells TRUE
 	
 	
-	/declare fay 																string	outer "Translocate: Fay"
-	/declare dragonscale 												string	outer "Translocate: Dragonscale Hills"
-	/declare northkarana 												string	outer "Translocate: North"
-	/declare commonlands 												string	outer "Translocate: Common"
-	/declare nektulos 													string	outer "Translocate: Nek"
-	/declare qeyenos 														string	outer "Translocate: West"
-	/declare northro 														string	outer "Translocate: Ro"
-	/declare cazic 															string	outer "Translocate: Cazic"
-	/declare undershore 												string	outer "Translocate: Undershore"
-	/declare westkarana 												string	outer "Translocate: West Karana"
-	/declare bloodfields 												string	outer "Translocate: Bloodfields"
-	/declare wallofslaughter 										string	outer "Translocate: Slaughter"
-	/declare shardslanding 											string	outer "Translocate: Shard's Landing"
-	/declare pillars 														string	outer "Translocate Pillars of Alra"
-	/declare sarith 														string	outer "Translocate Sarith"
-	/declare dreadlands 												string	outer "Translocate: Combine"
-	/declare lceanium														string	outer "Translocate: Lceanium"
-	/declare dawnshroud 												string	outer "Translocate: Dawnshroud"
-	/declare twilight 													string	outer "Translocate: Twilight"
-	/declare grimling 													string	outer "Translocate: Grimling"
-	/declare nexus 															string	outer "Translocate: Nexus"
-	/declare bind 															string	outer "Translocate"
-	/declare primary 														string	outer "Translocate: Primary Anchor"
-	/declare secondary 													string	outer "Translocate: Secondary Anchor"
-	/declare pushprimary 												string	outer "Primary Anchor Push"
-	/declare pushsecondary 											string	outer "Secondary Anchor Push"
-	/declare tempesttemple 											string	outer "Translocate: Tempest Temple"
-	/declare katta															string	outer "Translocate: Katta Castrum"
-	/declare tox 																string	outer "Translocate: Tox"
-	/declare stonebrunt 												string	outer "Translocate: Stonebrunt"
-	/declare icefall 														string	outer "Translocate: Icefall Glacier"
-	/declare sunderock 													string	outer "Translocate: Sunderock Springs"
-	/declare blightfire 												string	outer "Translocate: Blightfire Moors"
-	/declare Barnidu 														string	outer "Translocate: Barindu"
-	/declare Natimbi 														string	outer "Translocate: Natimbi"
-	/declare grounds 														string	outer "Translocate: the Grounds"
-	/declare potime 														string	outer "Translocate: Plane of Time"
-	/declare brells 														string	outer "Translocate: Brell's Rest"
-	/declare Arcstone 													string	outer "Translocate: Arcstone"
-	/declare pok 																string	outer "Translocate: Knowledge"
-	/declare cobaltscar 												string	outer "Translocate: Cobalt Scar"
-	/declare wakening 													string	outer "Translocate: Wakening Lands"
-	/declare greatdivide 												string	outer "Translocate: Great Divide"
-	/declare iceclad 														string	outer "Translocate: Iceclad"		
-	
+	/declare fay 																		string	outer "Translocate: Fay"
+	/declare dragonscale 														string	outer "Translocate: Dragonscale Hills"
+	/declare northkarana 														string	outer "Translocate: North"
+	/declare commonlands 														string	outer "Translocate: Common"
+	/declare nektulos 															string	outer "Translocate: Nek"
+	/declare qeyenos 																string	outer "Translocate: West"
+	/declare northro 																string	outer "Translocate: Ro"
+	/declare cazic 																	string	outer "Translocate: Cazic"
+	/declare undershore 														string	outer "Translocate: Undershore"
+	/declare westkarana 														string	outer "Translocate: West Karana"
+	/declare bloodfields 														string	outer "Translocate: Bloodfields"
+	/declare wallofslaughter 												string	outer "Translocate: Slaughter"
+	/declare shardslanding 													string	outer "Translocate: Shard's Landing"
+	/declare pillars 																string	outer "Translocate Pillars of Alra"
+	/declare sarith 																string	outer "Translocate Sarith"
+	/declare dreadlands 														string	outer "Translocate: Combine"
+	/declare lceanium																string	outer "Translocate: Lceanium"
+	/declare dawnshroud 														string	outer "Translocate: Dawnshroud"
+	/declare twilight 															string	outer "Translocate: Twilight"
+	/declare grimling 															string	outer "Translocate: Grimling"
+	/declare nexus 																	string	outer "Translocate: Nexus"
+	/declare bind 																	string	outer "Translocate"
+	/declare primary 																string	outer "Translocate: Primary Anchor"
+	/declare secondary 															string	outer "Translocate: Secondary Anchor"
+	/declare pushprimary 														string	outer "Primary Anchor Push"
+	/declare pushsecondary 													string	outer "Secondary Anchor Push"
+	/declare tempesttemple 													string	outer "Translocate: Tempest Temple"
+	/declare katta																	string	outer "Translocate: Katta Castrum"
+	/declare tox 																		string	outer "Translocate: Tox"
+	/declare stonebrunt 														string	outer "Translocate: Stonebrunt"
+	/declare icefall 																string	outer "Translocate: Icefall Glacier"
+	/declare sunderock 															string	outer "Translocate: Sunderock Springs"
+	/declare blightfire 														string	outer "Translocate: Blightfire Moors"
+	/declare Barnidu 																string	outer "Translocate: Barindu"
+	/declare Natimbi 																string	outer "Translocate: Natimbi"
+	/declare grounds 																string	outer "Translocate: the Grounds"
+	/declare potime 																string	outer "Translocate: Plane of Time"
+	/declare brells 																string	outer "Translocate: Brell's Rest"
+	/declare Arcstone 															string	outer "Translocate: Arcstone"
+	/declare pok 																		string	outer "Translocate: Knowledge"
+	/declare cobaltscar 														string	outer "Translocate: Cobalt Scar"
+	/declare wakening 															string	outer "Translocate: Wakening Lands"
+	/declare greatdivide 														string	outer "Translocate: Great Divide"
+	/declare iceclad 																string	outer "Translocate: Iceclad"		
+		
 	/call DeclareIniVar runeMagiWard	 							string	Rune "Doomscale Husk"
 	/call DeclareIniVar runeShieldofFate						string	Rune "Shield of Consequence"
 	/call DeclareIniVar runeCrystalwing							string	Rune "Armor of the Codex"
@@ -1167,8 +1172,8 @@ sub declare_WIZ()
  *  NOTE: 
  ***|
 sub declare_ENC()
-	/declare mobList														string	outer
-	/declare addList 														string 	outer
+	/declare mobList																string	outer
+	/declare addList 																string 	outer
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer |5|8|12|17|18|42|44|80|106|129|144
 
 	/call DeclareIniVar switchGather			 					bool		Spells TRUE
@@ -1349,12 +1354,12 @@ sub declare_PAL()
 	/call setTimer tcheck_Steel											string 	Timer 2m timer_check_Steel
 	/call setTimer tcheck_Stance										string 	Timer 7.5m timer_check_stance
 
-	/declare mobAECount													int			outer 0 
-	/declare groupHurt 													int 		outer 0
-	/declare WorstHurt 													string 	outer FALSE
+	/declare mobAECount															int			outer 0 
+	/declare groupHurt 															int 		outer 0
+	/declare WorstHurt 															string 	outer FALSE
 	| /declare WorstHurtID 										int 		outer
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer FALSE
+	/declare WorstHP 																int 		outer 100
+	/declare WorstClass 														string 	outer FALSE
 	| /declare MinorHurt											int    	outer 0 
 	
   /call DeclareIniVar healWholeGroup							string 	Heal "Wave of Grief"
@@ -1511,13 +1516,13 @@ sub declare_BER()
  	/call DeclareIniVar DiscDisconcert							string 	Discs "Disconcerting Discipline"
  	/call DeclareIniVar DiscEnduranceTap						string 	Discs "Sapping Strikes"
 
-	/declare OpenWoundEffect										string 	outer Open Wound
+	/declare OpenWoundEffect												string 	outer Open Wound
   /if (${OpenWoundDisc.Find[rk. III]}) {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-6]} effect II
   }
-	/declare AugmentedFrenzyEffect 							string outer Augmented Frenzy Effect
+	/declare AugmentedFrenzyEffect 									string outer Augmented Frenzy Effect
   /if (${AugmentedFrenzyDisc.Find[rk. III]}) {
 		/varset AugmentedFrenzyEffect ${AugmentedFrenzyDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
@@ -1608,18 +1613,18 @@ sub declare_DRU()
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	
-	/declare MajorHurt 													int 		outer 0
-	/declare WorstHurt 													string 	outer FALSE
-	/declare WorstHurtID 												int 		outer
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer FALSE
-  /declare MinorHurt													int    	outer 0 
-  /declare WorstHp 														int    	outer 100
-  /declare pWorstHurt 												string 	outer ${Me.DisplayName}
-  /declare pWorstHP														int			outer 100
-  /declare pWorstHurtID												int 		outer ${Me.ID}
-  /declare pWorstClass												string	outer FALSE
-  /declare pMajorHurt													int			outer 0
+	/declare MajorHurt 															int 		outer 0
+	/declare WorstHurt 															string 	outer FALSE
+	/declare WorstHurtID 														int 		outer
+	/declare WorstHP 																int 		outer 100
+	/declare WorstClass 														string 	outer FALSE
+  /declare MinorHurt															int    	outer 0 
+  /declare WorstHp 																int    	outer 100
+  /declare pWorstHurt 														string 	outer ${Me.DisplayName}
+  /declare pWorstHP																int			outer 100
+  /declare pWorstHurtID														int 		outer ${Me.ID}
+  /declare pWorstClass														string	outer FALSE
+  /declare pMajorHurt															int			outer 0
 	
 	/call DeclareIniVar RandRezDelay								int 		Heal 10
 	/call DeclareIniVar ProtectOutsideGroup					string	Heal |FALSE|FALSE
@@ -1635,51 +1640,51 @@ sub declare_DRU()
 	/call DeclareIniVar XTHealRadius								int			Heal 300
 	
 	| ports	
-	/declare looping														string	outer "Zephyr: Looping Planes"
-	/declare steamfront													string	outer "Zephyr: Steamfront"
-	/declare butcherblock												string	outer "Zephyr: Butcherblock"
-	/declare shardslanding											string	outer "Zephyr: Shard's Landing"
-	/declare pillars														string	outer "Zephyr: Pillars of Alra"
-	/declare beast															string	outer "Zephyr: Beasts' Domain"
-	/declare westkarna													string	outer "Zephyr: West Karana"
-	/declare lavastorm													string	outer "Zephyr: Lavastorm"
-	/declare undershore													string	outer "Zephyr: Undershore"
-	/declare misty															string	outer "Zephyr: Misty"
-	/declare ro																	string	outer "Zephyr: Ro"
-	/declare feerrott														string	outer "Zephyr: Feerrott"
-	/declare commonlands												string	outer "Zephyr: Commonlands"
-	/declare surefall														string	outer "Zephyr: Surefall Glade"
-	/declare karana															string	outer "Zephyr: Karana"
-	/declare wallofslaughter 										string	outer "Zephyr: Slaughter"
-	/declare bloodfields 												string	outer "Zephyr: Bloodfields"
-	/declare lceanium														string	outer "Zephyr: Lceanium"
-	/declare dreadlands													string	outer "Zephyr: Combines"
-	/declare dawnshroud													string	outer "Zephyr: Dawnshroud"
-	/declare twilight														string	outer "Zephyr: Twilight"
-	/declare grimling														string	outer "Zephyr: Grimling"
-	/declare nexus															string	outer "Zephyr: Nexus"
-	/declare primarypush												string	outer "Primary Anchor Push"
-	/declare secondarypush											string	outer "Secondary Anchor Push"
-	/declare primary														string	outer "Zephyr: Primary Anchor"
-	/declare secondary													string	outer "Zephyr: Secondary Anchor"
-	/declare tempesttemple											string	outer "Zephyr: Tempest Temple"
-	/declare buriedsea													string	outer "Zephyr: Buried Sea"
-	/declare stonebrunt													string	outer "Zephyr: Stonebrunt"
-	/declare tox																string	outer "Zephyr: Toxxulia"
-	/declare direwind														string	outer "Zephyr: Direwind"
-	/declare steppes														string	outer "Zephyr: Steppes"
-	/declare blightfire													string	outer "Zephyr: Blightfire Moors"
-	/declare barindu														string	outer "Zephyr: Barindu"
-	/declare natimbi														string	outer "Zephyr: Natimbi"
-	/declare grounds														string	outer "Zephyr: the Grounds"
-	/declare potime															string	outer "Zephyr: Plane of Time"
-	/declare brells															string	outer "Zephyr: Brell's Rest"
-	/declare arcstone														string	outer "Zephyr: Arcstone"
-	/declare knowledge													string	outer "Zephyr: Knowledge"
-	/declare cobaltscar													string	outer "Zephyr: Cobalt Scar"
-	/declare wakening														string	outer "Zephyr: Wakening Land"
-	/declare greatdivide												string	outer "Zephyr: Great Divide"
-	/declare iceclad														string	outer "Zephyr: Iceclad"	
+	/declare looping																string	outer "Zephyr: Looping Planes"
+	/declare steamfront															string	outer "Zephyr: Steamfront"
+	/declare butcherblock														string	outer "Zephyr: Butcherblock"
+	/declare shardslanding													string	outer "Zephyr: Shard's Landing"
+	/declare pillars																string	outer "Zephyr: Pillars of Alra"
+	/declare beast																	string	outer "Zephyr: Beasts' Domain"
+	/declare westkarna															string	outer "Zephyr: West Karana"
+	/declare lavastorm															string	outer "Zephyr: Lavastorm"
+	/declare undershore															string	outer "Zephyr: Undershore"
+	/declare misty																	string	outer "Zephyr: Misty"
+	/declare ro																			string	outer "Zephyr: Ro"
+	/declare feerrott																string	outer "Zephyr: Feerrott"
+	/declare commonlands														string	outer "Zephyr: Commonlands"
+	/declare surefall																string	outer "Zephyr: Surefall Glade"
+	/declare karana																	string	outer "Zephyr: Karana"
+	/declare wallofslaughter 												string	outer "Zephyr: Slaughter"
+	/declare bloodfields 														string	outer "Zephyr: Bloodfields"
+	/declare lceanium																string	outer "Zephyr: Lceanium"
+	/declare dreadlands															string	outer "Zephyr: Combines"
+	/declare dawnshroud															string	outer "Zephyr: Dawnshroud"
+	/declare twilight																string	outer "Zephyr: Twilight"
+	/declare grimling																string	outer "Zephyr: Grimling"
+	/declare nexus																	string	outer "Zephyr: Nexus"
+	/declare primarypush														string	outer "Primary Anchor Push"
+	/declare secondarypush													string	outer "Secondary Anchor Push"
+	/declare primary																string	outer "Zephyr: Primary Anchor"
+	/declare secondary															string	outer "Zephyr: Secondary Anchor"
+	/declare tempesttemple													string	outer "Zephyr: Tempest Temple"
+	/declare buriedsea															string	outer "Zephyr: Buried Sea"
+	/declare stonebrunt															string	outer "Zephyr: Stonebrunt"
+	/declare tox																		string	outer "Zephyr: Toxxulia"
+	/declare direwind																string	outer "Zephyr: Direwind"
+	/declare steppes																string	outer "Zephyr: Steppes"
+	/declare blightfire															string	outer "Zephyr: Blightfire Moors"
+	/declare barindu																string	outer "Zephyr: Barindu"
+	/declare natimbi																string	outer "Zephyr: Natimbi"
+	/declare grounds																string	outer "Zephyr: the Grounds"
+	/declare potime																	string	outer "Zephyr: Plane of Time"
+	/declare brells																	string	outer "Zephyr: Brell's Rest"
+	/declare arcstone																string	outer "Zephyr: Arcstone"
+	/declare knowledge															string	outer "Zephyr: Knowledge"
+	/declare cobaltscar															string	outer "Zephyr: Cobalt Scar"
+	/declare wakening																string	outer "Zephyr: Wakening Land"
+	/declare greatdivide														string	outer "Zephyr: Great Divide"
+	/declare iceclad																string	outer "Zephyr: Iceclad"	
 /return	
 
 
@@ -1691,13 +1696,13 @@ sub declare_DRU()
  *  NOTE: 
  ***|
 sub declare_SHM()
-	/declare MajorHurt 													int 		outer 0
-	/declare WorstHurt 													string 	outer FALSE
-	/declare WorstHurtID 												int 		outer ${Me.ID}
-	/declare WorstHP 														int 		outer 100
-	/declare WorstClass 												string 	outer FALSE
-  /declare MinorHurt													int    	outer 0 
-  /declare WorstHp		 												int    	outer 100	
+	/declare MajorHurt 															int 		outer 0
+	/declare WorstHurt 															string 	outer FALSE
+	/declare WorstHurtID 														int 		outer ${Me.ID}
+	/declare WorstHP 																int 		outer 100
+	/declare WorstClass 														string 	outer FALSE
+  /declare MinorHurt															int    	outer 0 
+  /declare WorstHp		 														int    	outer 100	
   
 	/call DeclareIniVar AidTXT 											string 	Spells "ANCESTRAL AID Done (Str/Agi/Dex +300, HoT Heal +1840)"
 	/call DeclareIniVar MaloSpell 									string 	Spells "Malosinete"
@@ -1742,7 +1747,7 @@ sub declare_SHM()
 	/call DeclareIniVar ProtectNPCList							string	Heal |FALSE|FALSE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
 
-	/declare HealList 													string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
+	/declare HealList 															string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
 /return	
 
 
@@ -1754,8 +1759,8 @@ sub declare_SHM()
  *  NOTE: 
  ***|
 sub declare_BRD()
-	/declare mobList														string 	outer
-	/declare addList 														string 	outer
+	/declare mobList																string 	outer
+	/declare addList 																string 	outer
 		
 	/call DeclareIniVar ServantNukeAA1 							string 	Pet "Lyrical Prankster"
 	/call DeclareIniVar ServantNukeAA2 							string 	Pet "Song of Stone"
@@ -1994,7 +1999,7 @@ sub declare_CLR()
  *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry it's slow as fuck.
  ***|
 sub whitewash()
-	OUT ${owarning} ${sep} Deleting all Core ${cinfo}${versionCore}\ax aliases. ${cbad}Please Wait\ax
+	VOUT ${owarning} ${sep} Deleting all Core ${cinfo}${versionCore}\ax aliases. ${cbad}Please Wait\ax
 	/declare _count 				int local
 	/declare _todelete[11] 	string local
 	/declare _index 				int local
@@ -2041,7 +2046,7 @@ sub whitewash()
 		DEBUG _count: ${_count}-${_todelete.Size}
 		/for _index 1 to ${_todelete[${_count}].Count[|]}
 			DEBUG _index: ${_count}-${_todelete.Size}: ${_index} ${_todelete[${_count}].Arg[${_index},|]}
-			OUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
+			VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
 			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
 			/varcalc _increment ${_increment}+1
 		/next _index	
@@ -2068,15 +2073,15 @@ sub set_alias()
 	/if (!${Bool[${Alias[/stack]}]}) 					/squelch /alias /stack 											/bcaa //invis
 	/if (!${Bool[${Alias[/here]}]}) 					/squelch /alias /here 											/bca //setcombathere
 	
-  /if (!${Bool[${Alias[/sendpets]}]}) 			/squelch /alias /sendpets										OUT SendPets: 
+  /if (!${Bool[${Alias[/sendpets]}]}) 			/squelch /alias /sendpets										VOUT SendPets: 
 	/if (!${Bool[${Alias[/killmob]}]}) 				/squelch /alias /killmob 										/bc killmob
 	/if (!${Bool[${Alias[/mirror]}]}) 				/squelch /alias /mirror 										/bc mirror
 	/if (!${Bool[${Alias[/stein]}]}) 					/squelch /alias /stein 											/bc stein
   /if (!${Bool[${Alias[/stop]}]}) 					/squelch /alias /stop 											/bc stop
-	/if (!${Bool[${Alias[/blurb]}]}) 					/squelch /alias /blurb 											OUT Blurb: 
- 	/if (!${Bool[${Alias[/clean]}]}) 					/squelch /alias /clean 											OUT Clean this mess up.
+	/if (!${Bool[${Alias[/blurb]}]}) 					/squelch /alias /blurb 											VOUT Blurb: 
+ 	/if (!${Bool[${Alias[/clean]}]}) 					/squelch /alias /clean 											VOUT Clean this mess up.
   /if (!${Bool[${Alias[/bcsay]}]}) 					/squelch /alias /bcsay 											/bc bcsay
-  /if (!${Bool[${Alias[/echoaugments]}]}) 	/squelch /alias /echoaugments								OUT Echo Augment file!
+  /if (!${Bool[${Alias[/echoaugments]}]}) 	/squelch /alias /echoaugments								VOUT Echo Augment file!
   /if (!${Bool[${Alias[/autologin]}]}) 			/squelch /alias /autologin									/plugin mq2autologin unload
 
 	| quick cleric cure commands
@@ -2090,7 +2095,7 @@ sub set_alias()
 	/if (!${Bool[${Alias[/off]}]}) 						/noparse /squelch /alias /off						    /bca //core auto off
 	/if (!${Bool[${Alias[/zonereset]}]}) 			/noparse /squelch /alias /zonereset			    /bc zonereset
 
-	/if (!${Bool[${Alias[/givecoin]}]}) 			/noparse /squelch /alias /givecoin			    OUT Bribe Time:
+	/if (!${Bool[${Alias[/givecoin]}]}) 			/noparse /squelch /alias /givecoin			    VOUT Bribe Time:
 
 	/if (!${Bool[${Alias[/oneoff]}]}) 				/noparse /squelch /alias /oneoff   					/bc oneoff
 
@@ -2104,7 +2109,7 @@ sub Event_Join(string line, string _sender, string _groupraid)
 	DEBUG ${cbug}Event_Join(\ax${_sender} ${_groupraid}\ax${cbug})\ax
 	/if (!${switchInvites}) /return
 	CHECKSAFELIST
-	OUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
+	VOUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
 	/if (${_groupraid.Equal[group]}) /invite
 	/if (${_groupraid.Equal[raid]}) {
 		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["join a raid"]}) {
@@ -2133,11 +2138,11 @@ sub Event_EQBC(string line, string _sender, string _cmd)
   	/varset switchOverrideEngageat ${If[${switchOverrideEngageat},FALSE,TRUE]}
 		/call echos override "Engageat" switchOverrideEngageat
   }
-  /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item 0
-  /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0
+  /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item 0 FALSE
+  /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0 FALSE
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
 
-  /if (${_cmd.Equal[lesson]} && ${Me.AltAbilityReady[Lesson of the Devoted]}) /call core_cast "Lesson of the Devoted" alt 0
+  /if (${_cmd.Equal[lesson]} && ${Me.AltAbilityReady[Lesson of the Devoted]}) /call core_cast "Lesson of the Devoted" alt 0 FALSE
   
 	| commands to control all assist targets.  
   /if (${_cmd.Equal[sma1]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
@@ -2218,7 +2223,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	/if (${_cmd.Equal[campfire]} && ${Me.ItemReady[Fellowship Registration Insignia]}) {
 		/if (${Me.Invis}) /makemevisible
 		/delay 1s !${Me.Invis}
-		/call core_cast  "Fellowship Registration Insignia" item 0
+		/call core_cast  "Fellowship Registration Insignia" item 0 FALSE
 	}
 
 	|***
@@ -2238,13 +2243,13 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
 		| radient Cure
 		/if (${_cmd.Equal[rc]} &&  ${Me.AltAbilityReady[Radiant Cure]}) {
-			/call core_cast "Radiant Cure" alt 0
+			/call core_cast "Radiant Cure" alt 0 FALSE
 			ECHOCHANNEL Radient Cure
 		}
 		
 		| Purify Spirits
 		/if (${_cmd.Equal[purify]} &&  && ${Me.AltAbilityReady[Purified Spirits]}) {
-			/call core_cast "Purified Spirits" alt ${Spawn[pc ${_sender}].ID}
+			/call core_cast "Purified Spirits" alt ${Spawn[pc ${_sender}].ID} FALSE
 			ECHOCHANNEL Purified Spirits: ${Spawn[pc ${_sender}].Name}
 		}
 		/return
@@ -2288,7 +2293,7 @@ sub Event_EQBC_say(string line, string _sender, string _verbage)
 sub Event_camping(string line)
 	DEBUG ${cbug}Event_camping()\ax
 	/call clear_combat
-	OUT Core Build ${cinfo}${coreBuild}\ax ${sep} ${cbad}STOPPED\ax for camp.
+	VOUT Core Build ${cinfo}${coreBuild}\ax ${sep} ${cbad}STOPPED\ax for camp.
 	/endm
 	/squelch /makecamp off
 	/squelch /moveto pause
@@ -2297,7 +2302,7 @@ sub Event_camping(string line)
 
 #event skillup "#*#You have become better at #1#! (#2#)"
 sub Event_skillup(string line, string skillname, int skillup)
-   OUT [${cinfo}${skillname}\ax] has increased to (${cinfo}${skillup}\ax)! [Max:${cinfo} ${Skill[${skillname}].SkillCap}\ax]
+   VOUT [${cinfo}${skillname}\ax] has increased to (${cinfo}${skillup}\ax)! [Max:${cinfo} ${Skill[${skillname}].SkillCap}\ax]
 /return
 
 #event task_update "Your task '#1#' has been updated."
@@ -2327,17 +2332,17 @@ sub Event_noRaid()
 sub Event_raidinvite(string line, string _sender)
 	/if (${switchRaidInvite}) {
 		/if (${Bool[${Raid.Member[${_sender}]}]}) {
-			OUT ${cpc}${_sender}\ax is already in the raid.
+			VOUT ${cpc}${_sender}\ax is already in the raid.
 			/return
 		}
 		/if (${invitelist.Find[${_sender}]}) {
-			OUT ${cbad}NO\ax invites for ${cpc}${_sender}\ax.
+			VOUT ${cbad}NO\ax invites for ${cpc}${_sender}\ax.
 			/return
 		}
 		/declare _timeDelay ${Math.Calc[${Math.Rand[40]}+20]}
 		/varset _timeDelay ${Int[${_timeDelay}]}
 		/delay 1m !${Raid.Locked}
-		OUT Delay: ${cbug}${_timeDelay}\ax \ag- \ax ${cpc}${_sender}\ax requested a raid invite. [Raid: ${If[${Raid.Locked},${cbad}LOCKED\ax,${cgood}UNLOCKED\ax]}]
+		VOUT Delay: ${cbug}${_timeDelay}\ax \ag- \ax ${cpc}${_sender}\ax requested a raid invite. [Raid: ${If[${Raid.Locked},${cbad}LOCKED\ax,${cgood}UNLOCKED\ax]}]
 		/delay 1m !${Raid.Locked}
 		/delay ${_timeDelay}
 		/raidinvite ${_sender}
@@ -2366,7 +2371,7 @@ sub Event_Blurb(string line, string exp, string event)
 		/return
 	}
 	/if (${explist.Find[${exp}]} && ${event.Equal[LIST]}) {
-		OUT ${Ini[${INIBlurb},${exp.Upper}]}		
+		VOUT ${Ini[${INIBlurb},${exp.Upper}]}		
 	}
 	/if (${explist.Find[${exp}]} && ${Bool[${event}]}) {
 		/varset eventlist ${Ini[${INIBlurb},${exp.Upper}]}
@@ -2440,7 +2445,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 	} else /if (${_coin.Equal[copper]}) {
 		/varset _coinID 3
 	} else /if (${_coinID} == 99) {
-		OUT ${ocaution} ${sep} Invalid coin type. Try again.
+		VOUT ${ocaution} ${sep} Invalid coin type. Try again.
 		/return
 	}
 
@@ -2450,7 +2455,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 	/declare _countloop 	int local 1
 
 	:loopgivemorecash
-		OUT Giving ${_coin} stack ${sep} ${_countloop} of ${_stacks}
+		VOUT Giving ${_coin} stack ${sep} ${_countloop} of ${_stacks}
 		/if (!${Window[InventoryWindow].Open}) /return
 		/if (!${Target.ID} || ${Taret.ID} == (${Me.ID} || ${Pet.ID})) /return
 		/delay 2s
@@ -2470,7 +2475,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 		/varset _countloop ${Math.Calc[${_countloop}+1]}
 		/if (${_countloop} < ${_amount}) /goto :loopgivemorecash
 
-	OUT ${onotice} ${sep} Done giving cash for bribes.	How the mighty have fallen.
+	VOUT ${onotice} ${sep} Done giving cash for bribes.	How the mighty have fallen.
 /return 
  
  
@@ -2519,7 +2524,7 @@ sub Event_Talk(string line, string _sender, string _chatText)
   /if (${Bool[${remoteKillKey}]} && ${_chatText.Equal[${remoteKillKey}]}) {
   	/call set_stop FALSE
   	/call clear_combat
-  	OUT ${owarning} ${sep} Recieved tell from ${cpc}${_sender}\ax to end current macro.
+  	VOUT ${owarning} ${sep} Recieved tell from ${cpc}${_sender}\ax to end current macro.
   	/endm
   }
   
@@ -2552,13 +2557,6 @@ sub Bind_setCombatHere()
 
 
 
-
-
-
-
-
-
-
 |***
  *	DES: 
  *	USE: NA
@@ -2581,7 +2579,7 @@ sub Event_CantLoot
  ***| 	
 #event NullSlot "#*#Invalid item slot 'null#*#"
 sub Event_NullSlot
-	OUT ${owarning} ${sep} Opening all bags to correct null slot
+	VOUT ${owarning} ${sep} Opening all bags to correct null slot
 	/keypress OPEN_INV_BAGS
 	/timed 10 /keypress CLOSE_INV_BAGS
 /return
@@ -2619,9 +2617,9 @@ sub Event_Zone()
 sub Event_buystuff(string line, string _itemtoBuy, int _buyAmount)
 	DEBUG (string:${_itemtoBuy}, int:${_buyAmount})
 	/if (${_itemtoBuy.Equal[NULL]}) {
-		OUT Need an item to buy, in single qoutes.
+		VOUT Need an item to buy, in single qoutes.
 	} else /if (${_buyAmount} < 1) {
-		OUT Need a valid quantity. 
+		VOUT Need a valid quantity. 
 	} else {
 		/call vendor_buy "${_itemtoBuy}" ${_buyAmount}
 	}
@@ -2729,7 +2727,7 @@ sub Bind_smartMA(string _assist)
 		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 		/xtarget set 1 Raidassist1target
-		OUT Setting Assist ${sep} ${cinfo}Raid 1\ax
+		VOUT Setting Assist ${sep} ${cinfo}Raid 1\ax
 
 	| Raid Assist 2
 	} else /if ((${_assist.Equal[2]} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
@@ -2738,7 +2736,7 @@ sub Bind_smartMA(string _assist)
 		/if (!${useSmartAssist2}) /call writeINI useSmartAssist2 Common TRUE
 		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 		/xtarget set 1 Raidassist1target
-		OUT Setting Assist ${sep} ${cinfo}Raid 2\ax
+		VOUT Setting Assist ${sep} ${cinfo}Raid 2\ax
 
 	| NO Assist
 	} else /if ((${_assist.Equal[X]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${Select[${Me.Class.ShortName},CLR]} || ${switchPull}) {
@@ -2746,10 +2744,10 @@ sub Bind_smartMA(string _assist)
  		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
 		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
-		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+		| /if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		| /if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
 		/xtarget set 1 Autohater
-		OUT Setting Assist ${sep} ${odisabled}\ax
+		VOUT Setting Assist ${sep} ${odisabled}\ax
 
 	| Goup Main Assist
 	} else /if ((${_assist.Equal[G]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
@@ -2758,7 +2756,7 @@ sub Bind_smartMA(string _assist)
 		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 		/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
 		/xtarget set 1 Groupassisttarget
-		OUT Setting Assist ${sep} ${cinfo}Group\ax
+		VOUT Setting Assist ${sep} ${cinfo}Group\ax
 	}
 /return
 
@@ -2796,7 +2794,7 @@ sub Bind_click_primary_anchor()
 	/if (${Me.ItemReady[Primary Anchor Transport Device]}) {
 		/if (${Me.Invis}) /makemevisible
 		/if (${Me.Casting.ID}) /stopcast
-		/call core_cast "Primary Anchor Transport Device" item 0
+		/call core_cast "Primary Anchor Transport Device" item 0 FALSE
 	}
 /return
 
@@ -2813,7 +2811,7 @@ sub Bind_click_secondary_anchor()
 	/if (${Me.ItemReady[Secondary Anchor Transport Device]}) {
 		/if (${Me.Invis}) /makemevisible
 		/if (${Me.Casting.ID}) /stopcast
-		/call core_cast "Secondary Anchor Transport Device" item 0
+		/call core_cast "Secondary Anchor Transport Device" item 0 FALSE
 	}
 /return
 
@@ -2832,8 +2830,8 @@ sub Bind_watchspawn(string _spawn)
 	} else /if (!${Bool[${_spawn}]} && ${Target.ID}) {
 		/call writeINI watchSpawn Common "${Target.DisplayName}"
 	} else /if (!${Bool[${_spawn}]} && !${Target.ID}) {
-		OUT ${sep} ${cinfo}/watchspawn\ax requires a taret or mob partial name. 
-		OUT ${sep} NPC and CORPSE is also acceptable.
+		VOUT ${sep} ${cinfo}/watchspawn\ax requires a taret or mob partial name. 
+		VOUT ${sep} NPC and CORPSE is also acceptable.
 		/if (!${Bool[${_spawn}]}) /call writeINI watchSpawn Common FALSE
 	}
 /return
@@ -2893,9 +2891,11 @@ sub Bind_override(string _overrideType)
  ***| 	
 #bind deBuff /debuff
 sub Bind_deBuff(string _debuffType, string _verbage)
-	DEBUG ${cbug}Bind_deBuff(type: ${_debuffType})\ax
-	/declare _count		int local
+	SDEBUG ${cbug}Bind_deBuff(type: ${_debuffType})\ax
+	/declare _count int local 0
 	/declare _bind string local deBuff
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -2909,7 +2909,23 @@ sub Bind_deBuff(string _debuffType, string _verbage)
 		/next _count
 		/return
 	}
-					
+	
+	| can i do this debuff?
+	/if (${Bool[${_debuffType.Equal[mezz]}]}) {
+		/if (!${validate_class[|ENC|BRD]}) /return
+	} else /if (${Bool[${_debuffType.Equal[malo]}]}) {
+		/if (!${validate_class[|MAG|SHM]}) /return
+	} else /if (${Bool[${_debuffType.Equal[tash]}]}) {
+		/if (!${validate_class[|ENC|BRD]}) /return
+	} else /if (${Bool[${_debuffType.Equal[cripple]}]}) {
+	} else /if (${Bool[${_debuffType.Equal[slow]}]}) {
+		/if (!${validate_class[|ENC|SHM|BRD|NEC]}) /return
+	} else /if (${Bool[${_debuffType.Equal[eradicate]}]}) {
+		/if (!${validate_class[${AAEradicateList}]}) /return
+	} else /if (${Bool[${_debuffType.Equal[snare]}]}) {
+		/if (!${validate_class[${AASnareList}]}) /return
+	}
+								
 	/if (${Bool[${deBuffType.Find[${_debuffType}]}]} && ${_debuffType.NotEqual[stop]}) {
 		/if (${Defined[switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}]}) {
 			/call writeINI switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower} Buffs ${If[${switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}},FALSE,TRUE]}  
@@ -2921,13 +2937,11 @@ sub Bind_deBuff(string _debuffType, string _verbage)
 			}
 		/next _count
 	} 
-	/declare _listout string local
-	/declare _sep bool local FALSE
 	/for _count 1 to ${deBuffType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${deBuffType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
 	/next _count
-	OUT /debuff [${_listout}]			
+	VOUT /${_bind} [${_listout}]			
 
 
 	| clear stickbehind. it will force bad targeting fot the mezzer.
@@ -2961,6 +2975,20 @@ sub Bind_heal(string _healType, int _healInt)
 		/next _count
 		/return
 	}
+	
+	| can I do this heal
+	/if (${Bool[${_healType.Equal[self]}]}) {
+		/if (${validate_class[|CLR|SHM|DRU]}) {
+			VOUT CLR,DRU,SHM use /heal group only
+			/return
+		}
+	} else /if (${Bool[${_healType.Equal[group]}]}) {
+		/if (!${validate_class[${HealerList}]}) /return
+	} else /if (${Bool[${_healType.Equal[xtarget]}]}) {
+		/if (!${validate_class[${HealerList}]}) /return
+	} else /if (${Bool[${_healType.Equal[pet]}]}) {
+		/if (!${validate_class[|CLR|DRU|SHM|MAG|BST|NEC]}) /return
+	}
 				
 	/if (${Bool[${healType.Find[${_healType}]}]} && ${_healType.NotEqual[stop]} && ${_healType.NotEqual[override]}) {
 		/if (${Defined[switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}]}) {
@@ -2977,19 +3005,19 @@ sub Bind_heal(string _healType, int _healInt)
 	} else /if (${_healType.Equal[override]}) {
 		/if (${Range.Between[0,99:${Int[${_healInt}]}]}) {
 			/call writeINI HealOverride Heal ${_healInt} 
-			OUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_healInt},${_healInt},${odisabled}]}
+			VOUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_healInt},${_healInt},${odisabled}]}
 		} else {
-			OUT /heal override [${cinfo}${HealOverride}\ax] allowable range ${cinfo}0 - 99\ax
+			VOUT /heal override [${cinfo}${HealOverride}\ax] allowable range ${cinfo}0 - 99\ax
 		}
 	}
-	/if (${Select[${Me.Class.ShortName},DRU,CLR,SHM]} && ${_healType.Equal[self]}) OUT Heal Classes [CLR,DRU,SHM] use /heal group. Not /heal self.
+	/if (${Select[${Me.Class.ShortName},DRU,CLR,SHM]} && ${_healType.Equal[self]}) VOUT Heal Classes [CLR,DRU,SHM] use /heal group. Not /heal self.
 	/declare _listout string local
 	/declare _sep bool local
 	/for _count 1 to ${healType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${healType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
 	/next _count
-	OUT /heal [${_listout}] [${cinfo}##\ax]				
+	VOUT /heal [${_listout}] [${cinfo}##\ax]				
 /return
 	
 
@@ -3005,6 +3033,8 @@ sub Bind_buff(string _buffType, string _verbage)
 	DEBUG ${cbug}Bind_buff(type: ${_buffType})\ax
 	/declare _count int local 0
 	/declare _bind string local buff
+	/declare _listout string local
+	/declare _sep bool local
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3044,20 +3074,17 @@ sub Bind_buff(string _buffType, string _verbage)
 		/call writeINI switchBuffTell Buffs ${If[${switchBuffTell},FALSE,TRUE]}
 	| pet
 	} else /if (${_buffType.Equal[pet]}) {
-		/if (${Select[${Me.Class.ShortName},NEC,ENC,SHM,DRU,BST,SHD,MAG]}) {
-			/call writeINI switchBuffPet Pet ${If[${switchBuffPet},FALSE,TRUE]}
-		} else {
+		/if (!${validate_class[${PetList}]}) {
 			/call writeINI switchBuffPet Pet FALSE
-			/call echos failboat 0 0 0 0
+			/return
 		}
+		/call writeINI switchBuffPet Pet ${If[${switchBuffPet},FALSE,TRUE]}
 	}
-	/declare _listout string local
-	/declare _sep bool local
 	/for _count 1 to ${buffType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchBuff${buffType.Arg[${_count},|].Left[1].Upper}${buffType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${buffType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
 	/next _count
-	OUT /buff [${_listout}]				
+	VOUT /${_bind} [${_listout}]				
 /return
 
 
@@ -3088,11 +3115,11 @@ sub Bind_cursor(string _cursorType, string _verbage)
 		
 	/if (${_cursorType.Equal[auto]}) {
 		/call writeINI switchAutoCursor Common ${If[${switchAutoCursor},FALSE,TRUE]}  
-		OUT Cursor ${sep} ${cinfo}Auto\ax ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
+		VOUT Cursor ${sep} ${cinfo}Auto\ax ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
 		/if (${timer_auto_cursor_pause}) /varset timer_auto_cursor_pause 1
 	} else /if (${_cursorType.Equal[pause]}) {
 		/call create_timer timer_auto_cursor_pause ${If[${Bool[${_verbage}]},${_verbage},30s]}
-		OUT Cursor ${sep} ${cinfo}Pause\ax ${sep} ${If[${Bool[${_verbage}]},${_verbage},30s]}
+		VOUT Cursor ${sep} ${cinfo}Pause\ax ${sep} ${If[${Bool[${_verbage}]},${_verbage},30s]}
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.Equal[what]}) {
 		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.NotEqual[what]} && ${_cursorType.NotEqual[auto]}) {
@@ -3101,7 +3128,7 @@ sub Bind_cursor(string _cursorType, string _verbage)
 		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 		/if (${Cursor.ID} && ${_cursorType.Equal[Destroy]}) /destroy
 	} else {	
-		/call echos listtype cursor cursor 0 0
+		/call echos listtype cursor cursor 0 0 0
 	}
 
 /return
@@ -3159,14 +3186,14 @@ sub Bind_rez(string _rezType, string _verbage)
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${minRezPct} == ${rezPct.Arg[${_count},|]},${cgood},${cinfo}]}${rezPct.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /rez pct [${_listout}]
+		VOUT /${_bind} pct [${_listout}]
 		/return
 	} else /if (${_rezType.Equal[range]}) {
 		/if (${Range.Between[1,110:${Int[${_verbage}]}]}) {
 			/call writeINI maxRezRange Heal ${_verbage}
-			| OUT /rez range [${cinfo}${_verbage}\ax]
+			| VOUT /rez range [${cinfo}${_verbage}\ax]
 		} else {
-			VOUT /rez range [${cinfo}${maxRezRange}\ax] allowable range is ${cinfo}1 - 110\ax
+			VOUT /${_bind} range [${cinfo}${maxRezRange}\ax] allowable range is ${cinfo}1 - 110\ax
 			/return
 		}
 	} 
@@ -3215,7 +3242,7 @@ sub Bind_listControl(string _list, string _verbage)
 	
 	| disable all commands but safezone while in a safezone
 	/if (${SafeZone} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
-		OUT ${onotice} ${sep} List Control is disabled while in a Safe Zone.
+		VOUT ${onotice} ${sep} List Control is disabled while in a Safe Zone.
 		/return
 	}
 
@@ -3266,7 +3293,7 @@ sub Bind_listControl(string _list, string _verbage)
 	} else /if (${_list.Equal[remove]}) {
 		DEBUG remove from INI
 		/declare _mobName string local |${Target.DisplayName}
-		OUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
+		VOUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
 
 		/declare _listName 			string local	
 		/declare _INIlist				string local ${ZoneFileList}
@@ -3292,10 +3319,10 @@ sub Bind_listControl(string _list, string _verbage)
 	} else /if (${Bool[${listType.Find[${_list}]}]} && ${_list.NotEqual[remove]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
 		DEBUG Exists
 		/if (${${_list}List.Find[${Target.DisplayName}]}) {
-			OUT ${onotice} ${sep} [${ctar}${Target.DisplayName}\ax] already exists in ${sep} ${cinfo}${Zone.Name}\ax
+			VOUT ${onotice} ${sep} [${ctar}${Target.DisplayName}\ax] already exists in ${sep} ${cinfo}${Zone.Name}\ax
 		} else /if (!${${_list}List.Find[${Target.DisplayName}]}) {
 			DEBUG Adding
-			OUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
+			VOUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
 			/if (${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "${${_list}List}|${Target.DisplayName}"
 			/if (!${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "|${Target.DisplayName}"
 			/varset _listchanged TRUE
@@ -3327,6 +3354,8 @@ sub Bind_debug(string _debugType, string _verbage)
 	DEBUG ${cbug}Bind_debug(Debug: ${_debugType})\ax
 	/declare _count int local 0
 	/declare _bind string local debug
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3339,34 +3368,40 @@ sub Bind_debug(string _debugType, string _verbage)
 		/return
 	}
 			
-	/if (${Bool[${debugType.Find[${_debugType}]}]} && ${_debugType.NotEqual[stop]}) {
-		/if (${Defined[switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}]}) {
-			/call writeINI switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower} debug ${If[${switchDebug${_debugType.Left[1].Upper}${_debugType.Right[-1].Lower}},FALSE,TRUE]}  
+	/if (${Bool[${${_bind}Type.Find[${_${_bind}Type}]}]} && ${_${_bind}Type.NotEqual[stop]}) {
+		/if (${Defined[switchDebug${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower}]}) {
+			/call writeINI switchDebug${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower} ${_bind} ${If[${switchDebug${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower}},FALSE,TRUE]}  
 		} 
-	} else /if (${_debugType.Equal[stop]}) {
-		/for _count 1 to ${debugType.Count[|]}
-			/if (${switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower}}) {
-				/call writeINI switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower} debug FALSE
+	} else /if (${_${_bind}Type.Equal[stop]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/if (${switchDebug${${_bind}Type.Arg[${_count},|].Left[1].Upper}${${_bind}Type.Arg[${_count},|].Right[-1].Lower}}) {
+				/call writeINI switchDebug${${_bind}Type.Arg[${_count},|].Left[1].Upper}${${_bind}Type.Arg[${_count},|].Right[-1].Lower} debug FALSE
 			}
 		/next _count	
 	}
-	/declare _listout string local
-	/declare _sep bool local FALSE
-	/for _count 1 to ${debugType.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchDebug${debugType.Arg[${_count},|].Left[1].Upper}${debugType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${debugType.Arg[${_count},|]}\ax
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchDebug${${_bind}Type.Arg[${_count},|].Left[1].Upper}${${_bind}Type.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${${_bind}Type.Arg[${_count},|]}\ax
 		/varset _sep TRUE
 	/next _count
-	OUT /debug [${_listout}]		
+	VOUT /${_bind} [${_listout}]		
 /return  
 
 
 
+|***
+ *	DES: pet control
+ *	USE: /pc []
+ *	INI: NA
+ *  NOTE:
+ ***|
 #bind petControl /pc
-sub Bind_petControl(string _pcType, string _verbage, string _pcString)
+sub Bind_petControl(string _pcType, string _verbage)
 	DEBUG ${cbug}Bind_petControl(type: ${_pcType}, #: ${_verbage})\ax
 
 	/declare _count int local 0
 	/declare _bind string local pc
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3380,20 +3415,20 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 	}
 	| build and buff
 	/if (${Bool[${_pcType.Find[build]}]}) {
-		/if (!${validate_petclass[]}) /return
+		/if (!${validate_class[${PetList}]}) /return
 		/call writeINI switchPcPet Pet TRUE
 		/call check_pet
 		/if (${Me.Pet.ID}) /call check_pet_buffs	
 
 	| pet/engage#
 	} else /if (${Bool[${_pcType.Equal[pet]}]}) {
-		/if (!${validate_petclass[]}) /return
+		/if (!${validate_class[${PetList}]}) /return
 		/if (!${Bool[${_verbage}]}) {
 			/call writeINI switchPcPet Pet ${If[${switchPcPet},FALSE,TRUE]}
 			/call echos switch "Use Pet" switchPcPet 0 0
 			/if (!${switchPcPet} && ${Pet.ID}) {
 				/if (${Me.AltAbilityReady[Suspended Minion]}) {
-					/call core_cast "Suspended Minion" alt 0
+					/call core_cast "Suspended Minion" alt 0 FALSE
 				} else {
 					/pet leave
 				}
@@ -3402,7 +3437,7 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 			/call writeINI PcPetengageat Pet ${_verbage}
 			/call echos number "Pet Engage" ${_verbage} 0 0
 		} else /if (!${Bool[${_pcNum}]} || !${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			OUT /pc pet [${cinfo}${PcPetengageat}\ax] valid range ${cinfo}1 - 99\ax
+			VOUT /${_bind} pet [${cinfo}${PcPetengageat}\ax] valid range ${cinfo}1 - 99\ax
 		}
 		
 	| swarm/engage#
@@ -3414,35 +3449,37 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 			/call writeINI PcSwarmengageat Pet ${_verbage}
 			/call echos number "Swarm Pet Engage" ${_verbage} 0 0
 		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			OUT /pc swarm [${cinfo}${PcSwarmengageat}\ax] valid range ${cinfo}1 - 99\ax
+			VOUT /${_bind} swarm [${cinfo}${PcSwarmengageat}\ax] valid range ${cinfo}1 - 99\ax
 		}
-
 		
 	| pc tank
 	} else /if (${Bool[${_pcType.Equal[tank]}]}) {
-		/if (!${validate_petclass[]}) /return
+		/if (!${validate_class[${PetList}]}) /return
 		/call writeINI switchPcPettank Pet ${If[${switchPcPettank},FALSE,TRUE]}
 		/call echos switch "Pet Tank" switchPcPettank	0 0
 		
 	| pc type
 	} else /if (${Bool[${_pcType.Equal[type]}]}) {
-		/call writeINI PcPettype Pet ${_pcString}
+		/if (!${validate_class[${PetList}]}) /return
+		/call writeINI PcPettype Pet ${_verbage}
 		
 	| pc bag ##
 	} else /if (${Bool[${_pcType.Equal[bag]}]}) {
-		/if (!${validate_petclass[]}) /return
+		/if (!${validate_class[${PetList}]}) /return
 		/if (${Range.Between[1,10:${Int[${_verbage}]}]}) {
 			/call writeINI PetBagSlotNumber Pet ${_verbage}
 			/call echos number "Pet Weapons Slot" ${_verbage} 0 0
 		} else {
-			OUT /pc bag [${cinfo}${PetBagSlotNumber}\ax] valid range range ${cinfo}1 - 10\ax
+			VOUT /${_bind} bag [${cinfo}${PetBagSlotNumber}\ax] valid range range ${cinfo}1 - 10\ax
 		}
 
-
-	} else {
-		/call echos listtype pc pc 0 0
-	} 
-
+	} else {	
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
+	}
 /return
 
 
@@ -3457,7 +3494,7 @@ sub Bind_petControl(string _pcType, string _verbage, string _pcString)
 sub Event_SendPets(string line, int _tmpID)
 	DEBUG ${cbug}Event_SendPets()\ax
 	/if (${switchPcPet} && ${Pet.ID}) {
-		OUT Sending ${cpc}${Pet.DisplayName}\ax
+		VOUT Sending ${cpc}${Pet.DisplayName}\ax
 		/target	ID ${_tmpID}
 		/pet attack
 	}
@@ -3476,10 +3513,12 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 	DEBUG ${cbug}Bind_setsetTieControl()\ax
 	/declare _count int local 0
 	/declare _bind string local tc
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
-		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Lower}]}
 		/return
 	}	else /if (${_${_bind}Type.Equal[info]}) {
 		/for _count 1 to ${${_bind}Type.Count[|]}
@@ -3497,6 +3536,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 
 	| forced tied
 	| we like bsdm
+	| this is under construction
 	} else /if (${Bool[${_tcType.Equal[lock]}]}) {
 		/call writeINI SetTieLock Movement ${If[${SetTieLock},FALSE,TRUE]}
 		VOUT /tc lock ${sep} ${If[${SetTieLock},${oenabled},${odisabled}]}
@@ -3507,7 +3547,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 			/call writeINI tCheck_Tie Timer ${_verbage} 
 		/call echos number "Tie Check Time" ${_verbage} 0 0
 		} else {
-			OUT /tc time [${cinfo}${tCheck_Tie}\ax] allowable range is ${cinfo}5 - 50\ax
+			VOUT /tc time [${cinfo}${tCheck_Tie}\ax] allowable range is ${cinfo}5 - 50\ax
 		}
 		
 	| set tie distance		
@@ -3516,11 +3556,18 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 			/call writeINI SetTieDistance Movement ${_verbage} 
 			/call echos number "Tie Distance" ${_verbage}	0 0	
 		} else {
-			OUT /tc distance [${cinfo}${SetTieDistance}\ax] allowable range is ${cinfo}1 - 99\ax
+			VOUT /tc distance [${cinfo}${SetTieDistance}\ax] allowable range is ${cinfo}1 - 99\ax
 		}
+
 	} else {
-		/call echos listtype tc tc 0 0
-	} 
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
+	}
+	
+	
 /return
 
 
@@ -3535,7 +3582,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 sub Bind_setTie()
 	/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie ${If[${SetTie},FALSE,TRUE]}  
 	/if (!${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie FALSE 
-	OUT Tie to ${cpc}${SetTieToon}\ax ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
+	VOUT Tie to ${cpc}${SetTieToon}\ax ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
 /return
 
 
@@ -3551,6 +3598,8 @@ sub Bind_burn(string _burnType, string _verbage)
 	DEBUG ${cbug}Bind_burn()\ax
 	/declare _count int local 0
 	/declare _bind string local burn
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3574,7 +3623,7 @@ sub Bind_burn(string _burnType, string _verbage)
 			/call writeINI burnCount Common ${_verbage} 
 			/call echos number "Burn # Mob Count" ${_verbage} 0 0
 		} else {
-			OUT /burn count [${cinfo}${burnCount}\ax] when # of mobs in range ${cinfo}1 - 99\ax
+			VOUT /burn count [${cinfo}${burnCount}\ax] when # of mobs in range ${cinfo}1 - 99\ax
 		}
 
 	| Burn Engage at %
@@ -3583,7 +3632,7 @@ sub Bind_burn(string _burnType, string _verbage)
 			/call writeINI burnEngageat Common ${_verbage} 
 			/call echos number "Burn health enagage %" ${_verbage} 0 0
 		} else {
-			OUT /burn engageat [${cinfo}${burnEngageat}\ax] % of mobs health to engage burn ${cinfo}1 - 99\ax
+			VOUT /burn engageat [${cinfo}${burnEngageat}\ax] % of mobs health to engage burn ${cinfo}1 - 99\ax
 		}
 
 	| force constant burning
@@ -3592,7 +3641,11 @@ sub Bind_burn(string _burnType, string _verbage)
 		/call echos switch "Constant Burn" burnForce 0 0
 
 	} else {
-		/call echos listtype burn burn 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 
 /return
@@ -3611,6 +3664,8 @@ sub Bind_setCore(string _coreType, string _verbage)
 
 	/declare _count int local 0
 	/declare _bind string local core
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3638,25 +3693,25 @@ sub Bind_setCore(string _coreType, string _verbage)
 			/call set_stop TRUE
 			/call clear_combat
 		}
-		OUT Core ${sep} ${cinfo}Automatic\ax ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
+		VOUT Core ${sep} ${cinfo}Automatic\ax ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
 
 	| enable/disable verbose EQBC Echos
 	} else /if (${Bool[${_coreType.Equal[verbose]}]}) {
 		/call writeINI verbose Common ${If[${verbose},FALSE,TRUE]}
-		OUT Core ${sep} ${cinfo}Verbose\ax ${sep} ${If[${verbose},${oenabled},${odisabled}]}
+		VOUT Core ${sep} ${cinfo}Verbose\ax ${sep} ${If[${verbose},${oenabled},${odisabled}]}
 
 	| enable/disable obscure target names ## not documented
 	} else /if (${Bool[${_coreType.Equal[obscure]}]}) {
 		/varset coreObscure ${If[${coreObscure},FALSE,TRUE]}
-		OUT Core ${sep} ${cinfo}Obscure Names\ax ${sep} ${If[${coreObscure},${oenabled},${odisabled}]}
+		VOUT Core ${sep} ${cinfo}Obscure Names\ax ${sep} ${If[${coreObscure},${oenabled},${odisabled}]}
 
 	| set the kill code
 	} else /if (${Bool[${_coreType.Equal[killcode]}]}) {
 		/if (${Bool[${_verbage}]}) {
 			/call DeclareCoreIniVar NA remoteKillKey General ${_verbage} 
-			OUT Core ${sep} ${cinfo}Remote Kill Code\ax ${sep} ${_verbage}
+			VOUT Core ${sep} ${cinfo}Remote Kill Code\ax ${sep} ${_verbage}
 		} else {
-			OUT Current killcode: ${cinfo}${remoteKillKey}\ax
+			VOUT Current killcode: ${cinfo}${remoteKillKey}\ax
 		}
 
 	| runs the whitewash routine to clear all aliases
@@ -3664,10 +3719,9 @@ sub Bind_setCore(string _coreType, string _verbage)
 		/call whitewash
 		
 	} else /if (${Bool[${_coreType.Equal[rest]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[0,99:${Int[${_num}]}]}) {
-			/call writeINI autoRest Common ${_num}  
-			/call echos number "Auto Rest" ${If[${_num},${_num},${autoRest}]} 0 0
+		/if (${Range.Between[0,99:${Int[${_verbage}]}]}) {
+			/call writeINI autoRest Common ${_verbage}  
+			/call echos number "Auto Rest" ${If[${_verbage},${_verbage},${autoRest}]} 0 0
 		} 		
 
 	| set control toon
@@ -3677,7 +3731,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI toonControl Common FALSE
 		}
-		OUT Control Toon ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
+		VOUT Control Toon ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
 
 	| enable/disable relay tells
 	} else /if (${Bool[${_coreType.Equal[relay]}]}) {
@@ -3686,7 +3740,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI relayTells Common FALSE
 		}
-		OUT Relay Tells ${sep} ${If[${Bool[${relayTells}]},${cgood}${relayTells}\ax,${odisabled}]}
+		VOUT Relay Tells ${sep} ${If[${Bool[${relayTells}]},${cgood}${relayTells}\ax,${odisabled}]}
 		
 	| reset all core INIs
 	} else /if (${Bool[${_coreType.Equal[reset]}]}) {
@@ -3713,27 +3767,25 @@ sub Bind_setCore(string _coreType, string _verbage)
 		/if (${Range.Between[1,9:${Int[${_num}]}]}) {
 			/call writeINI echoChannel Common ${_num} 0 0
 		} 
-		OUT /core echo [${cinfo}${echoChannel}\ax] set Echo Channel ${cinfo}1 - 9\ax
+		VOUT /core echo [${cinfo}${echoChannel}\ax] set Echo Channel ${cinfo}1 - 9\ax
 
 
 	| exp max level
 	} else /if (${Bool[${_coreType.Equal[expmaintain]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,99:${Int[${_num}]}]}) {
-			/call writeINI MaintExpLvl Common ${_num} 
-			/call echos number "Maintain $ of EXP in level" ${_num} 0 0
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI MaintExpLvl Common ${_verbage} 
+			/call echos number "Maintain % of EXP in level" ${_verbage} 0 0
 		} else {
-			OUT /core expmaintain [${cinfo}${MaintExpLvl}\ax] EXP % range ${cinfo}1 - 99\ax
+			VOUT /core expmaintain [${cinfo}${MaintExpLvl}\ax] EXP % range ${cinfo}1 - 99\ax
 		}	
 
 	| exp maintain level
 	} else /if (${Bool[${_coreType.Equal[explevel]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,105:${Int[${_num}]}]}) {
-			/call writeINI MaxLevel Common ${_num} 
-			/call echos number "Max EXP Level" ${_num} 0 0
+		/if (${Range.Between[1,105:${Int[${_verbage}]}]}) {
+			/call writeINI MaxLevel Common ${_verbage} 
+			/call echos number "Max EXP Level" ${_verbage} 0 0
 		} else {
-			OUT /core explevel [${cinfo}${MaxLevel}\ax] set Max Level ${cinfo}1 - 105\ax
+			VOUT /core explevel [${cinfo}${MaxLevel}\ax] set Max Level ${cinfo}1 - 105\ax
 		}	
 
 	| exp auto adjust
@@ -3746,7 +3798,11 @@ sub Bind_setCore(string _coreType, string _verbage)
 		/call fix_INI_declares
 
 	} else {
-		/call echos listtype core core 0 0 
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return
 
@@ -3762,14 +3818,22 @@ sub Bind_setCore(string _coreType, string _verbage)
 sub Bind_onoff(string _onoffType)
 	DEBUG ${cbug}Bind_onoff(type: ${_onoffType})\ax
 	/declare _count int local 0
+	/declare _listout string local
+	/declare _sep bool local FALSE
+	/declare _bind string local onoff
 	
-	/if (${Bool[${onoffType.Equal[${_onoffType}]}]}) {
+	/if (${Bool[${${_bind}Type.Find[${_${_bind}Type}]}]}) {
 		/if (${Defined[switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}]}) {
-			/call writeINI switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower} Common ${If[${switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos switch "${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}" switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower} 0 0
+			/call writeINI switch${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower} Common ${If[${switch${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower}},FALSE,TRUE]}  
+			/call echos switch "${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower}" switch${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower} 0 0
+			| VOUT /onoff ${cinfo}${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}\ax ${sep}  ${If[${switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}},${oenabled},${odisabled}]}
 		} 
 	} else {
-		/call echos listtype onoff onoff 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	}
 /return  
 
@@ -3787,15 +3851,15 @@ sub Bind_info()
 	/declare _listout string local
 	/declare _sep bool local
 	/declare _count int local
-	/declare _controls string local |buff|burn|cc|core|cursor|debuff|hc|heal|lc|movement|onoff|override|pc|port|rez|tc|tie|ts|${Me.Class.ShortName}
+	/declare _controls string local |buff|burn|cc|core|cursor|debuff|hc|heal|lc|mode|movement|onoff|override|pc|port|rez|tc|tie|ts|${Me.Class.ShortName}
 	
 	/for _count 1 to ${_controls.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
 		/varset _sep TRUE
 	/next _count
 	/call echos wiki 0 0 0 0
-	OUT ${_listout}
-	OUT /command ${cinfo}info\ax for details
+	VOUT ${_listout}
+	VOUT /command ${cinfo}info\ax for details
 /return  	
 
 
@@ -3810,6 +3874,11 @@ sub Bind_info()
 sub Bind_ts(string _tsType)
 	DEBUG ${cbug}Bind_ts(type:${_tsType})\ax
 
+	/declare _listout string local
+	/declare _sep bool local
+	/declare _count int local
+	/declare _bind string local ts
+
 	| tradeskill commands
 	/if (${Bool[${_tsType.Find[movebank]}]}) {
 		/declare _slot 				int local
@@ -3818,7 +3887,7 @@ sub Bind_ts(string _tsType)
 			/if (${InvSlot[${_slot}].Item.Container}) {
 				/for _bagslot 1 to ${InvSlot[${_slot}].Item.Container}
 					/if (${Me.Inventory[${_slot}].Item[${_bagslot}].StackSize} > 100 && ${Window[BigBankWnd].Open}) {
-						OUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
+						VOUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
 						/nomodkey /shift /itemnotify in Pack${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot2}+1]} leftmouseup
 						/delay 5 ${Cursor.ID}
 						/notify BigBankWnd bigb_autobutton leftmouseup
@@ -3837,7 +3906,7 @@ sub Bind_ts(string _tsType)
 					/for _bagslot 1 to ${InvSlot[${_slot}].Item.Container}
 						/nomodkey /itemnotify "${Me.Inventory[${_slot}].Name}" rightmouseup
 						/if (${Me.Inventory[${_slot}].Item[${_bagslot}].StackSize} > 100 && ${Window[RealEstateItemsWnd].Open}) {
-							OUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
+							VOUT  Moving ${sep} ${cinfo}${Me.Inventory[${_slot}].Item[${_bagslot}].Name}\ax ${sep} [${ctar}${FindItemCount[${Me.Inventory[${_slot}].Item[${_bagslot}].Name}]}\ax]
 							| /nomodkey /itemnotify in Pack${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${Me.Inventory[${_slot}].Item[${_bagslot}].Name}].ItemSlot2}+1]} 
 							/click left ${Me.Inventory[${_slot}].Item[${_bagslot}].Name} 
 
@@ -3848,7 +3917,7 @@ sub Bind_ts(string _tsType)
 				}
 			/next _slot
 		} else {
-			OUT Open Realestate Items Window
+			VOUT Open Realestate Items Window
 		}
 
 | /click left ${Me.Inventory[1].Item[23].Name} 
@@ -3859,7 +3928,11 @@ sub Bind_ts(string _tsType)
 | /nomodkey /shift /notify RealEstateItemsWnd REIW_Move_Closet_Button leftmouseup
 
 	} else {
-		/call echos listtype ts ts 0 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return
 
@@ -3877,6 +3950,8 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 	/declare _count int local 0
 	/declare _bind string local cc
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3898,69 +3973,64 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset isValidTarget TRUE
 					/varset combat MELEE
 					/varset Target2Kill ${Target.ID}
-					OUT Combat ${sep} ${cinfo}Melee\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+					VOUT Combat ${sep} ${cinfo}Melee\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 				| engage Range combat
 				} else /if (${Bool[${_verbage.Equal[range]}]}) {
 					/if (${Target.Distance} > 31) {
 						/varset isValidTarget TRUE
 						/varset combat RANGE
 						/varset Target2Kill ${Target.ID}	
-						OUT Combat ${sep} ${cinfo}Range\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+						VOUT Combat ${sep} ${cinfo}Range\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 					} 
 				| engage Nuke combat
 				} else /if (${Bool[${_verbage.Equal[nuke]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
-					OUT Combat ${sep} ${cinfo}Nuke\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+					VOUT Combat ${sep} ${cinfo}Nuke\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 				}
 			}
 			 
 			| echo options
 			} else {
 				/declare _tmpVariable string local |melee|range|nuke
-				/declare _listout string local
-				/declare _sep bool local FALSE
-				/declare _count int local 0 
-
 				/for _count 1 to ${_tmpVariable.Count[|]}
 					/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_tmpVariable.Arg[${_count},|]}\ax
 					/varset _sep TRUE
 				/next _count
-				OUT /cc force [${_listout}]	
-				
+				VOUT /${_bind} force [${_listout}]	
 			}
 
 
 	| set Melee combat
 	} else /if (${Bool[${_ccType.Equal[melee]}]}) {
 		/call writeINI combat Common ${_ccType.Upper}
-		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Range combat
 	} else /if (${Bool[${_ccType.Equal[range]}]}) {
 		/call writeINI combat Common ${_ccType.Upper}
-		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Nuke combat
 	} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
 		/call writeINI combat Common ${_ccType.Upper}
-		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Heal combat
 	} else /if (${Bool[${_ccType.Equal[heal]}]}) {
 		/call writeINI combat Common ${_ccType.Upper}
-		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Dual combat
 	} else /if (${Bool[${_ccType.Equal[dual]}]}) {
 		/call writeINI combat Common ${_ccType.Upper}
-		OUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
+		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
 
 	| set Pull
 	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
-		OUT Combat ${sep} ${cinfo}Pull\ax ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
+		VOUT Combat ${sep} ${cinfo}Pull\ax ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
 		/if (${switchPull}) {
 			/if (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) /smartma X
 			/if (${switchPull} && ${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
@@ -3969,20 +4039,16 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 	| agro/agro range ##
 	} else /if (${Bool[${_ccType.Equal[agro]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Bool[${_verbage}]} && ${Range.Between[1,400:${Int[${_num}]}]}) {
-			/call writeINI MobAgro Common ${_num} 
-			/call echos number "Combat Agro Range" ${_num} 0 0
-		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,400:${Int[${_num}]}]})  {
-			OUT /cc agro [${cinfo}${MobAgro}\ax] allowable range is ${cinfo}1 - 400\ax
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,400:${Int[${_verbage}]}]}) {
+			/call writeINI MobAgro Common ${_verbage} 
+			/call echos number "Combat Agro Range" ${_verbage} 0 0
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,400:${Int[${_verbage}]}]})  {
+			VOUT /cc agro [${cinfo}${MobAgro}\ax] allowable range is ${cinfo}1 - 400\ax
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchAgro Common ${If[${switchAgro},FALSE,TRUE]}
-			OUT Combat ${sep} ${cinfo}Agro\ax ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
+			VOUT Combat ${sep} ${cinfo}Agro\ax ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
 		}
-		
 		/call check_AA_agro		
-		
-			
 
 	| set out of group Main assist 1 or 2
 	} else /if (${Bool[${_ccType.Equal[ma1]}]}) {
@@ -3991,66 +4057,65 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		} else /if (!${Bool[${_verbage}]})  {
 			/call writeINI MA1 Common FALSE
 		} 				
-		OUT MA1 ${sep} ${If[${Bool[${MA1}]},${cinfo}${MA1}\ax,${odisabled}]}
+		VOUT /cc ma1 ${sep} ${If[${Bool[${MA1}]},${cinfo}${MA1}\ax,${odisabled}]}
 	} else /if (${Bool[${_ccType.Equal[ma2]}]}) {		
 		/if (${Bool[${_verbage}]}) {
 			/call writeINI MA2 Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 		} else /if (!${Bool[${_verbage}]})  {
 			/call writeINI MA2 Common FALSE
 		} 				
-		OUT MA2 ${sep} ${If[${Bool[${MA2}]},${cinfo}${MA2}\ax,${odisabled}]}	
+		VOUT /${_bind} ma2 ${sep} ${If[${Bool[${MA2}]},${cinfo}${MA2}\ax,${odisabled}]}	
 
 	| MA1/2 engage at %
 	} else /if (${Bool[${_ccType.Equal[engage]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,100:${Int[${_num}]}]}) {
-			/call writeINI engageAt Common ${_num}  
-			/call echos number "MA Engage at" ${If[${_num},${_num},${engageAt}]} 0 0
+		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
+			/call writeINI engageAt Common ${_verbage}  
+			/call echos number "MA Engage at" ${If[${_verbage},${_verbage},${engageAt}]} 0 0
 		} else {
-			OUT MA1/2 Engage [${cinfo}${engageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
+			VOUT /${_bind} engage [${cinfo}${engageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
 		}
 
 	| Smart Assist engage at %
 	} else /if (${Bool[${_ccType.Equal[smartengage]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,100:${Int[${_num}]}]}) {
-			/call writeINI smartengageAt Common ${_num}  
-			/call echos number "Smart Assist Engage at" ${If[${_num},${_num},${smartengageAt}]} 0 0
+		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
+			/call writeINI smartengageAt Common ${_verbage}  
+			/call echos number "Smart Assist Engage at" ${If[${_verbage},${_verbage},${smartengageAt}]} 0 0
 		} else {
-			OUT Smart Engage [${cinfo}${smartengageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
+			VOUT /${_bind} smartengage [${cinfo}${smartengageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
 		}
 
 	| set melee combat distance to target
 	} else /if (${Bool[${_ccType.Equal[combatdistance]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,50:${Int[${_num}]}]}) {
-			/call writeINI CombatDistance Movement ${_num}
-			/call echos number "Melee Combat Distance" ${_num} 0 0
+		/if (${Range.Between[1,50:${Int[${_verbage}]}]}) {
+			/call writeINI CombatDistance Movement ${_verbage}
+			/call echos number "Melee Combat Distance" ${_verbage} 0 0
 		} else {
-			OUT Melee Combat Distance [${cinfo}${CombatDistance}\ax] minimum range to melee mob ${cinfo}1 - 50\ax
+			VOUT /${_bind} combatdistance [${cinfo}${CombatDistance}\ax] minimum range to melee mob ${cinfo}1 - 50\ax
 		}
 
 	| set fake safe radius
 	} else /if (${Bool[${_ccType.Equal[saferadius]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,99:${Int[${_num}]}]}) {
-			/call writeINI combatRadius Common ${_num}
-			/call echos number "Fake Safe Combat Radius" ${_num} 0 0
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI combatRadius Common ${_verbage}
+			/call echos number "Fake Safe Combat Radius" ${_verbage} 0 0
 		} else {
-			OUT /cc saferadius [${cinfo}${combatRadius}\ax] fake safe combat radius ${cinfo}1 - 50\ax
+			VOUT /${_bind} saferadius [${cinfo}${combatRadius}\ax] fake safe combat radius ${cinfo}1 - 50\ax
 		}
 	
 	| set Z radius
 	} else /if (${Bool[${_ccType.Equal[zradius]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
-			/call writeINI zradius Common ${_num} 
-			/call echos number "Set ZRadius" ${_num} 0 0
+		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
+			/call writeINI zradius Common ${_verbage} 
+			/call echos number "Set ZRadius" ${_verbage} 0 0
 		} else {
-			OUT /cc zradius [${cinfo}${zradius}\ax] of mobs Z Radius range ${cinfo}1 - 200\ax
+			VOUT /${_bind} zradius [${cinfo}${zradius}\ax] of mobs Z Radius range ${cinfo}1 - 200\ax
 		}	
 	} else {
-		/call echos listtype cc cc 0 TEXT|## 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return	
 	
@@ -4124,7 +4189,7 @@ sub Bind_port_list(string _class, string _location)
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_portclass.Arg[${_count},|]}\ax
 			/varset _sep TRUE
 		/next _count
-		OUT /port [${_listout}] [${cinfo}location\ax]
+		VOUT /port [${_listout}] [${cinfo}location\ax]
 		/return
 	}
 	
@@ -4135,7 +4200,7 @@ sub Bind_port_list(string _class, string _location)
 				/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_port${_class}${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower}.Arg[${_state},|]}\ax
 				/varset _sep TRUE
 			/next _state
-			OUT ${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower} [${_listout}] 
+			VOUT ${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower} [${_listout}] 
 			/varset _listout
 			/varset _sep
 		/next _country
@@ -4204,7 +4269,6 @@ sub Event_send(string line, string _sender, string _location)
 		/for _count 1 to ${_portList.Size}
 			/t ${_sender} ${_portList[${_count}]}
 			/delay 8
-			:nextcount
 		/next _count
 	}
 	
@@ -4212,7 +4276,7 @@ sub Event_send(string line, string _sender, string _location)
 	/if (${Defined[${_location}]}) {
 		/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
 		/call scribe ${${_location}} ${buffGem} TRUE
-		/call core_cast ${${_location}} 0 ${Spawn[pc ${_sender}].ID}
+		/call core_cast ${${_location}} 0 ${Spawn[pc ${_sender}].ID} FALSE
 	} 
 /return
 
@@ -4230,6 +4294,8 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 
 	/declare _count int local 0
 	/declare _bind string local movement
+	/declare _listout string local
+	/declare _sep bool local FALSE
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -4262,26 +4328,24 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	} else /if (${Bool[${_movementType.Equal[fast]}]}) {
 		/call writeINI SetFaceFast Movement ${If[${SetFaceFast},FALSE,TRUE]}  
 		/call echos switch "Face Fast" SetFaceFast 0 0
-		/if (${SetFaceFast}) OUT ${owarning} ${sep} This is a MQ2 Dead Giveaway ${sep} ${owarning}
+		/if (${SetFaceFast}) VOUT ${owarning} ${sep} This is a MQ2 Dead Giveaway ${sep} ${owarning}
 
 	| set home radius
 	} else /if (${Bool[${_movementType.Equal[radius]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
-			/call writeINI HomeRadius Movement ${_num} 
-			/call echos number "Home Radius" ${_num} 0 0
+		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
+			/call writeINI HomeRadius Movement ${_verbage} 
+			/call echos number "Home Radius" ${_verbage} 0 0
 		} else {
-			OUT /movement radius [${cinfo}${HomeRadius}\ax] Home Radius range ${cinfo}1 - 200\ax
+			VOUT /movement radius [${cinfo}${HomeRadius}\ax] Home Radius range ${cinfo}1 - 200\ax
 		}
 
 	| set leash range
 	} else /if (${Bool[${_movementType.Equal[leash]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,200:${Int[${_num}]}]}) {
-			/call writeINI HomeLeash Movement ${_num} 
-			/call echos number "Leash to Home" ${_num} 0 0
+		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
+			/call writeINI HomeLeash Movement ${_verbage} 
+			/call echos number "Leash to Home" ${_verbage} 0 0
 		} else {
-			OUT /movement leash [${cinfo}${HomeLeash}\ax] Home Leash range ${cinfo}1 - 200\ax
+			VOUT /movement leash [${cinfo}${HomeLeash}\ax] Home Leash range ${cinfo}1 - 200\ax
 		}	
 
 	| set facing arc
@@ -4291,7 +4355,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			/call writeINI SetFaceArc Movement ${_num} 
 			/call echos number "Facing Arc Buffer" ${_num} 0 0
 		} else {
-			OUT /movement arc [${cinfo}${SetFaceArc}\ax] Facing Movement buffer range ${cinfo}1 - 45\ax
+			VOUT /movement arc [${cinfo}${SetFaceArc}\ax] Facing Movement buffer range ${cinfo}1 - 45\ax
 		}	
 		
 	| i need mounts
@@ -4315,7 +4379,11 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 		}
 		
 	} else {
-		/call echos listtype movement movement 0 0 0
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return
 
@@ -4334,12 +4402,12 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
  *	5=MasterLooter .. 			${GroupLooter}
  *	/makeleader [NAME] .. 	${GroupLeader}
  ***|
- #bind crew /crew
+#bind crew /crew
 sub Bind_crew(string _crewNumber)
  	DEBUG ${cbug}Bind_crew(${Ini[${INICore},Group,_crewNumber]})\ax
 
-	/declare _count 				int local
-	/declare _clist 				string local ${Ini[${INICore},Group,${_crewNumber}]}
+	/declare _count int local 0
+	/declare _clist string local ${Ini[${INICore},Group,${_crewNumber}]}
 	
 	| disband raid if exists
 	/if (${Raid.Members}) {
@@ -4352,15 +4420,11 @@ sub Bind_crew(string _crewNumber)
 		/if (${Raid.Members}) /raiddisband
 	}
 	
-	| disband group if exists
-	| /if (${Group.GroupSize}) {
-		/for _count 1 to ${_clist.Count[|]}
-			| /if (${Me.Name.Equal[${_clist.Arg[${_count},|]}]}) /continue
-			| /if (${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //disband
-			/bct ${_clist.Arg[${_count},|]} //disband
-			/delay 1
-		/next _count			
-	| }
+	| drop group. we dont care if you are in one or not.
+	/for _count 1 to ${_clist.Count[|]}
+		/bct ${_clist.Arg[${_count},|]} //disband
+		/delay 1
+	/next _count			
 	
 	/delay 2s
 
@@ -4368,7 +4432,7 @@ sub Bind_crew(string _crewNumber)
 	/for _count 1 to ${_clist.Count[|]}
 		AMIDEAD
 		/if (!${Bool[${Group.Member[${_clist.Arg[${_count},|]}]}]}) {
-			OUT Inviting ${sep} ${cpc}${_clist.Arg[${_count},|]}\ax
+			VOUT Inviting ${sep} ${cpc}${_clist.Arg[${_count},|]}\ax
 			/invite ${_clist.Arg[${_count},|]}
 		}	
 	/next _count
@@ -4376,7 +4440,7 @@ sub Bind_crew(string _crewNumber)
 	/delay 1s
 	/delay 12s ${Group.GroupSize} == ${_clist.Count[|]}
 	/if (${Group.GroupSize} != ${_clist.Count[|]}) {
-		OUT ${owarning} ${sep} Group failed to form properly.
+		VOUT ${owarning} ${sep} Group failed to form properly.
 		/return
 	}
 	

@@ -9,11 +9,31 @@
  ***|
 
 
+
+20171020
+- core.ini->[general]->smartasserrors TRUE/FALSE. turn off the snarky error messages if you like
+- fixed a bug on core.ini creation
+- more additions to the /info commands
+- updates to the wiki.ini
+- validate_class() will check multiple classes now .. /if (!${validate_class[|RNG|ROG|BST]}) /return
+- updated all classes for the new validate
+- removed validate_petclass(). dont need it
+- class checking added too:
+  -- /debuff, /heal, /buff
+- class.rog.inc
+  -- logic adjustment to try and keep it from waisting knifeplay on a named mob
+
+
+20171017
+- updates to all class files for conformity
+
+
 20171016
 - LOT more added to /info
 - /pc [*] - pet class validation now
 - core.ini->[Genera]->autoinihousekeeping set to true to auto clean INIs every mac start
-
+- fixed a bug in /onoff
+- adjusted the logic in cast_AA_spire()
 
 
 20171014
