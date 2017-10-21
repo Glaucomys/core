@@ -200,7 +200,7 @@ sub mem_song_line(string _line)
  *  NOTE:
  ***|
 sub pulse()
- 	SDEBUG ${cbug}pulse()\ax
+ 	DEBUGCLASS ${cbug}pulse()\ax
 
 	/declare _pulseSong			bool local FALSE
 	/declare _count 				int local
@@ -254,7 +254,7 @@ sub pulse_valid(_gem)
 	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (!${Me.SpellReady[${Me.Gem[${_gem}].Name}]}) /varset _pulseSong FALSE
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
-	SDEBUG VALID PULSE: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
+	DEBUGCLASS VALID PULSE: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
 /return ${Bool[${_pulseSong}]}
 
 
@@ -309,7 +309,7 @@ sub core_sing(_spellgem)
  *  NOTE: 
  ***|
 sub bard_nuke()
-	SDEBUG ${cbug}bard_nuke()\ax
+	DEBUGCLASS ${cbug}bard_nuke()\ax
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoNuke}
@@ -335,7 +335,7 @@ sub bard_nuke()
  *  NOTE: 
  ***|
 sub bard_dot()
-	SDEBUG ${cbug}bard_dot()\ax
+	DEBUGCLASS ${cbug}bard_dot()\ax
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoDoT}
@@ -596,8 +596,6 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 			/delay 2
 			/call mem_song_line ${lineCurrent}
 		}
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${lineType.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${lineCurrent.Equal[${lineType.Arg[${_count},|]}]},${cgood},${cinfo}]}${lineType.Arg[${_count},|]}\ax   
 			/varset _sep TRUE

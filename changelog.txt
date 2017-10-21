@@ -9,6 +9,12 @@
  ***|
 
 
+20171021
+- class.brd.inc
+  -- removed the pulse debug echos. forgot about them being in there
+- check_aura()
+  -- small adjustment to the zerker aura portion
+
 
 20171020
 - core.ini->[general]->smartasserrors TRUE/FALSE. turn off the snarky error messages if you like

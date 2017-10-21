@@ -620,8 +620,8 @@ sub check_aura()
 	| Aura: berzerker, monk
 	/if (${Bool[${Aura1Buff}]} && ${Select[${Me.Class.ShortName},BER,MNK]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
 		VOUT Disc ${sep} ${csp}${Aura1Spell}\ax
-		| /disc ${Aura1Spell}
-		/call core_cast "${Aura1Spell}" disc 0
+		/disc ${Aura1Spell}
+		| /call core_cast "${Aura1Spell}" disc 0
 		/delay 8s
 		/return
 	}
