@@ -280,18 +280,19 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
+	
 	| gather enable/disable /pct
 	/if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
 			/call writeINI GatherPercent Spells ${_classVerbage} 
 			/call echos number "Gather Mana %" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
-		}	else /if (!${Bool[${_classVerbage}]}) {
+			NOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}	else {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
 			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
 		}			

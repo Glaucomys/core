@@ -5752,6 +5752,8 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Buffs" "useQM" NULL
 	/ini "${INIClass}" "Buffs" "useQMPct" NULL
 	/ini "${INIClass}" "Timer" "tcheck_QM" NULL
+	
+	/ini "${INIClass}" "Spells" "TwincastType" NULL
 
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return

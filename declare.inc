@@ -816,7 +816,7 @@ sub set_declares()
 	
 	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,NEC,WIZ,SHM,DRU]}) { 
 		/call DeclareIniVar TwincastSpell 						string 	Spells FALSE
-		/call DeclareIniVar TwincastType 							string 	Spells FALSE
+		| /call DeclareIniVar TwincastType 							string 	Spells FALSE
 		/call DeclareInivar GatherSpell 							string 	Spells FALSE
 		/call DeclareIniVar SilentCast	 							string	Spells FALSE
 	}
@@ -950,7 +950,7 @@ sub set_declares()
   /declare shdType																string	outer |harmoniouns|skin|spiregroup|spireraid|stance
   /declare shmType																string	outer |groupheal|grouphot|healpoint|spiregroup|spireraid|xtradius|xttime
   /declare warType																string	outer |spiregroup|spireraid
-  /declare wizType																string	outer |gather|manaburn|spiregroup|spireraid
+  /declare wizType																string	outer |forcetwincast|gather|manaburn|spiregroup|spireraid
   
   
 	| cursor
@@ -1096,6 +1096,7 @@ sub declare_MAG()
  *  NOTE: 
  ***|
 sub declare_WIZ()
+	/call setTimer tForce_Twincast									string	Timer 3s timer_force_twincast
 	/call DeclareIniVar GatherSpell									string 	Spells "Quietscent Harvest"
 	/call DeclareIniVar switchGather			 					bool		Spells TRUE
 	/call DeclareIniVar GatherPercent			 					int			Spells 60
@@ -1110,6 +1111,8 @@ sub declare_WIZ()
 	/call DeclareIniVar Nuke8 											string 	Spells FALSE
 	/call DeclareIniVar tempPet						 					string	Pet "Yulin's Pyroblade"
 	/call DeclareIniVar switchManaBurn		 					bool		Spells TRUE
+	/call DeclareIniVar NukeTwincast								string	Spells "Claw of the Flameweaver"
+	/call DeclareIniVar switchForceTwincast					bool		Spells TRUE
 	
 	
 	/declare fay 																		string	outer "Translocate: Fay"

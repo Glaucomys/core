@@ -14,6 +14,9 @@
   -- removed the pulse debug echos. forgot about them being in there
 - check_aura()
   -- small adjustment to the zerker aura portion
+- class.wiz.inc
+  -- /wiz [forcetwincast] - enable/disable spamming of twincast spell and twincast nuke
+  -- corrected burn AA [furry of*] for latest DB update
 
 
 20171020

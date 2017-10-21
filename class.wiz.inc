@@ -32,6 +32,7 @@ sub core_WIZ()
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call stick_to_target
+		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
@@ -44,6 +45,7 @@ sub core_WIZ()
 		CHECKTIE
 		/call cast_temp_pet ${Target2Kill} "${tempPet}"
 		/call send_pet
+		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
@@ -216,8 +218,7 @@ sub synergy_WIZ()
 	/call cast_AA_spire
 
 	| boost spell type damage
-	/if (${Me.AltAbilityReady[Fury of Kerafyrm]}) /call core_cast "Fury of Kerafyrm" alt 0 FALSE
-	/if (${Me.AltAbilityReady[Fury of Ro]}) /call core_cast "Fury of Ro" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Fury of the Gods]}) /call core_cast "Fury of the Gods" alt 0 FALSE
 
 	/if (${Me.AltAbilityReady[Arcane Destruction]}) /call core_cast "Arcane Destruction" alt 0 FALSE
 	
@@ -245,6 +246,31 @@ sub synergy_WIZ()
 
 
 |***
+ *	DES: Control for getting Twincast either spell or Proc
+ *	USE: /call force_twincast_wiz
+ *	INI: 
+ *  NOTE: Twincast lets get it.
+ ***|
+sub force_twincast_WIZ()
+	DEBUGCLASS ${cbug}force_twincast_WIZ()\ax 
+	AMIDEAD
+	CHECKEXIT
+	/doevents
+	/call is_target_dead
+	/if (${Macro.Return}) /return	
+
+	/if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
+		/call core_cast "${TwincastSpell}" 0 0 FALSE
+		/return
+	} else /if (!${timer_force_twincast} && !${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
+		/call core_cast "${NukeTwincast}" 0 ${Target2Kill} FALSE
+	}
+	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
+/return
+
+
+
+|***
  *	DES: Class controls
  *	USE: /wiz []
  *	INI: 
@@ -266,7 +292,7 @@ sub Bind_setWIZ(string _classType, string _verbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -298,6 +324,11 @@ sub Bind_setWIZ(string _classType, string _verbage)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} line [${_listout}]	
+
+	| enable/disable force twincasting
+	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
+		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
+		/call echos switch "Force Twincast" switchForceTwincast 0 0
 
 	| enable / disable manaburn AA
 	} else /if (${Bool[${_classType.Equal[manaburn]}]}) {
