@@ -218,7 +218,8 @@ sub synergy_WIZ()
 	/call cast_AA_spire
 
 	| boost spell type damage
-	/if (${Me.AltAbilityReady[Fury of the Gods]}) /call core_cast "Fury of the Gods" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Fury of Kerafyrm]}) /call core_cast "Fury of Kerafyrm" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Fury of Ro]}) /call core_cast "Fury of Ro" alt 0 FALSE
 
 	/if (${Me.AltAbilityReady[Arcane Destruction]}) /call core_cast "Arcane Destruction" alt 0 FALSE
 	
@@ -292,7 +293,7 @@ sub Bind_setWIZ(string _classType, string _verbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -329,6 +330,8 @@ sub Bind_setWIZ(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
 		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
 		/call echos switch "Force Twincast" switchForceTwincast 0 0
+	
+
 
 	| enable / disable manaburn AA
 	} else /if (${Bool[${_classType.Equal[manaburn]}]}) {
