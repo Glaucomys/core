@@ -72,16 +72,21 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
  *  NOTE: 
  ***|
 sub DeclareIniVar(string _name, string _type, string _section, string _value)
-	| /echo DeclareIniVar(_name:${_name}, type:${_type}, INIsection:${_section}, value:${_value})
+	| /echo \atDeclareIniVar\ax(_name:\a-w${_name}\ax, _type:\a-w${_type}\ax, _section:\a-w${_section}\ax, _value:\a-w${_value}\ax)
 	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]}) {
-		NOUT ${owarning} ${sep} INVALID INI SETTING/STRING [name:${_name}/type:${_type}/section${_section}] --\ax
+		NOUT ${owarning} ${sep} INVALID INI SETTING/STRING [_name:${_name}/_type:${_type}/_section:${_section}] --\ax
 		/return
 	}
+	
+	| create the variable
 	/if (!${Defined[${_name}]}) /declare ${_name} ${_type} outer
-	/varset ${_name} ${Ini[${INIClass},${_section},${_name.Left[1].Upper}${_name.Right[-1]},"${_value}"]}
+	
 	/if (!${Bool[${Ini[${INIClass},${_section}].Find[${_name}]}]}) {
-		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${${_name}}" "${${_value}}"
-
+		| /echo \arINI writing\ax: ${Me.DisplayName} "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
+		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
+		/varset ${_name} ${_value}
+	} else {
+		 /varset ${_name} ${Ini[${INIClass},${_section},${_name.Left[1].Upper}${_name.Right[-1]},"${_value}"]}
 	}
 
 	/if (${Me.Book[${Me.Book[${${_name}} Rk. III]}].ID}) {
@@ -144,7 +149,7 @@ sub update_zone_list(string _list)
  *  NOTE: 
  ***| 
 sub check_zone_INI(string _sender)
-	DEBUG ${cbug}check_zone_INI()\ax 
+	DEBUG ${cbug}check_zone_INI(_sender: ${_sender})\ax 
 	/if (${Bool[${_sender}]} && !${Spawn[pc ${_sender}].ID}) /return
 
 	/declare _count 						int local	0
@@ -222,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171021
+	/declare coreBuild	 														int			outer 20171023
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -500,7 +505,6 @@ sub set_declares()
 	/call DeclareIniVar IllusionBuff								string	Common FALSE
 	/call DeclareIniVar GTFO												string	Common FALSE
 	/call DeclareIniVar switchAApicker							bool 		Common FALSE
-	/call DeclareIniVar mount												string	Common FALSE
 	/call DeclareIniVar RangeItem										string	Common FALSE		
 	/call DeclareIniVar RangeItemSummon							string	Common FALSE
 	/call DeclareIniVar autoInventoryItem						string	Common "|Summoned: Giant Modulation Shard"
@@ -623,7 +627,7 @@ sub set_declares()
 
 
 	| combat controls
-	/declare ccType																	string	outer |agro|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|pull|range|saferadius|smartengage|zradius
+	/declare ccType																	string	outer |agro|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|zradius
 	/call DeclareIniVar combat					 						string	Common melee
 	/call DeclareIniVar MA1			 										string 	Common FALSE
 	/call DeclareIniVar MA2			 										string 	Common FALSE
@@ -682,6 +686,7 @@ sub set_declares()
 	/call DeclareIniVar SetStickBehind 							bool 		Movement FALSE
 	/call DeclareIniVar SetFaceFast									bool		Movement FALSE
 	/call DeclareIniVar SetFaceArc									int			Movement 30
+	/call DeclareIniVar mount												string	Common "Desert Kangon Saddle"
 	/declare tempHomeSet														bool		outer FALSE	
 	/declare tempsnapstuck													bool		outer	FALSE  
 	
@@ -816,10 +821,14 @@ sub set_declares()
 	
 	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,NEC,WIZ,SHM,DRU]}) { 
 		/call DeclareIniVar TwincastSpell 						string 	Spells FALSE
-		| /call DeclareIniVar TwincastType 							string 	Spells FALSE
 		/call DeclareInivar GatherSpell 							string 	Spells FALSE
 		/call DeclareIniVar SilentCast	 							string	Spells FALSE
 	}
+	
+	/if (!${Select[${Me.Class.ShortName},MON,BER,WAR]}) { 
+		/call DeclareIniVar switchNukeDelay						bool		Spells FALSE
+	}	
+	
 
 	| buffs
 	/call DeclareIniVar BuffRemove									string	Buffs "|Illusion: Gnoll Reaver|Illusion: Darkfell Gnoll Reaver|Illusion: Blackburrow Gnoll Reaver|Illusion: Mucktail Gnoll Reaver|Illusion: Direwind Gnoll Reaver|Illusion: Human Pirate|Illusion: Ogre Pirate"
@@ -941,7 +950,7 @@ sub set_declares()
   /declare clrType																string	outer |aggressive|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
   /declare druType																string	outer |groupheal|healpoint|spiregroup|spireraid|xtradius|xttime
   /declare encType																string	outer |gather|spiregroup|spireraid
-  /declare magType																string	outer |fade|gather|mana|rods|spiregroup|spireraid
+  /declare magType																string	outer |fade|forcetwincast|gather|mana|rods|spiregroup|spireraid
   /declare mnkType																string	outer |spiregroup|spireraid
   /declare necType																string	outer |spiregroup|spireraid
   /declare palType																string	outer |groupheal|harmonions|healpoint|mg|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
@@ -1024,6 +1033,7 @@ sub declare_timers()
 	/call setTimer tAuto_Control_Toon								string	Timer	10s 	timer_auto_toon_control
 	/call setTimer tZone_Pause											string	Timer	5s		timer_zone_pause
 	/call setTimer tHUD_Death_Check									string	Timer	10s		timer_HUD_death_check
+	/call setTimer tNuke_Delay											string	Timer	1			timer_Nuke_Delay
 	
 
 
@@ -1051,7 +1061,9 @@ sub declare_timers()
  ***|   
 sub declare_MAG()
 	/call DeclareIniVar ServantNuke 								string 	Pet "Remorseless Servant"
-	/call setTimer tCauldron_use										string 	Timer 360m	timer_caldron_use
+	/call setTimer tCauldron_use										string 	Timer 360m timer_caldron_use
+	/call setTimer tForce_Twincast									string	Timer 5s timer_force_twincast
+	/varset timer_force_twincast 1
 
 	/call DeclareIniVar ParadoxSpell 								string 	Rods "Grant Icebound Paradox"
 	/call DeclareIniVar ParadoxRodName 							string 	Rods "Summoned: Icebound Fragment"
@@ -1083,6 +1095,8 @@ sub declare_MAG()
 	/call DeclareIniVar MaloSpell 									string 	Spells "Malosinete"
 	/call DeclareIniVar AAFade											string	Buffs "Dimensional Shield"
 	/call DeclareIniVar useAAFade										int			Buffs 50
+	/call DeclareIniVar NukeTwincast								string	Spells "Chaotic Fire"
+	/call DeclareIniVar switchForceTwincast					bool		Spells TRUE
 	
 	
 /return
@@ -1731,7 +1745,7 @@ sub declare_SHM()
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	/call DeclareIniVar spellCripple 								string 	Spells "Crippling Counterbias"
 
-	/call DeclareIniVar CaniPercent				 					int			Spells 60 /cani
+	/call DeclareIniVar CaniPercent				 					int			Spells 60
 	/call DeclareIniVar spellCannibalization				string	Spells "Tribal Pact"
 
 	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
@@ -1868,8 +1882,6 @@ sub declare_ROG()
 	/call setTimer tClick_Poison										string	Timer 30s 	timer_click_poison
 	/call DeclareIniVar AEMelee					 						bool	 	Discs FALSE
 
-
-
 	/call DeclareIniVar DiscRest				 						string 	Discs "Breather"
 	/call DeclareIniVar DiscAggro 									string 	Discs "Disorientation"
 	/call DeclareIniVar DiscAssault 								string 	Discs "Barrage"
@@ -1882,7 +1894,6 @@ sub declare_ROG()
 	/call DeclareIniVar DiscSneakAttack							string 	Discs "Daggergash"	
 	/call DeclareIniVar DiscShadowHunter						string 	Discs "Shadow-Hunters Dagger"	
 	/call DeclareIniVar DiscDisassociative					string 	Discs "Disassociative Puncture"	
-	
 
 	| disable for toast
 	/call DeclareIniVar DiscVision 									string 	Discs "Thief's Vision"	
@@ -1895,10 +1906,8 @@ sub declare_ROG()
 	/call DeclareIniVar DiscFrenzy 									string 	Discs "Frenzied Stabbing Discipline"	
 	/call DeclareIniVar DiscTwistedChance						string 	Discs "Twisted Chance Discipline"
 
-
 	/call DeclareIniVar TwistedShank								string 	Discs "Twisted Shank"
 	/call DeclareIniVar AbsorbingAgent							string 	Discs "Absorbing Agent"
-	
 	
 	/call DeclareIniVar clickPoisonBuff							string 	Poison |Bite of the Shissar Poison X|Tallon's Tactic Poison IV|Tallon's Tactic Poison V|Vallon's Tactic Poison IV|Vallon's Tactic Poison V|Mana Poison Coat|Hero's Toxin Poison I|Hero's Toxin Poison II
 	/call DeclareIniVar clickPoisonItem							string 	Poison Consigned Bite of the Shissar XVIII
@@ -1917,9 +1926,7 @@ sub declare_ROG()
 sub declare_CLR()
 	DEBUG ${cbug}declare_CLR()\ax
 	/call setTimer tHealWard												string	Timer 185s timer_heal_ward
-	| /call setTimer tcheck_QM												string	Timer	10s timer_check_QM
 	/call DeclareIniVar switchLockMA								bool 		Heal FALSE
-	
 		
 	/declare WorstHurt 															string 	outer FALSE
 	| /declare WorstHurtID 													int 		outer ${Me.ID}
@@ -1929,7 +1936,6 @@ sub declare_CLR()
 	/declare MinorHurt															int    	outer 0 
 	/declare groupHurt 															int 		outer 0
 
-	
 	/declare pWorstHurt 														string 	outer ${Me.DisplayName}
 	/declare pWorstHP																int			outer 100
 	/declare pWorstHurtID														int 		outer ${Me.ID}
@@ -1969,10 +1975,9 @@ sub declare_CLR()
   /call DeclareIniVar useCelestialRegen						bool	  Heal TRUE
   /call DeclareIniVar healIssuance								string  Heal "Issuance of Spirit"
 	/call DeclareIniVar CRTXT												string	Heal "Celestial Regeneration (+11100HP / tic)"
-	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
+	/call DeclareIniVar 2				string	Heal FALSE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
 	/call DeclareIniVar switchForceGroupHeal				bool		Heal FALSE
-	
 		
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar sumWeaponSpell							string	Buffs "Hammer of	Reverence"
@@ -1990,7 +1995,6 @@ sub declare_CLR()
 	/call DeclareIniVar Nuke2					 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells FALSE
-		
 /return	
 
 
@@ -2043,7 +2047,6 @@ sub whitewash()
 
 	| movement
 	/varset _todelete[11]	|here|take|homeradius|homeleash
-
 	
 	/for _count 1 to ${_todelete.Size}
 		DEBUG _count: ${_count}-${_todelete.Size}
@@ -2196,7 +2199,6 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 		}		
 	}
 
-
 	|***
 	 *	DES: Tell toon to take doors
 	 *	USE: /door, /bc door
@@ -2286,11 +2288,6 @@ sub Event_EQBC_say(string line, string _sender, string _verbage)
 		/delay 1s		
 /return
 
-
-
-
-
-
 	
 #event camping "It will take you about 30 seconds to prepare your camp."
 sub Event_camping(string line)
@@ -2319,8 +2316,6 @@ sub Event_noRaid()
 		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 		/if (${switchRaidInvite}) /call writeINI switchRaidInvite Common FALSE
 /return
-
-
 
 |***
 	DES: This is for lazy people like me that have to invite people to raids and dont wanna do the work.
@@ -2353,9 +2348,6 @@ sub Event_raidinvite(string line, string _sender)
 	}
 /return
 
-
-
- 
 |***
 *	DES: blurb events for raids. 
 *	USE: /blurb EXPANSION EVENT
@@ -2595,10 +2587,13 @@ sub Event_NullSlot
  *	INI: 
  *  NOTE: 
  ***| 
+#event Zone "You have entered #*#" 
 #event Zone "LOADING, PLEASE WAIT..."
-sub Event_Zone()
+sub Event_Zone(string _line)
+	/delay 1s
+	DEBUG ${cbug}Event_Zone(line: ${_line})\ax
 	/call echos zone 0 0 0 0 
-	/call check_zone_INI
+	/call check_zone_INI FALSE
 	/if (${burnForce}) /varset burnForce FALSE
 	/makecamp off
 	/if (${HomeSet}) /call writeINI HomeSet Movement FALSE
@@ -2606,6 +2601,7 @@ sub Event_Zone()
 	/if (${coreAuto} && ${switchShrink}) /call check_shrink
 	
 	/call create_timer timer_zone_pause ${tZone_Pause}
+	/doevents flush
 /return 
 
 
@@ -3943,7 +3939,7 @@ sub Bind_ts(string _tsType)
 
 |***
  *	DES: core controls
- *	USE: /cc [auto|agro|force|melee|range|nuke|verbose|killcode|reset|whitewash|MA1|MA2|saferadius|zradius] [TEXT]
+ *	USE: /cc []
  *	INI: 
  *  NOTE:
  ***|
@@ -4039,6 +4035,15 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			/if (${switchPull} && ${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
 			/if (${switchPull} && ${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
 		}
+		
+	| delay in nuking	
+	} else /if (${Bool[${_ccType.Equal[nukedelay]}]}) {
+		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
+			/call writeINI tNuke_Delay Timer ${_verbage} 
+			/call echos number "Nuke Cast Delay" ${_verbage} 0 0
+		} else {
+			VOUT /${_bind} nukedelay [${cinfo}${tNuke_Delay}\ax] allowable range is ${cinfo}1 - 100\ax
+		} 	
 
 	| agro/agro range ##
 	} else /if (${Bool[${_ccType.Equal[agro]}]}) {
@@ -4060,7 +4065,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		} else /if (!${Bool[${_verbage}]})  {
 			/call writeINI MA1 Common FALSE
 		} 				
-		VOUT /cc ma1 ${sep} ${If[${Bool[${MA1}]},${cinfo}${MA1}\ax,${odisabled}]}
+		VOUT /${_bind} ma1 ${sep} ${If[${Bool[${MA1}]},${cinfo}${MA1}\ax,${odisabled}]}
 	} else /if (${Bool[${_ccType.Equal[ma2]}]}) {		
 		/if (${Bool[${_verbage}]}) {
 			/call writeINI MA2 Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
