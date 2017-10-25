@@ -9,6 +9,19 @@
  ***|
 
 
+20171025
+- added in a delay for casting nukes, dots, rains
+  -- /cc [nukedelay] - [1,100] delay in casting a direct damage/damage over time spell
+  -- cast_nuke_rain(), cast_nuke(), cast_DOT()
+- class.clr.inc
+  -- fixed logic error in the aggressive heal switch
+- #event Zone
+  -- missed a variable due to the new changes. it's not missed anymore
+- added zone check to /here
+- logic error in aura buffs for non manna using classes.
+
+
+
 20171021
 - class.brd.inc
   -- removed the pulse debug echos. forgot about them being in there
@@ -16,7 +29,7 @@
   -- small adjustment to the zerker aura portion
 - class.wiz.inc
   -- /wiz [forcetwincast] - enable/disable spamming of twincast spell and twincast nuke
-  
+  -- corrected burn AA [furry of*] for latest DB update
 
 
 20171020

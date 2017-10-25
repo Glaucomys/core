@@ -47,6 +47,7 @@ sub core_MAG()
 		/if (${useRain}) /call cast_nuke_rain		
 		/if (${doclickItem}) /call click_item
 		/call disc_${Me.Class.ShortName}
+		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana
@@ -80,6 +81,7 @@ sub disc_MAG()
 	/if (!${Macro.Return}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.AltAbilityReady[Force of Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Force of Elements].MyRange}) /call core_cast "Force of Elements" alt ${Target2Kill} FALSE
+	/if (${switchForceTwincast} && ${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) /call core_cast "${TwincastSpell}" 0 ${Target2Kill} FALSE
 /return
 
 
@@ -97,7 +99,7 @@ sub use_cauldron()
 	/call create_timer timer_caldron_use ${tCauldron_use}
 
 	/if (${Bool[${Cauldron}]} && ${Me.ItemReady[${Cauldron}]}) {
-		/call core_cast "${Cauldron}" item FALSE
+		/call core_cast "${Cauldron}" item 0 FALSE
 		/call sort_cursor TRUE
 	}
 /return
@@ -119,18 +121,18 @@ sub click_DPS_MAG()
 	
 	| click summon rods. DPS fillers....
 	/if (${Me.ItemReady[${ParadoxRodName}]}) {
-		| /call MQ2Cast "${ParadoxRodName}" item -targetid|${Target2Kill}
-		/call core_cast "${ParadoxRodName}" item ${Target2Kill} FALSE
+		/call MQ2Cast "${ParadoxRodName}" item -targetid|${Target2Kill}
+		| /call core_cast "${ParadoxRodName}" item ${Target2Kill} FALSE
 		/return
 	}
 	/if (${Me.ItemReady[${OrbName}]}) {
-		| /call MQ2Cast "${OrbName}" item -targetid|${Target2Kill}
-		/call core_cast "${OrbName}" item ${Target2Kill} FALSE
+		/call MQ2Cast "${OrbName}" item -targetid|${Target2Kill}
+		| /call core_cast "${OrbName}" item ${Target2Kill} FALSE
 		/return
 	}
 	/if (${switchPcPet} && ${Me.ItemReady[${ElementRodName}]} && ${Target.PctHPs} > 20) {
-		| /call MQ2Cast "${ElementRodName}" item -targetid|${Target2Kill}
-		/call core_cast "${ElementRodName}" item ${Target2Kill} FALSE
+		/call MQ2Cast "${ElementRodName}" item -targetid|${Target2Kill}
+		| /call core_cast "${ElementRodName}" item ${Target2Kill} FALSE
 		/return
 	}
 /return
@@ -247,13 +249,38 @@ sub synergy_MAG()
 
 	| pet AAs
 	/if (${switchPcPet}) {
-		/if (${Me.AltAbilityReady[Servant of Ro]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Servant of Ro].MyRange}) /call core_cast "Servant of Ro" alt ${Target2Kill}  FALSE
-		| /if (${Me.AltAbilityReady[Frenzied Burnout]}) /call core_cast "Frenzied Burnout" alt ${Me.Pet.ID}
+		/if (${Me.AltAbilityReady[Servant of Ro]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Servant of Ro].MyRange}) /call core_cast "Servant of Ro" alt ${Target2Kill} FALSE
+		/if (${Me.AltAbilityReady[Companion's Fury]}) /call core_cast "Companion's Fury" alt ${Me.Pet.ID} FALSE
 	}
 	/if (${switchPcSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill} FALSE
 
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn
+/return
+
+
+
+|***
+ *  DES: Control for getting Twincast either spell or Proc
+ *  USE: /call force_twincast_MAG
+ *  INI: 
+ *  NOTE: Twincast lets get it.
+ ***|
+sub force_twincast_MAG()
+	DEBUG ${cbug}force_twincast_MAG()\ax 
+	AMIDEAD
+	CHECKEXIT
+	/doevents
+	/call is_target_dead
+	/if (${Macro.Return}) /return  
+	
+	| SDEBUG pass checks
+	
+	/if (${Me.SpellReady[${NukeTwincast}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
+		| /echo twincast nuke
+		/call core_cast "${NukeTwincast}" 0 ${Target2Kill} FALSE
+		/call create_timer timer_force_twincast ${tForce_Twincast}
+	}
 /return
 	
 	
@@ -280,22 +307,28 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
+	
 	| gather enable/disable /pct
 	/if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
 			/call writeINI GatherPercent Spells ${_classVerbage} 
 			/call echos number "Gather Mana %" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
-		}	else /if (!${Bool[${_classVerbage}]}) {
+			NOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}	else {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
 			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
 		}			
 	
+	| enable/disable force twincasting
+	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
+		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
+		/call echos switch "Force Twincast" switchForceTwincast 0 0
+
 	| get rods.. cause things and stuff
 	} else /if (${Bool[${_classType.Equal[rods]}]}) {
 		| self mod rod

@@ -1734,6 +1734,7 @@ sub clear_timer(int _tmpID)
  ***|
 sub cast_DOT()
 	DEBUGCAST ${cbug}cast_DOT(count ${DoDoT})\ax
+	/if (${timer_Nuke_Delay}) /return
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoDoT}
@@ -1746,6 +1747,7 @@ sub cast_DOT()
 
 		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
 			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
+			/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 		}
 	/next _count
 /return
@@ -1760,6 +1762,7 @@ sub cast_DOT()
  ***|
 sub cast_nuke()
 	DEBUGCAST ${cbug}cast_nuke()\ax
+	/if (${timer_Nuke_Delay}) /return
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoNuke}
@@ -1767,8 +1770,8 @@ sub cast_nuke()
 		CHECKEXIT
 		/call is_target_dead
 		/if (${Macro.Return}) /return
-		
 		/call core_cast "${Nuke${_count}}" 0 ${Target2Kill} cast_break
+		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 	/next _count
 /return
 
@@ -1782,6 +1785,7 @@ sub cast_nuke()
  ***|
 sub cast_nuke_rain()
 	DEBUGCAST ${cbug}cast_nuke_rain()${cinfo}
+	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${doRainNuke}
@@ -1791,6 +1795,7 @@ sub cast_nuke_rain()
 		/if (${Macro.Return}) /return	
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${RainNuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${RainNuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${RainNuke${_count}}].Mana}) {
 			/call core_cast "${RainNuke${_count}}" 0 ${Target2Kill} cast_break
+			/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 		}
 	/next _count
 /return
@@ -3533,6 +3538,9 @@ sub set_combat_here()
 		/keypress forward
 		/keypress back
 	}
+ 	
+ 	| fix zone
+ 	/call check_zone_INI FALSE
  	
 	| /call clear_combat
 	/if (${switchPcPet} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off

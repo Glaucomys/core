@@ -839,6 +839,7 @@ sub set_declares()
 	/call DeclareIniVar switchBuffItem	 						bool		Buffs FALSE 
 	/call DeclareIniVar switchBuffCombat 						bool		Buffs FALSE 
 	/call DeclareIniVar switchBuffPet 							bool 		Pet FALSE 
+	/call DeclareIniVar switchBuffSelf	 						bool		Buffs FALSE 
 
 	
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
@@ -846,7 +847,6 @@ sub set_declares()
 		/call DeclareIniVar GoMLevel									int			Spells 105
 		/call DeclareIniVar GoMNuke										string	Spells FALSE
 		/call DeclareIniVar GoMNuke2									string	Spells FALSE
-		/call DeclareIniVar switchBuffSelf	 					bool		Buffs FALSE 
 		/call DeclareIniVar switchBuffBc							bool		Buffs FALSE
 		/call DeclareIniVar switchBuffRaid						bool		Buffs FALSE
 		/call DeclareIniVar switchBuffTell						bool		Buffs FALSE
