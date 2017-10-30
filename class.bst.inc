@@ -34,11 +34,11 @@ sub core_BST()
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
+		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
-		/if (${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Sha's Reprisal"
 		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/call use_skill_melee
 		/if (${doclickItem}) /call click_item
@@ -50,10 +50,10 @@ sub core_BST()
 		/call set_combat NUKE
 		/call send_pet
 		/call click_BP
+		/call check_deBuffs ${Target2Kill}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
-		/if (${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Sha's Reprisal"
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/call cast_AA_focused_paragon
@@ -92,15 +92,15 @@ sub disc_BST()
 			
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
-	/if (!${Me.Song[${GrowlSpell}].ID} && ${Me.Pet.ID} && !${Me.PetBuff[Savage Rage]} && !${Me.Song[${DiscSavage}].ID}) /call core_cast "${GrowlSpell}"
-	/if (${Me.AltAbilityReady[Chameleon Strike]} && ${Target.Distance} < ${Spell[Chameleon Strike].MyRange}) /call core_cast "Chameleon Strike" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[Feral Swipe]} && ${Target.Distance} < ${Spell[Feral Swipe].MyRange}) /call core_cast "Feral Swipe" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[Bite of the Asp]} && ${Target.Distance} < ${Spell[Bite of the Asp].MyRange}) /call core_cast "Bite of the Asp" alt ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Target.Distance} < ${Spell[${DiscForay}].MyRange} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscFocusClaws}]}) /call core_cast "${DiscFocusClaws}" disc ${Target2Kill}
-	/if (${Me.AltAbilityReady[Roar of thunder]}) /call core_cast "Roar of Thunder" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[${DiscEnduring}]} && ${Target.Distance} < ${Spell[${DiscEnduring}].MyRange} && !${Bool[${Targe.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscRending}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill}
+	/if (!${Me.Song[${GrowlSpell}].ID} && ${Me.Pet.ID} && !${Me.PetBuff[Savage Rage]} && !${Me.Song[${DiscSavage}].ID}) /call core_cast "${GrowlSpell}" 0 0 FALSE
+	/if (${Me.AltAbilityReady[Chameleon Strike]} && ${Target.Distance} < ${Spell[Chameleon Strike].MyRange}) /call core_cast "Chameleon Strike" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Feral Swipe]} && ${Target.Distance} < ${Spell[Feral Swipe].MyRange}) /call core_cast "Feral Swipe" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Bite of the Asp]} && ${Target.Distance} < ${Spell[Bite of the Asp].MyRange}) /call core_cast "Bite of the Asp" alt ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Target.Distance} < ${Spell[${DiscForay}].MyRange} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscFocusClaws}]}) /call core_cast "${DiscFocusClaws}" disc ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Roar of thunder]}) /call core_cast "Roar of Thunder" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[${DiscEnduring}]} && ${Target.Distance} < ${Spell[${DiscEnduring}].MyRange} && !${Bool[${Targe.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscRending}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill} FALSE
 /return
 
 
@@ -126,7 +126,7 @@ sub cast_AA_focused_paragon()
 
 	| self only focus
 	/if (${Me.AltAbilityReady[Focused Paragon of Spirits]} && ${Me.PctMana} < ${selfParagon} && !${Me.Song[Paragon].ID}) {
-		/call core_cast "Focused Paragon of Spirits" alt ${Me.ID}
+		/call core_cast "Focused Paragon of Spirits" alt ${Me.ID} FALSE
 		/if (${_tmpTarget2Kill}) {
 			/target ID ${_tmpTarget2Kill}
 			/delay 1s ${Target.ID} == ${_tmpTarget2Kill}
@@ -140,7 +140,7 @@ sub cast_AA_focused_paragon()
 				/varset _tmpID ${Group.Member[${i}].ID}	 		
 		 	}
 		/next _cout
-		/if (${_tmpID}) /call core_cast "Focused Paragon of Spirits" alt ${_tmpID}
+		/if (${_tmpID}) /call core_cast "Focused Paragon of Spirits" alt ${_tmpID} FALSE
 	}	
 
 /return
@@ -158,7 +158,7 @@ sub patch_heal_BST()
 	/doevents	
  	/if (${Me.PctHPs} < 75*.${tmpHealOverride}  && ${Me.AltAbilityReady[Warder's Gift]}) /call core_cast "Warder's Gift" alt 0
 	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride} && ${Me.SpellReady[${FastHeal}]}) {
-		/call core_cast "FastHeal" 0 ${Me.ID}
+		/call core_cast "FastHeal" 0 ${Me.ID} FALSE
 		/if (${Me.AltAbilityReady[Focused Paragon of Spirits]}) /call core_cast "Focused Paragon of Spirits" alt ${Me.ID}
 	}
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
@@ -179,7 +179,7 @@ sub pet_heal_BST()
 	/doevents
 
 	/if (${switchPcPet} && ${Pet.PctHPs} < 20 && ${Me.AltAbilityReady[Mend Companion]}) {
-		/call core_cast "Mend Companion" alt ${Me.Pet.ID}
+		/call core_cast "Mend Companion" alt ${Me.Pet.ID} FALSE
 	}
 	/if (${switchPcPet} && ${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) {
 		VOUT Healing \a-w${Pet.CleanName}\ax with \a-r${PetHealSpell}\ax.
@@ -213,8 +213,8 @@ sub cast_AA_paragon()
 	/doevents
 
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Paragon of Spirit]} && !${Bool[${Me.Song[Paragon of Spirit]}]}) {
-		/call core_cast "Mass Group Buff" alt 0
-		/call core_cast "Paragon of Spirit" alt 0
+		/call core_cast "Mass Group Buff" alt 0 FALSE
+		/call core_cast "Paragon of Spirit" alt 0 FALSE
 		/if (${Bool[${Raid.Members}]}) /rs ${ParagonTXT}
 	} else /if (${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		NOUT ${owarning} trying to cast ${csp}Paragon of Spirit\ax while its running.	
@@ -250,21 +250,21 @@ sub synergy_BST()
 	/doevents
 
 	| /if (${Me.AltAbilityReady[Bloodlust]}) /call core_cast "Bloodlust" alt 0
-	/if (${Me.AltAbilityReady[Bestial Alignment]}) /call core_cast "Bestial Alignment" alt 0
-	/if (${Me.AltAbilityReady[Frenzied Swipes]}) /call core_cast "Frenzied Swipes" alt 0
-	/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Bestial BloodRage]}) /call core_cast "Bestial BloodRage" alt 0
+	/if (${Me.AltAbilityReady[Bestial Alignment]}) /call core_cast "Bestial Alignment" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Frenzied Swipes]}) /call core_cast "Frenzied Swipes" alt 0 FALSE
+	/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Bestial BloodRage]}) /call core_cast "Bestial BloodRage" alt 0 FALSE
 	/call use_glyph
-	/if (${usePet}) /call core_cast "Attack of the Warders" alt ${Target2Kill}
+	/if (${usePet}) /call core_cast "Attack of the Warders" alt ${Target2Kill} FALSE
 	/if (${Me.CombatAbilityReady[${DiscRuaabri}]} && !${Me.Song[Frenzy of Spirit].ID} && !${Me.Buff[Dichotomic Fury].ID}) {
-		/call core_cast "${DiscRuaabri}" disc 0
+		/call core_cast "${DiscRuaabri}" disc 0 FALSE
 	} else {
 		/if (${Me.Song[${DiscRuaabri}].ID}) /return
-		/if (${Me.AltAbilityReady[Frenzy of Spirit]}) /call core_cast "Frenzy of Spirit" alt 0
-		/if (${Me.AltAbilityReady[BloodLust]}) /call core_cast "BloodLust" alt 0
+		/if (${Me.AltAbilityReady[Frenzy of Spirit]}) /call core_cast "Frenzy of Spirit" alt 0 FALSE
+		/if (${Me.AltAbilityReady[BloodLust]}) /call core_cast "BloodLust" alt 0 FALSE
 		/call cast_AA_spire
-		/if (!${Me.Song[Bestial Alignment].ID} && ${Me.CombatAbilityReady[${DiscSavage}]}) /call core_cast "${DiscSavage}" disc 0
-		/if (!${Me.Song[${DiscSavage}].ID} && ${Me.AltAbilityReady[Ferociousness]}) /call core_cast "Ferociousness" alt 0
-		/if (${Me.AltAbilityReady[Group Bestial Alignment]} && !${Me.Buff[Ferociousness].ID}) /call core_cast "Group Bestial Alignment" alt 0
+		/if (!${Me.Song[Bestial Alignment].ID} && ${Me.CombatAbilityReady[${DiscSavage}]}) /call core_cast "${DiscSavage}" disc 0 FALSE
+		/if (!${Me.Song[${DiscSavage}].ID} && ${Me.AltAbilityReady[Ferociousness]}) /call core_cast "Ferociousness" alt 0 FALSE
+		/if (${Me.AltAbilityReady[Group Bestial Alignment]} && !${Me.Buff[Ferociousness].ID}) /call core_cast "Group Bestial Alignment" alt 0 FALSE
 	}
 
 	/call use_glyph
@@ -283,7 +283,7 @@ sub synergy_BST()
 #bind setBST /bst
 sub Bind_setBST(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setBST(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|BST]}) /return
+	/if (!${validate_class[TRUE, |BST]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

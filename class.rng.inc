@@ -98,7 +98,7 @@ sub disc_RNG()
 	/doevents
 	/call is_target_dead
 	/if (${Macro.Return}) /return
-	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
+	/call check_deBuffs ${Target2Kill}
 
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
@@ -328,7 +328,7 @@ sub synergy_RNG()
 #bind setRNG /rng
 sub Bind_setRNG(string _classType, string _verbage)
 	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${validate_class[|RNG]}) /return
+	/if (!${validate_class[TRUE, |RNG]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

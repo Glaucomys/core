@@ -195,7 +195,7 @@ sub synergy_WAR()
 #bind setWAR /war
 sub Bind_setWAR(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setWAR(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|WAR]}) /return
+	/if (!${validate_class[TRUE, |WAR]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

@@ -36,21 +36,16 @@ sub core_NEC()
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
-		/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]} && ${Target.Body.Name.Equal[Undead]}) /call cast_AA_slow ${Target2Kill} "Death's Malaise"
+		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill}
-		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
-		/if (${switchdeBuffMalo}) /call cast_malo_${Me.Class.ShortName} ${Target.ID}
+		/call check_deBuffs ${Target2Kill}
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}
 		/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
 		/if (${DoNuke}) /call cast_nuke
 		/if (${DoDoT}) /call cast_DOT
-
 		/if (${doclickItem}) /call click_item TRUE
-		/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
-
-		
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
@@ -162,7 +157,7 @@ sub cast_blood(int _tmpID)
 	/if (${Bool[${Me.Song[Chaotic Power]}]}) /return
 	/call is_target_dead
 	/if (${Macro.Return}) /return
-	/call core_cast "${spellBlood}" 0 ${_tmpID}	
+	/call core_cast "${spellBlood}" 0 ${_tmpID}	FALSE
 /return
 
 
@@ -172,7 +167,6 @@ sub cast_blood(int _tmpID)
  *	USE: 
  *	INI: 
  *  NOTE: 
- ***|
 sub sac_toon()
 	/declare sactarget string local Jraoz
 	/if (${Spawn[pc ${sactarget}].ID}) {
@@ -186,46 +180,7 @@ sub sac_toon()
 		/delay 3s
 	}
 /return
-
-
-
-|***
- *	DES: malo the target
- *	USE: debufs /debuff malo
- *	INI: 
- *  NOTE: 
  ***|
-sub cast_malo_NEC(int _tmpID)
-	DEBUGCLASS ${cbug}cast_malo_NEC()\ax
-	/doevents
-	CHECKEXIT
-	/if (${timer_malo_${_tmpID}} || !${_tmpID}) /return
-	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /return
-	
-	/if (${Target.Maloed.Duration}) {
-		/call create_timer timer_malo_${_tmpID} ${Target.Maloed.Duration.TotalSeconds}s
-		/return
-	}
-	/declare _resistCount int local 0
-
-	:loopmalo
-	/if (${Target.Distance} <= ${Spell[${spellMalo}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellMalo}].Mana} && ${Target.LineOfSight}) {
-		/call core_cast "${spellMalo}" alt ${_tmpID}
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_malo_${_tmpID} ${Spell[${spellMalo}].Duration.TotalSeconds}s
-		} else /if (${Select[${castReturn},CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}
-			/if (${_resistCount} >= 3) {
-				OUT ${ctar}${Target.CleanName}\ax resisted ${csp}${spellMalo}\ax ${cinfo}${_resistCount}\ax times, moving on!
-				/call create_timer timer_malo_${_tmpID} ${Spell[${spellMalo}].Duration.TotalSeconds}m
-			} else {
-				/delay 5
-				/goto :loopmalo
-			}
-		}
-	}
-/return
 
 
 
@@ -243,9 +198,9 @@ sub synergy_NEC()
 	/call cast_AA_spire
 	
 	| aa swarm of decay
-	/if (${switchPcSwarm}) /call core_cast "Swarm of Decay" alt ${Target2Kill}
+	/if (${switchPcSwarm}) /call core_cast "Swarm of Decay" alt ${Target2Kill} FALSE
 	| aa Rise of bones
-	/if (${switchPcSwarm}) /call core_cast "Rise of Bones" alt ${Target2Kill}
+	/if (${switchPcSwarm}) /call core_cast "Rise of Bones" alt ${Target2Kill} FALSE
 
 	/call use_glyph
 	/call synergy_click_Circle
@@ -263,7 +218,7 @@ sub synergy_NEC()
 #bind setNEC /nec
 sub Bind_setNEC(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setNEC(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|NEC]}) /return
+	/if (!${validate_class[TRUE, |NEC]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

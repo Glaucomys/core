@@ -81,8 +81,7 @@ sub disc_WIZ()
 	/if (${Macro.Return}) /goto :exit	
 	
 	| debuff the mob
-	/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
-	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
+	/call check_deBuffs ${Target2Kill}
 	/if (${switchdeBuffCripple} && !${Target.Buff[Lower Element].ID}) /call core_cast "Lower Element" alt ${Target2Kill}
 
 	| ditch agro
@@ -279,7 +278,7 @@ sub force_twincast_WIZ()
 #bind setWIZ /wiz
 sub Bind_setWIZ(string _classType, string _verbage)
 	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${validate_class[|WIZ]}) /return
+	/if (!${validate_class[TRUE, |WIZ]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

@@ -36,14 +36,44 @@ sub core_SHM()
 	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
+		/call set_combat MELEE
+		/call send_pet
+		/call stick_to_target
+		/call check_deBuffs ${Target2Kill}
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${doclickItem}) /call click_item
+		/call disc_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/call send_pet
+		/call stick_to_target
+		/call check_deBuffs ${Target2Kill}
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${doclickItem}) /call click_item
+		/call disc_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke}) /call cast_nuke			
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
+		/call set_combat NUKE
+		/call send_pet
+		/call check_deBuffs ${Target2Kill}
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${doclickItem}) /call click_item
+		/call disc_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},HEAL]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/if (${Target2Kill} && ${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
-		/if (${Target2Kill} && ${switchdeBuffCripple}) /call cast_cripple_${Me.Class.ShortName} ${Target.ID}
-		/if (${Target2Kill} && ${switchdeBuffSlow}) /call cast_AA_slow ${Target2Kill} "Turgur's Swarm"
+		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call is_target_valid ${Target2Kill}
 		/if (${isValidTarget}) {
@@ -146,14 +176,17 @@ sub check_heal_group_SHM()
 	
 
 	| Does the control toon need healing?
-	/if (!${Bool[${Group.Member[${toonControl}]}]} && ${Bool[${toonControl}]} && ${toonControlProtect} && !${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
-		/varset WorstHurt ${Spawn[${toonControl}].ID}
-		/varset WorstHP ${Spawn[${toonControl}].PctHPs}
-		/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
-	} 
+	/if (${Bool[${toonControl}]} && ${toonControlProtect} && (${Bool[${RampageTank}]} && ${RampageTank.NotEqual[${toonControl}]})) {
+		/if (!${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
+			/varset WorstHurt ${Spawn[${toonControl}].ID}
+			/varset WorstHP ${Spawn[${toonControl}].PctHPs}
+			/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
+		} 
+	}
 
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
+			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 			AMIDEAD
 
 			/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHp} && (${Group.Member[${_count}].Distance} <= ${Spell[${healMain}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healMain}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride})) {
@@ -367,42 +400,6 @@ sub doAid()
 
 
 
-|***
- *	DES: cripples the target
- *	USE: debufs
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_cripple_SHM(int _tmpID)
-	/doevents
-	CHECKEXIT
-	/if (${timer_cripple_${_tmpID}} || !${_tmpID}) /return
-	/declare _resistCount int local 0
-	
-	/if (${Target.Crippled.Duration}) {
-		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
-		/return
-	}
-
-	:loopcripple
-	/if (${Target.Distance} <= ${Spell[${spellCripple}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellCripple}].Mana} && ${Target.LineOfSight}) {
-		/call core_cast "${spellCripple}" 0 ${_tmpID}
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
-		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST,CAST_RESIST,CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}
-			/if (${_resistCount} >= 3) {
-				VOUT ${ctar}${Target.CleanName}\ax resisted ${csp}${spellCripple}\ax ${cinfo}${_resistCount}\ax times, moving on!
-				/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}m
-			} else {
-				/delay 5
-				/goto :loopcripple
-			}
-		}
-	}
-/return
-
-
 
  |***
  *	DES: Shaman burn routines
@@ -432,7 +429,7 @@ sub synergy_SHM()
 #bind setSHM /shm
 sub Bind_setSHM(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setSHM(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|SHM]}) /return
+	/if (!${validate_class[TRUE, |SHM]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

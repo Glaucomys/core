@@ -43,7 +43,7 @@ sub core_DRU()
 		CHECKREZ
 		/call set_combat NUKE
 		/call send_pet
-		/call cast_AA_ro ${Target2Kill}
+		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
@@ -65,7 +65,7 @@ sub core_DRU()
 		/if (${isValidTarget}) {
 			CHECKREZ
 			/call set_combat NUKE
-			/call cast_AA_ro ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/if (${DoDoT}) /call cast_DOT
 			/if (${DoNuke}) /call cast_nuke
@@ -100,8 +100,6 @@ sub disc_DRU()
 	/call is_target_dead
 	/if (${Macro.Return} || !${Target.ID}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
-	/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 	/if (${Me.AltAbilityReady[Storm Strike]}) /call core_cast "Storm Strike" alt ${Target2Kill} FALSE
 	/if (${Me.AltAbilityReady[Season's Wrath]}) /call core_cast "Season's Wrath" alt ${Target2Kill} FALSE
 /return
@@ -191,25 +189,26 @@ sub check_heal_group_DRU()
 	/varset MajorHurt					0
 	
 	| Does the control toon need healing?
-	/if (!${Bool[${Group.Member[${toonControl}]}]} && ${Bool[${toonControl}]} && ${toonControlProtect} && !${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHp} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7)) {
-		/varset WorstHurt ${Spawn[${toonControl}].ID}
-		/varset WorstHp ${Spawn[${toonControl}].PctHPs}
-		/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
-	} 
+	/if (!${Bool[${Group.Member[${toonControl}]}]} && ${Bool[${toonControl}]} && ${toonControlProtect} && (${Bool[${RampageTank}]} && ${RampageTank.NotEqual[${toonControl}]})) {
+		/if (!${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHp} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7) && (${Bool[${RampageTank}]} && ${RampageTank.NotEqual[${toonControl}]})) {
+			/varset WorstHurt ${Spawn[${toonControl}].ID}
+			/varset WorstHp ${Spawn[${toonControl}].PctHPs}
+			/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
+		} 
+	}
 
 	/for _count 0 to ${Group.Members}
-		/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHp} && (${Group.Member[${_count}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride})) {
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+		/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHp} && (${Group.Member[${_count}].Distance} <= ${Spell[${healRejuvilation}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healSanavida}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride})) {
 			/varset WorstHurt ${Group.Member[${_count}].ID}
 			/varset WorstHp ${Group.Member[${_count}].PctHPs}
 			/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
 		} 
 		
-    /if (!${Spawn[pc id ${Group.Member[${_count}].ID}].Dead} && (${Group.Member[${_count}].PctHPs} < 85*.${tmpHealOverride} || ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) && ${Group.Member[${_count}].PctHPs} > ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7 && ${Group.Member[${_count}].Distance} <= ${Spell[${healGroup}].AERange}) {
+    /if (!${Spawn[pc id ${Group.Member[${_count}].ID}].Dead} && (${Group.Member[${_count}].PctHPs} < 85*.${tmpHealOverride} || ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) && ${Group.Member[${_count}].PctHPs} > ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7 && ${Group.Member[${_count}].Distance} <= ${Spell[${healWholeGroup}].AERange}) {
       /varcalc MinorHurt ${MinorHurt}+1
-			UPDATEHUD "HEALING"
-    } else /if (!${Spawn[pc id ${Group.Member[${_count}].ID}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7 && ${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].Distance} <= ${Spell[${healGroup}].AERange}) {
+    } else /if (!${Spawn[pc id ${Group.Member[${_count}].ID}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7 && ${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].Distance} <= ${Spell[${healWholeGroup}].AERange}) {
       /varcalc MajorHurt ${MajorHurt}+1
-      UPDATEHUD "HEAL"
     }
 	 	/doevents
   /next _count
@@ -227,13 +226,13 @@ sub check_heal_group_DRU()
 		/call core_cast "${healPanic}" 0 ${WorstHurt}
 		/if (${castReturn.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
 	}
-	/if (!${Me.SpellReady[${PatchSpell}]} && !${Me.SpellReady[${HealSpell}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.6*.${tmpHealOverride} && ${Me.AltAbilityReady[Peacful Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
+	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.6*.${tmpHealOverride} && ${Me.AltAbilityReady[Peacful Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
 		/call core_cast "Convergence of Spirits" alt ${WorstHurt}
 	}
-	/if (!${Me.SpellReady[${PatchSpell}]} && !${Me.SpellReady[${HealSpell}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.5*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
+	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.5*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
 		/call core_cast "Peacful Convergence of Spirits" alt ${WorstHurt}
 	}
-	/if (!${Me.SpellReady[${PatchSpell}]} && !${Me.SpellReady[${HealSpell}]} && ${Spawn[${WorstHurt}].PctHPs} < 35*.${tmpHealOverride} && ${Me.AltAbilityReady[Swarm of Fireflies]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[Swarm of Fireflies].MyRange}) {
+	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < 35*.${tmpHealOverride} && ${Me.AltAbilityReady[Swarm of Fireflies]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[Swarm of Fireflies].MyRange}) {
 		/call core_cast "Swarm of Fireflies" alt ${WorstHurt}
 	}
   
@@ -430,7 +429,7 @@ sub synergy_DRU()
 #bind setDRU /dru
 sub Bind_setDRU(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setDRU(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|DRU]}) /return
+	/if (!${validate_class[TRUE, |DRU]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

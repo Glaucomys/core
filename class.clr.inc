@@ -154,8 +154,8 @@ sub check_heal_group_CLR()
 	
 
 	| Does the control toon need healing?
-	/if (${Bool[${toonControl}]} && ${toonControlProtect}) {
-		/if (!${Bool[${Group.Member[${toonControl}]}]} && !${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
+	/if (!${Bool[${Group.Member[${toonControl}]}]} && ${Bool[${toonControl}]} && ${toonControlProtect} && (${Bool[${RampageTank}]} && ${RampageTank.NotEqual[${toonControl}]})) {
+		/if (!${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
 			/varset WorstHurt ${Spawn[${toonControl}].ID}
 			/varset WorstHP ${Spawn[${toonControl}].PctHPs}
 			/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
@@ -165,6 +165,8 @@ sub check_heal_group_CLR()
 	| Do group members need healing? ${Group.Member[${_count}].State.Equal[HOVER]}
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
+			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+			| /if (${Group.Member[${_count}].Dead}) /continue
 			AMIDEAD
 			CHECKEXIT
 		 	/doevents
@@ -181,9 +183,6 @@ sub check_heal_group_CLR()
 	    
 	  /next _count
 	}
-	
-	
-	
 	
   /if (${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]} ) /return
 	UPDATEHUD "HEAL"
@@ -212,7 +211,7 @@ sub check_heal_group_CLR()
  	/doevents
 	
   | AA Spire
-	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
+	/if (!${Bool[${Raid.Members}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
     /if (${Me.AltAbilityReady[${CLRspire3}]}) {
     	/call core_cast "${CLRspire3}" alt ${WorstHurt}
     }
@@ -752,7 +751,7 @@ ${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
 #bind setCLR /clr
 sub Bind_setCLR(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|CLR]}) /return
+	/if (!${validate_class[TRUE, |CLR]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
@@ -791,8 +790,6 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_classVerbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
@@ -853,7 +850,16 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	} else /if (${Bool[${_classType.Equal[grouphot]}]}) {
 		/call writeINI useGroupHoT Heal ${If[${useGroupHoT},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal over Time" useGroupHoT 0 0
-		
+
+	| set rampage tank toon
+	} else /if (${Bool[${_classType.Equal[rampage]}]}) {
+		/if (${Bool[${_classVerbage}]}) {
+			/call writeINI RampageTank Heal ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
+		} else /if (!${Bool[${_classVerbage}]}) {
+			/call writeINI RampageTank Heal FALSE
+		}
+		VOUT Rampage Tank ${sep} ${If[${Bool[${RampageTank}]},${cgood}${RampageTank}\ax,${odisabled}]}
+				
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
 		/if (${Bool[${_classVerbage}]}) /declare _num int local ${_classVerbage}

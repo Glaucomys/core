@@ -227,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171023
+	/declare coreBuild	 														int			outer 20171030
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -334,13 +334,14 @@ sub set_declares()
 		
 		
 	| core control
-	/declare coreType 															string 	outer |auto|control|echo|expadjust|expmaintain|explevel|fixini|invite|killcode|dbcash|raidinvite|relay|reset|rest|verbose|whitewash
+	/declare coreType 															string 	outer |auto|control|echo|events|expadjust|expmaintain|explevel|fixini|invite|killcode|dbcash|raidinvite|relay|reset|rest|verbose|whitewash
 	/declare coreObscure														bool		outer FALSE
 	/call DeclareIniVar relayTells									string	Common FALSE
 	/call DeclareIniVar coreAuto				 						bool	 	Common FALSE
 	/call DeclareCoreIniVar remoteKillKey						string	General "CHANGE ME" 
 	/call DeclareCoreIniVar ${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}				int			DeathCount 0
 	/call DeclareCoreIniVar invitelist							string	No FALSE
+	/call DeclareCoreIniVar rezlist									string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
 	/call DeclareIniVar toonControl			 						string	Common FALSE
 	/call DeclareIniVar autoRest 										int 		Common 90
@@ -348,6 +349,7 @@ sub set_declares()
 	/call DeclareIniVar AutoExpAdjust 							bool 		Common TRUE
 	/call DeclareIniVar MaintExpLvl   							int 		Common 99
 	/call DeclareIniVar MaxLevel      							int 		Common 105
+	/call DeclareIniVar coreEventsInc  							bool 		Common TRUE
 
 
 	| OCD Shit - 
@@ -649,6 +651,7 @@ sub set_declares()
   /declare rezPct																	string	outer |10|20|35|50|60|75|90|93|96
 	/declare flagCallNeedRez												bool		outer FALSE
 	/declare switchRez															bool		outer FALSE
+	/declare switchRezStop													bool		outer FALSE
 	/call DeclareIniVar switchRezTake 							bool 		Heal TRUE 
 	/call DeclareIniVar switchRezEmergency					bool		Heal FALSE
 	/call DeclareIniVar minRezPct										int			Common 90
@@ -840,6 +843,9 @@ sub set_declares()
 	/call DeclareIniVar switchBuffCombat 						bool		Buffs FALSE 
 	/call DeclareIniVar switchBuffPet 							bool 		Pet FALSE 
 	/call DeclareIniVar switchBuffSelf	 						bool		Buffs FALSE 
+	/call DeclareIniVar switchBuffBc								bool		Buffs FALSE
+	/call DeclareIniVar switchBuffRaid							bool		Buffs FALSE
+	/call DeclareIniVar switchBuffTell							bool		Buffs FALSE
 
 	
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
@@ -847,9 +853,6 @@ sub set_declares()
 		/call DeclareIniVar GoMLevel									int			Spells 105
 		/call DeclareIniVar GoMNuke										string	Spells FALSE
 		/call DeclareIniVar GoMNuke2									string	Spells FALSE
-		/call DeclareIniVar switchBuffBc							bool		Buffs FALSE
-		/call DeclareIniVar switchBuffRaid						bool		Buffs FALSE
-		/call DeclareIniVar switchBuffTell						bool		Buffs FALSE
 
 		| bc/tell buffs
 		/declare BuffCount															int 		outer 15
@@ -947,17 +950,17 @@ sub set_declares()
   /declare brdType																string	outer |line|spiregroup|spireraid
   /declare berType																string	outer |ae|spiregroup|spireraid
   /declare bstType																string	outer |spiregroup|spireraid
-  /declare clrType																string	outer |aggressive|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
-  /declare druType																string	outer |groupheal|healpoint|spiregroup|spireraid|xtradius|xttime
+  /declare clrType																string	outer |aggressive|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
+  /declare druType																string	outer |groupheal|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
   /declare encType																string	outer |gather|spiregroup|spireraid
   /declare magType																string	outer |fade|forcetwincast|gather|mana|rods|spiregroup|spireraid
   /declare mnkType																string	outer |spiregroup|spireraid
   /declare necType																string	outer |spiregroup|spireraid
-  /declare palType																string	outer |groupheal|harmonions|healpoint|mg|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
+  /declare palType																string	outer |groupheal|harmonions|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
   /declare rogType																string	outer |ae|autosos|poison|spiregroup|spireraid
   /declare rngType																string	outer |spice|spiregroup|spireraid|summer
   /declare shdType																string	outer |harmoniouns|skin|spiregroup|spireraid|stance
-  /declare shmType																string	outer |groupheal|grouphot|healpoint|spiregroup|spireraid|xtradius|xttime
+  /declare shmType																string	outer |groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
   /declare warType																string	outer |spiregroup|spireraid
   /declare wizType																string	outer |forcetwincast|gather|manaburn|spiregroup|spireraid
   
@@ -1087,12 +1090,11 @@ sub declare_MAG()
 	/call DeclareIniVar NukeSalvo										string 	Spells "Storm of Many"
 	/call DeclareIniVar DoDoT						 						int			Spells 0
 	/call DeclareIniVar Cauldron				 						string	Spells "Cauldron of Countless Goods"
-	/call DeclareIniVar CauldronDestroy 						string 	Spells "Tavon's Burnished Gemstone|Tavon's Polished Gemstone|Ether-Fused Shard|Imprint of the Enhanced Minion|Crystallized Sulfur|Worlu's Windcloak|Worlu's Prying Eyes|"
 	/call DeclareIniVar useRain											bool 		Spells FALSE
 	/call DeclareIniVar doRainNuke									int 		Spells 2
 	/call DeclareIniVar RainNuke1 									string 	Spells "Rain of Cutlasses"
 	/call DeclareIniVar RainNuke2 									string 	Spells "Coronal Rain"
-	/call DeclareIniVar MaloSpell 									string 	Spells "Malosinete"
+	/call DeclareIniVar spellMalo 									string 	Spells "Malosinete"
 	/call DeclareIniVar AAFade											string	Buffs "Dimensional Shield"
 	/call DeclareIniVar useAAFade										int			Buffs 50
 	/call DeclareIniVar NukeTwincast								string	Spells "Chaotic Fire"
@@ -1127,6 +1129,7 @@ sub declare_WIZ()
 	/call DeclareIniVar switchManaBurn		 					bool		Spells TRUE
 	/call DeclareIniVar NukeTwincast								string	Spells "Claw of the Flameweaver"
 	/call DeclareIniVar switchForceTwincast					bool		Spells TRUE
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	
 	
 	/declare fay 																		string	outer "Translocate: Fay"
@@ -1251,18 +1254,11 @@ sub declare_ENC()
  ***|
 sub declare_NEC()
 	/call setTimer tCheck_Blood											string	Timer 8s	timer_check_blood
-	| /declare set																int			outer 1
-	| /declare gem																int			outer 1
-	
-	| /call DeclareIniVar SpellSets 									int 		Spells 4
-	| /call DeclareIniVar SpellSet1 									string 	Spells core1
-	| /call DeclareIniVar SpellSet2 									string 	Spells core2
-	| /call DeclareIniVar SpellSet3 									string 	Spells core3
-	| /call DeclareIniVar SpellSet4 									string 	Spells core4
 
 	/call DeclareIniVar spellMalo										string 	Spells "Scent of Terris"
 	/call DeclareIniVar spellBlood									string 	Spells "Impose for Blood"
-
+	/call DeclareIniVar spellSlow		 								string	Spells "Scent of Terris"
+	
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
@@ -1324,7 +1320,7 @@ sub declare_SHD()
 	/call DeclareIniVar ChallengeSpell							string 	Spells "Impose for Power"
 	/call DeclareIniVar Hate1 											string 	Spells "Terror of Narus"
 	/call DeclareIniVar Hate2 											string 	Spells "Terror of Poria"
-	/call DeclareIniVar spellCripple								string 	Spells ""
+	/call DeclareIniVar spellCripple								string 	Spells FALSE
 	/call DeclareIniVar spellUndeadCripple					string 	Spells "Helix of the Undying"
 	 
 	/call DeclareIniVar AEHate1 										string 	Spells "Disgust"
@@ -1335,6 +1331,7 @@ sub declare_SHD()
 	/call DeclareIniVar Nuke1 											string 	Spells "Touch of Holmein"
 	/call DeclareIniVar Nuke2 											string 	Spells "Touch of Lutzen"
 	/call DeclareIniVar Nuke3 											string 	Spells FALSE
+	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
@@ -1344,11 +1341,6 @@ sub declare_SHD()
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	 
-	/call DeclareIniVar HpTapSpell 									string 	Spells "Touch of Lanys"
-	/call DeclareIniVar HpTapSpellRecourse 					string 	Spells "Gift of Lanys"
-	/call DeclareIniVar ManaTapSpell1 							string 	Spells "Bonemaw's Bite"
-	/call DeclareIniVar ManaTapSpell2 							string 	Spells "Ancient: Bite of Muram"
-
 	/call DeclareIniVar switchHarmonious 						bool	 	Buffs TRUE
 	/call DeclareIniVar Harmonious 									string 	Buffs "Harmonious Disruption"
 	/call DeclareIniVar switchStance 								bool	 	Buffs TRUE
@@ -1386,6 +1378,7 @@ sub declare_PAL()
 	| /declare rezID 													int 		outer
 	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
+	/call DeclareIniVar RampageTank									string	Heal FALSE
 	
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar DiscRest			 							string	Discs "Breather"
@@ -1655,6 +1648,7 @@ sub declare_DRU()
 	/call DeclareIniVar healSanavida	 							string  Heal "Panavida"
 	/call DeclareIniVar healWholeGroup							string 	Heal "Lunasoothe"
 	/call DeclareIniVar XTHealRadius								int			Heal 300
+	/call DeclareIniVar RampageTank									string	Heal FALSE
 	
 	| ports	
 	/declare looping																string	outer "Zephyr: Looping Planes"
@@ -1763,6 +1757,7 @@ sub declare_SHM()
 	/call DeclareIniVar ProtectInsideRaid						string	Heal |FALSE|FALSE
 	/call DeclareIniVar ProtectNPCList							string	Heal |FALSE|FALSE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
+	/call DeclareIniVar RampageTank									string	Heal FALSE
 
 	/declare HealList 															string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
 /return	
@@ -1856,6 +1851,8 @@ sub declare_BST()
 	/call DeclareIniVar selfParagon		 							int			Spells 80
 	/call DeclareIniVar groupParagon	 							int			Spells 70
 	/call DeclareIniVar minConsumptionHP						int			Spells 50
+	/call DeclareIniVar spellSlow		 								string	Spells "Sha's Reprisal"		
+
 /return	
 
 
@@ -1978,6 +1975,10 @@ sub declare_CLR()
 	/call DeclareIniVar 2				string	Heal FALSE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
 	/call DeclareIniVar switchForceGroupHeal				bool		Heal FALSE
+	/call DeclareIniVar RampageTank									string	Heal FALSE
+	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
+	
+	
 		
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar sumWeaponSpell							string	Buffs "Hammer of	Reverence"
@@ -2661,6 +2662,26 @@ sub Event_clean()
 
 
 
+
+#event resurrection_exp_gain "You regain some experience from resurrection."
+sub Event_resurrection_exp_gain()
+	:cleardeadmarkers
+		DEBUGREZ delays for rez status to clear
+		/delay 2s !${Me.State.Equal[HOVER]}
+		/delay 2s !${Me.Hovering}
+		/delay 2s !${Me.Dead}
+		DEBUGREZ clear HUD tmpMode variable
+		/varset tmpMode FALSE
+		DEBUGREZ Exit rez, clear event marker
+		/varset markerDead FALSE
+		/if (${markerDead} || ${tmpMode}) {
+			/delay 5
+			/goto :cleardeadmarkers
+		}
+/return
+
+
+
 |***
  *	DES: force self item buffing
  *	USE: /ib
@@ -2889,8 +2910,8 @@ sub Bind_override(string _overrideType)
  *  NOTE:
  ***| 	
 #bind deBuff /debuff
-sub Bind_deBuff(string _debuffType, string _verbage)
-	SDEBUG ${cbug}Bind_deBuff(type: ${_debuffType})\ax
+sub Bind_deBuff(string _deBuffType, string _verbage)
+	DEBUG ${cbug}Bind_deBuff(type: ${_deBuffType})\ax
 	/declare _count int local 0
 	/declare _bind string local deBuff
 	/declare _listout string local
@@ -2899,10 +2920,8 @@ sub Bind_deBuff(string _debuffType, string _verbage)
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
-		/echo ${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
 		/return
 	}	else /if (${_${_bind}Type.Equal[info]}) {
-		/echo helpo
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
@@ -2910,26 +2929,27 @@ sub Bind_deBuff(string _debuffType, string _verbage)
 	}
 	
 	| can i do this debuff?
-	/if (${Bool[${_debuffType.Equal[mezz]}]}) {
-		/if (!${validate_class[|ENC|BRD]}) /return
-	} else /if (${Bool[${_debuffType.Equal[malo]}]}) {
-		/if (!${validate_class[|MAG|SHM]}) /return
-	} else /if (${Bool[${_debuffType.Equal[tash]}]}) {
-		/if (!${validate_class[|ENC|BRD]}) /return
-	} else /if (${Bool[${_debuffType.Equal[cripple]}]}) {
-	} else /if (${Bool[${_debuffType.Equal[slow]}]}) {
-		/if (!${validate_class[|ENC|SHM|BRD|NEC]}) /return
-	} else /if (${Bool[${_debuffType.Equal[eradicate]}]}) {
-		/if (!${validate_class[${AAEradicateList}]}) /return
-	} else /if (${Bool[${_debuffType.Equal[snare]}]}) {
-		/if (!${validate_class[${AASnareList}]}) /return
+	/if (${Bool[${_deBuffType.Equal[mezz]}]}) {
+		/if (!${validate_class[TRUE, |ENC|BRD]}) /return
+	} else /if (${Bool[${_deBuffType.Equal[malo]}]}) {
+		/if (!${validate_class[TRUE, |MAG|SHM]}) /return
+	} else /if (${Bool[${_deBuffType.Equal[tash]}]}) {
+		/if (!${validate_class[TRUE, |ENC]}) /return
+	} else /if (${Bool[${_deBuffType.Equal[cripple]}]}) {
+		
+	} else /if (${Bool[${_deBuffType.Equal[slow]}]}) {
+		/if (!${validate_class[TRUE, |ENC|SHM|BRD|NEC|BST]}) /return
+	} else /if (${Bool[${_deBuffType.Equal[eradicate]}]}) {
+		/if (!${validate_class[TRUE, ${AAEradicateList}]}) /return
+	} else /if (${Bool[${_deBuffType.Equal[snare]}]}) {
+		/if (!${validate_class[TRUE, ${AASnareList}]}) /return
 	}
 								
-	/if (${Bool[${deBuffType.Find[${_debuffType}]}]} && ${_debuffType.NotEqual[stop]}) {
-		/if (${Defined[switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}]}) {
-			/call writeINI switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower} Buffs ${If[${switchdeBuff${_debuffType.Left[1].Upper}${_debuffType.Right[-1].Lower}},FALSE,TRUE]}  
+	/if (${Bool[${deBuffType.Find[${_deBuffType}]}]} && ${_deBuffType.NotEqual[stop]}) {
+		/if (${Defined[switchdeBuff${_deBuffType.Left[1].Upper}${_deBuffType.Right[-1].Lower}]}) {
+			/call writeINI switchdeBuff${_deBuffType.Left[1].Upper}${_deBuffType.Right[-1].Lower} Buffs ${If[${switchdeBuff${_deBuffType.Left[1].Upper}${_deBuffType.Right[-1].Lower}},FALSE,TRUE]}  
 		}
-	} else /if (${Bool[${deBuffType.Equal[${_debuffType}]}]} && ${_debuffType.Equal[stop]}) {
+	} else /if (${Bool[${deBuffType.Equal[${_deBuffType}]}]} && ${_deBuffType.Equal[stop]}) {
 		/for _count 1 to ${deBuffType.Count[|]}
 			/if (${switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower}}) {
 				/call writeINI switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower} Buffs FALSE  
@@ -2977,16 +2997,16 @@ sub Bind_heal(string _healType, int _healInt)
 	
 	| can I do this heal
 	/if (${Bool[${_healType.Equal[self]}]}) {
-		/if (${validate_class[|CLR|SHM|DRU]}) {
+		/if (${validate_class[TRUE, |CLR|SHM|DRU]}) {
 			VOUT CLR,DRU,SHM use /heal group only
 			/return
 		}
 	} else /if (${Bool[${_healType.Equal[group]}]}) {
-		/if (!${validate_class[${HealerList}]}) /return
+		/if (!${validate_class[TRUE, ${HealerList}]}) /return
 	} else /if (${Bool[${_healType.Equal[xtarget]}]}) {
-		/if (!${validate_class[${HealerList}]}) /return
+		/if (!${validate_class[TRUE, ${HealerList}]}) /return
 	} else /if (${Bool[${_healType.Equal[pet]}]}) {
-		/if (!${validate_class[|CLR|DRU|SHM|MAG|BST|NEC]}) /return
+		/if (!${validate_class[TRUE, |CLR|DRU|SHM|MAG|BST|NEC]}) /return
 	}
 				
 	/if (${Bool[${healType.Find[${_healType}]}]} && ${_healType.NotEqual[stop]} && ${_healType.NotEqual[override]}) {
@@ -3073,7 +3093,7 @@ sub Bind_buff(string _buffType, string _verbage)
 		/call writeINI switchBuffTell Buffs ${If[${switchBuffTell},FALSE,TRUE]}
 	| pet
 	} else /if (${_buffType.Equal[pet]}) {
-		/if (!${validate_class[${PetList}]}) {
+		/if (${validate_class[TRUE, ${PetList}]}) {
 			/call writeINI switchBuffPet Pet FALSE
 			/return
 		}
@@ -3414,14 +3434,14 @@ sub Bind_petControl(string _pcType, string _verbage)
 	}
 	| build and buff
 	/if (${Bool[${_pcType.Find[build]}]}) {
-		/if (!${validate_class[${PetList}]}) /return
+		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/call writeINI switchPcPet Pet TRUE
 		/call check_pet
 		/if (${Me.Pet.ID}) /call check_pet_buffs	
 
 	| pet/engage#
 	} else /if (${Bool[${_pcType.Equal[pet]}]}) {
-		/if (!${validate_class[${PetList}]}) /return
+		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/if (!${Bool[${_verbage}]}) {
 			/call writeINI switchPcPet Pet ${If[${switchPcPet},FALSE,TRUE]}
 			/call echos switch "Use Pet" switchPcPet 0 0
@@ -3453,18 +3473,18 @@ sub Bind_petControl(string _pcType, string _verbage)
 		
 	| pc tank
 	} else /if (${Bool[${_pcType.Equal[tank]}]}) {
-		/if (!${validate_class[${PetList}]}) /return
+		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/call writeINI switchPcPettank Pet ${If[${switchPcPettank},FALSE,TRUE]}
 		/call echos switch "Pet Tank" switchPcPettank	0 0
 		
 	| pc type
 	} else /if (${Bool[${_pcType.Equal[type]}]}) {
-		/if (!${validate_class[${PetList}]}) /return
+		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/call writeINI PcPettype Pet ${_verbage}
 		
 	| pc bag ##
 	} else /if (${Bool[${_pcType.Equal[bag]}]}) {
-		/if (!${validate_class[${PetList}]}) /return
+		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/if (${Range.Between[1,10:${Int[${_verbage}]}]}) {
 			/call writeINI PetBagSlotNumber Pet ${_verbage}
 			/call echos number "Pet Weapons Slot" ${_verbage} 0 0
@@ -3703,6 +3723,11 @@ sub Bind_setCore(string _coreType, string _verbage)
 	} else /if (${Bool[${_coreType.Equal[obscure]}]}) {
 		/varset coreObscure ${If[${coreObscure},FALSE,TRUE]}
 		VOUT Core ${sep} ${cinfo}Obscure Names\ax ${sep} ${If[${coreObscure},${oenabled},${odisabled}]}
+
+	| enable/disable using events.inc file
+	} else /if (${Bool[${_coreType.Equal[events]}]}) {
+		/call writeINI coreEventsInc Common ${If[${coreEventsInc},FALSE,TRUE]}
+		VOUT Core ${sep} Use ${cinfo}Events.INC\ax file ${sep} ${If[${coreEventsInc},${oenabled},${odisabled}]}
 
 	| set the kill code
 	} else /if (${Bool[${_coreType.Equal[killcode]}]}) {

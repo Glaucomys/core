@@ -204,7 +204,7 @@ sub synergy_BER()
 #bind setBER /ber
 sub Bind_setBER(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setBER(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|BER]}) /return
+	/if (!${validate_class[TRUE, |BER]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

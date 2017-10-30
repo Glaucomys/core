@@ -37,8 +37,7 @@ sub core_SHD()
 		/call use_skill_melee
 		/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
-		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
-		/if (${switchdeBuffCripple}) /call cast_cripple_${Me.Class.ShortName} ${Target.ID}
+		/call check_deBuffs ${Target2Kill}
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}
 		/call stick_to_target
@@ -49,7 +48,6 @@ sub core_SHD()
 		/call stick_to_target
 		/call use_skill_melee
 		/if (${doclickItem}) /call click_item TRUE
-		/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 		/if (${switchHarmonious}) /call check_harmonious
 		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
 		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
@@ -98,8 +96,6 @@ sub disc_SHD()
 	| heal clickies
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-
-
 	
 	/if (${Me.CombatAbilityReady[${Withstand}]} && ${Me.CurrentEndurance} > ${Spell[${Withstand}].EnduranceCost}) /call core_cast "${Withstand}" disc 0
 	/if (${Me.AltAbilityReady[Thought Leech]} &&  ${Me.PctMana} <= 60*.${tmpHealOverride}) /call core_cast "Thought Leech" alt ${Target2Kill}
@@ -111,7 +107,6 @@ sub disc_SHD()
 	/if (${switchHealSelf} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0
 	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]}) /call core_cast "Deflection Discipline" disc 0
 
-	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
 /return
 
 
@@ -176,47 +171,6 @@ sub click_DPS_SHD()
 	/doevents
 	/call use_skill_melee
 	/call click_horn_of_unity 	
-/return
-
-
-
-|***
- *	DES: cripples the target
- *	USE: debufs /debuffcripple
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_cripple_SHD(int _tmpID)
-	DEBUGCLASS ${cbug}cast_cripple_SHD()\ax
-	/if (${timer_cripple_${_tmpID}} || !${_tmpID} || !${Target.ID}) /return
-	AMIDEAD
-	CHECKEXIT
-	/doevents
-	/declare _resistCount int local 0
-	/call is_target_dead
-	/if (${Macro.Return}) /return
-	
-	/if (${Target.Crippled.Duration}) {
-		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
-		/return
-	}
-
-	:loopcripple
-	/if (${Target.Distance} <= ${Spell[${spellCripple}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellCripple}].Mana} && ${Target.LineOfSight}) {
-		/call core_cast "${spellCripple}" 0 ${_tmpID}
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
-		} else /if (${Select[${castReturn},CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}
-			/if (${_resistCount} >= 3) {
-				OUT ${ctar}${Target.CleanName}\ax resisted ${csp}${spellCripple}\ax ${cinfo}${_resistCount}\ax times, moving on!
-				/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}m
-			} else {
-				/delay 5
-				/goto :loopcripple
-			}
-		}
-	}
 /return
 
 
@@ -302,7 +256,7 @@ sub synergy_SHD()
 #bind setSHD /shd
 sub Bind_setSHD(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setSHD(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|SHD]}) /return
+	/if (!${validate_class[TRUE, |SHD]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

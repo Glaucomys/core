@@ -304,7 +304,7 @@ sub synergy_ROG()
 #bind setROG /rog
 sub Bind_setROG(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setROG(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|ROG]}) /return
+	/if (!${validate_class[TRUE, |ROG]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

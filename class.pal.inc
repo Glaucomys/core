@@ -104,7 +104,6 @@ sub disc_PAL()
 
 	| undead cripple
 	/if (${Target.Body.Name.Equal[Undead]}) {
-		| /if (${switchdeBuffCripple} && !${Target.Buff[Helix of the Undying].ID} && !${Bool[${Target.Slowed}]}) /call core_cast "Helix of the Undying" alt ${Target2Kill}
 		/call core_cast "Vanquish the Fallen" alt ${Target2Kill}
 	}
 	
@@ -195,6 +194,7 @@ sub check_splash_group_PAL()
 	| lets see whos hurt
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
+			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 			AMIDEAD
 			CHECKEXIT
 		 	/doevents
@@ -326,7 +326,7 @@ sub synergy_PAL()
 #bind setPAL /pal
 sub Bind_setPAL(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setPAL(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|PAL]}) /return
+	/if (!${validate_class[TRUE, |PAL]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

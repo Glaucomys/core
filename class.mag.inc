@@ -37,11 +37,10 @@ sub core_MAG()
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
-		/if (${switchdeBuffMalo}) /call cast_malo_tash ${Target2Kill}
+		/call check_deBuffs ${Target2Kill}
 		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
 		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchPcSwarm}) /call cast_nuke_servant
 		/if (${useRain}) /call cast_nuke_rain		
@@ -294,7 +293,7 @@ sub force_twincast_MAG()
 #bind setMAG /mag
 sub Bind_setMAG(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setMAG(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|MAG]}) /return
+	/if (!${validate_class[TRUE, |MAG]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

@@ -64,7 +64,7 @@ sub disc_MNK()
 	/doevents
 	/call is_target_dead
 	/if (${Macro.Return}) /return
-	/if (${switchdeBuffSnare}) /call cast_AA_snare ${Target2Kill}
+	/call check_deBuffs ${Target2Kill}
 	/call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
@@ -160,7 +160,7 @@ sub synergy_MNK()
 #bind setMNK /mnk
 sub Bind_setMNK(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setMNK(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|MNK]}) /return
+	/if (!${validate_class[TRUE, |MNK]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

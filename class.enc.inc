@@ -6,7 +6,8 @@
  * 
  ***|
 
- 
+
+  
 
 |***
  *	DES: Main Enchanter Routine
@@ -33,9 +34,7 @@ sub core_ENC()
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
-		/if (${switchdeBuffTash} && !${timer_tash_${Target2Kill}}) /call cast_tash ${Target2Kill}
-		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call cast_slow ${Target2Kill}
-		/if (${switchdeBuffCripple} && ${timer_cripple_${Target2Kill}} && (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID})) /call cast_cripple ${Target2Kill}
+		/call check_deBuffs ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
 		/call disc_${Me.Class.ShortName}
@@ -45,9 +44,7 @@ sub core_ENC()
 		/call set_combat RANGE
 		/call send_pet
 		/call stick_to_target
-		/if (${switchdeBuffTash} && !${timer_tash_${Target2Kill}}) /call cast_tash ${Target2Kill}
-		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call cast_slow ${Target2Kill}
-		/if (${switchdeBuffCripple} && ${timer_cripple_${Target2Kill}} && (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID})) /call cast_cripple ${Target2Kill}
+		/call check_deBuffs
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
 		/call disc_${Me.Class.ShortName}
@@ -56,9 +53,7 @@ sub core_ENC()
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/call send_pet
-		/if (${switchdeBuffTash} && !${timer_tash_${Target2Kill}}) /call cast_tash ${Target2Kill}
-		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call cast_slow ${Target2Kill}
-		/if (${switchdeBuffCripple} && ${timer_cripple_${Target2Kill}} && (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID})) /call cast_cripple ${Target2Kill}
+		/call check_deBuffs ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
 		/call disc_${Me.Class.ShortName}
@@ -68,6 +63,7 @@ sub core_ENC()
 		/call set_combat HEAL
 		/call send_pet
 	} else /if (${Select[${combat},DUAL]}) {
+		| /echo TARGET 2 KILL:   ${Target2Kill}
 		/doevents
 		AMIDEAD
 		CHECKTIE
@@ -88,7 +84,7 @@ sub core_ENC()
 		/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
 		/call check_for_adds
 		/if (${addList.Count[|]}) /return
-		/if (!${addList.Count[|]}) /call debuff_mobs
+		/if (!${addList.Count[|]}) /call check_deBuffs ${Target2Kill}
 		/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
 		/call check_for_adds
 		/if (${addList.Count[|]}) /return
@@ -115,86 +111,6 @@ sub core_ENC()
 		/call is_target_dead
 		/if (!${Macro.Return}) /goto :killtarget
 	}
-/return
-
-
-
-|***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub debuff_mobs()
-	DEBUG ${cbug}debuff_mobs()\ax
-	AMIDEAD
-	CHECKEXIT
-	/doevents
-	CHECKTIE
-	
-	/declare _count int local 0
-	/declare _tmpID string local 
-	/declare _loopCount int local 0
-	
-	/if (${mobList.Find[|]} > 1) {
-		/varset mobList ${mobList.Right[-${Math.Calc[${mobList.Find[|]}-1]}]}
-		/varset _loopCount ${mobList.Count[|]}
-	} else /if (${mobList.Find[|]} < 1) {
-		/varset _tmpID ${Target2Kill}
-		/varset _loopCount 1
-		
-	}
-
-	/for _count 1 to ${_loopCount}
-		
-		/if (${mobList.Find[|]} > 1) {
-			/varset _tmpID ${mobList.Arg[${_count},|.Left[-1]}
-		} else /if (${mobList.Find[|]} < 1) {
-			/varset _tmpID ${Target2Kill}
-		}	
-		
-		UPDATEHUD "DEBUFF"
-		/squelch /target ID ${_tmpID}
-		
-		| tash
-		/if (${switchdeBuffTash} && ${Defined[timer_tash_${_tmpID}]}) {
-			/if (!${timer_tash_${_tmpID}}) {
-				/call cast_tash ${_tmpID}
-				/call check_for_adds
-				/if (${addList.Count[|]}) /return
-			}
-		}
-		
-		| slow
-		/if (${switchdeBuffSlow} && ${Defined[timer_slow_${_tmpID}]}) {
-			/if (!${timer_slow_${_tmpID}}) {
-				DEBUGCLASS SLOWING ID ${_tmpID}
-				/call cast_slow ${_tmpID}
-				/call check_for_adds
-				/if (${addList.Count[|]}) /return
-			}
-		}
-		
-		| cripple
-		/if (${switchdeBuffCripple} && ${Defined[timer_cripple_${_tmpID}]}) {		
-			/if (!${timer_cripple_${_tmpID}}) {
-				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
-				/call check_for_adds
-				/if (${addList.Count[|]}) /return
-			}
-		}
-		
-		| eradicate
-		/if (${switchdeBuffEradicate} && ${Defined[timer_eradicate_${Target2Kill}]}) {
-			/if (!${timer_eradicate_${Target2Kill}}) {
-				/call cast_eradicate_magic ${_tmpID}
-				/call check_for_adds
-				/if (${addList.Count[|]}) /return
-			}
-		}
-	/next _count
-
-	UPDATEHUD FALSE
 /return
 
 
@@ -366,12 +282,12 @@ sub patch_heal_ENC()
 			/call is_attacking ${NearestSpawn[${_count},npc radius 15].ID}
 			/if (${Bool[${Macro.Return}]}) {
 				| /if (${Me.SpellReady[${spellStun}]}) /call core_cast "${stunSpell}" 0 0
-				/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.AltAbilityReady[Color Shock]}) /call core_cast "Color Shock" alt
-				/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Doppelganger]}) /call core_cast "Doppelganger" alt
-				/if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Banishment]} && ${SpawnCount[npc radius 20]} > 2) /call core_cast "Beguiler's Banishment" alt
-				/if (${Me.PctHPs} <= 40*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Directed Banishment]}) /call core_cast "Beguiler's Directed Banishment" alt
-				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Nightmare Stasis]} && ${Target.Level} < 76) /call core_cast "Nightmare Stasis" alt
-				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Dimensional Instability]}) /call core_cast "Dimensional Instability" alt
+				| /if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.AltAbilityReady[Color Shock]}) /call core_cast "Color Shock" alt
+				/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Doppelganger]}) /call core_cast "Doppelganger" alt ${Me.ID} FALSE
+				| /if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Banishment]} && ${SpawnCount[npc radius 20]} > 2) /call core_cast "Beguiler's Banishment" alt
+				| /if (${Me.PctHPs} <= 40*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Directed Banishment]}) /call core_cast "Beguiler's Directed Banishment" alt ${Target2Kill} FALSE
+				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Nightmare Stasis]} && ${Target.Level} < 76) /call core_cast "Nightmare Stasis" alt alt ${Target2Kill} FALSE
+				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Dimensional Shield]}) /call core_cast "Dimensional Shield" alt ${Me.ID} FALSE
 				/if (${Defined[timer_mez_${Target.ID}]} && ${timer_mez_${Target.ID}} != -1) {
 					/varset timer_mez_${Target.ID} 20
 				} else /if (!${Defined[timer_mez_${Target.ID}]}) {
@@ -518,153 +434,23 @@ sub cast_tash(int _tmpID)
 	CHECKTIE
 	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
 
+	| if it's tashed, mark it and move on. better things to do
 	/if (${Target.Tashed.Duration} && !${Target.Buff[Bite of Tashani].ID}) {
 		DEBUGCLASS ${Target.DisplayName} already has ${Target.Tashed}
+		/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s		
 		/return
 	}
 	
-	/if (${Target.Distance} <= ${Spell[${spellTash}].MyRange} && ${Target.LineOfSight} && ${Me.Gem[${spellTash}]}) {
+	/if (${Target.Distance} <= ${Spell[${spellTash}].MyRange} && ${Target.LineOfSight} && ${Me.Gem[${spellTash}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} == 1) {
 		/call core_cast "${spellTash}" 0 ${_tmpID} check_for_adds
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
 		}
-	} else /if (${Target.Distance} <= ${Spell[Bite of Tashani].MyRange} && ${Target.LineOfSight} && ${Me.AltAbilityReady[Bite of Tashani]}) {
-		/call core_cast "Bite of Tashani" alt ${_tmpID} check_for_adds
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
-		}	
+	} else /if (${Me.AltAbilityReady[Bite of Tashani]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} > 1) {
+		/call core_cast "Bite of Tashani" alt 0 FALSE
 	}
 
 /return
-
-
-
-|***
- *	DES: slows the target
- *	USE: /call cast_slow [ID] | /debuff slow
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_slow(int _tmpID)
-	DEBUG ${cbug}cast_slow(int ${_tmpID})\ax
-	AMIDEAD
-	/doevents
-	/declare _tmpSlow string local ${Target.Slowed}
-
-	/if (${Target.Crippled.Duration}) /call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
-
-	/if (${ExcludeList.Find[${Target.DisplayName}]} || ${Target.Type.Equal[corpse]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
-	DEBUGCLASS passed bail checks
-	
-	/if (${Target.Slowed.Duration}) {
-		DEBUGCLASS already slowed ffs.. ${Target.Slowed}
-		/if (${_tmpSlow.Find[helix]}) {
-			/call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
-			/return
-		}
-	}
-
-	/declare _resistCount int local 0
-	:loopslow
-	DEBUGCLASS :loopslow
-	AMIDEAD
-	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${spellSlow}].MyRange}) {
-		/delay 2.25s ${Me.SpellReady[${spellSlow}]}
-		/call core_cast "${spellSlow}" 0 ${_tmpID} check_for_adds
-
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_slow_${_tmpID} ${Spell[${spellSlow}].Duration.TotalSeconds}s
-		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}+1
-			/if (${_resistCount} >= 3) {
-				/call create_timer timer_slow_${_tmpID} 10000s
-			} else {
-				/goto :loopslow
-			}
-		}
-	}	else /if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[Dreary Deeds].MyRange}) {
-		/delay 2.25s ${Me.AltAbility[Dreary Deeds]}
-		/call core_cast "Dreary Deeds" alt ${_tmpID} check_for_adds	
-	
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_slow_${_tmpID} ${Spell[Dreary Deeds].Duration.TotalSeconds}s
-		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}+1
-			/if (${_resistCount} >= 3) {
-				/call create_timer timer_slow_${_tmpID} 10000s
-			} else {
-				/goto :loopslow
-			}
-		}		
-		
-	}
-	
-/return
-
-
-
-sub setDeclare_ENC()
-	/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
-	/if (${switchdeBuffTash} && !${Defined[timer_tash_${Target2Kill}]}) /call create_timer timer_tash_${Target2Kill} 1
-	/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
-	/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${Target2Kill}]}) /call create_timer timer_cripple_${Target2Kill} 1
-	/if (${switchdeBuffMezz} && !${Defined[timer_mez_${Target2Kill}]}) /call create_timer timer_mez_${Target2Kill} 1
-}
-
-
-
-
-|***
- *	DES: cripples the target
- *	USE: /call cast_cripple [ID] | /debuff cripple
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_cripple(int _tmpID)
-	DEBUG ${cbug}cast_cripple(ID: ${_tmpID})\ax 
-	/if (${timer_cripple_${_tmpID}}) /return
-	AMIDEAD
-	CHECKEXIT
-	/doevents
-	CHECKTIE
-	/declare _resistCount int local 0
-
-	/if (${Target.Crippled.Duration}) {
-		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
-		/return
-	}
-
-	/declare _tmpSlow string local ${Target.Slowed}
-	/if (${Target.Slowed.Duration}) {
-		/if (${_tmpSlow.Find[Undermining]}) {
-			/call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
-			/return
-		}
-	}	
-	
-	:loopcripple
-	/if (${Spawn[${Target.ID}].Distance} <= ${Spell[${spellCripple}].MyRange} && ${Me.CurrentMana} > ${Spell[${spellCripple}].Mana} && ${Target.LineOfSight}) {
-		
-		/call core_cast "${spellCripple}" 0 ${_tmpID} check_for_adds
-		
-		
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
-		} else /if (${Select[${castReturn},CAST_IMMUNE]}) {
-			/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}m
-		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}+1
-			/if (${_resistCount} >= 3) {
-				VOUT ${ctar}${Target.DisplayName}\ax resisted ${csp}${spellCripple}\ax ${cinfo}${_resistCount}\ax times, moving on!
-				/call create_timer timer_cripple_${_tmpID} 10000s
-			} else {
-				/delay 5
-				/goto :loopcripple
-			}
-		}
-	}
-/return
-
 
 
 
@@ -768,7 +554,7 @@ sub synergy_ENC()
 #bind setENC /enc
 sub Bind_setENC(string _classType, string _classVerbage)
 	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|ENC]}) /return
+	/if (!${validate_class[TRUE, |ENC]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

@@ -1367,7 +1367,7 @@ sub set_xtarget()
 				}
 			/next _x
 		}
-		
+		|***
 		| set raid protected classes radius ${XTHealRadius}
 		/for _count 1 to ${_class.Count[|]}
 			DEBUG _count: ${_count}
@@ -1384,6 +1384,7 @@ sub set_xtarget()
 				/next _x
 			}		
 		/next _count	
+		***|
 	}
 	
 /return
@@ -1803,47 +1804,6 @@ sub cast_nuke_rain()
 
 
 |***
- *	DES: casts Malo or Tash depending on the class
- *	USE:  /call cast_malo_tash [target ID]
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_malo_tash(int _tmpID)
-	DEBUGCAST ${cbug}cast_malo_tash(\ax${cinfo}${_tmpID}\ax${cbug})\ax
-	/if (!${switchdeBuffMalo} && !${switchdeBuffTash}) /return
-	AMIDEAD
-	CHECKEXIT
-	/call is_target_dead
-	/if (${Macro.Return}) /return
-	UPDATEHUD "Malo / Tash"
-	/if (${switchdeBuffMalo} && ${Bool[${MaloSpell}]} && !${timer_malo_${_tmpID}} && !${Target.Maloed.ID} && ${Spawn[${_tmpID}].LineOfSight} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${MaloSpell}].MyRange}) {
-		/if (${Me.AltAbilityReady[${MaloSpell}]}) {
-			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} > 2 && ${Select[${Me.Class.ShortName},MAG]}) {
-				/call core_cast "Wind of Malosinete" alt ${_tmpID}
-			} else {
-				/call core_cast "${MaloSpell}" alt ${_tmpID}
-			}
-		} else /if (${Me.SpellReady[${MaloSpell}]}) {
-			/call core_cast "${MaloSpell}" 0 ${_tmpID}
-		}
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]} || ${Target.Maloed.ID}) /call create_timer timer_malo_${_tmpID} ${Spell[${MaloSpell}].Duration.TotalSeconds}s
-
-	}
-	/if (${switchdeBuffTash} && ${Bool[${TashSpell}]} && !${timer_tash_${_tmpID}} && ${Target.Tashed.ID} && ${Spawn[${_tmpID}].LineOfSight} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${TashSpell}].MyRange}) {
-		/if (${Me.AltAbilityReady[${TashSpell}]}) {
-			/call core_cast "${TashSpell}" alt ${_tmpID}
-		} else /if (${Me.SpellReady[${TashSpell}]})) {
-			/call core_cast "${TashSpell}" 0 ${_tmpID}
-		}
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]} || ${Target.Tashed.ID}) /call create_timer timer_tash_${_tmpID} ${Spell[${TashSpell}].Duration.TotalSeconds}s
-	}
-
-	UPDATEHUD FALSE
-/return
-
-
-
-|***
  *	DES: use Banestrike AA
  *	USE: /call cast_AA_banestrike [target ID]
  *	INI: 
@@ -1933,13 +1893,21 @@ sub cast_AA_snare(int _tmpID)
 		/return
 	}
 	
+	| if its snared, move on
+	/if (${Target.Snared.ID}) {
+		/call create_timer timer_snare_${Target2Kill} 1m
+		/return
+	}
+		
+	| set AA for snaring
 	/declare _debuffSnare string local
-	/if (${Select[${Me.Class.ShortName},RNG,DRU]}) /varset _debuffSnare Entrap
-	/if (${Select[${Me.Class.ShortName},WAR]}) /varset _debuffSnare Knee Strike
-	/if (${Select[${Me.Class.ShortName},ROG]}) /varset _debuffSnare Ligament Slice
-	/if (${Select[${Me.Class.ShortName},NEC,SHD]}) /varset _debuffSnare Encroaching Darkness
-	/if (${Select[${Me.Class.ShortName},WIZ]}) /varset _debuffSnare Atol's Shackles	
-	/if (${Select[${Me.Class.ShortName},MNK]}) /varset _debuffSnare Crippling Strike	
+	/if (${validate_class[FALSE, |RNG|DRU]}) /varset _debuffSnare Entrap
+	/if (${validate_class[FALSE, |WAR]}) /varset _debuffSnare Knee Strike
+	/if (${validate_class[FALSE, |ROG]}) /varset _debuffSnare Ligament Slice
+	/if (${validate_class[FALSE, |NEC|SHD]}) /varset _debuffSnare Encroaching Darkness
+	/if (${validate_class[FALSE, |WIZ]}) /varset _debuffSnare Atol's Shackles	
+	/if (${validate_class[FALSE, |MNK]}) /varset _debuffSnare Crippling Strike	
+	
 	
 	
 	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} && !${Target.Snared.ID}) {
@@ -2145,8 +2113,8 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	/if (${Select[${_type},disc]} && !${Me.CombatAbilityReady[${_spell}]}) /varset _bail disc_not_ready
 	| check enough end for disc?
 	/if (${Select[${_type},disc]} && ${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /varset _bail disc_endurance
-	| spell stacks ?
-	/if (!${Select[${_type},alt,item,disc]} && !${Spell[${_spell}].Stacks}) /varset _bail does_not_stack
+	| spell stacks on self?
+	/if (!${Select[${_type},alt,item,disc]} && !${Spell[${_spell}].Stacks} && ${Target.ID} == ${Me.ID}) /varset _bail does_not_stack
 
 	| bailing on this spell. its either out of range, immune or something..
 	DEBUGCAST ${owarning} ${sep} _bail = ${_bail} for ${_spell}
@@ -2904,9 +2872,9 @@ sub update_HUD_notices(string _mode)
 		/varset tmpMode FALSE
 	}
 	
-		/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Group Perfected Spirit Walk Invisibility|Perfected Invisibility
+		/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Perfected Invisibility
 		/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Shauri's Sonorous Clouding|Gather Umbra|Invisibility Cloak
-		/varset _IV[3] |Perfected Natural Invisibility
+		/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility
 
 		/for _count 1 to ${_IV.Size}
 			/for _index 1 to ${_IV[${_count}].Count[|]}
@@ -2964,13 +2932,13 @@ sub update_HUD_notices(string _mode)
 			/varset _sep TRUE
 		}	
 	}
-	|***
-	/if (${Select[${Me.Class.ShortName},CLR]}) {
-		/if (${Bool[${useVP}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} VP[${useVPPct}]
+	/if (${Select[${Me.Class.ShortName},CLR,PAL,SHM,DRU]}) {
+		/if (${Bool[${RampageTank}]}) {
+			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} RT[${RampageTank}]
 			/varset _sep TRUE
 		}	
 	}
+	|***
 	/if (${Select[${Me.Class.ShortName},PAL]}) {
 		/if (${Bool[${useMG}]}) {
 			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MG[${useMGPct}]
@@ -3312,6 +3280,14 @@ sub check_for_corpse()
 	| make the damn variables.
 	/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange}]}
 		/varset _tmpID ${NearestSpawn[${_count},pccorpse radius ${maxRezRange}].ID}
+		
+		| for the people that suck ass (not in a good way)
+		/if (${rezlist.Find[${Spawn[${_tmpID}].Name}]}) {
+			/if (!${Defined[timer_corpse_${_tmpID}]}) /declare timer_corpse_${_tmpID} timer outer 7200
+			/continue
+		}	
+		
+		
 		/if (!${Defined[timer_corpse_${_tmpID}]}) /declare timer_corpse_${_tmpID} timer outer 1
 	/next _count
 
@@ -3443,17 +3419,22 @@ sub cast_rez(int _tmpID, string _rezAA)
 	/if (${timer_corpse_${_tmpID}}) /return
 
 	| delay res a sec if they are not on the safe list.
-	/if (!${safelist.Find[${Target.DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM]}) /delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
-	
+	/if (!${safelist.Find[${Spawn[${_tmpID}].DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM]}) /delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
+
+	| ignore the people we dont like
+	/if (${Rezlist.Find[${Spawn[${_tmpID}].DisplayName}]}) {
+		/call create_timer timer_corpse_${_tmpID}} 30m
+		/return
+	}
+		
 	| get the corpse close to us
-	/if (${Target.Distance} > 25 && ${Target.Distance} <= ${maxRezRange}) {
+	/if (${Spawn[${_tmpID}].Distance} > 25 && ${Spawn[${_tmpID}].Distance} <= ${maxRezRange}) {
 		/squelch /target ID ${_tmpID}
 		/squelch /corpse
 	}
 	
 	| can we AA res or token?
 	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[${_rezAA}]} && ${switchRezEmergency})) {	
-		| ECHOCHANNEL Rezzing (${Me.Class.ShortName}): ${Spawn[${_tmpID}].DisplayName}
 
 		| res the damn person
 		/if (!${switchRezEmergency}) {
@@ -3620,8 +3601,10 @@ sub list_add(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_delete(string _listName, string _tmpID)
-	DEBUGARRAY ${cbug}list_delete(list: ${_listName}, ID:${_tmpID})\ax
-	/if (${Bool[${${_listName}.Equal[NULL]}]} || ${Bool[${${_tmpID}.Equal[NULL]}]} || !${Bool[${${_listName}.Find[${_tmpID}]}]}) /return
+	DEBUG ${cbug}list_delete(list: ${_listName}, ID:${_tmpID})\ax
+	/if (${Bool[${${_listName}.Equal[NULL]}]}) /return
+	/if (!${Bool[${_tmpID}]} || ${_tmpID} == 0) /return
+	/if (!${Bool[${${_listName}.Find[${_tmpID}]}]}) /return
 
 	/varset _tmpID |${_tmpID}
 	/declare _a int local
@@ -3693,7 +3676,7 @@ sub check_for_adds()
 						/if (${Bool[${Plugin[mq2cast]}]}) /call Interrupt
 						/stopcast
 					}
-					/if (${MezzImmuneList.Find[${Spawn[${_tmpID}].DisplayName}]}) {
+					/if (${NoMezzList.Find[${Spawn[${_tmpID}].DisplayName}]}) {
 						VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${_tmpID}\ax]
 						/call create_timer timer_mez_${_tmpID} 1.5m
 					}          	
@@ -4561,7 +4544,6 @@ sub prep_combat()
 	CHECKREZ
 	CLEARCURSOR
 	 	/if (${coreAuto} && !${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
-		| /if (${coreAuto} && !${Me.Invis}) {
 		/call check1offBuffs
 		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
 			/call is_target_valid ${Target2Kill}
@@ -4582,72 +4564,8 @@ sub prep_combat()
 		/if (${burnForce} && ${Me.Combat}) /call synergy_${Me.Class.ShortName}
 	}
 
-	/if (${_gokillstuff} && (!${SafeZone} && !${switchOverrideSafezone})) {
-		/if (${switchBanestrike} && !${Defined[timer_banestrike_${Target2Kill}]}) /call create_timer timer_banestrike_${Target2Kill} 1
-		/if (${SetStickBehind} && !${Defined[timer_snap_recheckID_${Target2Kill}]}) /call create_timer timer_snap_recheckID_${Target2Kill} 1
-		
-		/if (${Select[${Me.Class.ShortName},BER]}) {
+	/if (${_gokillstuff} && (!${SafeZone} && !${switchOverrideSafezone})) /call set_base_target_timers ${Target2Kill}
 
-		} else /if (${Select[${Me.Class.ShortName},BRD]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},BST]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},CLR]}) {
-
-		} else /if (${Select[${Me.Class.ShortName},DRU]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},ENC]}) {
-			| /call setDeclare_ENC
-			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
-			/if (${switchdeBuffTash} && !${Defined[timer_tash_${Target2Kill}]}) /call create_timer timer_tash_${Target2Kill} 1
-			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
-			/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${Target2Kill}]}) /call create_timer timer_cripple_${Target2Kill} 1
-			/if (${switchdeBuffMezz} && !${Defined[timer_mez_${Target2Kill}]}) /call create_timer timer_mez_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},MAG]}) {
-			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
-			/if (${switchdeBuffMalo} && !${Defined[timer_malo_${Target2Kill}]}) /call create_timer timer_malo_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},MNK]}) {
-
-		} else /if (${Select[${Me.Class.ShortName},NEC]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
-			/if (${switchdeBuffMalo} && !${Defined[timer_malo_${Target2Kill}]}) /call create_timer timer_malo_${Target2Kill} 1
-			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
-
-
-		} else /if (${Select[${Me.Class.ShortName},PAL]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},RNG]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},ROG]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},SHD]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-			/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${Target2Kill}]}) /call create_timer timer_cripple_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},SHM]}) {
-			/if (${switchdeBuffSnare} && !${Defined[timer_snare_${Target2Kill}]}) /call create_timer timer_snare_${Target2Kill} 1
-			/if (${switchdeBuffMalo} && !${Defined[timer_malo_${Target2Kill}]}) /call create_timer timer_malo_${Target2Kill} 1
-			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${Target2Kill}]}) /call create_timer timer_slow_${Target2Kill} 1
-
-		} else /if (${Select[${Me.Class.ShortName},WAR]}) {
-
-		} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
-			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${Target2Kill}]}) /call create_timer timer_eradicate_${Target2Kill} 1
-
-		}
-	}
 /return ${_gokillstuff}
 
 
@@ -4928,7 +4846,7 @@ sub check_for_item(string _verbage)
  ***| 	
 sub core_reset()
 | /return
-	SDEBUG ${cbug}core_reset()\ax
+	DEBUG ${cbug}core_reset()\ax
 	VOUT ${cgood}Reloading Core INIs\ax
 	/call set_declares
 	/call check_plugin
@@ -5762,6 +5680,15 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Timer" "tcheck_QM" NULL
 	
 	/ini "${INIClass}" "Spells" "TwincastType" NULL
+	
+
+	/ini "${INIClass}" "Spells" "HpTapSpell" NULL
+	/ini "${INIClass}" "Spells" "HpTapSpellRecourse" NULL
+	/ini "${INIClass}" "Spells" "ManaTapSpell1" NULL
+	/ini "${INIClass}" "Spells" "ManaTapSpell2" NULL
+
+	
+	
 
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
@@ -5770,7 +5697,7 @@ sub fix_INI_declares()
 
 |***
  *	DES: check specific classes ONLY
- *	USE: /if (${validate_class[|CLS|CLS]) /dowhatever
+ *	USE: /if (${validate_class[BOOL, |CLS|CLS]) /dowhatever
  *	INI: 
  *	NOTE: 
  
@@ -5784,8 +5711,8 @@ sub fix_INI_declares()
 	AAEradicateList			|RNG|DRU|NEC|WIZ|ENC|MAG
  
  ***|
-sub validate_class(string _class)
-	DEBUG ${cbug}validate_class(class: ${_class})\ax
+sub validate_class(bool _error, string _class)
+	DEBUG ${cbug}validate_class(error: ${_error}, class: ${_class})\ax
 	/declare _pass bool local FALSE
 	/declare _count int local 0
 
@@ -5794,5 +5721,284 @@ sub validate_class(string _class)
 		/if (${Me.Class.ShortName.Upper.Equal[${_class.Arg[${_count},|]}]}) /varset _pass TRUE
 	/next _count
 
-	/if (!${_pass}) /call echos failboat 0 0 0 0
+	/if (!${_pass} && ${_error}) /call echos failboat 0 0 0 0
 /return ${_pass}
+
+
+
+
+|***
+ *	DES: slows the target
+ *	USE: /call cast_slow [ID] | /debuff slow
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_slow(int _tmpID)
+	DEBUG ${cbug}cast_slow(ID: ${_tmpID})\ax
+	AMIDEAD
+	/doevents
+	CHECKEXIT
+	/call is_target_dead
+	/if (${Macro.Return}) /return
+	
+	/squelch /target ID ${_tmpID}
+	/delay 1s ${Target.ID} == ${_tmpID}
+	
+	| dont waste time if its slowed already
+	/if (${Target.Slowed.Duration}) {
+		/call create_timer timer_slow_${Target2Kill} ${Target.Slowed.Duration.TotalSeconds}s
+		/return
+	}
+	UPDATEHUD "Slow"
+	
+	| necros only slow undead 
+	/if (${validate_class[FALSE, |NEC]} && !${Target.Body.Name.Equal[Undead]}) /return
+
+	| get to business
+	/declare _spelltype string local FALSE
+	/declare _readytype string local FALSE
+
+	| spell not identified, using AA.
+	/if (${spellSlow.Equal[NULL]} || !${Bool[${spellSlow}]} || !${Bool[${Me.Gem[${spellSlow}]}]}) {
+		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellSlow Dreary Deeds
+		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellSlow Turgur's Swarm
+		/if (${Select[${Me.Class.ShortName},BST]}) /varset spellSlow Sha's Reprisal
+		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellSlow Death's Malaise	
+		/varset _spelltype alt
+		/varset _readytype SpellReady
+	} else /if (${Bool[${Me.Gem[${spellSlow}]}]}) {
+		/varset _spelltype gem${Me.Gem[${spellSlow}]}
+		/varset _readytype AltAbilityReady
+	}	
+
+	
+	| check the things normal things	
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellSlow}]}) /return
+	
+	/delay 2.25s ${Me.${_readytype}[${spellSlow}]}	
+	/call core_cast "${spellSlow}" ${_spelltype} ${_tmpID} FALSE
+	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+		/call create_timer timer_slow_${_tmpID} ${Spell[${spellSlow}].Duration.TotalSeconds}s
+	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
+		/call create_timer timer_slow_${_tmpID} 15s
+	}
+	UPDATEHUD FALSE
+/return
+
+
+
+|***
+ *	DES: casts Malo or Tash depending on the class
+ *	USE:  /call cast_malo [target ID]
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_malo(int _tmpID)
+	DEBUGCAST ${cbug}cast_malo(\ax${cinfo}${_tmpID}\ax${cbug})\ax
+	AMIDEAD
+	/doevents
+	CHECKEXIT
+	/call is_target_dead
+	/if (${Macro.Return}) /return
+	
+	/squelch /target ID ${_tmpID}
+	/delay 1s ${Target.ID} == ${_tmpID}
+	
+	| dont waste time if its Maloed already
+	/if (${Target.Maloed.Duration}) {
+		/call create_timer timer_malo_${Target2Kill} ${Target.Maloed.Duration.TotalSeconds}s
+		/return
+	}
+	UPDATEHUD "Malo"
+
+	| get to business
+	/declare _spelltype string local FALSE
+	/declare _readytype string local FALSE
+
+	| spell not identified, using AA.
+	/if (${spellMalo.Equal[NULL]} || !${Bool[${spellMalo}]} || !${Bool[${Me.Gem[${spellMalo}]}]}) {
+		/if (${Select[${Me.Class.ShortName},MAG]}) /varset spellMalo Malosinete
+		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellMalo Malosinete
+		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellMalo Scent of Terris
+		/varset _spelltype alt
+		/varset _readytype SpellReady
+	} else /if (${Bool[${Me.Gem[${spellMalo}]}]}) {
+		/varset _spelltype gem${Me.Gem[${spellMalo}]}
+		/varset _readytype AltAbilityReady
+	}		
+	
+	
+	| check the things normal things	
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellMalo}]}) /return
+	
+	/delay 2.25s ${Me.${_readytype}[${spellMalo}]}	
+	
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} > 2 && ${Select[${Me.Class.ShortName},MAG]}) {
+		/call core_cast "Wind of Malosinete" alt ${_tmpID} FALSE
+	} else {
+		/call core_cast "${spellMalo}" ${_spelltype} ${_tmpID} FALSE
+	}	
+	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+		/call create_timer timer_malo_${_tmpID} ${Spell[${spellMalo}].Duration.TotalSeconds}s
+	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
+		/call create_timer timer_malo_${_tmpID} 15s
+	}
+	UPDATEHUD FALSE	
+/return
+
+
+
+|***
+ *	DES: cripples the target
+ *	USE: /call cast_cripple [ID] | /debuff cripple
+ *	INI: 
+ *  NOTE: not for wizards.
+ ***|
+sub cast_cripple(int _tmpID)
+	DEBUG ${cbug}cast_cripple(ID: ${_tmpID})\ax 
+	/if (${timer_cripple_${_tmpID}}) /return
+	AMIDEAD
+	CHECKEXIT
+	/doevents
+	CHECKTIE
+
+	/squelch /target ID ${_tmpID}
+	/delay 1s ${Target.ID} == ${_tmpID}
+
+	| if its crippled, move on
+	/if (${Target.Crippled.Duration}) {
+		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
+		/return
+	}
+
+	| get to business
+	/declare _spelltype string local FALSE
+
+	| spell not identified, using AA.
+	/if (${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]} || !${Bool[${Me.Gem[${spellCripple}]}]}) {
+		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellCripple Dreary Deeds
+		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellCripple Turgur's Swarm
+		/varset _spelltype alt
+	} else /if (${Bool[${Me.Gem[${spellCripple}]}]}) {
+		/varset _spelltype gem${Me.Gem[${spellCripple}]}
+	}	
+
+
+	| check the things normal things	
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellCripple}]}) /return
+	
+	/delay 2.25s ${Me.SpellReady[${spellCripple}]}	
+	/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID} check_for_adds
+	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
+	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
+		/call create_timer timer_cripple_${_tmpID} 15s
+	}
+
+/return
+
+
+
+|***
+ *	DES: sets a base line for all target2kill timers
+ *	USE: /call set_base_target_timers
+ *	INI: 
+ *  NOTE: we use this to prevent undeclared variables since targets change .. a lot.
+ ***|
+sub set_base_target_timers(int _tmpID)
+	DEBUG ${cbug}set_base_target_timers(ID: ${_tmpID})\ax
+	/if (${switchBanestrike} && !${Defined[timer_banestrike_${_tmpID}]}) /call create_timer timer_banestrike_${_tmpID} 1
+	/if (${SetStickBehind} && !${Defined[timer_snap_recheckID_${_tmpID}]}) /call create_timer timer_snap_recheckID_${_tmpID} 1
+	/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
+	/if (${switchdeBuffTash} && !${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
+	/if (${switchdeBuffSlow} && !${Defined[timer_slow_${_tmpID}]}) /call create_timer timer_slow_${_tmpID} 1
+	/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${_tmpID}]}) /call create_timer timer_cripple_${_tmpID} 1
+	/if (${switchdeBuffMezz} && !${Defined[timer_mez_${_tmpID}]}) /call create_timer timer_mez_${_tmpID} 1
+	/if (${switchdeBuffSnare} && !${Defined[timer_snare_${_tmpID}]}) /call create_timer timer_snare_${_tmpID} 1
+	/if (${switchdeBuffMalo} && !${Defined[timer_malo_${_tmpID}]}) /call create_timer timer_malo_${_tmpID} 1
+/return 
+ 
+ 
+ 
+|***
+ *	DES: cycles all debuff routines.
+ *	USE: check_deBuffs
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_deBuffs(int _tmpID)
+	DEBUG ${cbug}check_deBuffs()\ax
+	AMIDEAD
+	CHECKEXIT
+	/doevents
+	CHECKTIE
+	
+	/call set_base_target_timers ${Target2Kill}
+
+	UPDATEHUD "DEBUFF"
+	/if (${Target.ID} != ${_tmpID}) /squelch /target ID ${_tmpID}
+	
+	| tash
+	/if (${switchdeBuffTash}) {
+	 	/if (!${Bool[${timer_tash_${_tmpID}}]}) {
+			/if (${validate_class[FALSE, |ENC]}) { 
+				/call cast_tash ${_tmpID}
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			} else {
+				/call cast_malo_tash ${_tmpID}
+			}
+		}
+	}
+	
+	| malo
+	/if (${switchdeBuffMalo}) {
+		/if (!${Bool[${timer_malo_${_tmpID}}]}) {
+			/call cast_malo_tash ${_tmpID}
+		}
+	}
+	
+	| slow. spell if spellSlow defined otherwise AA
+	/if (${switchdeBuffSlow}) {
+		/if (!${Bool[${timer_slow_${_tmpID}}]} && !${validate_class[FALSE, |BRD]}) {
+			/call cast_slow ${_tmpID}
+			/if (${validate_class[FALSE, |ENC]}) { 
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
+		}
+	}
+		
+	| cripple
+	/if (${switchdeBuffCripple} && !${validate_class[FALSE, |WIZ]}) {
+		/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
+			/if (${validate_class[FALSE, |ENC]}) { 
+				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			} else /if (${validate_class[FALSE, |DRU]}) {
+				/call cast_AA_ro ${_tmpID}
+			}
+		}
+	}
+	
+	| eradicate magic AA line
+	/if (${switchdeBuffEradicate} && ${validate_class[FALSE, ${AAEradicateList}]}) {
+		/if (!${Bool[${timer_eradicate_${_tmpID}}]}) {
+			/call cast_eradicate_magic ${_tmpID}
+			/if (${validate_class[FALSE, |ENC]}) { 
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
+		}
+	}
+	
+	| aa snare check
+	/if (${switchdeBuffSnare} && ${validate_class[FALSE, ${AASnareList}]}) {
+		/if (!${Bool[${timer_snare_${_tmpID}}]}) {
+			/call cast_AA_snare ${_tmpID}
+		}
+	}
+
+	UPDATEHUD FALSE
+/return

@@ -570,7 +570,7 @@ sub validate_pulse(string _type, string _spell)
 #bind setBRD /brd
 sub Bind_setBRD(string _classType, string _classVerbage)
 	DEBUGCLASS ${cbug}Bind_setBRD(type:${_classType}, verbage:${_classVerbage})\ax
-	/if (!${validate_class[|BRD]}) /return
+	/if (!${validate_class[TRUE, |BRD]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

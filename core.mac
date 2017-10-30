@@ -281,6 +281,9 @@ sub base_preperation()
 	| a little display adjustments. If ur blind, get some glasses.
 	/mqfont ${setMQFontSize}
 	
+	| clear rampage tank for healers
+	/if (${Select[${Me.Class.ShortName},CLR,DRU,PAL,SHM]}) /call writeINI RampageTank Heal FALSE
+
 	| why the fuck did Verant/SOE/DayBreak ever implement these as a default..??	
 	/squelch /assist ${setAutoAssist}
 	/squelch /tgb ${setTGB}
