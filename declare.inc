@@ -227,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171030
+	/declare coreBuild	 														int			outer 20171031
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -1050,10 +1050,6 @@ sub declare_timers()
 	}
 /return	
 	
-	
-	
-
-
   
    
 |***
@@ -1099,8 +1095,6 @@ sub declare_MAG()
 	/call DeclareIniVar useAAFade										int			Buffs 50
 	/call DeclareIniVar NukeTwincast								string	Spells "Chaotic Fire"
 	/call DeclareIniVar switchForceTwincast					bool		Spells TRUE
-	
-	
 /return
 	
 

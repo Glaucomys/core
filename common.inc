@@ -1735,7 +1735,6 @@ sub clear_timer(int _tmpID)
  ***|
 sub cast_DOT()
 	DEBUGCAST ${cbug}cast_DOT(count ${DoDoT})\ax
-	/if (${timer_Nuke_Delay}) /return
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoDoT}
@@ -1745,10 +1744,9 @@ sub cast_DOT()
 		/if (${Macro.Return}) /return
 		
 		/if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
-
+		
 		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
 			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
-			/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 		}
 	/next _count
 /return
@@ -1763,7 +1761,6 @@ sub cast_DOT()
  ***|
 sub cast_nuke()
 	DEBUGCAST ${cbug}cast_nuke()\ax
-	/if (${timer_Nuke_Delay}) /return
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoNuke}
@@ -5907,6 +5904,7 @@ sub cast_cripple(int _tmpID)
  ***|
 sub set_base_target_timers(int _tmpID)
 	DEBUG ${cbug}set_base_target_timers(ID: ${_tmpID})\ax
+	| /if ((${DoDoT} || ${DoNuke} || ${doRainNuke}) && !${Defined[timer_Nuke_Delay]}) /call create_timer timer_Nuke_Delay 1
 	/if (${switchBanestrike} && !${Defined[timer_banestrike_${_tmpID}]}) /call create_timer timer_banestrike_${_tmpID} 1
 	/if (${SetStickBehind} && !${Defined[timer_snap_recheckID_${_tmpID}]}) /call create_timer timer_snap_recheckID_${_tmpID} 1
 	/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
@@ -5954,7 +5952,7 @@ sub check_deBuffs(int _tmpID)
 	| malo
 	/if (${switchdeBuffMalo}) {
 		/if (!${Bool[${timer_malo_${_tmpID}}]}) {
-			/call cast_malo_tash ${_tmpID}
+			/call cast_malo ${_tmpID}
 		}
 	}
 	

@@ -9,9 +9,38 @@
  ***|
 
 
+20171031
+- cast_DOT()
+  -- removed the caste delay timer. dont realy need it since we are already checking for dot duration anyway
+
+
+
+20171030
+- /core [events] - enable/disable using events.inc include file
+  -- it used to be based off /core auto. i wanted it seperate. this way, even manual toons can be forced to react to raid event emotes.
+- rampage tank for the 4 heal classes CLR|SHM|DRU|PAL. clerics are waisting full mana pools healing random DA toons
+  -- /cls [rampage] [name] - will set the name of the rampage tank. the healer will not heal that toon.
+  -- e.g. /clr rampage bobthbuilder . will set bobthebuilder to simply be ignored for heals either as control toon, group member or xtarget
+  -- this is a non persistent setting. it will be cleared on Core start/restart
+  -- easy hotkey for switching /bct clericname //clr rampage ${Target.DisplayName}
+- Anti-resurrection list. add names to this for the fucktwats that will not take reses when you take the time to cast them.  or, conversly, people you just dont like
+  -- core.ini->[no]->Rezlist=
+  -- manual entries e.g. |bob|fred|mike and so on...
+- list_delete() adjusted check for null/0 returned target ID. should fix chanter NULL|ID list issue. i hope
+- class.enc.inc
+  -- corrected some AAs for the last patch change
+  -- if more then 1 mob in 49 raius tash default to AA AE bite of tash. ae tash will not create timer markers
+- complete rewrite for debuffs
+  -- there will be bugs to work out!
+- class.dru.inc
+  -- fixed missing undeclared variables in heal routine
+- cast_malo_tash() -> cast_malo(). chanter will maintain its' own tash routine
+  -- spellMalo variable now same for shm, mag, nec
+  
+
 20171025
 - added in a delay for casting nukes, dots, rains
-  -- /cc [nukedelay] - [1,100] delay in casting a direct damage/damage over time spell
+  -- /cc [nukedelay] - [1,100] delay in casting a direct damage/damage over time spell. 1=1/10th of a second
   -- cast_nuke_rain(), cast_nuke(), cast_DOT()
 - class.clr.inc
   -- fixed logic error in the aggressive heal switch
@@ -19,7 +48,7 @@
   -- missed a variable due to the new changes. it's not missed anymore
 - added zone check to /here
 - logic error in aura buffs for non manna using classes.
-
+- switch protection for /buff BC/Raid/Tell for non buffing classes
 
 
 20171021
