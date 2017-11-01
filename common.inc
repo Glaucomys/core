@@ -1001,9 +1001,9 @@ sub check_ammo()
 	/if (!${Bool[${RangeItem}]} || !${Bool[${RangeItemSummon}]} || ${Me.Invis}) /return
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-		/if (${Me.Book[${RangeItem}]}) /call core_cast "${RangeItem}" ${buffGem} ${Me.ID}
-		/if (${Me.ItemReady[${RangeItem}]}) /call core_cast "${RangeItem}" item ${Me.ID}
-		/if (${Me.AltAbilityReady[${RangeItem}]}) /call core_cast "${RangeItem}" alt ${Me.ID}
+		/if (${Me.Book[${RangeItem}]}) /call core_cast "${RangeItem}" ${buffGem} ${Me.ID} FALSE
+		/if (${Me.ItemReady[${RangeItem}]}) /call core_cast "${RangeItem}" item ${Me.ID} FALSE
+		/if (${Me.AltAbilityReady[${RangeItem}]}) /call core_cast "${RangeItem}" alt ${Me.ID} FALSE
 		/if (${Me.CombatAbilityReady[${RangeItem}]} || ${Select[${Me.Class.ShortName},BER]}) /call core_cast "${RangeItem}" disc ${Me.ID} FALSE
 		/delay 10s !${Me.Casting.ID}
 		/call sort_cursor TRUE
@@ -1093,6 +1093,7 @@ sub do_rest()
 			/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/if (${Me.Class.ShortName.Equal[BRD]}) {
 				/call cast_AA_Rallying
+				/if (${switchRestSong}) /call core_sing ${Me.Gem[${spellRestSong}]}
 			} else {
 				/call use_mod_rod
 				/call cast_disc_breather

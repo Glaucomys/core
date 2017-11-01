@@ -227,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171031
+	/declare coreBuild	 														int			outer 20171101
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -947,7 +947,7 @@ sub set_declares()
   /declare 		tsType															string	outer |movebank
 	
 	| CLASS controls
-  /declare brdType																string	outer |line|spiregroup|spireraid
+  /declare brdType																string	outer |line|restsong|spiregroup|spireraid
   /declare berType																string	outer |ae|spiregroup|spireraid
   /declare bstType																string	outer |spiregroup|spireraid
   /declare clrType																string	outer |aggressive|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
@@ -1791,8 +1791,11 @@ sub declare_BRD()
 	/call DeclareIniVar DoT2												string 	Song FALSE
 
 	/call DeclareIniVar spellMez										string 	Song "Slumber of Silisia"
-	/call DeclareIniVar spellpbaeMez								string	Song "Wave of Torpor"	
-	/call DeclareIniVar spellSlow										string	Song "Requiem of Time"	
+	/call DeclareIniVar spellpbaeMez								string	Song "Wave of Torpor"
+	/call DeclareIniVar spellSlow										string	Song "Requiem of Time"
+	/call DeclareIniVar switchRestSong							bool		Song FALSE
+	/call DeclareIniVar spellRestSong								string	Song FALSE
+	
 /return	
 
 

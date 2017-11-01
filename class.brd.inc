@@ -587,6 +587,12 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
+	
+	| enable/disable rest song
+	} else /if (${Bool[${_classType.Equal[restsong]}]}) {
+		/call writeINI switchRestSong Song ${If[${switchRestSong},FALSE,TRUE]}
+		NOUT /${_bind} ${cinfo}Use Rest Song\ax ${sep} ${If[${switchRestSong},${oenabled},${odisabled}]}
+
 	| enable/disable sets bard song line
 	/if (${Bool[${_classType.Equal[line]}]}) {
 

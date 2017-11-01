@@ -9,10 +9,16 @@
  ***|
 
 
+20171101
+- class.brd.inc
+  -- /brd restsong - enable/disable playing class.INI->[song]->spellRestSong= while in rest mode
+  -- THIS WILL NEED TESTING
+-- type in malo debuf. tash is seperated now
+
+
 20171031
 - cast_DOT()
   -- removed the caste delay timer. dont realy need it since we are already checking for dot duration anyway
-
 
 
 20171030
