@@ -1599,9 +1599,9 @@ sub is_target_valid(int _tmpID)
 	AMIDEAD
 	/doevents
 	/if (!${coreAuto}) /return
-	/if (!${Target.ID} || (${SafeZone} && !${switchOverrideSafezone} && ${coreAuto})) {
+	/if (!${Target.ID} || !${Bool[${Target2Kill}]} || (${SafeZone} && !${switchOverrideSafezone} && ${coreAuto})) {
 		/varset isValidTarget FALSE
-		/return
+		/return FALSE
 	}
 	/varset isValidTarget TRUE
 
@@ -1618,11 +1618,11 @@ sub is_target_valid(int _tmpID)
 	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${switchPull} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && !${switchOverrideEngageat}) {
 		/delay 1
 		/varset isValidTarget FALSE
-		/return
+		/return FALSE
 	} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && !${switchPull} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) && !${switchOverrideEngageat} ) {
 		/delay 1
 		/varset isValidTarget FALSE
-		/return
+		/return FALSE
 	}
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /varset isValidTarget FALSE
 	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /varset isValidTarget FALSE
@@ -1634,7 +1634,7 @@ sub is_target_valid(int _tmpID)
 	| /if (${coreAuto} && ${isValidTarget} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
 		
 	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
-/return
+/return ${isValidTarget}
 
 
 
@@ -5684,9 +5684,11 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Spells" "HpTapSpellRecourse" NULL
 	/ini "${INIClass}" "Spells" "ManaTapSpell1" NULL
 	/ini "${INIClass}" "Spells" "ManaTapSpell2" NULL
+	/ini "${INIClass}" "Spells" "AASlow" NULL
+	/ini "${INIClass}" "Spells" "usePathosis" NULL
 
 	
-	
+
 
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
@@ -5875,7 +5877,7 @@ sub cast_cripple(int _tmpID)
 	| spell not identified, using AA.
 	/if (${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]} || !${Bool[${Me.Gem[${spellCripple}]}]}) {
 		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellCripple Dreary Deeds
-		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellCripple Turgur's Swarm
+		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellCripple Crippling Spirit
 		/varset _spelltype alt
 	} else /if (${Bool[${Me.Gem[${spellCripple}]}]}) {
 		/varset _spelltype gem${Me.Gem[${spellCripple}]}
@@ -5889,6 +5891,7 @@ sub cast_cripple(int _tmpID)
 	/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID} check_for_adds
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
+		| /call create_timer timer_cripple_${_tmpID} 5m
 	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
 		/call create_timer timer_cripple_${_tmpID} 15s
 	}
@@ -5945,7 +5948,7 @@ sub check_deBuffs(int _tmpID)
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return
 			} else {
-				/call cast_malo_tash ${_tmpID}
+				| /call cast_malo_tash ${_tmpID}
 			}
 		}
 	}
@@ -5969,12 +5972,15 @@ sub check_deBuffs(int _tmpID)
 	}
 		
 	| cripple
+
 	/if (${switchdeBuffCripple} && !${validate_class[FALSE, |WIZ]}) {
 		/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
-			/if (${validate_class[FALSE, |ENC]}) { 
+			/if (${validate_class[FALSE, |ENC|SHM]}) { 
 				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
-				/call check_for_adds
-				/if (${addList.Count[|]}) /return
+				/if (${validate_class[FALSE, |ENC]}) {
+					/call check_for_adds
+					/if (${addList.Count[|]}) /return
+				}
 			} else /if (${validate_class[FALSE, |DRU]}) {
 				/call cast_AA_ro ${_tmpID}
 			}

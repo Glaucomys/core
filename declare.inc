@@ -227,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171101
+	/declare coreBuild	 														int			outer 20171102
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -1710,11 +1710,10 @@ sub declare_SHM()
   /declare WorstHp		 														int    	outer 100	
   
 	/call DeclareIniVar AidTXT 											string 	Spells "ANCESTRAL AID Done (Str/Agi/Dex +300, HoT Heal +1840)"
-	/call DeclareIniVar MaloSpell 									string 	Spells "Malosinete"
-	/call DeclareIniVar AASlow			 								string	Spells "Turgur's Swarm"	
+	/call DeclareIniVar spellMalo 									string 	Spells FALSE
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar spellSlow										string 	Spells FALSE
 	/call DeclareIniVar spellAESlow 								string 	Spells "Srasku's Drowse"
-	/call DeclareIniVar usePathosis 								bool	 	Spells TRUE
 	
 	/call DeclareIniVar TC1									 				string	Spells "Glacial Gift"	
 	/call DeclareIniVar TC2									 				string	Spells "Frigid Gift"
@@ -1731,7 +1730,6 @@ sub declare_SHM()
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
-	/call DeclareIniVar spellCripple 								string 	Spells "Crippling Counterbias"
 
 	/call DeclareIniVar CaniPercent				 					int			Spells 60
 	/call DeclareIniVar spellCannibalization				string	Spells "Tribal Pact"

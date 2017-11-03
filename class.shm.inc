@@ -73,10 +73,9 @@ sub core_SHM()
 	} else /if (${Select[${combat},HEAL]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
-		/call is_target_valid ${Target2Kill}
-		/if (${isValidTarget}) {
+		/if (${is_target_valid[${Target2Kill}]}) {
+			/call check_deBuffs ${Target2Kill}
 			/if (${DoDoT}) /call cast_DOT
 			/if (${DoNuke}) /call cast_nuke
 			/if (${doclickItem}) /call doclickItem
@@ -225,7 +224,7 @@ sub check_heal_group_SHM()
     /call core_cast "Call of the Ancients" alt ${Me.ID}
   } 
   
- |*** Intervention Heals ***|
+ | Intervention Heals 
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healIntervention}]}) {
     /if (${Me.SpellReady[${healIntervention}]}) {
      /call core_cast "${healIntervention}" 0 ${WorstHurt} CheckHP.${Me.Class.ShortName}

@@ -9,11 +9,21 @@
  ***|
 
 
+
+
+
+20171102
+- logic change for tash/malo/cripple
+  -- leaving the ini entrie class.ini->[spell]spellTash,malo,slow,cripple as FALSE but enableing the /debuf mode for that skill will force the class to use the AA. otherwise put the spell in the INI
+  -- THIS NEEDS A LOT OF TESTING!!!
+- is_target_valid() returns isValisdTarget [T|F] for use with /if (${is_target_valid[TARGET ID]})
+
+
 20171101
 - class.brd.inc
   -- /brd restsong - enable/disable playing class.INI->[song]->spellRestSong= while in rest mode
   -- THIS WILL NEED TESTING
--- type in malo debuf. tash is seperated now
+-- typo in malo debuf. tash is seperated now
 
 
 20171031
