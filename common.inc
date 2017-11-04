@@ -1402,10 +1402,12 @@ sub stick_to_target(int _tmpID)
 	DEBUG ${cbug}stick_to_target()\ax Setting Stick to: [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] @ ${CombatDistance}% agro distance
 	/if (${Select[${combat},RANGE,NUKE,HEAL]} || !${coreAuto}) /return
 
-	/if (!${Bool[${Plugin[MQ2MoveUtils]}]}) {
-		VOUT Plugin \a-w$MQ2MoveUtils\ax is missing.
-		/return
-	}
+	/if (!${validate_plugin[TRUE, |mq2moveutils]}) /return
+
+	| /if (!${Bool[${Plugin[MQ2MoveUtils]}]}) {
+	| 	VOUT Plugin \a-w$MQ2MoveUtils\ax is missing.
+	| 	/return
+	| }
 
 	/call is_target_dead
 	/if (${Macro.Return}) /return
@@ -1637,18 +1639,17 @@ sub is_target_valid(int _tmpID)
 /return ${isValidTarget}
 
 
-
 |***
  *	DES: Seriously, do you need to ask?
  *	USE: mob dead = win!
  *	INI: 
  *  NOTE: ass.U.ME the mob is alive until, it is not.
- ***|
-sub is_target_dead()
+
+sub is_target_dead(int _tmpID)
 	DEBUG ${cbug}is_target_dead(\ax${Spawn[${Target2Kill}].DisplayName} [${Target2Kill}]${cbug})\ax
 	AMIDEAD
 	/declare _dead bool local FALSE
-	/declare _tmpID int local ${Target2Kill}
+	| /declare _tmpID int local ${Target2Kill}
 
 	/if (!${Target.ID} && !${switchModeHunt}) /varset _dead TRUE
 	/if (${Target2Kill} == 0) /varset _dead TRUE
@@ -1667,7 +1668,48 @@ sub is_target_dead()
 	:dead
 	/if (${_dead}) /call clear_combat
 	DEBUG ${cbug}is_target_dead(\ax${ctar}${Spawn[${Target2Kill}].DisplayName}\ax [${cinfo}${Target2Kill}\ax]${cbug})\ax Dead: ${If[${_dead},${cgood}TRUE\ax,${cbad}FALSE\ax]}
-/return ${Bool[${_dead}]}
+/return ${_dead}
+ ***|
+
+
+
+
+
+|***
+ *	DES: Seriously, do you need to ask?
+ *	USE: mob dead = win!
+ *	INI: 
+ *  NOTE: ass.U.ME the mob is alive until, it is not.
+ ***|
+sub is_target_dead(int _tmpID)
+	DEBUG ${cbug}is_target_dead(\ax${Spawn[${_tmpID}].DisplayName} [${_tmpID}]${cbug})\ax
+	AMIDEAD
+	/declare _dead bool local FALSE
+	
+	/if (${coreAuto}) {
+		/if (!${_tmpID}) /varset _tmpID ${Target2Kill}
+	} else /if (!${coreAuto}) {
+		/if (!${_tmpID}) /varset _tmpID ${Target.ID}
+	}
+	
+	/if (!${Target.ID} && !${switchModeHunt}) /varset _dead TRUE
+	/if (${_tmpID} == 0 || !${Bool[${_tmpID}]}) /varset _dead TRUE
+	/if (${_dead}) /goto :dead
+
+	
+	/if (${Target.Dead} || ${Target.Type.Equal[Corpse]}) /varset _dead TRUE
+	/if (${_dead}) /goto :dead
+
+
+	/if (${Bool[${Spawn[${_tmpID}].Type.Equal[CORPSE]}]} || ${Spawn[${Target.ID}].Type.Equal[CORPSE]}) /varset _dead TRUE
+	/if (${Bool[${Spawn[${_tmpID}]].Dead}]} || ${Spawn[${Target.ID}].Dead}) /varset _dead TRUE
+	/if (!${Spawn[${_tmpID}].ID} || !${Bool[${Spawn[ID ${_tmpID}]}]}) /varset _dead TRUE
+	/if (${Spawn[${Target.ID}].Type.Equal[PCCORPSE]}) /varset _dead TRUE
+
+	:dead
+	/if (${_dead}) /call clear_combat
+	DEBUG ${cbug}is_target_dead(\ax${ctar}${Spawn[${_tmpID}].DisplayName}\ax [${cinfo}${_tmpID}\ax]${cbug})\ax Dead: ${If[${_dead},${cgood}TRUE\ax,${cbad}FALSE\ax]}
+/return ${_dead}
 
 
 
@@ -1688,7 +1730,7 @@ sub clear_combat()
 		/varset Target2Kill 0
 	}
 	/if (${isValidTarget}) /varset isValidTarget FALSE
-	/if (${Bool[${Plugin[mq2twist]}]}) /squelch /twist clear
+	/if (${validate_plugin[FALSE, |mq2twist]}) /squelch /twist clear
 	/if (${Stick.Active}) /squelch /stick off
 	/if (${Target.ID}) /squelch /target clear
 	UPDATEHUD FALSE
@@ -1741,8 +1783,7 @@ sub cast_DOT()
 	/for _count 1 to ${DoDoT}
 		AMIDEAD
 		CHECKEXIT
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		
 		/if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
 		
@@ -1767,8 +1808,7 @@ sub cast_nuke()
 	/for _count 1 to ${DoNuke}
 		AMIDEAD
 		CHECKEXIT
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		/call core_cast "${Nuke${_count}}" 0 ${Target2Kill} cast_break
 		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 	/next _count
@@ -1790,8 +1830,8 @@ sub cast_nuke_rain()
 	/for _count 1 to ${doRainNuke}
 		AMIDEAD
 		CHECKEXIT
-		/call is_target_dead
-		/if (${Macro.Return}) /return	
+		/if (${is_target_dead[${Target2Kill}]}) /return
+
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${RainNuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${RainNuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${RainNuke${_count}}].Mana}) {
 			/call core_cast "${RainNuke${_count}}" 0 ${Target2Kill} cast_break
 			/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
@@ -1811,10 +1851,8 @@ sub cast_AA_banestrike(int _tmpID)
 	DEBUGCAST ${cbug}cast_AA_banestrike(ID:${_tmpID})\ax
 	AMIDEAD
 	CHECKEXIT
-	/call is_target_dead
-	/if (${Macro.Return}) /return
-	/call is_target_valid ${_tmpID}
-	/if (!${isValidTarget}) /return
+	/if (${is_target_dead[${_tmpID}]}) /return
+	/if (!${is_target_valid[${_tmpID}]}) /return
 	/if (${Bool[${_tmpID}]}) /call core_cast "Banestrike" alt ${_tmpID} FALSE
 /return
 
@@ -1833,8 +1871,6 @@ sub get_target_2kill()
 	/call is_target_dead
 	/if (!${Macro.Return} && ${Target.ID} != ${Target2Kill} || ${Spawn[id ${Target2Kill}].Distance} > ${MobAgro}) {
 		/target ID ${Target2Kill}
-		| /delay 2 ${Target.ID} == ${Target2Kill}
-		| /if (${Target.ID} != ${Target2Kill}) /goto :gettarget
 	}	
 	/if (${coreAuto} && ${Target.Distance} > ${MobAgro}) /call clear_combat
 /return
@@ -2253,10 +2289,11 @@ sub cast_cure()
 	AMIDEAD
 	/doevents
 
-	/if (!${Bool[${Plugin[MQ2debuffs]}]}) {
-		 VOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2debuffs\ax for any curing.
-		/return
-	}
+	/if (!${validate_plugin[TRUE, |mq2debuffs]}) /return
+	| /if (!${Bool[${Plugin[MQ2debuffs]}]}) {
+	| 	 VOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2debuffs\ax for any curing.
+	| 	/return
+	| }
 	
 	UPDATEHUD "CURE"
 
@@ -2283,11 +2320,12 @@ sub cast_cure()
 		}
 	}
 
+	/if (!${validate_plugin[TRUE, |mq2netbots]}) /return
 
-	/if (!${Bool[${Plugin[MQ2netbots]}]}) {
-		VOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2netbots\ax for group curing.
-		/return
-	}
+	| /if (!${Bool[${Plugin[MQ2netbots]}]}) {
+	| 	VOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2netbots\ax for group curing.
+	| 	/return
+	| }
 
 	/declare _count int local 0
 	/for _count 1 to ${Math.Calc[${NetBots.Client.Count[ ]}+1]}
@@ -2368,8 +2406,8 @@ sub use_skill_melee()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return		
+	
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	
 	/if (${Target.ID} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 
@@ -3498,7 +3536,7 @@ sub set_combat_here()
 	}
 
 	/if (${Me.Casting.ID}) {
-		/if (${Bool[${Plugin[mq2cast]}]}) /call Interrupt
+		/if (${validate_plugin[FALSE, |mq2cast]}) /call Interrupt
 		/stopcast
 	}
 	
@@ -3671,7 +3709,7 @@ sub check_for_adds()
 				/if (${Macro.Return.Equal[1]}) {
 					VOUT ${owarning} ADD ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax] ${sep} [${ctar}${_tmpID}\ax]
 					/if (${Me.Casting.Name.NotEqual[${spellMez}]} && ${Me.Casting.ID}) {
-						/if (${Bool[${Plugin[mq2cast]}]}) /call Interrupt
+						/if (${validate_plugin[FALSE, |mq2cast]}) /call Interrupt
 						/stopcast
 					}
 					/if (${NoMezzList.Find[${Spawn[${_tmpID}].DisplayName}]}) {
@@ -5726,6 +5764,26 @@ sub validate_class(bool _error, string _class)
 
 
 
+|***
+ *	DES: is the plugin available ?
+ *	USE: /if (${validate_class[BOOL, |plugin|plugin]) /dowhatever
+ *	INI: 
+ *	NOTE: 
+ ***|
+sub validate_plugin(bool _error, string _plugin)
+	DEBUG ${cbug}validate_class(error: ${_error}, plugin: ${_plugin})\ax
+	/declare _pass bool local FALSE
+	/declare _count int local 0
+
+	/for _count 1 to ${_plugin.Count[|]}
+		DEBUG _count:${_plugin}, arg: ${_plugin.Arg[${_count},|]}
+		/if (${Bool[${Plugin[${_plugin.Arg[${_count},|]}]}]}) /varset _pass TRUE
+		/if (!${_pass} && ${_error}) VOUT Plugin ${cinfo}$ ${_plugin.Arg[${_count},|]}\ax is not loaded.
+	/next _count
+
+/return ${_pass}
+
+
 
 |***
  *	DES: slows the target
@@ -5770,7 +5828,6 @@ sub cast_slow(int _tmpID)
 		/varset _spelltype gem${Me.Gem[${spellSlow}]}
 		/varset _readytype AltAbilityReady
 	}	
-
 	
 	| check the things normal things	
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellSlow}]}) /return

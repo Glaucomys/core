@@ -78,10 +78,8 @@ sub core_BRD()
 	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
-	}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 
@@ -97,8 +95,7 @@ sub disc_BRD()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call stick_to_target
 	/if (${Me.Casting.ID}) /call pulse_stop
 	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
@@ -141,8 +138,7 @@ sub cast_servant_swarm(int _tmpID)
 	CHECKEXIT
 	/doevents
 	/if (${Spawn[${_tmpID}].LineOfSight} && ${Target.PctHPs} > 10 && ${Spawn[${_tmpID}].Distance} < ${MobAgro}) {
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 
 		/call get_target_2kill
 		/if (${Target.ID}) /pet swarm
@@ -285,8 +281,7 @@ sub core_sing(_spellgem)
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem int local ${Macro.Return}
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /return	
@@ -316,8 +311,7 @@ sub bard_nuke()
 		AMIDEAD
 		CHECKEXIT
 		/doevents
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${Nuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${Nuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${Nuke${_count}}].Mana}) {
 			/call stick_to_target
 			/call core_sing ${Me.Gem[${Nuke${_count}}]}
@@ -342,8 +336,7 @@ sub bard_dot()
 		AMIDEAD
 		CHECKEXIT
 		/doevents
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Target.BuffDuration[${DoT${_count}}]} >= 2) /return
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${DoT${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${DoT${_count}}].MyRange} && ${Me.CurrentMana} >= ${DoT[${Nuke${_count}}].Mana}) {
 			/call stick_to_target
@@ -473,8 +466,7 @@ sub synergy_BRD()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Me.Casting.ID}) /call pulse_stop
 	
  	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0 FALSE
@@ -503,8 +495,7 @@ sub pulse_slow(int _tmpID)
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 		
 	| dont waste time if its slowed already
 	/if (${Target.Slowed.Duration}) {
@@ -524,11 +515,9 @@ sub pulse_slow(int _tmpID)
 
 
 
-
+| Under Construction...
 sub validate_pulse(string _type, string _spell)
 	DEBUGCLASS ${cbug}validate_pulse(type: ${_type}, ${_spell})\ax
-	
-
 	/if (${_type.Equal[alt]} && ${Me.AltAbilityReady[${_spell}]}) {
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 		/call pulse_stop
@@ -537,18 +526,10 @@ sub validate_pulse(string _type, string _spell)
 	}	else /if (${_type.Equal[spell]} && ${Me.SpellReady[${_spell}]}) {
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 		/call pulse_stop
-		
-		
-		
-		
-		
-
 	} else /if (${_type.Equal[disc]} && ${Me.CombatAbilityReady[${_spell}]}) {
 		/call pulse_stop
 	
 	}
-
-
 /return TRUE
 
 
@@ -589,12 +570,12 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 	}	
 	
 	| enable/disable rest song
-	} else /if (${Bool[${_classType.Equal[restsong]}]}) {
+	/if (${Bool[${_classType.Equal[restsong]}]}) {
 		/call writeINI switchRestSong Song ${If[${switchRestSong},FALSE,TRUE]}
 		NOUT /${_bind} ${cinfo}Use Rest Song\ax ${sep} ${If[${switchRestSong},${oenabled},${odisabled}]}
 
 	| enable/disable sets bard song line
-	/if (${Bool[${_classType.Equal[line]}]}) {
+	} else /if (${Bool[${_classType.Equal[line]}]}) {
 
 		/if (${Bool[${lineType.Find[${_classVerbage.Lower}]}]}) {
 			DEBUGCLASS ${lineType.Find[${_classVerbage.Lower}]}

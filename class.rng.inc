@@ -62,13 +62,13 @@ sub core_RNG()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 		/call set_combat MELEE
-		/call use_skill_melee
+		/call use_skill_melee 
 		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
-		/call use_skill_melee
+		/call use_skill_melee 
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} 
@@ -77,10 +77,8 @@ sub core_RNG()
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
-	}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 
@@ -96,8 +94,7 @@ sub disc_RNG()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call check_deBuffs ${Target2Kill}
 
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
@@ -252,8 +249,6 @@ sub cast_nuke_summer(int _tmpID)
 	CHECKEXIT
 	/doevents
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
-	/call is_target_dead
-	/if (${Macro.Return}) /return		
 	/call core_cast "${NukeSummer}" 0 ${_tmpID} FALSE
 /return
 

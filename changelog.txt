@@ -8,15 +8,19 @@
  * Video: https://vimeo.com/235171246
  ***|
 
-
-
+20171103
+- is_target_dead(ID) returns [T|F] for use with /if (${is_target_dead[TARGET ID]})
+  -- classes adapted to this change: pal,rng,bar. will do more after a bit of play time.
+- validate_plugin(ID) returns [T|F]. /if (${validate_plugin[TRUE|FALSE, |plugin]})
+- class.brd.inc
+  -- bad /if-else flow for new restsong switch... still not tested this.
 
 
 20171102
 - logic change for tash/malo/cripple
-  -- leaving the ini entrie class.ini->[spell]spellTash,malo,slow,cripple as FALSE but enableing the /debuf mode for that skill will force the class to use the AA. otherwise put the spell in the INI
+  -- leaving the ini entrie class.ini->[spell]spellTash,malo,slow,cripple as FALSE but enabeling the /debuf mode for that skill will force the class to use the AA. otherwise put the spell in the INI
   -- THIS NEEDS A LOT OF TESTING!!!
-- is_target_valid() returns isValisdTarget [T|F] for use with /if (${is_target_valid[TARGET ID]})
+- is_target_valid(ID) returns isValisdTarget [T|F] for use with /if (${is_target_valid[TARGET ID]})
 
 
 20171101

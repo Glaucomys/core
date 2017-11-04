@@ -53,11 +53,8 @@ sub core_PAL()
 		/call use_mod_rod
 		/if (${switchHealCure}) /call cast_cure
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
-		| /if (!${is_target_dead[]}) /goto :killtarget
-	}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 
@@ -73,12 +70,10 @@ sub disc_PAL()
 	AMIDEAD
 	CHECKEXIT
 	
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	
 	| check challenge
 	/call cast_challenge ${Target2Kill}
-	
 	
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	| /if (${Me.CombatAbilityReady[${DiscFastRune}]} && ${Bool[${DiscFastRune}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFastRune}].EnduranceCost}) /call core_cast "${DiscFastRune}" disc
@@ -126,6 +121,7 @@ sub get_agro_PAL()
 	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
+	/if (${is_target_dead[${Target2Kill}]}) /return
 
 	| AE Stuns
 	/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 60 playerstate 4 targetable]}
