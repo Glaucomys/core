@@ -40,7 +40,7 @@ sub core_BST()
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/call cast_AA_focused_paragon

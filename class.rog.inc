@@ -32,11 +32,11 @@ sub core_ROG()
 		/call stick_to_target
 		/if (${Me.Invis}) /call sneak_attack
 		/call set_combat MELEE
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/call stick_to_target
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -93,7 +93,7 @@ sub disc_ROG()
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill}
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Target.ID} && ${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0
 	/if (${validate_buff[disc, discs, DiscVision]}) /call core_cast "${DiscVision}" disc 0
@@ -123,7 +123,7 @@ sub disc_ROG()
 	/if (${validate_buff[disc, discs, DiscHiddenBlade]}) /call core_cast "${DiscHiddenBlade}" disc 0
 
 
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHack}]} && ${Bool[${DiscHack}]}) /call core_cast "${DiscHack}" disc ${Target2Kill}
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBladePoison}]} && ${Bool[${DiscBladePoison}]}) /call core_cast "${DiscBladePoison}" disc 0
 	/if (${validate_buff[disc, discs, DiscBladePoison]}) /call core_cast "${DiscBladePoison}" disc 0
@@ -150,7 +150,7 @@ sub click_DPS_ROG()
 	/doevents
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /return
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 /return
 
@@ -268,7 +268,7 @@ sub synergy_ROG()
 
 	/if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]}) /call core_cast "Dirty Fighting" alt ${Target2Kill}
 	/if (${Me.CombatAbilityReady[Dichotomic Weapons]}) /call core_cast "Dichotomic Weapons" disc 0
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	
 	/if (!${AEMelee}) {
 		/if (${Me.AltAbilityReady[Focused Rake's Rampage]}) /call core_cast "Focused Rake's Rampage" alt 0 FALSE

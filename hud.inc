@@ -16,42 +16,61 @@
 #bind hud /hc
 sub Bind_hud(string _hcType, string _hcVerbage)
 	DEBUG ${cbug}Bind_hud()\ax
-	/declare _count int local 0
 
+	/declare _sep bool local
+	/declare _listout string local
+	/declare _count int local 0
+	/declare _bind string local hc	
+	
 	| get help
-	/if (${hudType.Find[${_hcType}]} && ${_hcVerbage.Equal[?]}) {
-		VOUT /hc ${cinfo}${_hcType.Lower}\ax ${sep} ${Ini[${INIWiki},hc,${_hcType.Lower}]}
+	/if (${_hcType.Equal[info]}) {
+		/for _count 1 to ${hudType.Count[|]}
+			VOUT /${_bind} ${cinfo}${hudType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${hudType.Arg[${_count},|]}]}
+		/next _count
+		/return			
+	} else /if (${Bool[${${_bind}Type.Find[${_hcType}]}]} && ${_${_bind}Verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}		
+	
+	| get help
+	/if (${hudType.Find[${_${_bind}Type}]} && ${_${_bind}Verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
 		/return
 	}	
-	/if (${_hcType.Equal[?]}) {
+	/if (${_${_bind}Type.Equal[info]}) {
 		/for _count 1 to ${hudType.Count[|]}
-			VOUT /hc ${cinfo}${hudType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},hc,${hudType.Arg[${_count},|]}]}
+			VOUT /${_bind} ${cinfo}${hudType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${hudType.Arg[${_count},|]}]}
 		/next _count
 	
 	| adjust hud clock
-	} else /if (${Bool[${_hcType.Find[time]}]}) {
+	} else /if (${Bool[${_${_bind}Type.Find[time]}]}) {
 		/varset HUDTime ${If[${HUDTime},FALSE,TRUE]}
-		/if (${HUDTime}) VOUT Hud Showing ${cinfo}Real Life\ax time.
-		/if (!${HUDTime}) VOUT Hud Showing ${cinfo}In Game\ax time.
+		/if (${HUDTime}) VOUT HUD Showing ${cinfo}Real Life\ax time.
+		/if (!${HUDTime}) VOUT HUD Showing ${cinfo}In Game\ax time.
 
 	| reset the MQhud ini file
-	} else /if (${Bool[${_hcType.Find[update]}]}) {
+	} else /if (${Bool[${_${_bind}Type.Find[update]}]}) {
 		/call HUDUpdate
 		
 	| update hud broadcasting	
-	} else /if (${Bool[${_hcType.Find[broadcast]}]}) {
+	} else /if (${Bool[${_${_bind}Type.Find[broadcast]}]}) {
 		/call writeINI setBroadcast Common ${If[${Bool[${setBroadcast}]},FALSE,TRUE]}
 		/if (${setBroadcast.Equal[FALSE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "DISABLED"
 		/if (${setBroadcast.Equal[TRUE]}) /ini "${INICore}" "transmit_status" "${Me.DisplayName}" "${coreAuto}"
-		/call echos switch "Adjusting Broadcast Status" setBroadcast
+		/call echos switch "Adjusting HUD Broadcast Status" setBroadcast
 
 	| delete the hud
-	} else /if (${Bool[${_hcType.Find[delete]}]}) {
+	} else /if (${Bool[${_${_bind}Type.Find[delete]}]}) {
 		NOUT Deleteing HUD ${sep}
 		/ini ".\..\MQ2HUD.ini" "core" NULL NULL
 
 	} else {
-		/call echos listtype hc hud
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
 	} 
 /return
 

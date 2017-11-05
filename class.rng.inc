@@ -29,14 +29,14 @@ sub core_RNG()
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${Bool[${timer_cast_nuke_summer}]}) /call cast_nuke_summer ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
@@ -62,13 +62,13 @@ sub core_RNG()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 		/call set_combat MELEE
-		/call use_skill_melee 
+		/call use_skill_melee ${Target2Kill}
 		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
-		/call use_skill_melee 
+		/call use_skill_melee ${Target2Kill}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} 
@@ -102,7 +102,7 @@ sub disc_RNG()
 	/if (${Me.SpellReady[${DoTSwarmDS}]} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast "${DoTSwarmDS}" 0 ${Target2Kill} FALSE
 	/if (${Target.ID} && ${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
 	/if (${Target.ID} && !${timer_Elemental_Arrow}) /call cast_AA_elemental_arrows ${Target2Kill}
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${switchAgro}) /call core_cast "${DiscJolt}" disc ${Target2Kill} FALSE
 	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
 	/if (${Target.ID} && ${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill} FALSE
@@ -171,7 +171,7 @@ sub get_agro_RNG()
 	}
 	/if (!${switchAgro}) {
 	}
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 /return
 
 
@@ -187,7 +187,7 @@ sub cast_AA_elemental_arrows(int _tmpID)
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	/if (${Bool[${ElementalArrow}]}) {
 		/if (!${Bool[${Target.Buff["Elemental Arrow: Ice"]}]} && !${Bool[${Target.Buff["Elemental Arrow: Fire"]}]} && !${Bool[${Target.Buff[${GlacialArow}]}]} && !${Bool[${Target.Buff[${VolatileArrow}]}]}) {
 			/call core_cast "${ElementalArrow}" alt ${_tmpID} FALSE
@@ -230,7 +230,7 @@ sub click_DPS_RNG()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 /return
 

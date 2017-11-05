@@ -227,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171103
+	/declare coreBuild	 														int			outer 20171105
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -853,19 +853,20 @@ sub set_declares()
 		/call DeclareIniVar GoMLevel									int			Spells 105
 		/call DeclareIniVar GoMNuke										string	Spells FALSE
 		/call DeclareIniVar GoMNuke2									string	Spells FALSE
-
-		| bc/tell buffs
-		/declare BuffCount															int 		outer 15
-		/for _count 1 to ${BuffCount}
-			/call DeclareIniVar Buff${_count}							string 	Buffs FALSE
-			/call DeclareIniVar Buff${_count}chk					string 	Buffs FALSE
-			/call DeclareIniVar Buff${_count}self					string 	Buffs FALSE
-			/call DeclareIniVar Buff${_count}Alias				string 	Buffs |FALSE|FALSE 
-			/call DeclareIniVar BCBuff${_count}Class			string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
-			/call DeclareIniVar RaidBuff${_count}Class		string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
-			/call DeclareIniVar Buff${_count}noBCinRaid		bool	 	Buffs FALSE
-		/next _count
 	}
+	
+	| bc/tell buffs
+	/declare BuffCount															int 		outer 15
+	/for _count 1 to ${BuffCount}
+		/call DeclareIniVar Buff${_count}							string 	Buffs FALSE
+		/call DeclareIniVar Buff${_count}chk					string 	Buffs FALSE
+		/call DeclareIniVar Buff${_count}self					string 	Buffs FALSE
+		/call DeclareIniVar Buff${_count}Alias				string 	Buffs |FALSE|FALSE 
+		/call DeclareIniVar BCBuff${_count}Class			string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
+		/call DeclareIniVar RaidBuff${_count}Class		string 	Buffs |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
+		/call DeclareIniVar Buff${_count}noBCinRaid		bool	 	Buffs FALSE
+	/next _count
+
 
 	/call DeclareIniVar Aura1Spell 									string 	Aura FALSE
 	/call DeclareIniVar Aura1Buff 									string 	Aura FALSE  
@@ -3443,6 +3444,8 @@ sub Bind_petControl(string _pcType, string _verbage)
 			/if (!${switchPcPet} && ${Pet.ID}) {
 				/if (${Me.AltAbilityReady[Suspended Minion]}) {
 					/call core_cast "Suspended Minion" alt 0 FALSE
+				} else /if (${Me.AltAbilityReady[Companion's Suspension]}) {
+					/call core_cast "Companion's Suspension" alt 0 FALSE
 				} else {
 					/pet leave
 				}

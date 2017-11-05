@@ -27,7 +27,7 @@ sub core_WAR()
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}

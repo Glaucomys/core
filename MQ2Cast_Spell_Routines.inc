@@ -194,6 +194,7 @@ Sub MQ2Cast(string spellName,string spellType,timer giveUpTimer,string mySub,str
     }
 		
 :wait_for_stop
+AMIDEAD
     /if (${Me.Casting.ID}) {
         /goto :wait_for_stop
     } else /if (${Corpse.Open}) {
@@ -215,6 +216,7 @@ Sub MQ2Cast(string spellName,string spellType,timer giveUpTimer,string mySub,str
     }
 
 :cast_spell
+AMIDEAD
     /if (${FindItem[=${spellName}].ID}) {
 	    /if (${FindItem[=${spellName}].EffectType.Equal[Click Worn]}) {
             /call SREquipItem "${spellName}"
@@ -248,6 +250,7 @@ Sub MQ2Cast(string spellName,string spellType,timer giveUpTimer,string mySub,str
     }
 
     /for i 1 to 8
+AMIDEAD
         /if (${MQ2Feature${i}.Find[-bandolier|]} || ${MQ2Feature${i}.Find[-setin|]}) {
             /varset bandSet ${MQ2Feature${i}.Arg[2,|]}
         }
@@ -268,6 +271,7 @@ Sub MQ2Cast(string spellName,string spellType,timer giveUpTimer,string mySub,str
     }
 
 :cast_still_pending
+AMIDEAD
     /if (${Cast.Status.Find[C]}) {
         /if (!${interruptFlag} && ${mySub.Length}) { 
             /if (${Bool[${mySub}]}) /call ${mySub}
@@ -304,11 +308,13 @@ Sub MQ2Cast(string spellName,string spellType,timer giveUpTimer,string mySub,str
 /return ${Cast.Result}
 
 Sub Interrupt
+AMIDEAD
     /varset interruptFlag TRUE
     /interrupt
 /return
 
 Sub SRBandIn(setName)
+AMIDEAD
     /if (!${Defined[bandIni]}) /declare bandIni string local ..\MQ2Bandolier_${Me.Name}.ini
     /declare equipSlots string local
     /declare itemSlot string local
@@ -340,6 +346,7 @@ Sub SRBandIn(setName)
 /return
 
 Sub SRBandOut
+AMIDEAD
     /declare i int local
     /for i 1 to 23
         /if (${equippedArray[${i}].Length} && !${equippedArray[${i}].Equal[${Me.Inventory[${Math.Calc[${i}-1]}].Name}]}) {
@@ -352,8 +359,10 @@ Sub SRClearCursor
     /declare i int local
 :check_cursor
     /if (${Cursor.ID}) {
+AMIDEAD
         /if (${Cursor.Container}) {
             /for i 1 to 10    
+AMIDEAD
                 /if (!${Me.Inventory[pack${i}].Container}) {
                     /nomodkey /itemnotify pack${i} leftmouseup
                 }
@@ -367,6 +376,7 @@ Sub SRClearCursor
 /return
 
 Sub SREquipItem(WhatWhere)
+AMIDEAD
     /declare destName string local
     /declare itemName string local ${WhatWhere.Arg[1,|]}
     /declare slotName string local ${WhatWhere.Arg[2,|]}
@@ -384,6 +394,7 @@ Sub SREquipItem(WhatWhere)
 /return ${destName}
 
 Sub SRSwapItem(itemName,slotName)
+AMIDEAD
     /declare i int local
     /if (${Cursor.ID}) /call SRClearCursor
     /exchange "${itemName}" ${slotName}
@@ -393,6 +404,7 @@ Sub SRSwapItem(itemName,slotName)
 /return
 
 Sub SRSwapItemNum(itemNum,slotNum)
+AMIDEAD
     /declare i int local
     /if (${Cursor.ID}) /call SRClearCursor
     /exchange ${itemNum} ${slotNum}
@@ -402,6 +414,7 @@ Sub SRSwapItemNum(itemNum,slotNum)
 /return
 
 Sub SRFindBookName(sName)
+AMIDEAD
     /declare returnName string local
     /declare tName string local
 	/declare a[2] string local
@@ -422,6 +435,7 @@ Sub SRFindBookName(sName)
     
     /for i 1 to 2
         /for j 1 to 2
+AMIDEAD
             /varset tName ${sName} ${a[${i}]} ${b[${j}]}
             /if (${Me.Book[${tName}]}) {
                 /varset returnName ${tName}

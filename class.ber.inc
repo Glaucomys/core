@@ -25,19 +25,27 @@ sub core_BER()
 	/if (!${Macro.Return}) /return
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/if (${isValidTarget}) /call stick_to_target
-		/if (${isValidTarget} && ${Me.CombatAbilityReady[${DiscSlapintheFace}]} && ${Me.PctAggro} <= 0 && !${Me.Combat} && ${Me.CurrentEndurance} > ${Spell[${DiscSlapintheFace}].EnduranceCost}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
+		/call stick_to_target
+		/if (${Me.CombatAbilityReady[${DiscSlapintheFace}]} && ${Me.PctAggro} <= 0 && !${Me.Combat} && ${Me.CurrentEndurance} > ${Spell[${DiscSlapintheFace}].EnduranceCost}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
 		/call set_combat MELEE
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}		
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/if (${Me.CombatAbilityReady[${DiscSlapintheFace}]} && ${Me.PctAggro} <= 0 && !${Me.Combat} && ${Me.CurrentEndurance} > ${Spell[${DiscSlapintheFace}].EnduranceCost}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
+		/call set_combat RANGE
+		/call disc_${Me.Class.ShortName}
+		/call click_BP
+		/call use_skill_melee ${Target2Kill}
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${doclickItem}) /call click_item
+		/call click_DPS_${Me.Class.ShortName}		
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {

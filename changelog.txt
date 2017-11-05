@@ -8,10 +8,22 @@
  * Video: https://vimeo.com/235171246
  ***|
 
+
+
+
+20171105
+- updated /hc code to current format
+- /hc added to inline wiki
+- update_HUD_notices() - PetFarm was in there 2x
+- use_skill_melee() now requires passed target ID
+- /pc [pet] will try both Suspend Minion and Companion's Suspension before just killing the pet.
+- all classes given access added to all buffing routines.
+
+
 20171103
 - is_target_dead(ID) returns [T|F] for use with /if (${is_target_dead[TARGET ID]})
   -- classes adapted to this change: pal,rng,bar. will do more after a bit of play time.
-- validate_plugin(ID) returns [T|F]. /if (${validate_plugin[TRUE|FALSE, |plugin]})
+- validate_plugin(ID) returns [T|F]. /if (${validate_plugin[TRUE|FALSE, |plugin|plugin]})
 - class.brd.inc
   -- bad /if-else flow for new restsong switch... still not tested this.
 

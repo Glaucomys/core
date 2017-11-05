@@ -28,13 +28,13 @@ sub core_PAL()
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/call stick_to_target
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}

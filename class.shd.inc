@@ -34,7 +34,7 @@ sub core_SHD()
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/call check_deBuffs ${Target2Kill}
@@ -42,11 +42,11 @@ sub core_SHD()
 		/call click_DPS_${Me.Class.ShortName}
 		/call stick_to_target
 		/if (${DoDoT}) /call cast_DOT
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${doclickItem}) /call click_item TRUE
 		/if (${switchHarmonious}) /call check_harmonious
 		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
@@ -125,7 +125,7 @@ sub get_agro_SHD()
 	/doevents
 	/call is_target_dead
 	/if (${Macro.Return}) /return
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	/if (${switchPcPet}) /call send_pet
 
 	| single hate
@@ -169,7 +169,7 @@ sub click_DPS_SHD()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call use_skill_melee
+	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 /return
 

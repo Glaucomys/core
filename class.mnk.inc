@@ -30,11 +30,11 @@ sub core_MNK()
 		/if (${isValidTarget}) /call stick_to_target
 		/call set_combat MELEE
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call stick_to_target
-		/call use_skill_melee
+		/call use_skill_melee ${Target2Kill}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}		

@@ -618,30 +618,34 @@ sub check_aura()
 	UPDATEHUD "CHECK: Aura"
 	
 	| Aura: berzerker, monk
-	/if (${Bool[${Aura1Buff}]} && ${Select[${Me.Class.ShortName},BER,MNK]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
-		VOUT Disc ${sep} ${csp}${Aura1Spell}\ax
-		/disc ${Aura1Spell}
-		| /call core_cast "${Aura1Spell}" disc 0
-		/delay 8s
+	/if (${validate_class[FALSE, |BER|MNK]}) {
+		/if (${Bool[${Aura1Buff}]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
+			VOUT Disc ${sep} ${csp}${Aura1Spell}\ax
+			/disc ${Aura1Spell}
+			| /call core_cast "${Aura1Spell}" disc 0
+			/delay 8s
+		}
 		/return
 	}
 	
 	| Aura: Bard
-	/if (${Bool[${Aura1Buff}]} && ${Select[${Me.Class.ShortName},BRD]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
-		/call fix_gem_id "${buffGem}"
-		/if (!${Defined[_gem]}) /declare _gem			int local ${Macro.Return}
-		/call scribe "${Aura1Buff}" "${_gem}" 10
-		VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
-		/melody ${_gem}
-		/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
-		/delay 2 
+	/if (${validate_class[FALSE, |BRD]}) {
+		/if (${Bool[${Aura1Buff}]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
+			/call fix_gem_id "${buffGem}"
+			/if (!${Defined[_gem]}) /declare _gem int local ${Macro.Return}
+			/call scribe "${Aura1Buff}" "${_gem}" 10
+			VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
+			/melody ${_gem}
+			/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
+			/delay 2 
 
-		:stoppulse
-		/if ((${Bool[${Me.Aura[1].Equal[${Aura1Buff}]}]} || ${Me.Song[${Me.Gem[${_gem}].ID}]}) && (${Me.Casting.ID} == ${Me.Gem[${_gem}].ID})) {
-			/delay 2
-			/melody ${_gem}	
-			/goto :stoppulse
-		}	
+			:stoppulse
+			/if ((${Bool[${Me.Aura[1].Equal[${Aura1Buff}]}]} || ${Me.Song[${Me.Gem[${_gem}].ID}]}) && (${Me.Casting.ID} == ${Me.Gem[${_gem}].ID})) {
+				/delay 2
+				/melody ${_gem}	
+				/goto :stoppulse
+			}	
+		}
 		/return
 	}
 
@@ -1398,16 +1402,11 @@ sub set_xtarget()
  *	INI: na
  *  NOTE: for the love of whatever you find important, don't touch this ever again...
  ***|
-sub stick_to_target(int _tmpID)
+sub stick_to_target()
 	DEBUG ${cbug}stick_to_target()\ax Setting Stick to: [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] @ ${CombatDistance}% agro distance
 	/if (${Select[${combat},RANGE,NUKE,HEAL]} || !${coreAuto}) /return
 
 	/if (!${validate_plugin[TRUE, |mq2moveutils]}) /return
-
-	| /if (!${Bool[${Plugin[MQ2MoveUtils]}]}) {
-	| 	VOUT Plugin \a-w$MQ2MoveUtils\ax is missing.
-	| 	/return
-	| }
 
 	/call is_target_dead
 	/if (${Macro.Return}) /return
@@ -1425,8 +1424,7 @@ sub stick_to_target(int _tmpID)
 		:checkstuck
 		/doevents
 		AMIDEAD	
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${MoveUtils.Stuck}) {
 			/delay 1
 			/squelch /stick off
@@ -1445,8 +1443,7 @@ sub stick_to_target(int _tmpID)
 		:movetomob
 		/doevents
 		AMIDEAD	
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (!${Stick.Active} && ${Target.ID} && ${isValidTarget} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
 			/if (${coreAuto} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 			/if (${Select[${combat},RANGE]}) /return
@@ -2401,74 +2398,94 @@ sub cast_free_target(string _tmpSpell, int _tmpID)
  *	INI: toon -> [meleedisc] set the skill to TRUE to use.
  *  NOTE: 
  ***|
-sub use_skill_melee()
- 	DEBUG ${cbug}use_skill_melee()\ax
+sub use_skill_melee(int _tmpID)
+ 	DEBUG ${cbug}use_skill_melee(ID ${_tmpID})\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
 	
-	/if (${is_target_dead[${Target2Kill}]}) /return
+	/if (!${Bool[${_tmpID}]}) /return	
+	/if (${is_target_dead[${_tmpID}]}) /return
 	
-	/if (${Target.ID} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+	/if (${Target.ID} != ${_tmpID}) {
+		/target ID ${_tmpID}
+		/delay 5 ${Target.ID} == ${_tmpID}
+	}
+	
+	/if (${Target.ID} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${_tmpID} nolook ${If[${SetFaceFast},fast,]}
 
 	| taunt /onoff agro
-	/if (${Bool[${taunt}]} && ${switchAgro} && ${Me.AbilityReady[Taunt]} && ${Spawn[${Target2Kill}].Distance} <= 18 && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-		VOUT Melee ${sep} ${csp}Taunting\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
-		/if (${Target.ID}) /doability Taunt
-	}
-	| disarm
-	/if (${Bool[${disarm}]} && !${Skill[Disarm].Auto}  && ${Me.AbilityReady[Disarm]} && ${Spawn[${Target2Kill}].Distance} <= 15 && ${switchAgro}) {
-		VOUT Melee ${sep} ${csp}Disarm\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
-		/if (${Target.ID}) /doability Disarm
+	/if (${Bool[${taunt}]} && ${switchAgro}) {
+		/if (${Me.AbilityReady[Taunt]} && ${Spawn[${_tmpID}].Distance} <= 18 && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+			VOUT Melee ${sep} ${csp}Taunting\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			/if (${Target.ID}) /doability Taunt
+		}
 	}
 	
-	/if (${Me.Level} > 61) /return
+	| disarm
+	/if (${Bool[${disarm}]} && !${Skill[Disarm].Auto}) {
+		/if (${Me.AbilityReady[Disarm]} && ${Spawn[${_tmpID}].Distance} <= 15 && ${switchAgro}) {
+			VOUT Melee ${sep} ${csp}Disarm\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			/if (${Target.ID}) /doability Disarm
+		}
+	}
+	
+	| /if (${Me.Level} > 61) /return
 	
 	| kick
- 	/if (!${Select[${Me.Class.ShortName},MNK]} && ${Bool[${kick}]} && !${Skill[Kick].Auto} && ${Me.AbilityReady[Kick]} && ${Spawn[${Target2Kill}].Distance} <= 15) {
-		VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
-		/if (${Target.ID}) /doability Kick
+	/if (${Bool[${kick}]} && !${Skill[Kick].Auto}) {
+	 	/if (!${Select[${Me.Class.ShortName},MNK]} && ${Me.AbilityReady[Kick]} && ${Spawn[${_tmpID}].Distance} <= 15) {
+			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			/if (${Target.ID}) /doability Kick
+		}
 	}
+	
 	| bash
-	/if (${Bool[${bash}]} && !${Skill[Bash].Auto} && ${Me.AbilityReady[Bash]} && ${Spawn[${Target2Kill}].Distance} <= 15) {
-		VOUT Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
-		/if (${Target.ID}) /doability Bash
+	/if (${Bool[${bash}]} && !${Skill[Bash].Auto}) {
+		/if (${Me.AbilityReady[Bash]} && ${Spawn[${_tmpID}].Distance} <= 15) {
+			VOUT Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			/if (${Target.ID}) /doability Bash
+		}
 	}
 	
 	| Zerker only skill
-	/if (${Bool[${frenzy}]} && !${Skill[Frenzy].Auto} && ${Me.AbilityReady[Frenzy]} && ${Spawn[${Target2Kill}].Distance} <= 13) {
-		VOUT Melee ${sep} ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
-		/if (${Target.ID}) /doability Frenzy
+	/if (${validate_class[FALSE, |BER]} ${Bool[${frenzy}]} && && !${Skill[Frenzy].Auto}) {
+		/if (${Me.AbilityReady[Frenzy]} && ${Spawn[${_tmpID}].Distance} <= 13) {
+			VOUT Melee ${sep} ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			/if (${Target.ID}) /doability Frenzy
+		}
 	}
 
 	| rogue only skill
-	/if (${Bool[${backstab}]} && !${Skill[Backstab].Auto} && ${Me.AbilityReady[Backstab]} && ${Spawn[${Target2Kill}].Distance} <= 13) {
-		VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
-		/if (${Target.ID}) /doability Backstab
+	/if (${validate_class[FALSE, |ROG]} ${Bool[${backstab}]} && && !${Skill[Backstab].Auto}) {
+		/if (${Me.AbilityReady[Backstab]} && ${Spawn[${_tmpID}].Distance} <= 13) {
+			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			/if (${Target.ID}) /doability Backstab
+		}
 	}
 	
 	| monk only skill 
-	/if (${Select[${Me.Class.ShortName},MNK]} && ${Spawn[${Target2Kill}].Distance} <= 15) {
+	/if (${validate_class[FALSE, |MON]} && ${Spawn[${_tmpID}].Distance} <= 15) {
 		| fist
 		/if (${Bool[${dragonpunch}]} && !${Skill[Dragon Punch].Auto} && ${Me.AbilityReady[Dragon Punch]}) {
-			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Dragon Punch"
 		} else /if (${Bool[${eaglestrike}]} && !${Skill[Eagle Strike].Auto} && ${Me.AbilityReady[Eagle Strike]}) {
-			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Eagle Strike"
 		} else /if (${Bool[${tigerclaw}]} && !${Skill[Tiger Claw].Auto} && ${Me.AbilityReady[Tiger Claw]}) {
-			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Tiger Claw"
 		}
 		| kick
 	 	/if (${Bool[${kick}]} && !${Skill[Kick].Auto} && ${Me.AbilityReady[Kick]}) {
-			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Kick
 		} else /if (${Bool[${flyingkick}]} && !${Skill[Flying Kick].Auto} && ${Me.AbilityReady[Flying Kick]}) {
-			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Flying Kick"
 		} else /if (${Bool[${roundkick}]} && !${Skill[Rounf Kick].Auto} && ${Me.AbilityReady[Round Kick]}) {
-			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Round Kick"
 		}		
 	}
@@ -2544,8 +2561,7 @@ sub cast_nuke_GoM(int _tmpID)
 	/if (!${Select[${Me.Class.ShortName},CLR]}) {
 		/call check_exit
 		/if (${Macro.Return}) /return
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${_tmpID}]}) /return
 	}
 
 	/while (${Me.Casting.ID} && (${Me.Gem[${GoMNuke}]} || ${Me.Gem[${GoMNuke2}]})) {
@@ -3012,10 +3028,6 @@ sub update_HUD_notices(string _mode)
 	}
 	/if (${Bool[${switchModeFish}]}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Fish
-		/varset _sep TRUE
-	}
-	/if (${Bool[${switchModePetfarm}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Pet Farm
 		/varset _sep TRUE
 	}
 	/if (${Bool[${switchModeSkill}]}) {
@@ -5772,16 +5784,25 @@ sub validate_class(bool _error, string _class)
  ***|
 sub validate_plugin(bool _error, string _plugin)
 	DEBUG ${cbug}validate_class(error: ${_error}, plugin: ${_plugin})\ax
-	/declare _pass bool local FALSE
+	/if (!${Bool[${_plugin}]}) NOUT ${owarnong} ${sep} validate_plugin failure.
+	/declare _plugcount int local 0	
 	/declare _count int local 0
 
 	/for _count 1 to ${_plugin.Count[|]}
 		DEBUG _count:${_plugin}, arg: ${_plugin.Arg[${_count},|]}
-		/if (${Bool[${Plugin[${_plugin.Arg[${_count},|]}]}]}) /varset _pass TRUE
-		/if (!${_pass} && ${_error}) VOUT Plugin ${cinfo}$ ${_plugin.Arg[${_count},|]}\ax is not loaded.
+		/if (${Bool[${Plugin[${_plugin.Arg[${_count},|]}]}]}) {
+			/varcalc _plugcount ${_plugcount}+1
+		} else /if (!${Bool[${Plugin[${_plugin.Arg[${_count},|]}]}]} && ${_error}) {
+			 VOUT Plugin ${cinfo}$ ${_plugin.Arg[${_count},|]}\ax is not loaded.
+		}
 	/next _count
-
-/return ${_pass}
+	
+	/if (${_plugcount} == ${_plugin.Count[|]}) {
+		/return TRUE
+	} else /if (${_plugcount} != ${_plugin.Count[|]}) {
+		/return FALSE
+	}
+/return FALSE
 
 
 
