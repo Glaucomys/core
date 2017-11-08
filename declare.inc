@@ -227,7 +227,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171105
+	/declare coreBuild	 														int			outer 20171108
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -266,6 +266,10 @@ sub set_declares()
 	/call DeclareCoreIniVar maxMobPullLvl						int			General 150
 	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
 	/call DeclareCoreIniVar smartasserrors					string	General TRUE
+	/call DeclareCoreIniVar forceNukeLoop						string	General FALSE
+	
+	
+	
 	/call DeclareIniVar verbose											bool		Common TRUE
 
 		

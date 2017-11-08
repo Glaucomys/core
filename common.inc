@@ -945,6 +945,8 @@ sub check_buffs_BC()
 
 	| each toon
 	/while (${_toon} <= ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}) {
+		| ignore the rampage tank
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${NetBots[${NetBots.Client[${_toon}]}]}]}) /continue
 		DEBUG _toon ${_toon} / ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}
 		AMIDEAD
 		CHECKEXIT
@@ -1729,7 +1731,8 @@ sub clear_combat()
 	/if (${isValidTarget}) /varset isValidTarget FALSE
 	/if (${validate_plugin[FALSE, |mq2twist]}) /squelch /twist clear
 	/if (${Stick.Active}) /squelch /stick off
-	/if (${Target.ID}) /squelch /target clear
+	/if (${coreAuto} && ${Target.ID}) /squelch /target clear
+	/if (!${coreAuto} && !${Spawn[${Target.ID}].Type.Equal[CORPSE]}) /squelch /target clear
 	UPDATEHUD FALSE
 /return
 
@@ -1800,6 +1803,7 @@ sub cast_DOT()
  ***|
 sub cast_nuke()
 	DEBUGCAST ${cbug}cast_nuke()\ax
+	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoNuke}
@@ -1808,6 +1812,11 @@ sub cast_nuke()
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/call core_cast "${Nuke${_count}}" 0 ${Target2Kill} cast_break
 		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
+		/if (${forceNukeLoop}) {
+			/delay 10s !${Me.Casting.ID}
+			/delay 2.5s
+			/delay ${timer_Nuke_Delay}
+		}
 	/next _count
 /return
 
@@ -1894,8 +1903,8 @@ sub cast_eradicate_magic(int _tmpID)
 	}
 	
 	/if (!${Defined[_debuffEradicate]}) /declare _debuffEradicate string local
-	/if (${Select[${Me.Class.ShortName},ENC,MAG,NEC,WIZ]}) /varset _debuffEradicate Eradicate Magic
-	/if (${Select[${Me.Class.ShortName},RNG,DRU]}) /varset _debuffEradicate Entropy of Nature
+	/if (${validate_class[FALSE, |ENC|MAG|NEC|WIZ]}) /varset _debuffEradicate Eradicate Magic
+	/if (${validate_class[FALSE, |RNG|DRU]}) /varset _debuffEradicate Entropy of Nature
 	
 	/if (${Me.AltAbilityReady[${_debuffEradicate}]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_debuffEradicate}].MyRange}) {
 		/call core_cast "${_debuffEradicate}" alt ${_tmpID}

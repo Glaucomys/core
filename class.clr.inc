@@ -43,6 +43,9 @@ sub core_CLR()
 		/call stick_to_target
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
@@ -59,7 +62,6 @@ sub core_CLR()
 		/call click_DPS_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
-		| /if (!${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/if (${coreAuto}) {	
@@ -121,7 +123,7 @@ sub cast_sum_weapon()
 
 	AMIDEAD
 	/if (!${Bool[${FindItem[${sumWeaponItem}]}]}) {
-		/call core_cast "${sumWeaponSpell}" ${buffGem} ${Me.ID}
+		/call core_cast "${sumWeaponSpell}" ${buffGem} ${Me.ID} FALSE
 	}
 	/if (${Bool[${Cursor.ID}]}) {
 		/call sort_cursor TRUE
@@ -195,16 +197,16 @@ sub check_heal_group_CLR()
 	| Use all the time in combat. Don't care if hurt or not.
  	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) {
  	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
-	 		/call core_cast "Celestial Regeneration" alt 0
+	 		/call core_cast "Celestial Regeneration" alt 0 FALSE
 	  } else /if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
-	    /call core_cast "${healWholeGroupHoT}" 0 0
+	    /call core_cast "${healWholeGroupHoT}" 0 0 FALSE
 	  }
 	}
 
 	| Focused Celestial Regeneration
 	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[Focused Celestial Regeneration].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
 		/if (${Me.AltAbilityReady[Focused Celestial Regeneration]}) {
-			/call core_cast "Focused Celestial Regeneration" alt ${WorstHurt}
+			/call core_cast "Focused Celestial Regeneration" alt ${WorstHurt} FALSE
 		}
 	}
 	AMIDEAD
@@ -213,7 +215,7 @@ sub check_heal_group_CLR()
   | AA Spire
 	/if (!${Bool[${Raid.Members}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
     /if (${Me.AltAbilityReady[${CLRspire3}]}) {
-    	/call core_cast "${CLRspire3}" alt ${WorstHurt}
+    	/call core_cast "${CLRspire3}" alt ${WorstHurt} FALSE
     }
   }	
   
@@ -367,6 +369,7 @@ sub check_heal_XTarget_CLR()
   /declare _count int local 0
 
   /for _count 1 to 13
+  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	UPDATEHUD "HEAL XTARGET"
 		/call check_no_cast_buffs
 		AMIDEAD
@@ -424,6 +427,7 @@ sub check_HP_CLR()
 
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
+	  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 			AMIDEAD
 			SIMPLEEXIT
 			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
@@ -487,15 +491,15 @@ sub check_pet_heal_CLR()
   /if (${pWorstHurtID} == ${Me.ID}) /return
   DEBUGCLASS PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
   /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Me.SpellReady[${healRemedy1}]}) {
-    /call core_cast "${healRemedy1}" 0 ${pWorstHurtID}
+    /call core_cast "${healRemedy1}" 0 ${pWorstHurtID} FALSE
   } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy2}].MyRange} && ${Me.SpellReady[${healRemedy2}]}) {
-    /call core_cast "${healRemedy2}" 0 ${pWorstHurtID}  
+    /call core_cast "${healRemedy2}" 0 ${pWorstHurtID}   FALSE
   } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention1}].MyRange} && ${Me.SpellReady[${healIntervention1}]}) {
-    /call core_cast "${healIntervention1}" 0 ${pWorstHurtID}
+    /call core_cast "${healIntervention1}" 0 ${pWorstHurtID} FALSE
   } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention2}].MyRange} && ${Me.SpellReady[${healIntervention2}]}) {
-    /call core_cast "${healIntervention2}" 0 ${pWorstHurtID}}
+    /call core_cast "${healIntervention2}" 0 ${pWorstHurtID}} FALSE
   } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention3}].MyRange} && ${Me.SpellReady[${healIntervention3}]}) {
-    /call core_cast "${healIntervention3}" 0 ${pWorstHurtID}
+    /call core_cast "${healIntervention3}" 0 ${pWorstHurtID} FALSE
   }
 /return
 
@@ -513,13 +517,13 @@ sub cast_divine_arbitration()
 	SIMPLEEXIT
 	/if (${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]}) /return
   /if (${Me.ItemReady[Aegis of Superior Divinity]}) {    
-    /call core_cast "Aegis of Superior Divinity" item 0
+    /call core_cast "Aegis of Superior Divinity" item 0 FALSE
   } else /if (${Me.ItemReady[Harmony of the Soul]}) {
-    /call core_cast "Harmony of the Soul" item 0
+    /call core_cast "Harmony of the Soul" item 0 FALSE
   } else /if (${Me.AltAbilityReady[Divine Arbitration]}) {
-    /call core_cast "Divine Arbitration" alt 0
+    /call core_cast "Divine Arbitration" alt 0 FALSE
   }
-  /if (${Me.AltAbilityReady[Celestial Rapidity]}) /call core_cast "Celestial Rapidity" alt 0
+  /if (${Me.AltAbilityReady[Celestial Rapidity]}) /call core_cast "Celestial Rapidity" alt 0 FALSE
 	
 	/if (${setDivinetoGroupHeal} && ${Me.SpellReady[${healWholeGroup}]} && ${useGroupHeal}) /call core_cast "${healWholeGroup}" 0 ${Me.ID} check_HP_${Me.Class.ShortName}
 /return
@@ -539,8 +543,8 @@ Sub cast_celest_regen()
 	SIMPLEEXIT
 	/doevents
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Celestial Regeneration]} && !${Bool[${Me.Song[Celestial Regeneration]}]}) {
-		/call core_cast "Mass Group Buff" alt ${Me.ID}
-		/call core_cast "Celestial Regeneration" alt ${Me.ID}
+		/call core_cast "Mass Group Buff" alt ${Me.ID} FALSE
+		/call core_cast "Celestial Regeneration" alt ${Me.ID} FALSE
 		/if (${Bool[${Raid.Members}]}) /rs ${CRTXT}
 	} else /if (${Bool[${Me.Song[Celestial Regeneration]}]}) {
 		VOUT ${cbad}QUIT\ax trying to cast Celestial Regeneration while its running.	
@@ -617,10 +621,12 @@ sub check_heal_ward()
 		/doevents
 		CHECKTIE
 		/varset _wardToon ${_toon.Arg[${_count},|]}
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${_wardToon}]}) /continue
+
 		/if (${Bool[${Spawn[${NetBots[${_wardToon}].ID}]}]} && ${Spawn[id ${NetBots[${_wardToon}].ID}].Distance} < ${Spell[${healWard}].MyRange} && ${Me.SpellReady[${healWard}]}) {
 			DEBUG  ${_count}: ${_toon.Count[|]}, ID:${Spawn[${_wardToon}].ID}, ${_toon.Arg[${_count},|]}, ${Bool[${Spawn[${_wardToon}].ID}]}, found: ${Bool[${NetBots[${_wardToon}].ShortBuff.Find[${_healwardID}]}]}
 			/if (${Bool[${NetBots[${_wardToon}].ShortBuff.Find[${_healwardID}]}]} || ${Spawn[${_wardToon}].Type.Equal[corpse]}) /continue
-			/call core_cast "${healWard}" 0 ${Spawn[${_wardToon}].ID}
+			/call core_cast "${healWard}" 0 ${Spawn[${_wardToon}].ID} FALSE
 		}
 	/next _count	
 /return

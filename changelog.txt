@@ -9,6 +9,18 @@
  ***|
 
 
+20171108
+- clear_combat()
+  -- should no longer clear target in manual mode when targeting a corpse of any kind
+- can now force nuke cycles to stay in the loop till all nukes are done
+  -- core.ini->[general]->ForceNukeLoop=TRUE to enable. FALSE (default)
+  -- this will lock the nuke cycle untill all nukes in the INI are casted, then release for other class functions.
+- BC buffs are disabled for Rampage Tank
+- class.clr.inc
+  -- check_heal_ward() will ignore Rampage Tank
+  -- check_heal_XTarget_CLR() will ignore Rampage Tank
+  -- check_HP_CLR() will ignore Rampage Tank
+  
 
 
 20171105
@@ -17,7 +29,7 @@
 - update_HUD_notices() - PetFarm was in there 2x
 - use_skill_melee() now requires passed target ID
 - /pc [pet] will try both Suspend Minion and Companion's Suspension before just killing the pet.
-- all classes given access added to all buffing routines.
+- all classes given access to all buffing routines.
 
 
 20171103
