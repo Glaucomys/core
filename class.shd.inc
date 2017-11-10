@@ -60,10 +60,8 @@ sub core_SHD()
 		/call use_mod_rod
 		/if (${switchHealCure}) /call cast_cure
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
-	}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 
@@ -79,8 +77,7 @@ sub disc_SHD()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	CHECKTIE
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
 	
@@ -123,8 +120,7 @@ sub get_agro_SHD()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call use_skill_melee ${Target2Kill}
 	/if (${switchPcPet}) /call send_pet
 
@@ -187,8 +183,7 @@ sub check_skin()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return		
+	/if (${is_target_dead[${Target2Kill}]}) /return	
 	/if (!${Bool[${Me.Buff[${Skin}]}]} && ${Me.SpellReady[${Skin}]}) {
 		/call core_cast "${Skin}" 0
 		/call create_timer timer_check_Skin ${tcheck_Skin}
@@ -208,8 +203,7 @@ sub synergy_SHD()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return		
+	/if (${is_target_dead[${Target2Kill}]}) /return		
 
 	| defensive	
 	/if (${Me.CombatAbilityReady[${DefensiveDisc}]} && ${Me.CurrentEndurance} > ${Spell[${DefensiveDisc}].EnduranceCost}) {

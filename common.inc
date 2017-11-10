@@ -1245,8 +1245,7 @@ sub click_item(bool _clickEpic)
 		/doevents
 		AMIDEAD
 		CHECKTIE
-		/call is_target_dead
-		/if (${Macro.Return}) /return
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Me.ItemReady[${clickItem${_count}}]}) /call core_cast "${clickItem${_count}}" item ${Target2Kill} FALSE
 
 	/next _count
@@ -1410,8 +1409,7 @@ sub stick_to_target()
 
 	/if (!${validate_plugin[TRUE, |mq2moveutils]}) /return
 
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/doevents
 	AMIDEAD	
 	/if (${coreAuto} && ${SetStickBehind}) {
@@ -1771,27 +1769,16 @@ sub clear_timer(int _tmpID)
 
 
 |***
- *	DES: Cast DoT's
- *	USE: /call cast_DOT
+ *	DES: conditions to check for each cast
+ *	USE: /if (!${cast_condition[CONDITION]}) /return ??
  *	INI: 
- *  NOTE: 
+ *  NOTE: DO NOT PASS VARIABLE CONTAINER. JUST PASS ITS INI DECLARE NAME
  ***|
-sub cast_DOT()
-	DEBUGCAST ${cbug}cast_DOT(count ${DoDoT})\ax
-	/call get_assist_target
-	/declare _count int local 0
-	/for _count 1 to ${DoDoT}
-		AMIDEAD
-		CHECKEXIT
-		/if (${is_target_dead[${Target2Kill}]}) /return
-		
-		/if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
-		
-		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
-			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
-		}
-	/next _count
-/return
+sub cast_condition(str _condition)
+	DEBUG ${cbug}cast_condition(condition: ${_condition} ${sep} (${${_condition}})\ax
+	/declare _eval string local ${${_condition}}
+	/if (${_eval}) /return TRUE
+/return FALSE
 
 
 
@@ -1810,12 +1797,37 @@ sub cast_nuke()
 		AMIDEAD
 		CHECKEXIT
 		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (!${cast_condition[Nuke${_count}Condition]}) /continue 
 		/call core_cast "${Nuke${_count}}" 0 ${Target2Kill} cast_break
 		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 		/if (${forceNukeLoop}) {
 			/delay 10s !${Me.Casting.ID}
 			/delay 2.5s
 			/delay ${timer_Nuke_Delay}
+		}
+	/next _count
+/return
+
+
+
+|***
+ *	DES: Cast DoT's
+ *	USE: /call cast_DOT
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_DOT()
+	DEBUGCAST ${cbug}cast_DOT(count ${DoDoT})\ax
+	/call get_assist_target
+	/declare _count int local 0
+	/for _count 1 to ${DoDoT}
+		AMIDEAD
+		CHECKEXIT
+		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
+		/if (!${cast_condition[Dot${_count}Condition]}) /continue 
+		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
+			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
 		}
 	/next _count
 /return
@@ -2126,7 +2138,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 			/varset _type disc
 		}
 	}
-	
+
 	
 	| READY CHECKS
 	| dead?
@@ -2529,8 +2541,7 @@ sub cast_nuke_servant()
 sub set_combat(str _mode)
 	DEBUG ${cbug}set_combat(${_mode})\ax
 	AMIDEAD
-	/call is_target_dead
-	/if (${Macro.Return}) /return		
+	/if (${is_target_dead[${Target2Kill}]}) /return	
 	/if (!${coreAuto} && ${Me.Invis}) /makemevisible
 	UPDATEHUD "${_mode}"
 	/if (${Me.State.NotEqual[STAND]}) /stand
@@ -3147,8 +3158,7 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
 	AMIDEAD
 	CHECKEXIT
 	/if (!${switchPcPet} || ${Me.Pet.ID}) /return
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${_tmpID}]}) /return
 	/if (${Spawn[${_tmpID}].Distance} < ${MobAgro} && ${Spawn[${_tmpID}].PctHPs} <= ${sendPetPerc}) {
 		VOUT Sending ${cpc}${_tmpSpell}\ax after [${If[${Bool[${Target.ID}]},${ctar}${Target.DisplayName}\ax,${cbad}BAD TARGET\ax]}] ${Target.Distance} ${If[${Spawn[${Target}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]}
 		/call MQ2Cast "${_tmpSpell}" -targetid|${_tmpID}
@@ -3239,10 +3249,10 @@ sub scribe(string _spellname, string _spellgem, bool _wait)
 			/call create_timer timer_scribe_timer 60s
 			VOUT ${onotice} ${sep} You don't have ${csp}${_spellname}\ax in your book.
 		}
-		/return
+		/return FALSE
 	}
 
-	/if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /return
+	/if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /return TRUE
 	VOUT Scribe ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
 	DEBUGCAST ${_gem} "${Spell[${_spellname}].RankName}"
 	/memspell ${_gem} "${Spell[${_spellname}].RankName}"
@@ -3254,7 +3264,7 @@ sub scribe(string _spellname, string _spellgem, bool _wait)
 	} else /if (!${_wait}) {
 		/delay 3s
 	}
-/return
+/return TRUE
 
 
 
@@ -4985,12 +4995,11 @@ sub cast_AA_fade()
 	/call check_exit
 	/if (${Macro.Return}) /return
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 
 	/if (${Me.AltAbilityReady[${AAFade}]}) {
 		ECHOCHANNEL Fading Combat ${Me.PctHPs} <= ${AAFade}
-		/call core_cast "${AAFade}" alt 0
+		/call core_cast "${AAFade}" alt 0 FALSE
 	}
 /return
 
@@ -5010,7 +5019,7 @@ sub check_stance()
 	/if (!${switchStance}) /return
 	
 	/if (!${Bool[${Me.Buff[${Stance}]}]} && ${Me.SpellReady[${Stance}]}) {
-		/call core_cast "${Stance}" 0 0
+		/call core_cast "${Stance}" 0 0 FALSE
 		/call create_timer timer_check_Stance ${tcheck_Stance}
 	}
 /return
@@ -5065,9 +5074,8 @@ sub click_item_burn()
 		/call check_exit
 		/if (${Macro.Return}) /return	
 		/doevents
-		/call is_target_dead
-		/if (!${Macro.Return}) /return
-		/if (${Me.ItemReady[${clickItemBurn${_count}}]}) /call core_cast "${clickItemBurn${_count}}" item 0
+		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (${Me.ItemReady[${clickItemBurn${_count}}]}) /call core_cast "${clickItemBurn${_count}}" item 0 FALSE
 	/next _count
 /return  
 
@@ -5745,10 +5753,9 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Spells" "ManaTapSpell2" NULL
 	/ini "${INIClass}" "Spells" "AASlow" NULL
 	/ini "${INIClass}" "Spells" "usePathosis" NULL
+	/ini "${INIClass}" "Pet" "switchHealPet" NULL
 
 	
-
-
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
 
@@ -5777,7 +5784,10 @@ sub validate_class(bool _error, string _class)
 
 	/for _count 1 to ${_class.Count[|]}
 		DEBUG _count:${_count}, arg: ${_class.Arg[${_count},|]}
-		/if (${Me.Class.ShortName.Upper.Equal[${_class.Arg[${_count},|]}]}) /varset _pass TRUE
+		/if (${Me.Class.ShortName.Upper.Equal[${_class.Arg[${_count},|]}]}) {
+			/varset _pass TRUE
+			/break
+		}
 	/next _count
 
 	/if (!${_pass} && ${_error}) /call echos failboat 0 0 0 0
@@ -5826,8 +5836,7 @@ sub cast_slow(int _tmpID)
 	AMIDEAD
 	/doevents
 	CHECKEXIT
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${_tmpID}]}) /return
 	
 	/squelch /target ID ${_tmpID}
 	/delay 1s ${Target.ID} == ${_tmpID}
@@ -5885,8 +5894,7 @@ sub cast_malo(int _tmpID)
 	AMIDEAD
 	/doevents
 	CHECKEXIT
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${_tmpID}]}) /return
 	
 	/squelch /target ID ${_tmpID}
 	/delay 1s ${Target.ID} == ${_tmpID}

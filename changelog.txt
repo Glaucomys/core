@@ -9,6 +9,44 @@
  ***|
 
 
+20171109
+- added in nuke/DoT pre-evaluations
+  -- loosely based off RD macro EvaluatioCondition() function at Stockli's request
+  -- toon.ini->[spells]->Nuke##Condition= (FALSE by DEFAULT)
+  -- the INI setting is NOT parsed. proper variables are used e.g. ${Me.ID}
+  -- the condition is paired with the nuke being cast
+  -- setting the condition to FALSE will disable the check
+  -- e.g. ${Target.Name.NotEqual[Fred]}  .. would evaluate the target as not being named Fred before nuking it
+  -- e.g. ${Me.PctAggro} < 90  .. would make sure my agro is below 90% before nuking target
+  -- you are looking to check that things are TRUE. if the evaluation is FALSE, the spell will not be cast
+  -- keep mind core_cast() pre evaluates, mana/endurance costs, range, LOS, spell/item/disc/aa are ready, self stacking, elemental resist types, Gift of Manna procs, you're dead, and some other basic things   
+  -- INI example: ranger
+    -- Nuke1=Anticipated Shots
+    -- Nuke1Condition=${Me.PctAggro} < 70 || (${Select[${Me.Class.ShortName},RNG]} && !${Me.DisplayName.Equal[FRED]})
+    -- Nuke2=Focused Arrowrain
+    -- Nuke2Condition=${Me.PctAggro} < 50
+    -- Nuke3=Heartsplit
+    -- Nuke3Condition=FALSE
+- class.dru.inc
+  -- fixed some typos. thanks toots
+- class.ber.inc
+  -- logic error. thanks again toots
+- class.rng.inc
+  -- added condition to summer spam nuke  
+- class.ber.inc
+  -- /ber [AE] enable/disable AE dps discs
+  -- added AE AA War Cry of the Braxi
+- scribe()
+  -- adapted it to be used with spell cast conditions to force meming a spell while in the middle of combat.
+  -- it will return TRUE if you have the spell and it has been memed. FALSE if you do not have the spell in your book
+  -- Nuke1Condition=${scribe["noobNukeName", gem##, TRUE|FALSE]}
+    -- "noobNukeName" is the name of the nuke
+    -- gem## is the number of the spell get where you want it memed. just the number
+    -- the TRUE|FALSE is to force a delay untill the spell is ready to cast or not. TRUE is WAIT 
+  -- i probably just broke the bard :(  .. again..
+- fixed /pet heal switch. hopefully for the last time 
+  
+
 20171108
 - clear_combat()
   -- should no longer clear target in manual mode when targeting a corpse of any kind
@@ -20,7 +58,6 @@
   -- check_heal_ward() will ignore Rampage Tank
   -- check_heal_XTarget_CLR() will ignore Rampage Tank
   -- check_HP_CLR() will ignore Rampage Tank
-  
 
 
 20171105
@@ -210,7 +247,7 @@ WHITEWASH
   -- DOT caculations are only applied top DOTS that YOU cast on the mob. not other casters dots with same name
 - active Wiki
   -- created core.wiki.ini
-  -- /command ? to get some helps..
+  -- /command ? to get some helps.. (this has been removed 20171101)
   
 
 20170928
@@ -667,7 +704,6 @@ WHITEWASH
   -- added in support for /cc agro switch. Enabled, the wiz will not care about gaining agro
 
 
-
 20170825
 Ranger Version 2.3.0
 Cleric Version 2.2.0
@@ -704,9 +740,6 @@ WHITEWASH
 - delete #bind /autorest
 - /core [rest] - disable auto rest % (sets it to 0)
 - /core [rest ##] - [1,99] set auto rest %
-  
-    
-
 
 
 20170821
@@ -738,9 +771,7 @@ HUDUPDATE /hc update
   -- added more pet heals cause some gurls complaining...
 - more adjustments to /tie. there's still a bug
 - removed [SelfBuff] from all toon INIs
-  
-  
-
+ 
 
 20170815
 Core Version 4.0.0
@@ -769,8 +800,6 @@ WHITEWASH
 - added protection for all /declare instances
 - rename of AutoBot -> coreAuto
 - Toon INI ClickItemToast= are now ClickItemBurn.. go fix ur shit
-
-
 
 
 20170814

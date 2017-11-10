@@ -60,10 +60,8 @@ sub core_WIZ()
 		/call use_mod_rod
 		/if (${switchHealCure}) /call cast_cure
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
-	}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 
@@ -79,8 +77,7 @@ sub disc_WIZ()
 	CHECKEXIT
 	/doevents
 	CHECKTIE
-	/call is_target_dead
-	/if (${Macro.Return}) /goto :exit	
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	
 	| debuff the mob
 	/call check_deBuffs ${Target2Kill}
@@ -100,8 +97,6 @@ sub disc_WIZ()
 	} else /if (${Me.AltAbilityReady[Force of Ice]}) {
 		/call core_cast "Force of Ice" alt ${Target2Kill}
 	}
-
-	:exit
 /return
 
 
@@ -257,13 +252,12 @@ sub force_twincast_WIZ()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return	
+	/if (${is_target_dead[${Target2Kill}]}) /return
 
 	/if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
 		/call core_cast "${TwincastSpell}" 0 0 FALSE
 		/return
-	} else /if (!${timer_force_twincast} && !${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
+	} else /if (!${timer_force_twincast} && !${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID} && !${cast_condition[NukeTwincastCondition]}) {
 		/call core_cast "${NukeTwincast}" 0 ${Target2Kill} FALSE
 	}
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}

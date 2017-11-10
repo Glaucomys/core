@@ -97,8 +97,7 @@ sub disc_DRU()
 	DEBUGCLASS	${cbug}disc.${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.AltAbilityReady[Storm Strike]}) /call core_cast "Storm Strike" alt ${Target2Kill} FALSE
 	/if (${Me.AltAbilityReady[Season's Wrath]}) /call core_cast "Season's Wrath" alt ${Target2Kill} FALSE
@@ -133,11 +132,9 @@ sub click_DPS_DRU()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return} || !${Target.ID}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Bool[${Epic}]} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID})  /call core_cast "${Epic}" item ${Target2Kill} FALSE
 	/call click_horn_of_unity 	
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.ItemReady[${CircleofMana}]} && !${Me.Song[${FindItem[${CircleofMana}].Spell}].ID} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) /call core_cast "${CircleofMana}" item 0 FALSE
 /return
 
 
@@ -153,12 +150,11 @@ sub cast_AA_ro(int _tmpID)
 	CHECKEXIT
 	/doevents
 	/if (${timer_ro_${_tmpID}} || ${Target.Buff[Blessing of Ro].ID} || ${Target.Buff[Fixation of Ro].ID}) /return
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${_tmpID}]}) /return
 	
 	| /if ((${Target.BuffDuration[]} <= 2 && ${Spawn[${Target.Buff[].Caster}].ID} == ${Me.ID}) || !${Target.Buff[].ID}) /return
 	/if (${Bool[${debuffRo}]} && ${Me.AltAbilityReady[${debuffRo}]}) {
-		/call core_cast "${debuffRo}" alt ${_tmpID}
+		/call core_cast "${debuffRo}" alt ${_tmpID} FALSE
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_ro_${_tmpID} ${Spell[${debuffRo}].Duration.TotalSeconds}s
 		}		
@@ -223,31 +219,31 @@ sub check_heal_group_DRU()
 
 	| Panic Heals 
 	/if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange} && ${Me.SpellReady[${healPanic}]}) {
-		/call core_cast "${healPanic}" 0 ${WorstHurt}
+		/call core_cast "${healPanic}" 0 ${WorstHurt} FALSE
 		/if (${castReturn.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
 	}
-	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.6*.${tmpHealOverride} && ${Me.AltAbilityReady[Peacful Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
-		/call core_cast "Convergence of Spirits" alt ${WorstHurt}
+	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.6*.${tmpHealOverride} && ${Me.AltAbilityReady[peaceful Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
+		/call core_cast "Convergence of Spirits" alt ${WorstHurt} FALSE
 	}
 	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.5*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
-		/call core_cast "Peacful Convergence of Spirits" alt ${WorstHurt}
+		/call core_cast "peaceful Convergence of Spirits" alt ${WorstHurt} FALSE
 	}
 	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < 35*.${tmpHealOverride} && ${Me.AltAbilityReady[Swarm of Fireflies]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[Swarm of Fireflies].MyRange}) {
-		/call core_cast "Swarm of Fireflies" alt ${WorstHurt}
+		/call core_cast "Swarm of Fireflies" alt ${WorstHurt} FALSE
 	}
   
 	| Group Heal
 	/doevents
 	/if (${useGroupHeal}) {
 	  /if (${MajorHurt}+${MinorHurt} > 1 && ${Me.SpellReady[${healWholeGroup}]}) {
-	    /call core_cast "${healWholeGroup}" 0 ${Me.ID} 
+	    /call core_cast "${healWholeGroup}" 0 ${Me.ID} FALSE
 	    /if (${Select[${castReturn},CAST_SUCCESS]} && !${Select[${castReturn},CAST_OUTOFMANA]})  /goto :loopheal
 	  } 	
-	 	/if (${MajorHurt}+${MinorHurt} > 2 && ${Me.AltAbilityReady[Peacful Spirit of the Wood]}) {
-			/call core_cast "Peacful Spirit of the Wood" alt ${Me.ID} 
+	 	/if (${MajorHurt}+${MinorHurt} > 2 && ${Me.AltAbilityReady[peaceful Spirit of the Wood]}) {
+			/call core_cast "peaceful Spirit of the Wood" alt ${Me.ID} FALSE
 		}
 	 	/if (${MajorHurt}+${MinorHurt} > 3 && ${Me.AltAbilityReady[Blessing of Tunare]}) {
-			/call core_cast "Blessing of Tunare" alt ${Me.ID} 
+			/call core_cast "Blessing of Tunare" alt ${Me.ID} FALSE
 		}
 
 	}
@@ -258,7 +254,7 @@ sub check_heal_group_DRU()
 	| Rejuvilation Heal
 	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healRejuvilation}]}) {
 		/if (${Me.SpellReady[${healRejuvilation}]}) {
-			/call core_cast "${healRejuvilation}" 0 ${WorstHurt}
+			/call core_cast "${healRejuvilation}" 0 ${WorstHurt} FALSE
 		} 
 		/goto :loopheal
 	}

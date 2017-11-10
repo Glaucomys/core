@@ -16,8 +16,8 @@
  ***|
 sub writeINI(string _varName, string _section, string _value)
 	DEBUG ${cbug}writeINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
-	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${_section},${_varName},"${_value}"].NotEqual[${_value}]}) {
-		/varset ${_varName} ${_value}	
+	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
+		/varset ${_varName} ${_value}
 	 	/ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
 	 	| /ini ${INIClass} ${_section} ${_varName} "${_value}"
 	}
@@ -86,7 +86,7 @@ sub DeclareIniVar(string _name, string _type, string _section, string _value)
 		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
 		/varset ${_name} ${_value}
 	} else {
-		 /varset ${_name} ${Ini[${INIClass},${_section},${_name.Left[1].Upper}${_name.Right[-1]},"${_value}"]}
+		 /varset ${_name} ${Ini[${INIClass},${_section},${_name.Left[1].Upper}${_name.Right[-1]},"${_value}",noparse]}
 	}
 
 	/if (${Me.Book[${Me.Book[${${_name}} Rk. III]}].ID}) {
@@ -219,6 +219,37 @@ sub check_zone_INI(string _sender)
 /return 
 
 
+|***
+ *	DES: Memorize a spell/song
+ *	USE: /call scribe [spell name] [gem to mem it in] [TRUE|FALSE wait for recycle to cast]
+ *	INI: 
+ *  NOTE:
+ ***|
+sub force_mem(string _spellname, int _spellgem)
+ 	DEBUGCAST ${cbug}force_mem("${_spellname}", ${_spellgem})\ax
+	AMIDEAD
+	/call fix_gem_id "${_spellgem}"
+	/declare _gem int local ${Macro.Return}
+	/if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /return TRUE
+
+	/if (!${Me.Book[${_spellname}]}) {
+		/if (!${Me.Book[${_spellname}]} && !${timer_scribe_timer}) {
+			/call create_timer timer_scribe_timer 60s
+			VOUT ${onotice} ${sep} You don't have ${csp}${_spellname}\ax in your book.
+		}
+		/return FALSE
+	}
+
+	VOUT Scribe ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
+	/memspell ${_gem} "${Spell[${_spellname}].RankName}"
+
+/return TRUE
+
+
+
+
+
+
 
 |***
  *	DES: class INI files for each toon
@@ -227,7 +258,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171108
+	/declare coreBuild	 														int			outer 20171109
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -987,7 +1018,7 @@ sub set_declares()
 	/call DeclareIniVar switchHealSelf							bool 		Heal FALSE
 	/call DeclareIniVar switchHealGroup							bool 		Heal FALSE
 	/call DeclareIniVar switchHealXtarget						bool 		Heal FALSE
-	/call DeclareIniVar switchHealPet								bool 		Pet FALSE
+	/call DeclareIniVar switchHealPet								bool 		Heal FALSE
 	/call DeclareIniVar switchHealCure							bool 		Heal FALSE
 
 	/call DeclareIniVar cureCurseItem								string 	Cure FALSE
@@ -1085,10 +1116,15 @@ sub declare_MAG()
 	/call DeclareIniVar GatherPercent			 					int			Spells 60
 	/call DeclareIniVar DoNuke					 						int			Spells 2
 	/call DeclareIniVar Nuke1 											string 	Spells "Spear of Blistersteel"
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2 											string 	Spells "Spear of Molten Shieldstone"
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3 											string 	Spells FALSE
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4 											string 	Spells FALSE
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	/call DeclareIniVar NukeSalvo										string 	Spells "Storm of Many"
+	/call DeclareIniVar NukeSalvoCondition 					string	Spells FALSE
 	/call DeclareIniVar DoDoT						 						int			Spells 0
 	/call DeclareIniVar Cauldron				 						string	Spells "Cauldron of Countless Goods"
 	/call DeclareIniVar useRain											bool 		Spells FALSE
@@ -1117,16 +1153,26 @@ sub declare_WIZ()
 	/call DeclareIniVar GatherPercent			 					int			Spells 60
 	/call DeclareIniVar DoNuke										 	int			Spells 5
 	/call DeclareIniVar Nuke1 											string 	Spells "Cloudburst Stormstrike"
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2 											string 	Spells "Claw of the Flameweaver"
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3 											string 	Spells "Narendi's Fire"
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4 											string 	Spells "Etherial Skyblaze"
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke5 											string 	Spells "Ethereal Rimeblast"
+	/call DeclareIniVar Nuke5Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke6 											string 	Spells FALSE
+	/call DeclareIniVar Nuke6Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke7 											string 	Spells FALSE
+	/call DeclareIniVar Nuke7Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke8 											string 	Spells FALSE
+	/call DeclareIniVar Nuke8Condition 							string	Spells FALSE
 	/call DeclareIniVar tempPet						 					string	Pet "Yulin's Pyroblade"
 	/call DeclareIniVar switchManaBurn		 					bool		Spells TRUE
 	/call DeclareIniVar NukeTwincast								string	Spells "Claw of the Flameweaver"
+	/call DeclareIniVar NukeTwincastCondition 			string	Spells FALSE
+
 	/call DeclareIniVar switchForceTwincast					bool		Spells TRUE
 	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	
@@ -1228,19 +1274,27 @@ sub declare_ENC()
 	
 	/call DeclareIniVar DoNuke					 						int			Spells 3
 	/call DeclareIniVar Nuke1					 							string	Spells "Chromatic Blink"
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2					 							string	Spells "Intellectual Appropriation"
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells "Mindsunder"
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells FALSE
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 /return	
 
 
@@ -1261,32 +1315,48 @@ sub declare_NEC()
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT5					 							string	Spells FALSE
 	/call DeclareIniVar DoT5chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT5Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT6					 							string	Spells FALSE
 	/call DeclareIniVar DoT6chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT6Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT7					 							string	Spells FALSE
 	/call DeclareIniVar DoT7chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT7Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT8					 							string	Spells FALSE
 	/call DeclareIniVar DoT8chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT8Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT9					 							string	Spells FALSE
 	/call DeclareIniVar DoT9chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT9Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT10					 							string	Spells FALSE
 	/call DeclareIniVar DoT10chk					 					string	Spells FALSE
+	/call DeclareIniVar DoT10Condition 							string	Spells FALSE
 
 	/call DeclareIniVar DoNuke					 						int			Spells 1
 	/call DeclareIniVar Nuke1					 							string	Spells "Combust Bones"	
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2					 							string	Spells FALSE
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells FALSE
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells FALSE
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke5					 							string	Spells FALSE
+	/call DeclareIniVar Nuke5Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke6					 							string	Spells FALSE
+	/call DeclareIniVar Nuke6Condition 							string	Spells FALSE
 /return	
 
 
@@ -1328,17 +1398,24 @@ sub declare_SHD()
 	
 	/call DeclareIniVar DoNuke					 						int			Spells 2
 	/call DeclareIniVar Nuke1 											string 	Spells "Touch of Holmein"
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2 											string 	Spells "Touch of Lutzen"
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3 											string 	Spells FALSE
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	 
 	/call DeclareIniVar switchHarmonious 						bool	 	Buffs TRUE
 	/call DeclareIniVar Harmonious 									string 	Buffs "Harmonious Disruption"
@@ -1411,20 +1488,29 @@ sub declare_PAL()
 	
 	/call DeclareIniVar DoNuke					 						int			Spells 5
 	/call DeclareIniVar Nuke1												string 	Spells "Force of Ardency"
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2												string 	Spells "Ardent Force"
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3												string 	Spells "Force of the Darkened Sea"
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4												string 	Spells "Lesson of Grief"
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke5							 					string	Spells "Protective Proclamation"
+	/call DeclareIniVar Nuke5Condition 							string	Spells FALSE
 
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	
 
 	/call DeclareIniVar ChallengeSpell							string 	Spells "Impose for Honor"
@@ -1496,6 +1582,7 @@ sub declare_WAR()
  *  NOTE: 
  ***|
 sub declare_BER()
+	/call DeclareIniVar AEMelee					 						bool	 	Discs FALSE
 	/call DeclareIniVar DiscSnare 									string 	Discs FALSE
 	/call DeclareIniVar SnareAxe 										string 	Discs FALSE
 	/call DeclareIniVar DiscVolley 									string 	Discs "Brutal Volley"
@@ -1553,24 +1640,35 @@ sub declare_RNG()
 
 	/call DeclareIniVar DoNuke					 						int			Spells 5
 	/call DeclareIniVar Nuke1					 							string	Spells "Anticipated Shots"	
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2					 							string	Spells "Focused Arrowrain"
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells "Heartsplit"
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells "Wildfire Boon"
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke5					 							string	Spells "Wildfire Ash"
+	/call DeclareIniVar Nuke5Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke6					 							string	Spells FALSE
+	/call DeclareIniVar Nuke6Condition 							string	Spells FALSE
 	/call DeclareIniVar NukeSummer		 							string	Spells "Summer's Cyclone"
+	/call DeclareIniVar NukeSummerCondition					string	Spells FALSE
 	/call DeclareIniVar switchNukeSummer		 				bool		Spells TRUE
 	
 
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	/call DeclareIniVar DoTSwarmDS		 							string	Spells "Swarm of Glistenwings"
 	/call DeclareIniVar DoTSwarmDSdeBuff 						string	Spells "Glistenwing Swarm"
 	
@@ -1606,21 +1704,29 @@ sub declare_RNG()
 sub declare_DRU()
 	/call DeclareIniVar debuffRo			 							string	Spells "Blessing of Ro"	
 	/call DeclareIniVar WoodTXT											string	Spells "SoWood cast."
-	
+
 	/call DeclareIniVar DoNuke					 						int			Spells 0
 	/call DeclareIniVar Nuke1					 							string	Spells FALSE
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2							 					string	Spells FALSE
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3							 					string	Spells FALSE
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4							 					string	Spells FALSE
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	
 	/declare MajorHurt 															int 		outer 0
 	/declare WorstHurt 															string 	outer FALSE
@@ -1723,18 +1829,25 @@ sub declare_SHM()
 	/call DeclareIniVar TC1									 				string	Spells "Glacial Gift"	
 	/call DeclareIniVar TC2									 				string	Spells "Frigid Gift"
 	/call DeclareIniVar DoNuke							 				int			Spells 0
-	/call DeclareIniVar Nuke1					 							string	Spells "Reefmaw's Bite"
+	/call DeclareIniVar Nuke1					 							string	Spells FALSE
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2					 							string	Spells FALSE
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells FALSE
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoDoT						 						int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 
 	/call DeclareIniVar CaniPercent				 					int			Spells 60
 	/call DeclareIniVar spellCannibalization				string	Spells "Tribal Pact"
@@ -1829,21 +1942,31 @@ sub declare_BST()
 	
 	/call DeclareIniVar DoNuke							 				int			Spells 5
 	/call DeclareIniVar Nuke1					 							string	Spells "Fozen Miasma"	
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2					 							string	Spells "Kromtus Lance"
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells "Visoracius' Maelstrom"
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells "Kromrif Lance"
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke5					 							string	Spells "Krieg's Bite"
+	/call DeclareIniVar Nuke5Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke6					 							string	Spells FALSE
+	/call DeclareIniVar Nuke6Condition 							string	Spells FALSE
 
 	/call DeclareIniVar DoDoT						 						int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	
 	/call DeclareIniVar FastHeal			 							string	Spells "Sabhattin's Mending" 
 	/call DeclareIniVar FastHealPCT		 							int			Spells 60
@@ -1978,8 +2101,6 @@ sub declare_CLR()
 	/call DeclareIniVar RampageTank									string	Heal FALSE
 	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
 	
-	
-		
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar sumWeaponSpell							string	Buffs "Hammer of	Reverence"
 	/call DeclareIniVar sumWeaponItem								string	Buffs "Hammer of	Reverence III"
@@ -1988,14 +2109,16 @@ sub declare_CLR()
 
 	/call DeclareIniVar useVP												bool		Buffs TRUE
 	/call DeclareIniVar useVPPct										int			Buffs 40
-	| /call DeclareIniVar useQM												bool		Buffs TRUE
-	| /call DeclareIniVar useQMPct										int			Buffs 40
 
 	/call DeclareIniVar DoNuke					 						int			Spells 0
 	/call DeclareIniVar Nuke1					 							string	Spells FALSE	
+	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke2					 							string	Spells FALSE
+	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3					 							string	Spells FALSE
+	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells FALSE
+	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
 /return	
 
 

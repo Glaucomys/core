@@ -122,8 +122,8 @@ sub cast_AA_auspice()
 	CHECKEXIT
 	/doevents
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[${RNGauspice}]} && !${Bool[${Me.Song[${RNGauspice}]}]}) {
-		/call core_cast "Mass Group Buff" alt 0
-		/call core_cast "${RNGauspice}" alt 0
+		/call core_cast "Mass Group Buff" alt 0 FALSE
+		/call core_cast "${RNGauspice}" alt 0 FALSE
 		| /if (${Bool[ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
 	 	| /if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
 	} else /if (${Bool[${Me.Song[${RNGauspice}]}]}) {
@@ -145,10 +145,10 @@ sub patch_heal_RNG()
 	CHECKEXIT
 	/if (${Me.PctHPs} > 81*.${tmpHealOverride}) /return
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID}
+	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID} FALSE
 	/if (${Me.PctHPs} <= 70*.${tmpHealOverride}) /call core_cast "Small Manisi Branch" item 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0
-	/if (${Me.PctHPs} <= 55*.${tmpHealOverride} && (${Bool[${NameList.Find[${Target.CleanName}]})]}	|| ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]} >= 3)) /call core_cast "Bulwark of the Brownies" alt 0
+	/if (${Me.PctHPs} <= 55*.${tmpHealOverride} && (${Bool[${NameList.Find[${Target.CleanName}]})]}	|| ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]} >= 3)) /call core_cast "Bulwark of the Brownies" alt 0 FALSE
 	/if (${Me.PctHPs} <= 40*.${tmpHealOverride}) /call core_cast "Protection of the Spirit Wolf" alt 0
 	/if (${Me.PctHPs} <= 30*.${tmpHealOverride}) /call core_cast "Outrider's Evasion" alt 0
 /return
@@ -167,7 +167,7 @@ sub get_agro_RNG()
 	CHECKEXIT
 	/doevents
 	/if (${switchAgro}) {
-		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill}
+		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill} FAlse
 	}
 	/if (!${switchAgro}) {
 	}
@@ -243,12 +243,13 @@ sub click_DPS_RNG()
  *  NOTE: When burn is engaged, the timer for this is ignored.
  ***|
 sub cast_nuke_summer(int _tmpID)
-	DEBUGCLASS ${cbug}cast_nuke_summer()\ax 
+	DEBUGCLASS ${cbug}cast_nuke_summer(ID: ${_tmpID})\ax 
 	/if (!${switchNukeSummer}) /return	
 	AMIDEAD
 	CHECKEXIT
 	/doevents
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
+	/if (!${cast_condition[NukeSummerCondition]}) /return 
 	/call core_cast "${NukeSummer}" 0 ${_tmpID} FALSE
 /return
 

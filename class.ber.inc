@@ -70,38 +70,39 @@ sub disc_BER()
 	AMIDEAD
 
 	/doevents
-	/if (${Me.CombatAbilityReady[${DiscOverwhelmingFrenzy}]}) /call core_cast "${DiscOverwhelmingFrenzy}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscEnduranceTap}]} && ${Me.CurrentEndurance} > ${Spell[${DiscEnduranceTap}].EnduranceCost} && ${Me.PctHPs} > 90) /call core_cast "${DiscEnduranceTap}" disc 0
-	/if (${Bool[${Me.Buff[Frenzied Resolve]}]} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) /call core_cast "Drawn to Blood" alt 0
-	/if (${Me.AltAbilityReady[Battle Leap]} && !${Me.Underwater} && !${Me.Song[Battle Leap Warcry].ID}) /call core_cast "Battle Leap" alt 0	
+	/if (${Me.CombatAbilityReady[${DiscOverwhelmingFrenzy}]}) /call core_cast "${DiscOverwhelmingFrenzy}" disc ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscEnduranceTap}]} && ${Me.CurrentEndurance} > ${Spell[${DiscEnduranceTap}].EnduranceCost} && ${Me.PctHPs} > 90) /call core_cast "${DiscEnduranceTap}" disc 0 FALSE
+	/if (${Bool[${Me.Buff[Frenzied Resolve]}]} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) /call core_cast "Drawn to Blood" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Battle Leap]} && !${Me.Underwater} && !${Me.Song[Battle Leap Warcry].ID}) /call core_cast "Battle Leap" alt 0 FALSE
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 		
-	/if (${Me.CombatAbilityReady[${DiscCombatFrenzy}]} && ${Me.CurrentEndurance} > ${Spell[${DiscCombatFrenzy}].EnduranceCost}) /call core_cast "${DiscCombatFrenzy}" disc ${Target2Kill}
+	/if (${Me.CombatAbilityReady[${DiscCombatFrenzy}]} && ${Me.CurrentEndurance} > ${Spell[${DiscCombatFrenzy}].EnduranceCost}) /call core_cast "${DiscCombatFrenzy}" disc ${Target2Kill} FALSE
 		
-	/if (${Me.AltAbilityReady[Communion of Blood]} && ${Me.PctHPs} > 75 && ${Me.PctEndurance} < 50) /call core_cast "Communion of Blood" alt 0
+	/if (${Me.AltAbilityReady[Communion of Blood]} && ${Me.PctHPs} > 75 && ${Me.PctEndurance} < 50) /call core_cast "Communion of Blood" alt 0 FALSE
 	/if (${Me.CombatAbilityReady[${DiscJolt}]} && ${Me.PctAggro} > 80 && ${Me.CurrentEndurance} > ${Spell[${DiscJolt}].EnduranceCost}) /call core_cast "${DiscJolt}" disc ${Target2Kill}
 	/if (${Me.CombatAbilityReady[${DiscDicho}]} && ${Me.CurrentEndurance} > ${Spell[${DiscDicho}].EnduranceCost}*2) /disc 49307
 
+	| this hits up to 8 targets and can cause fear.
+	/if (${AEMelee} && ${Me.AltAbilityReady[War Cry of the Braxi]}) /call core_cast "War Cry of the Braxi" alt 0 FALSE
+
 	| /if (${Me.CombatAbilityReady[${DiscOpenWound}]} && ${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscOpenWound}].EnduranceCost})  /call core_cast "${DiscOpenWound}" disc 0
 	
-	/if (${Me.AltAbilityReady[Bloodfury]} && ${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID}) /call core_cast "Bloodfury" alt 0
+	/if (${Me.AltAbilityReady[Bloodfury]} && ${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID}) /call core_cast "Bloodfury" alt 0 FALSE
 	
-	/if (${Me.CombatAbilityReady[${DiscAugmentedFrenzy}]} && !${Me.Buff[${AugmentedFrenzyEffect}].ID} && ${Me.PctHPs} < 90 && ${Me.CurrentEndurance} > ${Spell[${DiscAugmentedFrenzy}].EnduranceCost}) /call core_cast "${DiscAugmentedFrenzy}" disc 0
-	/if (${Me.CombatAbilityReady[${DiscCryHavoc}]} && !${Me.Song[${DiscCryHavoc}].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscCryHavoc}].EnduranceCost}) /call core_cast "${DiscCryHavoc}" disc 0
-	/if (${Me.CombatAbilityReady[${DiscFesteringRage}]} && !${Me.Song[Bubbling Rage].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscFesteringRage}].EnduranceCost}) /call core_cast "${DiscFesteringRage}" disc 0
+	/if (${Me.CombatAbilityReady[${DiscAugmentedFrenzy}]} && !${Me.Buff[${AugmentedFrenzyEffect}].ID} && ${Me.PctHPs} < 90 && ${Me.CurrentEndurance} > ${Spell[${DiscAugmentedFrenzy}].EnduranceCost}) /call core_cast "${DiscAugmentedFrenzy}" disc 0 FALSE
+	/if (${Me.CombatAbilityReady[${DiscCryHavoc}]} && !${Me.Song[${DiscCryHavoc}].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscCryHavoc}].EnduranceCost}) /call core_cast "${DiscCryHavoc}" disc 0 FALSE
+	/if (${Me.CombatAbilityReady[${DiscFesteringRage}]} && !${Me.Song[Bubbling Rage].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscFesteringRage}].EnduranceCost}) /call core_cast "${DiscFesteringRage}" disc 0 FALSE
 
 	| clear this for burns
-	/if (${Me.CombatAbilityReady[${DiscDisconcert}]} && ${Me.CurrentEndurance} > ${Spell[${DiscDisconcert}].EnduranceCost}) /call core_cast "${DiscDisconcert}" disc 0
+	/if (${Me.CombatAbilityReady[${DiscDisconcert}]} && ${Me.CurrentEndurance} > ${Spell[${DiscDisconcert}].EnduranceCost}) /call core_cast "${DiscDisconcert}" disc 0 FALSE
 
 	| axes
-	/if (${Me.CombatAbilityReady[${DiscVolley}]} && ${Me.CurrentEndurance} > ${Spell[${DiscVolley}].EnduranceCost}) /call core_cast "${DiscVolley}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscAxeofRallos}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAxeofRallos}].EnduranceCost}) /call core_cast "${DiscAxeofRallos}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${ThrowingAxe}]} && ${Me.CurrentEndurance} > ${Spell[${ThrowingAxe}].EnduranceCost}) /call core_cast "${ThrowingAxe}" disc ${Target2Kill}
+	/if (${Me.CombatAbilityReady[${DiscVolley}]} && ${Me.CurrentEndurance} > ${Spell[${DiscVolley}].EnduranceCost}) /call core_cast "${DiscVolley}" disc ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscAxeofRallos}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAxeofRallos}].EnduranceCost}) /call core_cast "${DiscAxeofRallos}" disc ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${ThrowingAxe}]} && ${Me.CurrentEndurance} > ${Spell[${ThrowingAxe}].EnduranceCost}) /call core_cast "${ThrowingAxe}" disc ${Target2Kill} FALSE
 
-	/if (${Me.AltAbilityReady[Distraction Attack]} && ${Me.PctAggro} > 96 ) /call core_cast "Distraction Attack" alt 0
-	/if (!${Me.Song[${SharedBloodLustRecourse}].ID} && ${Me.CombatAbilityReady[${SharedBloodLust}]} && ${Me.CurrentEndurance} > ${Spell[${SharedBloodLust}].EnduranceCost}) /call core_cast "${SharedBloodLust}" disc 0
-
-	:exit
+	/if (${Me.AltAbilityReady[Distraction Attack]} && ${Me.PctAggro} > 96 ) /call core_cast "Distraction Attack" alt 0 FALSE
+	/if (!${Me.Song[${SharedBloodLustRecourse}].ID} && ${Me.CombatAbilityReady[${SharedBloodLust}]} && ${Me.CurrentEndurance} > ${Spell[${SharedBloodLust}].EnduranceCost}) /call core_cast "${SharedBloodLust}" disc 0 FALSE
 /return
 
 
@@ -131,8 +132,7 @@ sub patch_heal_BER()
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Communion of Blood]}) /call core_cast "Uncanny Resilience" alt 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Blood Sustenance]}) /call core_cast "Blood Sustenance" alt 0
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Bool[${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	:exit
+	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Bool[${Me.ItemReady[Prayers of Life]}]}) /call core_cast "Prayers of Life" item 0
 /return
 
 
@@ -229,9 +229,12 @@ sub Bind_setBER(string _classType, string _classVerbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
-	| enable/disable summer line of spells
-	/if (${Bool[${_classType.Find[TEST]}]}) {
-		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
+
+	| AE or Focused Melee
+	/if (${Bool[${_classType.Equal[ae]}]}) {
+		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
+		NOUT /${_bind} ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
+
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {

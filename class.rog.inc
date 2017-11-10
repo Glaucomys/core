@@ -52,10 +52,8 @@ sub core_ROG()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
-	}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 
@@ -88,8 +86,7 @@ sub disc_ROG()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill}
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Target.ID} && ${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
@@ -148,8 +145,7 @@ sub click_DPS_ROG()
 	DEBUGCLASS ${cbug}click_DPS_items_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 /return
