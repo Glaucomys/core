@@ -36,14 +36,6 @@
 - class.ber.inc
   -- /ber [AE] enable/disable AE dps discs
   -- added AE AA War Cry of the Braxi
-- scribe()
-  -- adapted it to be used with spell cast conditions to force meming a spell while in the middle of combat.
-  -- it will return TRUE if you have the spell and it has been memed. FALSE if you do not have the spell in your book
-  -- Nuke1Condition=${scribe["noobNukeName", gem##, TRUE|FALSE]}
-    -- "noobNukeName" is the name of the nuke
-    -- gem## is the number of the spell get where you want it memed. just the number
-    -- the TRUE|FALSE is to force a delay untill the spell is ready to cast or not. TRUE is WAIT 
-  -- i probably just broke the bard :(  .. again..
 - fixed /pet heal switch. hopefully for the last time 
   
 
