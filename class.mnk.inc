@@ -68,13 +68,13 @@ sub disc_MNK()
 	/call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
-	/if (${Me.AltAbilityReady[Five Point Palm]}) /call core_cast "Five Point Palm" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[Eye Gouge]} && !${switchdeBuffSnare}) /call core_cast "Eye Gouge" alt ${Target2Kill} 
-	/if (${Me.AltAbilityReady[Stunning Kick]}) /call core_cast "Stunning Kick" alt ${Target2Kill} 
-	/if (${Me.AltAbilityReady[Two-Finger Wasp Touch]}) /call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[Five Point Palm]}) /call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Eye Gouge]} && !${switchdeBuffSnare}) /call core_cast "Eye Gouge" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Stunning Kick]}) /call core_cast "Stunning Kick" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[Two-Finger Wasp Touch]}) /call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
 	
-	/if (${Me.CombatAbilityReady[Drunken Monkey Style]} && ${Me.CurrentEndurance} > ${Spell[Drunken Monkey Style].EnduranceCost}) /call core_cast "Drunken Monkey Style" disc 0
-	/if (${Me.CombatAbilityReady[Whorl of Fists]} && ${Me.CurrentEndurance} > ${Spell[Whorl of Fists].EnduranceCost}) /call core_cast "Whorl of Fists" disc 0
+	/if (${Me.CombatAbilityReady[Drunken Monkey Style]} && ${Me.CurrentEndurance} > ${Spell[Drunken Monkey Style].EnduranceCost}) /call core_cast "Drunken Monkey Style" disc 0 FALSE
+	/if (${Me.CombatAbilityReady[Whorl of Fists]} && ${Me.CurrentEndurance} > ${Spell[Whorl of Fists].EnduranceCost}) /call core_cast "Whorl of Fists" disc 0 FALSE
 
 /return
 
@@ -92,7 +92,7 @@ sub patch_heal_MNK()
 	/if (${Me.PctHPs} > 81*.${tmpHealOverride}) /return
 	
 	/if (${Me.PctHPs} <= 50*.${tmpHealOverride}) /doability Mend
-	/if (${Me.CombatAbilityReady[Defer Death]} && ${Me.PctHPs} <= 50*.${tmpHealOverride}) /call core_cast "Defer Death" disc 0
+	/if (${Me.CombatAbilityReady[Defer Death]} && ${Me.PctHPs} <= 50*.${tmpHealOverride}) /call core_cast "Defer Death" disc 0 FALSE
 
 /return
 

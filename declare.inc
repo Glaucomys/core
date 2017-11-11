@@ -115,7 +115,7 @@ sub DeclareCoreIniVar(string name, string varType, string section, string value)
 	}
 
 	/if (!${Defined[${name}]}) /declare ${name} ${varType} outer
-	/varset ${name} ${Ini[${INICore},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}"]}
+	/varset ${name} ${Ini[${INICore},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}",noparse]}
 	/if (!${Bool[${Ini[${INICore},${section}].Find[${name}]}]}) {
 		/ini "${INICore}" "${section}" "${name.Left[1].Upper}${name.Right[-1]}" "${${name}}" "${${value}}"
 	}
@@ -136,7 +136,8 @@ sub update_zone_list(string _list)
 		/call echos listexists ${_list}
 	} else /if (${Target.ID} && !${Bool[${Spawn[pc ID ${Target.ID}]}]} && !${${_list}.Find[${Target.DisplayName}]}) {
 		/if (${Target.ID}) ${If[${Bool[${${_list}}]},/ini "${INIZone}" "${Zone.ShortName}" "${_list}" "${${_list}}|${Target.DisplayName}",/ini "${INIZone}" "${Zone.ShortName}" "${_list}" "|${Target.DisplayName}"]}
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) /bc zonereset
+		| /if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) /bc zonereset
+		/if (${validate_plugin[FALSE, |mq2eqbc]} && ${EQBC.Connected}) /bc zonereset
 	}
 /return 
  
@@ -219,37 +220,6 @@ sub check_zone_INI(string _sender)
 /return 
 
 
-|***
- *	DES: Memorize a spell/song
- *	USE: /call scribe [spell name] [gem to mem it in] [TRUE|FALSE wait for recycle to cast]
- *	INI: 
- *  NOTE:
- ***|
-sub force_mem(string _spellname, int _spellgem)
- 	DEBUGCAST ${cbug}force_mem("${_spellname}", ${_spellgem})\ax
-	AMIDEAD
-	/call fix_gem_id "${_spellgem}"
-	/declare _gem int local ${Macro.Return}
-	/if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /return TRUE
-
-	/if (!${Me.Book[${_spellname}]}) {
-		/if (!${Me.Book[${_spellname}]} && !${timer_scribe_timer}) {
-			/call create_timer timer_scribe_timer 60s
-			VOUT ${onotice} ${sep} You don't have ${csp}${_spellname}\ax in your book.
-		}
-		/return FALSE
-	}
-
-	VOUT Scribe ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
-	/memspell ${_gem} "${Spell[${_spellname}].RankName}"
-
-/return TRUE
-
-
-
-
-
-
 
 |***
  *	DES: class INI files for each toon
@@ -258,7 +228,7 @@ sub force_mem(string _spellname, int _spellgem)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171109
+	/declare coreBuild	 														int			outer 2017111
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -285,7 +255,7 @@ sub set_declares()
 	/declare noInvis 																bool 		outer TRUE
 	/declare noFeigning 														bool 		outer TRUE
 	/declare Target2Kill														int			outer 0
-	/declare UseRange																bool		outer FALSE
+	| /declare UseRange																bool		outer FALSE
 	/declare currentLootCount												int			outer	0
 	/declare markerDead															bool		outer FALSE
 
@@ -378,6 +348,7 @@ sub set_declares()
 	/call DeclareCoreIniVar invitelist							string	No FALSE
 	/call DeclareCoreIniVar rezlist									string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
+
 	/call DeclareIniVar toonControl			 						string	Common FALSE
 	/call DeclareIniVar autoRest 										int 		Common 90
 	/call DeclareIniVar echoChannel									string	Common FALSE 
@@ -409,8 +380,6 @@ sub set_declares()
 	/call DeclareCoreIniVar ${MacroQuest.Server}Assist		string	Group FALSE
 	/call DeclareCoreIniVar ${MacroQuest.Server}Looter		string	Group FALSE
 	
-	
-	
 
 	| /here settings
 	/call DeclareCoreIniVar combatWAR								string	Here MELEE
@@ -437,7 +406,7 @@ sub set_declares()
 	/call DeclareCoreIniVar emptyHands							bool		Here	TRUE
 	/call DeclareCoreIniVar hereZRadius							int			Here	30
 	
-	/declare bitchcount															int			outer	22	
+	/declare bitchcount															int			outer	29	
 	/declare bitch1																	string	outer	"Seriously... Again..."
 	/declare bitch2																	string	outer	"Did your parents ever ask you to run away from home?"
 	/declare bitch3																	string	outer	"Aha, I see the Fuck-Up Fairy has visited us again!"
@@ -460,13 +429,13 @@ sub set_declares()
 	/declare bitch20																string	outer	"Sometimes, when I close my eyes, I... can't see you."
 	/declare bitch21																string 	outer "Shock me. Say something intelligent."
 	/declare bitch22																string 	outer "I'm typing this with my middle finger."
-	/declare bitch23																string 	outer ""
-	/declare bitch24																string 	outer ""
-	/declare bitch25																string 	outer ""
-	/declare bitch26																string 	outer ""
-	/declare bitch27																string 	outer ""
-	/declare bitch28																string 	outer ""
-	/declare bitch29																string 	outer ""
+	/declare bitch23																string 	outer "It takes courage just to be you. To get out of bed every single day, knowing full well, you gotta be you."
+	/declare bitch24																string 	outer "For someone with such a smart mouth you sure do have a lot of teeth."
+	/declare bitch25																string 	outer "Do you want a piece of gum?"
+	/declare bitch26																string 	outer "Good thing you're pretty."
+	/declare bitch27																string 	outer "You breathe through your mouth a lot don't you?"
+	/declare bitch28																string 	outer "Your mother was a hamster and your father smelt of elderberries!"
+	/declare bitch29																string 	outer "Don't worry about it too much. I did the same thing when I was eleven."
 	/declare bitch30																string 	outer ""
 
 	| hide switches for /hidecorpse command
@@ -887,7 +856,9 @@ sub set_declares()
 		/call DeclareIniVar buffGem 									string 	Spells "gem12"
 		/call DeclareIniVar GoMLevel									int			Spells 105
 		/call DeclareIniVar GoMNuke										string	Spells FALSE
+		/call DeclareIniVar GoMNukeCondition					string	Spells FALSE
 		/call DeclareIniVar GoMNuke2									string	Spells FALSE
+		/call DeclareIniVar GoMNuke2Condition					string	Spells FALSE
 	}
 	
 	| bc/tell buffs
@@ -1285,13 +1256,13 @@ sub declare_ENC()
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
-	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
+	/call DeclareIniVar DoT1Condition								string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
-	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
+	/call DeclareIniVar DoT2Condition								string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
-	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
+	/call DeclareIniVar DoT3Condition								string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
@@ -1659,13 +1630,13 @@ sub declare_RNG()
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
 	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
-	/call DeclareIniVar DoT1Condition 							string	Spells FALSE
+	/call DeclareIniVar DoT1Condition								string	Spells FALSE
 	/call DeclareIniVar DoT2							 					string	Spells FALSE
 	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
-	/call DeclareIniVar DoT2Condition 							string	Spells FALSE
+	/call DeclareIniVar DoT2Condition								string	Spells FALSE
 	/call DeclareIniVar DoT3							 					string	Spells FALSE
 	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
-	/call DeclareIniVar DoT3Condition 							string	Spells FALSE
+	/call DeclareIniVar DoT3Condition								string	Spells FALSE
 	/call DeclareIniVar DoT4							 					string	Spells FALSE
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT4Condition 							string	Spells FALSE

@@ -66,18 +66,18 @@ sub disc_WAR()
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 
-	/if (${Me.AltAbilityReady[${AABraceforImpact}]}) /call core_cast "${AABraceforImpact}" alt 0
-	/if (${Me.AltAbilityReady[${AAWarStomp}]}) /call core_cast "${AAWarStomp}" alt 0
-	/if (${Me.AltAbilityReady[${AAGutPunch}]} && ${Target.Distance} <= ${Spell[Gut Punch].MyRange}) /call core_cast "${AAGutPunch}" alt ${Target2Kill}
+	/if (${Me.AltAbilityReady[${AABraceforImpact}]}) /call core_cast "${AABraceforImpact}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AAWarStomp}]}) /call core_cast "${AAWarStomp}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AAGutPunch}]} && ${Target.Distance} <= ${Spell[Gut Punch].MyRange}) /call core_cast "${AAGutPunch}" alt ${Target2Kill} FALSE
 
-	/if (${Me.AltAbilityReady[${AAImpCommand}]}) /call core_cast "${AAImpCommand}" alt 0
-	/if (${Me.AltAbilityReady[${AAKneeStrike}]} && ${Target.Distance} <= ${Spell[${AAKneeStrike}].MyRange}) /call core_cast "${AAKneeStrike}" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[${AAMageHunter}]} && !${Me.Buff[${AAMageHunter}].ID}) /call core_cast "${AAMageHunter}" alt 0
+	/if (${Me.AltAbilityReady[${AAImpCommand}]}) /call core_cast "${AAImpCommand}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AAKneeStrike}]} && ${Target.Distance} <= ${Spell[${AAKneeStrike}].MyRange}) /call core_cast "${AAKneeStrike}" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[${AAMageHunter}]} && !${Me.Buff[${AAMageHunter}].ID}) /call core_cast "${AAMageHunter}" alt 0 FALSE
 	
-	/if (${Me.AltAbilityReady[${AAHeroicBlade}]} && ${Target.Distance} <= ${Spell[${AAHeroicBlade}].MyRange} && !${switchAgroMode}) /call core_cast "${AAHeroicBlade}" alt 0
-	/if (${Me.AltAbilityReady[${AABladeGuardian}]} && ${Me.Song[${AABladeGuardian}].Stacks}) /call core_cast "${AABladeGuardian}" alt 0
+	/if (${Me.AltAbilityReady[${AAHeroicBlade}]} && ${Target.Distance} <= ${Spell[${AAHeroicBlade}].MyRange} && !${switchAgroMode}) /call core_cast "${AAHeroicBlade}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AABladeGuardian}]} && ${Me.Song[${AABladeGuardian}].Stacks}) /call core_cast "${AABladeGuardian}" alt 0 FALSE
 
-	/if (${Me.CombatAbilityReady[${DiscField}]} && ${Me.CurrentEndurance} > ${Spell[${DiscField}].EnduranceCost} && !${Me.Song[${DiscField}].ID} ) /call core_cast "${DiscField}" disc 0
+	/if (${Me.CombatAbilityReady[${DiscField}]} && ${Me.CurrentEndurance} > ${Spell[${DiscField}].EnduranceCost} && !${Me.Song[${DiscField}].ID} ) /call core_cast "${DiscField}" disc 0 FALSE
 
 /return
 
@@ -97,14 +97,14 @@ sub get_agro_WAR()
 	CHECKEXIT
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /return
-	/if (${Me.AltAbilityReady[${AARageoftheForsaken}]} && ${Target.Distance} <= ${Spell[${AARageoftheForsaken}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AARageoftheForsaken}" alt ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscInsult}]} && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscInsult}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscWade}]} && ${Me.CurrentEndurance} > ${Spell[${DiscWade}].EnduranceCost} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscWade}" disc 0
-	/if (${Me.CombatAbilityReady[${DiscCyclone}]} && ${Me.CurrentEndurance} > ${Spell[${DiscCyclone}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscCyclone}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscChallenge}]} && ${Me.CurrentEndurance} > ${Spell[${DiscChallenge}].EnduranceCost} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscChallenge}" disc 0
-	/if (${Me.CombatAbilityReady[${DiscShout}]} && ${Me.CurrentEndurance} > ${Spell[${DiscShout}].EnduranceCost} ) /call core_cast "${DiscShout}" disc 0
-	/if (${Me.AltAbilityReady[${AABlastofAnger}]} && ${Target.Distance} <= ${Spell[${AABlastofAnger}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AABlastofAnger}" alt ${Target2Kill}
-	/if (${Me.AltAbilityReady[${AAAETaunt}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50 targetable]} >= 2) /call core_cast "${AAAETaunt}" alt 0
+	/if (${Me.AltAbilityReady[${AARageoftheForsaken}]} && ${Target.Distance} <= ${Spell[${AARageoftheForsaken}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AARageoftheForsaken}" alt ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscInsult}]} && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscInsult}" disc ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscWade}]} && ${Me.CurrentEndurance} > ${Spell[${DiscWade}].EnduranceCost} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscWade}" disc 0 FALSE
+	/if (${Me.CombatAbilityReady[${DiscCyclone}]} && ${Me.CurrentEndurance} > ${Spell[${DiscCyclone}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscCyclone}" disc ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscChallenge}]} && ${Me.CurrentEndurance} > ${Spell[${DiscChallenge}].EnduranceCost} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscChallenge}" disc 0 FALSE
+	/if (${Me.CombatAbilityReady[${DiscShout}]} && ${Me.CurrentEndurance} > ${Spell[${DiscShout}].EnduranceCost} ) /call core_cast "${DiscShout}" disc 0 FALSE
+	/if (${Me.AltAbilityReady[${AABlastofAnger}]} && ${Target.Distance} <= ${Spell[${AABlastofAnger}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AABlastofAnger}" alt ${Target2Kill} FALSE
+	/if (${Me.AltAbilityReady[${AAAETaunt}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50 targetable]} >= 2) /call core_cast "${AAAETaunt}" alt 0 FALSE
 /return
 
 
@@ -121,13 +121,12 @@ sub patch_heal_WAR()
 
 	CHECKEXIT
 	CHECKTIE
-	/if (${Me.CombatAbilityReady[${DiscStoutDefense}]} && ${Me.CurrentEndurance} > ${Spell[${DiscStoutDefense}].EnduranceCost} && !${Raid.Members} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscStoutDefense}" disc 0
+	/if (${Me.CombatAbilityReady[${DiscStoutDefense}]} && ${Me.CurrentEndurance} > ${Spell[${DiscStoutDefense}].EnduranceCost} && !${Raid.Members} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscStoutDefense}" disc 0 FALSE
 	
-	/if (${Me.PctHPs} <= ${PanicHPPCT}*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscNoTime}]} && ${Me.CurrentEndurance} >= ${Spell[${DiscNoTime}].EnduranceCost}) /call core_cast "${DiscNoTime}" disc 0
+	/if (${Me.PctHPs} <= ${PanicHPPCT}*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscNoTime}]} && ${Me.CurrentEndurance} >= ${Spell[${DiscNoTime}].EnduranceCost}) /call core_cast "${DiscNoTime}" disc 0 FALSE
 	
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0
+	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
+	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 /return
 
 
@@ -163,20 +162,20 @@ sub synergy_WAR()
 	/if (${Bool[${Macro.Return}]}) /return	
 	
 	
-	/if (${Me.CombatAbilityReady[${DiscAttention}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAttention}].EnduranceCost}) /call core_cast "${DiscAttention}" disc ${Target2Kill}
-	/if (${Me.CombatAbilityReady[${DiscPhantom}]} && ${Me.CurrentEndurance} > ${Spell[${DiscPhantom}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill}
+	/if (${Me.CombatAbilityReady[${DiscAttention}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAttention}].EnduranceCost}) /call core_cast "${DiscAttention}" disc ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscPhantom}]} && ${Me.CurrentEndurance} > ${Spell[${DiscPhantom}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill} FALSE
 
 	/if (${Me.AltAbilityReady[${AAResplendentGlory}]} && !${Me.Song[${AAHoldtheLine}].ID}) {
-		/call core_cast "${AAResplendentGlory}" alt 0
+		/call core_cast "${AAResplendentGlory}" alt 0 FALSE
 	} else /if (${Me.AltAbilityReady[${AAHoldtheLine}]} && !${Me.Song[${AAResplendentGlory}].ID}) {
-		/call core_cast "${AAHoldtheLine}" alt 0
+		/call core_cast "${AAHoldtheLine}" alt 0 FALSE
 	}
-	/if (${Me.AltAbilityReady[${AAWarlordsTenacity}]}) /call core_cast "${AAWarlordsTenacity}" alt 0
-	/if (${Me.AltAbilityReady[${AAWarlordsBravery}]}) /call core_cast "${AAWarlordsBravery}" alt 0
+	/if (${Me.AltAbilityReady[${AAWarlordsTenacity}]}) /call core_cast "${AAWarlordsTenacity}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AAWarlordsBravery}]}) /call core_cast "${AAWarlordsBravery}" alt 0 FALSE
 	
 	/call cast_AA_spire
 	
-	/if (${Me.CombatAbilityReady[${DiscFlash}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFlash}].EnduranceCost}) /call core_cast "${DiscFlash}" disc 0
+	/if (${Me.CombatAbilityReady[${DiscFlash}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFlash}].EnduranceCost}) /call core_cast "${DiscFlash}" disc 0 FALSE
 
 
 	/call use_glyph

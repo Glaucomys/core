@@ -81,21 +81,21 @@ sub disc_WIZ()
 	
 	| debuff the mob
 	/call check_deBuffs ${Target2Kill}
-	/if (${switchdeBuffCripple} && !${Target.Buff[Lower Element].ID}) /call core_cast "Lower Element" alt ${Target2Kill}
+	/if (${switchdeBuffCripple} && !${Target.Buff[Lower Element].ID}) /call core_cast "Lower Element" alt ${Target2Kill} FALSE
 
 	| ditch agro
-	/if (!${switchAgro} && ${Me.PctAggro} > 30) /call core_cast "Arcane Whisper" alt ${Target2Kill}
-	/if (!${switchAgro} && ${Me.PctAggro} > 80) /call core_cast "Concussive Intuition" alt ${Target2Kill}
+	/if (!${switchAgro} && ${Me.PctAggro} > 30) /call core_cast "Arcane Whisper" alt ${Target2Kill} FALSE
+	/if (!${switchAgro} && ${Me.PctAggro} > 80) /call core_cast "Concussive Intuition" alt ${Target2Kill} FALSE
 
 	| filler DPS. used when inbetween/down spellgem casts
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
 	/if (${Me.AltAbilityReady[Force of Flame]}) {
-		/call core_cast "Force of Flame" alt ${Target2Kill}
+		/call core_cast "Force of Flame" alt ${Target2Kill} FALSE
 	} else /if (${Me.AltAbilityReady[Force of Will]}) {
-		/call core_cast "Force of Will" alt ${Target2Kill}
+		/call core_cast "Force of Will" alt ${Target2Kill} FALSE
 	} else /if (${Me.AltAbilityReady[Force of Ice]}) {
-		/call core_cast "Force of Ice" alt ${Target2Kill}
+		/call core_cast "Force of Ice" alt ${Target2Kill} FALSE
 	}
 /return
 
@@ -133,11 +133,11 @@ sub check_harvest()
 	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID}) /return
 
 	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.SpellReady[${GatherSpell}]}) {
-		/call core_cast "${GatherSpell}" 0 0
+		/call core_cast "${GatherSpell}" 0 0 FALSE
 		/return
 	}
 	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Harvest of Druzzil]}) {
-		/call core_cast "Harvest of Druzzil" alt 0
+		/call core_cast "Harvest of Druzzil" alt 0 FALSE
 		/return
 	}
 /return
@@ -257,7 +257,7 @@ sub force_twincast_WIZ()
 	/if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
 		/call core_cast "${TwincastSpell}" 0 0 FALSE
 		/return
-	} else /if (!${timer_force_twincast} && !${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID} && !${cast_condition[NukeTwincastCondition]}) {
+	} else /if (!${timer_force_twincast} && !${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID} && ${cast_condition[NukeTwincastCondition]}) {
 		/call core_cast "${NukeTwincast}" 0 ${Target2Kill} FALSE
 	}
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}

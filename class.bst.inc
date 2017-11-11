@@ -122,7 +122,7 @@ sub cast_AA_focused_paragon()
 	
 	/if (${Target2Kill}) /varset _tmpTarget2Kill ${Target2Kill}
 	
-	/if (${Me.AltAbilityReady[Consumption of Spirit]} && ${Me.PctHPs} > ${minConsumptionHP}*.${tmpHealOverride} && ${Me.PctMana} < ${selfParagon}*.${tmpHealOverride}) /call core_cast "Consumption of Spirit" alt ${Me.ID}
+	/if (${Me.AltAbilityReady[Consumption of Spirit]} && ${Me.PctHPs} > ${minConsumptionHP}*.${tmpHealOverride} && ${Me.PctMana} < ${selfParagon}*.${tmpHealOverride}) /call core_cast "Consumption of Spirit" alt ${Me.ID} FALSE
 
 	| self only focus
 	/if (${Me.AltAbilityReady[Focused Paragon of Spirits]} && ${Me.PctMana} < ${selfParagon} && !${Me.Song[Paragon].ID}) {
@@ -156,13 +156,13 @@ sub cast_AA_focused_paragon()
 sub patch_heal_BST()
 	DEBUGCLASS ${cbug}patch_heal_BST()\ax
 	/doevents	
- 	/if (${Me.PctHPs} < 75*.${tmpHealOverride}  && ${Me.AltAbilityReady[Warder's Gift]}) /call core_cast "Warder's Gift" alt 0
+ 	/if (${Me.PctHPs} < 75*.${tmpHealOverride}  && ${Me.AltAbilityReady[Warder's Gift]}) /call core_cast "Warder's Gift" alt 0 FALSE
 	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride} && ${Me.SpellReady[${FastHeal}]}) {
 		/call core_cast "FastHeal" 0 ${Me.ID} FALSE
-		/if (${Me.AltAbilityReady[Focused Paragon of Spirits]}) /call core_cast "Focused Paragon of Spirits" alt ${Me.ID}
+		/if (${Me.AltAbilityReady[Focused Paragon of Spirits]}) /call core_cast "Focused Paragon of Spirits" alt ${Me.ID} FALSE
 	}
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
+	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
+	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 /return
 
 

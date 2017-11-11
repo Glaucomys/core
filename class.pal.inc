@@ -76,37 +76,36 @@ sub disc_PAL()
 	/call cast_challenge ${Target2Kill}
 	
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
-	| /if (${Me.CombatAbilityReady[${DiscFastRune}]} && ${Bool[${DiscFastRune}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFastRune}].EnduranceCost}) /call core_cast "${DiscFastRune}" disc
 	
-	/if (${validate_buff[disc, discs, DiscFastRune]}) /call core_cast "${DiscFastRune}" disc 0
+	/if (${validate_buff[disc, discs, DiscFastRune]}) /call core_cast "${DiscFastRune}" disc 0 FALSE
 	
 	
 	| Hand of Piety AA Group heal	
-	/if (${switchHealSelf} && ${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0
+	/if (${switchHealSelf} && ${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0 FALSE
 	| dpsheal
-	/if (${switchHealSelf} && ${Me.CombatAbilityReady[${DiscReflexive}]} && ${Me.PctHPs} < 40*.${tmpHealOverride}) /call core_cast "${DiscReflexive}" disc ${Target2Kill}
+	/if (${switchHealSelf} && ${Me.CombatAbilityReady[${DiscReflexive}]} && ${Me.PctHPs} < 40*.${tmpHealOverride}) /call core_cast "${DiscReflexive}" disc ${Target2Kill} FALSE
 
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	| AA inquisitors armor stacking control
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} > 2) {
 		/if (${Me.AltAbilityReady[${AAInquisitor}]} && !${Me.Song[[${AAGroupInquisitor}].ID}) { 
-			/call core_cast "${AAInquisitor}" alt 0
+			/call core_cast "${AAInquisitor}" alt 0 FALSE
 		} else /if (${Me.AltAbilityReady[${AAGroupInquisitor}]} && !${Me.Song[${AAInquisitor}].ID} && !${Raid.Members}) {
-			/call core_cast "${AAGroupInquisitor}" alt 0
+			/call core_cast "${AAGroupInquisitor}" alt 0 FALSE
 		}
 	}
 
 	| undead cripple
 	/if (${Target.Body.Name.Equal[Undead]}) {
-		/call core_cast "Vanquish the Fallen" alt ${Target2Kill}
+		/call core_cast "Vanquish the Fallen" alt ${Target2Kill} FALSE
 	}
 	
 	| Yaulp.. all the time!!
 	/if (!${Me.Sitting} && ${doYaulp}) /call cast_AA_yaulp
 
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 /return
 
 
@@ -215,19 +214,19 @@ sub check_splash_group_PAL()
 	| Panic Splash
   /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${splashPanic}].MyRange} && ${Me.SpellReady[${splashPanic}]}) {
 	| /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.8*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${splashPanic}].MyRange} && ${Me.SpellReady[${splashPanic}]}) {
-		/call core_cast "${splashPanic}" 0
+		/call core_cast "${splashPanic}" 0 FALSE
 		/if (${castReturn.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
 	}
 	AMIDEAD
 	CHECKEXIT
 	| Group Splash
   /if (${useGroupHeal} && ${groupHurt} >= 2 && ${Me.SpellReady[${splashGroup}]}) {
-    /call core_cast "${splashGroup}" 0
+    /call core_cast "${splashGroup}" 0 FALSE
     /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
   } 
 		
 	| AA Splash
-  /if (${useGroupHeal} && ${groupHurt} >= 3) /if (${Me.AltAbilityReady[Hand of Piety]}) /call core_cast "Hand of Piety" alt
+  /if (${useGroupHeal} && ${groupHurt} >= 3) /if (${Me.AltAbilityReady[Hand of Piety]}) /call core_cast "Hand of Piety" alt 0 FALSE
 	 
 	UPDATEHUD
 /return
@@ -246,8 +245,8 @@ sub cast_AA_marrs_gift()
 	CHECKEXIT
 	/call create_timer timer_check_MG ${tcheck_MG}
 	/if (!${Me.AltAbilityReady[Marr's Gift]} || ${timer_zone_pause} || ${SafeZone} && !${switchOverrideSafezone}  || ${Me.Sitting}) /return
-	/if (${Me.PctMana} < ${useMGPct}*.${tmpHealOverride} && ${Me.AltAbilityReady[Marr's Gift]}) /call core_cast "Marr's Gift" alt
-	/if (${switchHealSelf} && ${Me.PctHPs} < ${useMGPct}*.${tmpHealOverride} && ${Me.AltAbilityReady[Marr's Gift]}) /call core_cast "Marr's Gift" alt
+	/if (${Me.PctMana} < ${useMGPct}*.${tmpHealOverride} && ${Me.AltAbilityReady[Marr's Gift]}) /call core_cast "Marr's Gift" alt 0 FALSE
+	/if (${switchHealSelf} && ${Me.PctHPs} < ${useMGPct}*.${tmpHealOverride} && ${Me.AltAbilityReady[Marr's Gift]}) /call core_cast "Marr's Gift" alt 0 FALSE
 /return	
 
 
@@ -265,12 +264,11 @@ sub check_steel()
 
 	/if (${SafeZone} && !${switchOverrideSafezone} || !${switchSteel}) /return
 	/if (${validate_buff[spell, buffs, Steel]}) {
-		/call core_cast "${Steel}" 0
+		/call core_cast "${Steel}" 0 0 FALSE
 		/call create_timer timer_check_Steel ${tcheck_Steel}
 	}
 /return
 
-	| /if (${validate_buff[spell, buffs, Steel]}) /call core_cast "${Steel}" 0 0
 
 
  |***

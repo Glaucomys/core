@@ -9,6 +9,14 @@
  ***|
 
 
+20171111
+- cast_condition()
+  -- adjusted the logic to help speed it up a bit
+- cast conditions now available for:
+  -- GoM Nuke and GoM Nuke 2
+- cast_dot() case typo caused an undefined variable.
+  
+
 20171109
 - added in nuke/DoT pre-evaluations
   -- loosely based off RD macro EvaluatioCondition() function at Stockli's request

@@ -38,7 +38,6 @@ sub core_NEC()
 		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
 		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
-		/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill}
 		/call check_deBuffs ${Target2Kill}
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}
@@ -61,34 +60,6 @@ sub core_NEC()
 	}
 
 /return
-
-
-
-
-
-|***
- *	DES: Cast Necro DoT's
- *	USE: /call cast_DOT_${Me.Class.ShortName}
- *	INI: 
- *  NOTE: 
-
-sub cast_DOT_NEC()
-	DEBUGCAST ${cbug}cast_DOT_NEC(count ${DoDoT})\ax
-	/call get_assist_target
-	/declare _count int local 0
-	/for _count 1 to ${DoDoT}
-		AMIDEAD
-		CHECKEXIT
-		/call is_target_dead
-		/if (${Macro.Return}) /return
-
-		/if ((${Target.BuffDuration[${DoT${_count}chk}]} <= 2 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
-			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
-		}
-	/next _count
-/return
- ***|
-
 
 
 
@@ -119,11 +90,11 @@ sub disc_NEC()
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	| heal clickies
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 
 	| aa wake the dead
-	/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill}
+	/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill} FALSE
 /return
 
 
@@ -168,13 +139,13 @@ sub cast_blood(int _tmpID)
  *	INI: 
  *  NOTE: 
 sub sac_toon()
-	/declare sactarget string local Jraoz
+	/declare sactarget string local NAMEHERE
 	/if (${Spawn[pc ${sactarget}].ID}) {
 		 /delay 1
 		 /target id ${spawn[${sactarget}].ID}
 		/delay 1
 		/autoinventory
-		/call MQ2Cast "Sacrifice" gem12 5s -targetID|${Spawn[${sactarget}].ID} 
+		/call MQ2Cast "Sacrifice" gem1 5s -targetID|${Spawn[${sactarget}].ID} 
 		/delay 15s ${Cursor.ID}
 		/autoinventory
 		/delay 3s

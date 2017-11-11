@@ -249,7 +249,7 @@ sub cast_nuke_summer(int _tmpID)
 	CHECKEXIT
 	/doevents
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
-	/if (!${cast_condition[NukeSummerCondition]}) /return 
+	/if (!${cast_condition[NukeSummerCondition]}) /return
 	/call core_cast "${NukeSummer}" 0 ${_tmpID} FALSE
 /return
 

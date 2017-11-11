@@ -16,11 +16,12 @@
  ***| 
 sub check_one_mind()
 	DEBUG ${cbug}check_one_mind()\ax
+	/call create_timer timer_check_EQBC ${tCheck_EQBC}
+	/if (!${validate_plugin[FALSE, |mq2eqbc]}) /return
 	/if (!${EQBC.Connected} && ${Bool[${EQBCServer}]}) {
 		/bccmd connect ${EQBCServer} ${EQBCPort}
 		/delay 15s !${EQBC.Connected}
 	}
-	/call create_timer timer_check_EQBC ${tCheck_EQBC}
 /return
 
 
@@ -359,7 +360,7 @@ sub give_to_pet()
 	AMIDEAD
 	/doevents
 	/if (${Target.ID} != ${Me.Pet.ID}) {
-		/target id ${Me.Pet.ID}
+		/target ID ${Me.Pet.ID}
 		/delay 1s ${Target.ID} == ${Me.Pet.ID}
 	}
 	:loopgiveitem
@@ -391,13 +392,13 @@ sub cast_summon_pet()
 	/if (${Macro.Return}) /return
 	/doevents
 	/if (${coreAuto} && ${switchPcPet} && ${Me.AltAbilityReady[Suspended Minion]}) {
-		/call core_cast "Suspended Minion" alt 0
+		/call core_cast "Suspended Minion" alt 0 FALSE
 		/delay 5s !${Me.Casting.ID}
 		/delay 5
 	}
 	/if (${switchPcPet} && !${Me.Pet.ID})  {
 		VOUT Building ${sep} ${csp}${PcPettype}\ax
-		/call core_cast "${PcPettype}" ${buffGem} 0 
+		/call core_cast "${PcPettype}" ${buffGem} 0 FALSE
 		/call create_timer timer_check_pet_buffs 20
 		/delay 20s !${Me.Casting.ID}
 		/pet hold on
@@ -409,7 +410,6 @@ sub cast_summon_pet()
 		}
 		/call send_pet
 	}
-	| /delay 2s
 /return
 
 
@@ -428,11 +428,11 @@ sub cast_shrink_pet()
 	/if (${Macro.Return}) /return
 	/if (${Me.Pet.ID} && ${Bool[${shrinkPet}]} && ${Me.Pet.Height} > 1.40) {
 		/if (${Me.Book[${shrinkPet}]}) {
-			/call core_cast "${shrinkPet}" ${buffGem} ${Me.Pet.ID}
+			/call core_cast "${shrinkPet}" ${buffGem} ${Me.Pet.ID} FALSE
 		} else /if (${Me.ItemReady[${shrinkPet}]}) {
-			/call core_cast "${shrinkPet}" item ${Me.Pet.ID}
+			/call core_cast "${shrinkPet}" item ${Me.Pet.ID} FALSE
 		} else /if (${Me.AltAbilityReady[${shrinkPet}]}) {
-			/call core_cast "${shrinkPet}" alt ${Me.Pet.ID}
+			/call core_cast "${shrinkPet}" alt ${Me.Pet.ID} FALSE
 		}
 	}
 /return
@@ -557,20 +557,6 @@ sub cast_summon_weapons()
 
 /return
 
- /useitem ${FindItem[Pouch of Quellious].ItemSlot} ${FindItem[Summoned: Large Modulation Shard].ItemSlot2}
-
-${Range.Between[23,32:${Int[${FindItem[${summonedWepClosedBag}].ItemSlot}]}]}
-
-${summonedWepClosedBag}
-${FindItem[${summonedWepClosedBag}].ItemSlot}
-
-		| /while (${Cursor.ID}) {
-		| 	/autoinventory 
-		| 	/delay 1s !${Cursor.ID}
-		| }
-
-
-
 
 
 |***
@@ -592,11 +578,9 @@ sub auto_adjust_EXP()
 	| set to AA cause the group healer is awesom	
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && ${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}) {
 		VOUT Maintain EXP [${cinfo}${MaxLevel}\ax] ${sep} ${cinfo}${MaintExpLvl}%\ax. AA:${cinfo}${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}\ax 
-		| VOUT Adjusting EXP ${sep} Setting to full AA.
 		/alternateadv on 100
 	| set back to exp cause nothing else to buy
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && (${Me.AAPoints} == ${Float[${Math.Calc[${Me.Level}*2]}].Int})) {
-		| VOUT MAX EXP/Level/AA. Setting EXP to normal.
 		/alternateadv off
 	}
 /return
@@ -622,7 +606,6 @@ sub check_aura()
 		/if (${Bool[${Aura1Buff}]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
 			VOUT Disc ${sep} ${csp}${Aura1Spell}\ax
 			/disc ${Aura1Spell}
-			| /call core_cast "${Aura1Spell}" disc 0
 			/delay 8s
 		}
 		/return
@@ -664,7 +647,7 @@ sub check_aura()
 				}
 			/next _count
 			/if (!${_found}) {
-				/call core_cast "${Aura${_aura}Spell}" ${buffGem} ${Me.ID}
+				/call core_cast "${Aura${_aura}Spell}" ${buffGem} ${Me.ID} FALSE
 			} else /if (${_found}) {
 				/varset _found FALSE
 			}
@@ -753,7 +736,7 @@ sub check_buffs_item()
 			AMIDEAD
 			/if (${UseItem[${_count}]}&& ${Me.FreeBuffSlots} >= 1 && ${FindItem[${SelfItem[${_count}]}].ID} && ${Cast.Ready[${SelfItem[${_count}]}]} && !${Me.Buff[${SpellItem[${_count}]}].ID} && ${Spell[${SpellItem[${_count}]}].Stacks}) { 
 				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-				/call core_cast "${SelfItem[${_count}]}" item 0
+				/call core_cast "${SelfItem[${_count}]}" item 0 FALSE
 				/delay 5s !${Me.ItemReady[${SelfItem[${_count}]}]}
 				/delay 10s !${Me.Casting.ID}
 	  	}
@@ -777,9 +760,6 @@ sub check_buffs_item()
 	/if (${coreAuto}) /call create_timer timer_check_buffs_item ${tItem_Buff}
 	UPDATEHUD FALSE
 /return
-
-${Me.ItemReady[Gore-Splattered Shoulders]}
-${Me.ItemReady[Guise of the Deceiver]}
 
 
 
@@ -829,9 +809,9 @@ sub check_buffs_self()
 		/if (!${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]} && ${Spell[${Buff${_count}}].Stacks} && ${Bool[${Buff${_count}self}]} && ${Bool[${Buff${_count}}]}) {
 			/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 			/if (!${Me.SpellReady[${Buff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
- 		  /if (${Me.Book[${Buff${_count}}]} && ${Me.CurrentMana} > ${Spell[${Buff${_count}}].Mana}) /call core_cast "${Buff${_count}}" ${buffGem} ${Me.ID}
-			/if (${Me.AltAbility[${Buff${_count}}].ID}) /call core_cast "${Buff${_count}}" alt 0
-			/if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID}
+ 		  /if (${Me.Book[${Buff${_count}}]} && ${Me.CurrentMana} > ${Spell[${Buff${_count}}].Mana}) /call core_cast "${Buff${_count}}" ${buffGem} ${Me.ID} FALSE
+			/if (${Me.AltAbility[${Buff${_count}}].ID}) /call core_cast "${Buff${_count}}" alt 0 FALSE
+			/if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID} FALSE
 		}
 	/next _count
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
@@ -873,7 +853,7 @@ sub check_pet_buffs()
 			
 		/if (${Bool[${_spellType}]} && !${Me.Moving} ) {
 			CLEARCURSOR TRUE
-			/call core_cast "${PetBuff${_count}}" ${_spellType} ${Me.Pet.ID}
+			/call core_cast "${PetBuff${_count}}" ${_spellType} ${Me.Pet.ID} FALSE
 		}
 	/next _count
 	
@@ -882,7 +862,7 @@ sub check_pet_buffs()
 	| shrink the little bastards..
 	/if (${Bool[${Me.Pet.ID}]}) /call cast_shrink_pet
 	| pet epic click
-	/if (${Me.ItemReady[${EpicClick}]} && !${Me.Pet.Buff[Elemental Conjunction]} && !${Me.Pet.Buff[${EpicPetBuff}]} && !${Me.Pet.Buff[Blessing of Unity]} && ${Spell[${EpicPetBuff}].Stacks}) /call core_cast "${EpicClick}" item 0
+	/if (${Me.ItemReady[${EpicClick}]} && !${Me.Pet.Buff[Elemental Conjunction]} && !${Me.Pet.Buff[${EpicPetBuff}]} && !${Me.Pet.Buff[Blessing of Unity]} && ${Spell[${EpicPetBuff}].Stacks}) /call core_cast "${EpicClick}" item 0 FALSE
 	
 	/if (${Target.ID}) /squelch /target clear
 	UPDATEHUD FALSE	
@@ -922,7 +902,7 @@ sub click_horn_of_unity()
 	/if (!${Bool[${switchHorn}]} || ${SafeZone} && !${switchOverrideSafezone} || ${Bool[${timer_zone_pause}]}) /return
 	/if (${Me.ItemReady[Miniature Horn of Unity]} && !${Bool[${Me.Song[Blessing of Unity]}]} && (${Me.PctHPs} < 95*.${tmpHealOverride} || ${Me.PctMana} < 95*.${tmpHealOverride})) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-		/call core_cast "Miniature Horn of Unity" item 0 
+		/call core_cast "Miniature Horn of Unity" item 0 FALSE
 	}
 /return
 
@@ -1238,7 +1218,7 @@ sub click_item(bool _clickEpic)
 	DEBUGCAST ${cbug}click_item()\ax
 	/call check_exit
 	/if (${Bool[${Macro.Return}]} || ${Spawn[${Target.ID}].PctHPs} < 15*.${tmpHealOverride}) /return
-	/if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0
+	/if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0 FALSE
 
 	/declare _count int local 0
 	/for _count 1 to ${doclickItem}
@@ -1772,12 +1752,13 @@ sub clear_timer(int _tmpID)
  *	DES: conditions to check for each cast
  *	USE: /if (!${cast_condition[CONDITION]}) /return ??
  *	INI: 
- *  NOTE: DO NOT PASS VARIABLE CONTAINER. JUST PASS ITS INI DECLARE NAME
+ *  NOTE: DO NOT PASS VARIABLE CONTAINER. JUST PASS ITS' INI DECLARE NAME
  ***|
 sub cast_condition(str _condition)
 	DEBUG ${cbug}cast_condition(condition: ${_condition} ${sep} (${${_condition}})\ax
-	/declare _eval string local ${${_condition}}
-	/if (${_eval}) /return TRUE
+	/if (!${Bool[${${_condition}}]}) /return TRUE
+	DEBUG ${_condition}: ${${_condition}}
+	/if (${${_condition}}) /return TRUE
 /return FALSE
 
 
@@ -1825,7 +1806,7 @@ sub cast_DOT()
 		CHECKEXIT
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
-		/if (!${cast_condition[Dot${_count}Condition]}) /continue 
+		/if (!${cast_condition[DoT${_count}Condition]}) /continue 
 		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
 			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
 		}
@@ -1919,7 +1900,7 @@ sub cast_eradicate_magic(int _tmpID)
 	/if (${validate_class[FALSE, |RNG|DRU]}) /varset _debuffEradicate Entropy of Nature
 	
 	/if (${Me.AltAbilityReady[${_debuffEradicate}]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_debuffEradicate}].MyRange}) {
-		/call core_cast "${_debuffEradicate}" alt ${_tmpID}
+		/call core_cast "${_debuffEradicate}" alt ${_tmpID} FALSE
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) /call create_timer timer_eradicate_${_tmpID} 1m
 	}
 /return
@@ -1963,7 +1944,7 @@ sub cast_AA_snare(int _tmpID)
 	
 	
 	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} && !${Target.Snared.ID}) {
-		/if (!${Select[${Me.Class.ShortName},PAL]}) /call core_cast "${_debuffSnare}" alt ${_tmpID}
+		/if (!${Select[${Me.Class.ShortName},PAL]}) /call core_cast "${_debuffSnare}" alt ${_tmpID} FALSE
 		
 		| pally live or dead snare
 		/if (${Select[${Me.Class.ShortName},PAL]} && ${Target.Body.Name.Equal[Undead]}) {
@@ -2322,19 +2303,19 @@ sub cast_cure()
 		| cure self only with items
 		
 		/if (${Select[${Me.Class.ShortName},MNK]}) {
-			/call core_cast "Purify Body" alt
+			/call core_cast "Purify Body" alt 0 FALSE
 		} else /if (${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
-			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased}) /call core_cast "Radiant Cure" alt 0
+			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased}) /call core_cast "Radiant Cure" alt 0 FALSE
 		}
 		
 		/if (${Debuff.Cursed} && ${Me.ItemReady[${cureCurseItem}]}) {
-			/call core_cast "${cureCurseItem}" item ${Me.ID}
+			/call core_cast "${cureCurseItem}" item ${Me.ID} FALSE
 		} else /if (${Debuff.Corrupted} && ${Me.ItemReady[${cureCorruptItem}]}) {
-			/call core_cast "${cureCorruptItem}" item ${Me.ID}
+			/call core_cast "${cureCorruptItem}" item ${Me.ID} FALSE
 		} else /if (${Debuff.Poisoned} && ${Me.ItemReady[${curePoisonItem}]}) {
-			/call core_cast "${curePoisonItem}" item ${Me.ID}
+			/call core_cast "${curePoisonItem}" item ${Me.ID} FALSE
 		} else /if (${Debuff.Diseased} && ${Me.ItemReady[${cureDiseaseItem}]}) {
-			/call core_cast "${cureDiseaseItem}" item ${Me.ID}
+			/call core_cast "${cureDiseaseItem}" item ${Me.ID} FALSE
 		}
 	}
 
@@ -2357,7 +2338,7 @@ sub cast_cure()
 		| 100' 1 min
 		/if (${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0
+				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0 FALSE
 			}
 			/return
 		}
@@ -2366,7 +2347,7 @@ sub cast_cure()
 		| 200' 5 min
 		/if (${Select[${Me.Class.ShortName},PAL,CLR,DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
+				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 			}
 			/return
 		}
@@ -2375,20 +2356,20 @@ sub cast_cure()
 		| 0/100' 15 min
 		/if (${Select[${Me.Class.ShortName},CLR,DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt 0
+				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt 0 FALSE
 			}
 			/return
 		}
 
 		| cure with spell
 		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed} && ${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCurse}].MyRange}) {
-			/call core_cast "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
+			/call core_cast "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCorrupt}].MyRange}) {
-			/call core_cast "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID}
+			/call core_cast "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		} else /if (${Bool[${curePoison}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${curePoison}].MyRange}) {
-			/call core_cast "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
+			/call core_cast "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureDisease}].MyRange}) {
-			/call core_cast "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} 
+			/call core_cast "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		}
 	/next _count
 	UPDATEHUD FALSE
@@ -2404,7 +2385,7 @@ sub cast_cure()
  ***|
 sub cast_free_target(string _tmpSpell, int _tmpID)
 	DEBUGCAST ${cbug}cast_free_target()\ax
-	/call core_cast "${_tmpSpell}" 0 ${_tmpID}
+	/call core_cast "${_tmpSpell}" 0 ${_tmpID} FALSE
 	/squelch /face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
 	/delay 5
 	/click left center
@@ -2470,18 +2451,22 @@ sub use_skill_melee(int _tmpID)
 	}
 	
 	| Zerker only skill
-	/if (${validate_class[FALSE, |BER]} ${Bool[${frenzy}]} && && !${Skill[Frenzy].Auto}) {
-		/if (${Me.AbilityReady[Frenzy]} && ${Spawn[${_tmpID}].Distance} <= 13) {
-			VOUT Melee ${sep} ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
-			/if (${Target.ID}) /doability Frenzy
+	/if (${validate_class[FALSE, |BER]}) {
+		/if (${Bool[${frenzy}]} && && !${Skill[Frenzy].Auto}) {
+			/if (${Me.AbilityReady[Frenzy]} && ${Spawn[${_tmpID}].Distance} <= 13) {
+				VOUT Melee ${sep} ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+				/if (${Target.ID}) /doability Frenzy
+			}
 		}
 	}
 
 	| rogue only skill
-	/if (${validate_class[FALSE, |ROG]} ${Bool[${backstab}]} && && !${Skill[Backstab].Auto}) {
-		/if (${Me.AbilityReady[Backstab]} && ${Spawn[${_tmpID}].Distance} <= 13) {
-			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
-			/if (${Target.ID}) /doability Backstab
+	/if (${validate_class[FALSE, |ROG]}) { 
+		/if (${Bool[${backstab}]} && && !${Skill[Backstab].Auto}) {
+			/if (${Me.AbilityReady[Backstab]} && ${Spawn[${_tmpID}].Distance} <= 13) {
+				VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+				/if (${Target.ID}) /doability Backstab
+			}
 		}
 	}
 	
@@ -2526,7 +2511,7 @@ sub cast_nuke_servant()
 	CHECKEXIT
 	/if (${switchPcSwarm} && ${Spawn[${Target2Kill}].LineOfSight} && (${Me.SpellReady[${ServantNuke}]} || ${Me.AltAbilityReady[${ServantNuke}]}) && ${Me.CurrentMana} >= ${Spell[${ServantNuke}].Mana} && ${Spawn[${Target2Kill}].Distance} < ${MobAgro}) {
 		/if (${Me.SpellReady[${ServantNuke}]}) /call core_cast "${ServantNuke}" 0 ${Target2Kill} cast_break
-		/if (${Me.AltAbilityReady[${ServantNuke}]}) /call core_cast "${ServantNuke}" alt ${Target2Kill}
+		/if (${Me.AltAbilityReady[${ServantNuke}]}) /call core_cast "${ServantNuke}" alt ${Target2Kill} FALSE
 	}
 /return
 
@@ -2590,10 +2575,12 @@ sub cast_nuke_GoM(int _tmpID)
 	
 	/if (${Me.SpellReady[${GoMNuke}]}) {
 		/target ID ${_tmpID}
+		/if (!${cast_condition[GoMNukeCondition]}) /return
 		VOUT Dichotomic ${sep} ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke}" gem${Me.Gem[${GoMNuke}]} -targetid|${_tmpID}
 	} else /if (${Me.SpellReady[${GoMNuke2}]}) {
 		/target ID ${_tmpID}
+		/if (!${cast_condition[GoMNuke2Condition]}) /return
 		VOUT Dichotomic Backup ${sep} ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke2}" gem${Me.Gem[${GoMNuke2}]} -targetid|${_tmpID}
 	}
@@ -2767,7 +2754,7 @@ sub sort_familiar()
 	/doevents
 	/call check_exit
 	/if (${Macro.Return} || !${Bool[${sumFamiliar}]}) /return
-	/if (!${Bool[${Me.Buff[${sumFamiliarBuff}].Duration}]}) /call core_cast "${sumFamiliar}" NULL NULL
+	/if (!${Bool[${Me.Buff[${sumFamiliarBuff}].Duration}]}) /call core_cast "${sumFamiliar}" NULL NULL FALSE
 	/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]} && ${Me.Pet.Body.ID} == 31) /pet get lost
 /return
 
@@ -2851,7 +2838,7 @@ sub odds_and_ends()
 		AMIDEAD
 		CLEARCURSOR TRUE
 		/doevents
-		/if (${Me.ItemReady[${clickOddItem${_count}}]}) /call core_cast "${clickOddItem${_count}}" item
+		/if (${Me.ItemReady[${clickOddItem${_count}}]}) /call core_cast "${clickOddItem${_count}}" item 0 FALSE
 	/next _count
 	/call sort_cursor TRUE
 /return
@@ -3133,7 +3120,7 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
 	
 	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_tmpSpell}].MyRange} && !${timer_slow_${_tmpID}}) {
 		AMIDEAD
-		/call core_cast "${_tmpSpell}" alt ${_tmpID}
+		/call core_cast "${_tmpSpell}" alt ${_tmpID} FALSE
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_slow_${_tmpID} ${Spell[${_tmpSpell}].Duration.TotalSeconds}s
 		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
@@ -3180,10 +3167,10 @@ sub cast_AA_yaulp()
 	CHECKEXIT
 	/if (${Select[${Me.Class.ShortName},CLR]} && ${Me.ItemReady[Darkened Donal's Helm of Mourning]} && ${Select[${Me.Class.ShortName},CLR]}) {
 		/if (!${Spell[Yaulp XIV Rk. II].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
-		/if (${Me.PctMana} < 98*.${tmpHealOverride}) /call core_cast "Darkened Donal's Helm of Mourning" item 0
+		/if (${Me.PctMana} < 98*.${tmpHealOverride}) /call core_cast "Darkened Donal's Helm of Mourning" item 0 FALSE
 	} else /if (!${Me.ItemReady[Darkened Donal's Helm of Mourning]} && ${Me.AltAbilityReady[Yaulp (Lesser)]}) {
 		/if (!${Spell[Yaulp (Lesser)].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
-		/if (${Me.PctMana} < 98*.${tmpHealOverride} || (${Me.Combat} &&${Select[${Me.Class.ShortName},PAL]})) /call core_cast "Yaulp (Lesser)" alt 0
+		/if (${Me.PctMana} < 98*.${tmpHealOverride} || (${Me.Combat} &&${Select[${Me.Class.ShortName},PAL]})) /call core_cast "Yaulp (Lesser)" alt 0 FALSE
 	}
 /return
 
@@ -3207,7 +3194,7 @@ sub cast_disc_breather()
 	/if (${Me.CombatAbility[Breather]}) /varset _endurancePoint 21
 
  	/if (${Me.PctEndurance} < ${_endurancePoint} && ${Select[${Me.CombatState},RESTING]} && !${Bool[${Me.ActiveDisc}]}) {
-		/call core_cast "${DiscRest}" disc 0
+		/call core_cast "${DiscRest}" disc 0 FALSE
 	}
 
 /return
@@ -3223,10 +3210,15 @@ sub cast_disc_breather()
 sub fix_gem_id(string _spellGem)
 	DEBUGCAST ${cbug}fix_gem_id(fix: ${_spellGem})\ax
 	/declare _gem int local 0
-	/if (${_spellGem.Length} == 1) /varset _gem ${_spellGem.Right[1]}
-	/if (${_spellGem.Length} == 2) /varset _gem ${_spellGem.Right[2]} 
-	/if (${_spellGem.Length} == 4) /varset _gem ${_spellGem.Right[1]}
-	/if (${_spellGem.Length} == 5) /varset _gem ${_spellGem.Right[2]}
+	/if (${_spellGem.Length} == 1) {
+		/varset _gem ${_spellGem.Right[1]}
+	} else /if (${_spellGem.Length} == 2) {
+		/varset _gem ${_spellGem.Right[2]} 
+	} else /if (${_spellGem.Length} == 4) {
+		/varset _gem ${_spellGem.Right[1]}
+	} else /if (${_spellGem.Length} == 5) {
+		/varset _gem ${_spellGem.Right[2]}
+	}
 	DEBUG fix_gem_id(return: ${_gem})
 /return ${_gem}
 
@@ -3505,9 +3497,9 @@ sub cast_rez(int _tmpID, string _rezAA)
 
 		| res the damn person
 		/if (!${switchRezEmergency}) {
-			/call core_cast "${_rezAA}" alt ${_tmpID}
+			/call core_cast "${_rezAA}" alt ${_tmpID} FALSE
 		} else /if (${switchRezEmergency}) {
-			/call core_cast "${_rezAA}" item ${_tmpID}
+			/call core_cast "${_rezAA}" item ${_tmpID} FALSE
 		}
 	
 		/if (${Select[${castReturn},CAST_SUCCESS]}) { 
@@ -3846,8 +3838,8 @@ sub check_buffs_tell()
 		/target id ${_tmpID}
 		/delay 5s ${Target.ID}==${_tmpID}
 		/if (${Target.ID}!=${_tmpID} || !${Target.ID}) /return
-		/if (${Me.ItemReady[${Buff${_tmpVAR}}]}) /call core_cast "${Buff${_tmpVAR}}" item ${_tmpID}
-		/call core_cast "${Buff${_tmpVAR}}" ${buffGem} ${_tmpID}
+		/if (${Me.ItemReady[${Buff${_tmpVAR}}]}) /call core_cast "${Buff${_tmpVAR}}" item ${_tmpID} FALSE
+		/call core_cast "${Buff${_tmpVAR}}" ${buffGem} ${_tmpID} FALSE
 
 		/if (${Select[${castReturn},CAST_SUCCESS]}) /call queue_buff_delete ${_tmpID} ${_tmpVAR}
 	}
@@ -4218,12 +4210,12 @@ sub check_AA_now()
 
 	| nowAA1
 	/if (${Bool[${AANow1}]} && ${Me.AltAbilityReady[${AANow1}]} && ${Spell[${AANow1}].Stacks}) {
-		/if (!${Bool[${Me.Buff[${AANow1}]}]} && !${Bool[${Me.Song[${AANow1}]}]}) /call core_cast "${AANow1}" alt 0
+		/if (!${Bool[${Me.Buff[${AANow1}]}]} && !${Bool[${Me.Song[${AANow1}]}]}) /call core_cast "${AANow1}" alt 0 FALSE
 	}
 
 	| nowAA2
 	/if (${Bool[${AANow2}]} && ${Me.AltAbilityReady[${AANow2}]} && ${Spell[${AANow2}].Stacks}) {
-		/if (!${Bool[${Me.Buff[${AANow2}]}]} && !${Bool[${Me.Song[${AANow2}]}]}) /call core_cast "${AANow2}" alt 0
+		/if (!${Bool[${Me.Buff[${AANow2}]}]} && !${Bool[${Me.Song[${AANow2}]}]}) /call core_cast "${AANow2}" alt 0 FALSE
 	}	
 /return
 
@@ -4243,12 +4235,12 @@ sub check_disc_now()
 	| nowDisc1
 	/if (${Bool[${DiscNow1}]} && ${Me.CombatAbilityReady[${DiscNow1}]} && ${Spell[${DiscNow1}].Stacks}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-		/if (!${Bool[${Me.Buff[${DiscNow1.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow1.Left[-7]}]}]}) /call core_cast "${DiscNow1}" disc 0
+		/if (!${Bool[${Me.Buff[${DiscNow1.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow1.Left[-7]}]}]}) /call core_cast "${DiscNow1}" disc 0 FALSE
 	}
 	| nowDisc2
 	/if (${Bool[${DiscNow2}]} && ${Me.CombatAbilityReady[${DiscNow2}]} && ${Spell[${DiscNow2}].Stacks}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-		/if (!${Bool[${Me.Buff[${DiscNow2.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow2.Left[-7]}]}]}) /call core_cast "${DiscNow2}" disc 0
+		/if (!${Bool[${Me.Buff[${DiscNow2.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow2.Left[-7]}]}]}) /call core_cast "${DiscNow2}" disc 0 FALSE
 	}	
 /return
 
@@ -4350,24 +4342,24 @@ sub get_target()
 			/if (!${switchPull} || !${coreAuto}) /return
 			| /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance} targetable playerstate 4]}) /return
 			/if (${Select[${Me.Class.ShortName},SHD]} && ${Me.AltAbilityReady[Hate's Attraction]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} < ${Spell[Hate's Attraction].MyRange}) /call core_cast "Hate's Attraction" alt ${Target2Kill}
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} < ${Spell[Hate's Attraction].MyRange}) /call core_cast "Hate's Attraction" alt ${Target2Kill} FALSE
 			} else /if (${Select[${Me.Class.ShortName},PAL]} && ${Me.AltAbilityReady[Divine Call]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} <= 45) /call core_cast "Divine Call" alt ${Target2Kill}
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} <= 45) /call core_cast "Divine Call" alt ${Target2Kill} FALSE
 			} else /if (${Select[${Me.Class.ShortName},WAR]} && ${Me.AltAbilityReady[Warlord's Grasp]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} < ${Spell[Warlord's Grasp].MyRange}) /call core_cast "Warlord's Grasp" alt ${Target2Kill}
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} < ${Spell[Warlord's Grasp].MyRange}) /call core_cast "Warlord's Grasp" alt ${Target2Kill} FALSE
 			}
 
 			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && < ${MobAgro}) {
 				/if (${Target.ID}) /range
-			} else 	/if (${Spawn[id ${Target2Kill}].Distance} <= 31) {
+			} else 	/if (${Spawn[ID ${Target2Kill}].Distance} <= 31) {
 				/if (${coreAuto}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 				/if (${Select[${combat},RANGE]}) /return
-				/squelch /stick id ${Target2Kill} ${CombatDistance} 
+				/squelch /stick ID ${Target2Kill} ${CombatDistance} 
 			}
 		}
 
 	| if the mob is less the arrow range, move to the bastard
-	} else /if (${Spawn[id ${Target2Kill}].Distance} <= 31 && !${Select[${Me.Class.ShortName},MAG,NEC,BST,ENC]}) {
+	} else /if (${Spawn[ID ${Target2Kill}].Distance} <= 31 && !${Select[${Me.Class.ShortName},MAG,NEC,BST,ENC]}) {
 		DEBUG stick to mob <= 31
 		/if (${coreAuto} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		/if (${Select[${combat},RANGE]}) /return
@@ -4591,11 +4583,10 @@ sub give_coin(int _ammount, int _stacks, string _coin)
  ***|
 sub check_harmonious()
 	DEBUGCAST ${cbug}check_harmonious()\ax
-	| /if (!${coreAuto} && !${switchMode${setModeType}}) /return
 	AMIDEAD
 	CHECKEXIT
 	/if (!${switchHarmonious}) /return
-	/if (!${Bool[${Me.Buff[${Harmonious}]}]} && ${Me.PctMana} > 10) /call core_cast "${Harmonious}" 0 0
+	/if (!${Bool[${Me.Buff[${Harmonious}]}]} && ${Me.PctMana} > 10) /call core_cast "${Harmonious}" 0 0 FALSE
 /return
 
 
@@ -5565,16 +5556,6 @@ sub set_base_install()
 
 
 
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: Used to remove stale entries from the toons INI. 'cause I gotta keep changing shits.
  *	USE: /call fix_INI_declares
@@ -5799,11 +5780,11 @@ sub validate_class(bool _error, string _class)
  *	DES: is the plugin available ?
  *	USE: /if (${validate_class[BOOL, |plugin|plugin]) /dowhatever
  *	INI: 
- *	NOTE: 
+ *	NOTE: cycle all plugins. return FALSE if any passed are not loaded
  ***|
 sub validate_plugin(bool _error, string _plugin)
 	DEBUG ${cbug}validate_class(error: ${_error}, plugin: ${_plugin})\ax
-	/if (!${Bool[${_plugin}]}) NOUT ${owarnong} ${sep} validate_plugin failure.
+	/if (!${Bool[${_plugin}]}) NOUT ${owarning} ${sep} validate_plugin failure.
 	/declare _plugcount int local 0	
 	/declare _count int local 0
 
@@ -5870,7 +5851,6 @@ sub cast_slow(int _tmpID)
 	
 	| check the things normal things	
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellSlow}]}) /return
-	
 	/delay 2.25s ${Me.${_readytype}[${spellSlow}]}	
 	/call core_cast "${spellSlow}" ${_spelltype} ${_tmpID} FALSE
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
@@ -5906,7 +5886,7 @@ sub cast_malo(int _tmpID)
 	}
 	UPDATEHUD "Malo"
 
-	| get to business
+	| can't touch this.... 
 	/declare _spelltype string local FALSE
 	/declare _readytype string local FALSE
 
@@ -5922,12 +5902,9 @@ sub cast_malo(int _tmpID)
 		/varset _readytype AltAbilityReady
 	}		
 	
-	
 	| check the things normal things	
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellMalo}]}) /return
-	
 	/delay 2.25s ${Me.${_readytype}[${spellMalo}]}	
-	
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} > 2 && ${Select[${Me.Class.ShortName},MAG]}) {
 		/call core_cast "Wind of Malosinete" alt ${_tmpID} FALSE
 	} else {
@@ -5965,6 +5942,7 @@ sub cast_cripple(int _tmpID)
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
 		/return
 	}
+	UPDATEHUD "Cripple"
 
 	| get to business
 	/declare _spelltype string local FALSE
@@ -5990,7 +5968,7 @@ sub cast_cripple(int _tmpID)
 	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
 		/call create_timer timer_cripple_${_tmpID} 15s
 	}
-
+	UPDATEHUD FALSE
 /return
 
 
@@ -6067,7 +6045,6 @@ sub check_deBuffs(int _tmpID)
 	}
 		
 	| cripple
-
 	/if (${switchdeBuffCripple} && !${validate_class[FALSE, |WIZ]}) {
 		/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
 			/if (${validate_class[FALSE, |ENC|SHM]}) { 

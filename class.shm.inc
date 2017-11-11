@@ -125,7 +125,7 @@ sub clickDPS_SHM()
 	CHECKEXIT
 	/doevents
 	/call click_horn_of_unity 	
-	/if (${Me.ItemReady[${Epic}]} && !${Me.Song[Prophet's Gift of the Ruchu].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 3)  /call core_cast "${Epic}" item
+	/if (${Me.ItemReady[${Epic}]} && !${Me.Song[Prophet's Gift of the Ruchu].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 3)  /call core_cast "${Epic}" item 0 FALSE
 /return
 	
 
@@ -142,10 +142,10 @@ sub check_cani()
 	/doevents
 	
 	/if (${Me.PctMana} < ${CaniPercent} && ${Me.SpellReady[${spellCannibalization}]}) {
-		/call core_cast "${spellCannibalization}" 0 0
+		/call core_cast "${spellCannibalization}" 0 0 FALSE
 	}
 	/if (${Me.PctMana} < ${CaniPercent} && ${Me.AltAbilityReady[Cannibalization]}) {
-		/call core_cast "Cannibalization" alt 0
+		/call core_cast "Cannibalization" alt 0 FALSE
 	}
 /return
 
@@ -207,7 +207,7 @@ sub check_heal_group_SHM()
 	| Group regenerations. Use all the time. Don't care if hurt or not.
  	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) {
  	 	/if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Elixir of the Seas]}]}) {
-	    /call core_cast "${healWholeGroupHoT}" 0 ${Me.ID}
+	    /call core_cast "${healWholeGroupHoT}" 0 ${Me.ID} FALSE
 	  }
 	}
   
@@ -216,18 +216,18 @@ sub check_heal_group_SHM()
 	/call check_no_cast_buffs
  
   /if (${Math.Calc[${MajorHurt}+${MinorHurt}]} >= 3 && ${Me.SpellReady[${healWholeGroup}]}) {
-    /call core_cast "${healWholeGroup}" 0 ${Me.ID} CheckHP.${Me.Class.ShortName}
+    /call core_cast "${healWholeGroup}" 0 ${Me.ID} checkHP_${Me.Class.ShortName}
     /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
   } 
   
   /if ( ${MajorHurt} >= 3 && ${Me.AltAbilityReady[Call of the Ancients]}) {
-    /call core_cast "Call of the Ancients" alt ${Me.ID}
+    /call core_cast "Call of the Ancients" alt ${Me.ID} FALSE
   } 
   
  | Intervention Heals 
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healIntervention}]}) {
     /if (${Me.SpellReady[${healIntervention}]}) {
-     /call core_cast "${healIntervention}" 0 ${WorstHurt} CheckHP.${Me.Class.ShortName}
+     /call core_cast "${healIntervention}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
       /goto :loopheal
     } 
   }
@@ -236,10 +236,10 @@ sub check_heal_group_SHM()
   | Single Heals
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healMain}]} || ${Me.SpellReady[${healReckless}]})) {
       /if (${Me.SpellReady[${healMain}]}) {
-        /call core_cast "${healMain}" 0 ${WorstHurt} CheckHP.${Me.Class.ShortName}
+        /call core_cast "${healMain}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
         /goto :loopheal
       } else /if (${Me.SpellReady[${healReckless}]}) {
-        /call core_cast "${healReckless}" 0 ${WorstHurt} CheckHP.${Me.Class.ShortName}
+        /call core_cast "${healReckless}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
         /goto :loopheal
       } 
   }  
@@ -247,14 +247,14 @@ sub check_heal_group_SHM()
 	| check for personal debuffs
 	/if (${switchHealCure} && ${Debuff.Count}) {
 		| AA Radient Cure SELF ONLY 100' range 1 min
-		/if (${Me.AltAbilityReady[Radiant Cure]} && (${Debuff.Diseased} || ${Debuff.Poisoned} || ${Debuff.Cursed})) /call core_cast "Radiant Cure" alt ${Me.ID} 
+		/if (${Me.AltAbilityReady[Radiant Cure]} && (${Debuff.Diseased} || ${Debuff.Poisoned} || ${Debuff.Cursed})) /call core_cast "Radiant Cure" alt ${Me.ID} FALSE
 		| AA Purified Spirits SELF ONLY 0' range 2 min
-		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) /call core_cast "Purified Spirits" alt ${Me.ID} 
+		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) /call core_cast "Purified Spirits" alt ${Me.ID} FALSE
 	}  
   
  	
   /if ( ${Me.PctHPs} < ${SHMPoint}*.${tmpHealOverride} && !${Me.Song[${healGroupHot}].ID} && ${Me.SpellReady[${healGroupHot}]} ) {
-    /call core_cast "${healGroupHot}" 0 ${Me.ID}
+    /call core_cast "${healGroupHot}" 0 ${Me.ID} FALSE
   }
   
   /if (${Me.CombatState.Equal[COMBAT]} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) /call cast_surge_heal
@@ -282,11 +282,11 @@ sub check_heal_XTarget_SHM()
     /if (${Spawn[${Me.XTarget[${_count}].ID}].ID} && (${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} || ${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].CleanName}]}) && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
 			/if (${Spawn[${Me.XTarget[${_count}].ID}].Distance} <= ${Spell[${healMain}].MyRange} && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healMain}]} || ${Me.SpellReady[${healIntervention}]} && || ${Me.SpellReady[${healReckless}]})) {
         /if (${Me.SpellReady[${healMain}]}) {
-          /call core_cast "${healMain}" 0 ${Me.XTarget[${_count}].ID} checkHP.${Me.Class.ShortName}
+          /call core_cast "${healMain}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
         } else /if (${Me.SpellReady[${healIntervention}]}) {
-          /call core_cast "${healIntervention}" 0 ${Me.XTarget[${_count}].ID} checkHP.${Me.Class.ShortName}
+          /call core_cast "${healIntervention}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
         } else /if (${Me.SpellReady[${healReckless}]}) {
-          /call core_cast "${healReckless}" 0 ${Me.XTarget[${_count}].ID} checkHP.${Me.Class.ShortName}
+          /call core_cast "${healReckless}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
         }
       }
     }
@@ -362,7 +362,7 @@ sub cast_surge_heal()
  *	INI: 
  *  NOTE: 
  ***|
-sub checkHP.SHM()
+sub checkHP_SHM()
 	/if (${HealList.Find[${Me.Casting}]}) {
 		/if (${Target.PctHPs} >= 90) {
  | VOUT Interrupting ${Me.Casting} because ${Target.CleanName} is safe now.
