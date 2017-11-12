@@ -9,6 +9,25 @@
  ***|
 
 
+20171112
+- declare.inc undefined local variable (_verbage) in /heal switch. it has a purpose now
+- class.clr.inc 
+  -- leaving /heal xtarget would create a NULLPoint undefined variable. should be sorted now
+- class.clr.inc / class.pal.inc
+  -- /clr yaulp [##] - will set the % to use yaulp
+  -- /clr yaulp - will enable/disable yaulp
+  -- toon.ini->[buffs]->spellYaulp=[name of yaulp spell you wish to use]
+  -- yaulp choice order: 
+    -- spell is set in INI and memed.
+    -- donals help from SS hardcore if you have one.
+    -- AA if you have it.
+- class.wiz.inc
+  -- changed buff validation routine. self runes now work.
+  -- timing adjustments to force twincast routine.
+  -- twincast condition available now. checks before either the AA or spell
+  
+
+
 20171111
 - cast_condition()
   -- adjusted the logic to help speed it up a bit

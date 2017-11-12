@@ -921,18 +921,22 @@ sub check_buffs_BC()
 	UPDATEHUD "BUFF: BC"	
 
 	/declare _toon int local 1
-	/declare _buff int local 
+	/declare _buff int local 0
 
 	| each toon
+	DEBUG (${_toon} <= ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]})
 	/while (${_toon} <= ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}) {
-		| ignore the rampage tank
-		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${NetBots[${NetBots.Client[${_toon}]}]}]}) /continue
+		| healers ignore the rampage tank
+		/if (${validate_class[FALSE, |CLR|PAL|DRU|SHM]}) {
+			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${NetBots[${NetBots.Client[${_toon}]}]}]}) /continue
+		}
 		DEBUG _toon ${_toon} / ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}
 		AMIDEAD
 		CHECKEXIT
 
 		| each buff
 		/for _buff 1 to ${BuffCount}
+			DEBUG _buff: ${_buff}
 			/if (!${Range.Between[1,${BuffCount}:${Int[${_buff}]}]}) /continue
 			/doevents
 			AMIDEAD
@@ -3160,17 +3164,20 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
  *	INI: [selfbuff] - doYaulp
  *  NOTE: if doYaulp is TRUE, will use at 98% manna or less.
  ***|
-sub cast_AA_yaulp()
+sub cast_yaulp()
 	DEBUGCAST ${cbug}cast_AA_yaulp()\ax
 	/if (${Me.Sitting}) /return
 	AMIDEAD
 	CHECKEXIT
-	/if (${Select[${Me.Class.ShortName},CLR]} && ${Me.ItemReady[Darkened Donal's Helm of Mourning]} && ${Select[${Me.Class.ShortName},CLR]}) {
+	
+	/if (${Bool[${spellYaulp}]} && ${Me.SpellReady[${spellYaulp}]} && ${Spell[${spellYaulp}].Stacks}) {
+		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride} || (${Me.Combat} && ${Select[${Me.Class.ShortName},PAL]})) /call core_cast "${spellYaulp}" 0 0 FALSE
+	} else /if (${Select[${Me.Class.ShortName},CLR]} && ${Me.ItemReady[Darkened Donal's Helm of Mourning]}) {
 		/if (!${Spell[Yaulp XIV Rk. II].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
-		/if (${Me.PctMana} < 98*.${tmpHealOverride}) /call core_cast "Darkened Donal's Helm of Mourning" item 0 FALSE
+		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride}) /call core_cast "Darkened Donal's Helm of Mourning" item 0 FALSE
 	} else /if (!${Me.ItemReady[Darkened Donal's Helm of Mourning]} && ${Me.AltAbilityReady[Yaulp (Lesser)]}) {
 		/if (!${Spell[Yaulp (Lesser)].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
-		/if (${Me.PctMana} < 98*.${tmpHealOverride} || (${Me.Combat} &&${Select[${Me.Class.ShortName},PAL]})) /call core_cast "Yaulp (Lesser)" alt 0 FALSE
+		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride} || (${Me.Combat} && ${Select[${Me.Class.ShortName},PAL]})) /call core_cast "Yaulp (Lesser)" alt 0 FALSE
 	}
 /return
 
@@ -5736,6 +5743,9 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Spells" "usePathosis" NULL
 	/ini "${INIClass}" "Pet" "switchHealPet" NULL
 
+	/ini "${INICore}" "hide" "hideLisdted" NULL
+
+
 	
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
@@ -6010,7 +6020,6 @@ sub check_deBuffs(int _tmpID)
 	
 	/call set_base_target_timers ${Target2Kill}
 
-	UPDATEHUD "DEBUFF"
 	/if (${Target.ID} != ${_tmpID}) /squelch /target ID ${_tmpID}
 	
 	| tash
@@ -6077,5 +6086,4 @@ sub check_deBuffs(int _tmpID)
 		}
 	}
 
-	UPDATEHUD FALSE
 /return

@@ -175,10 +175,10 @@ sub check_rune_WIZ()
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
 	/call create_timer timer_check_runes ${tCheck_Runes}
-	/if (${buff_validate[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE
-	/if (${buff_validate[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE
-	/if (${buff_validate[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE
-	/if (${buff_validate[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE
+	/if (${validate_buff[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE
+	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE
+	/if (${validate_buff[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE
+	/if (${validate_buff[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE
 	UPDATEHUD FALSE
 /return
 
@@ -253,14 +253,14 @@ sub force_twincast_WIZ()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-
+	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
+	/if (!${cast_condition[NukeTwincastCondition]}) /return
 	/if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
 		/call core_cast "${TwincastSpell}" 0 0 FALSE
 		/return
-	} else /if (!${timer_force_twincast} && !${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID} && ${cast_condition[NukeTwincastCondition]}) {
+	} else /if (!${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
 		/call core_cast "${NukeTwincast}" 0 ${Target2Kill} FALSE
 	}
-	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
 /return
 
 

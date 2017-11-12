@@ -102,7 +102,7 @@ sub disc_PAL()
 	}
 	
 	| Yaulp.. all the time!!
-	/if (!${Me.Sitting} && ${doYaulp}) /call cast_AA_yaulp
+	/if (!${Me.Sitting} && ${doYaulp}) /call cast_yaulp
 
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
@@ -338,10 +338,18 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 		/return
 	}	
 	| to Yaulp or not		
-	/if (${Bool[${_classType.Find[yaulp]}]}) {
-		/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
-		/call echos switch "Yaulp" doYaulp
-
+	 } else /if (${Bool[${_classType.Equal[yaulp]}]}) {
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			/declare _num int local ${_classVerbage}
+			/call writeINI useYaulpPct Buffs ${_num}
+			VOUT /${_bind} Yaulp Ptc ${sep} ${cinfo}${_num}\ax
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			NOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		} else {
+		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
+		 	/call echos switch "Yaulp" doYaulp 0 0
+		}
+		
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}

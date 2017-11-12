@@ -56,7 +56,7 @@ sub core_CLR()
 		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/if (!${Me.Sitting} && ${Bool[${doYaulp}]}) /call cast_AA_yaulp
+		/if (!${Me.Sitting} && ${Bool[${doYaulp}]}) /call cast_yaulp
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
@@ -99,7 +99,7 @@ sub disc_CLR()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_AA_yaulp
+	/if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_yaulp
 	/call is_target_valid ${Target2Kill}
 	/if (${isValidTarget}) {
 		/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
@@ -368,13 +368,14 @@ sub check_heal_XTarget_CLR()
 
   /for _count 1 to 13
   	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
+  	/if (!${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	UPDATEHUD "HEAL XTARGET"
 		/call check_no_cast_buffs
 		AMIDEAD
 		SIMPLEEXIT
 		/doevents
 
-    /if (${Spawn[${Me.XTarget[${_count}].ID}].ID} && (${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} || ${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].CleanName}]}) && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
+    /if (${Spawn[${Me.XTarget[${_count}].ID}].ID} && (${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} || ${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
       /if (${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} < 45*.${tmpHealOverride} && ${Me.AltAbilityReady[Burst of Life]}) {
         /call core_cast "Burst of Life" 0 ${Me.XTarget[${_count}].ID} 
       }
@@ -830,8 +831,17 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 		
 	| to Yaulp or not		
 	 } else /if (${Bool[${_classType.Equal[yaulp]}]}) {
-	 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
-	 	/call echos switch "Yaulp" doYaulp 0 0
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			/declare _num int local ${_classVerbage}
+			/call writeINI useYaulpPct Buffs ${_num}
+			VOUT /${_bind} Yaulp Ptc ${sep} ${cinfo}${_num}\ax
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			NOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		} else {
+		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
+		 	/call echos switch "Yaulp" doYaulp 0 0
+		}
+
 
 	| Veturika's Perseverance	Control	
 	} else /if (${Bool[${_classType.Equal[vp]}]}) {

@@ -228,7 +228,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 2017111
+	/declare coreBuild	 														int			outer 2017112
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -250,7 +250,6 @@ sub set_declares()
 	/call DeclareIniVar HUDTime											bool 		Common TRUE
 	/call DeclareIniVar setBroadcast								string	Common TRUE	
 
-
 	| Base Environment settings
 	/declare noInvis 																bool 		outer TRUE
 	/declare noFeigning 														bool 		outer TRUE
@@ -268,11 +267,8 @@ sub set_declares()
 	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
 	/call DeclareCoreIniVar smartasserrors					string	General TRUE
 	/call DeclareCoreIniVar forceNukeLoop						string	General FALSE
-	
-	
-	
+ 	
 	/call DeclareIniVar verbose											bool		Common TRUE
-
 		
 		|** Output Color Display 
 			Default			\ax							Black				\ab
@@ -446,7 +442,7 @@ sub set_declares()
 	/call DeclareCoreIniVar hideAllButGroup					bool		hide FALSE
 	/call DeclareCoreIniVar hideNPC									bool		hide FALSE
 	/call DeclareCoreIniVar hideLooted							bool		hide FALSE
-	/call DeclareCoreIniVar hideLisdted							bool		hide FALSE
+	/call DeclareCoreIniVar hideListed							bool		hide FALSE
 	/call DeclareCoreIniVar hideListedUnlocked			bool		hide FALSE
 	
 	
@@ -525,6 +521,7 @@ sub set_declares()
 
 	| spire control
 	/declare typeSpire															string	outer |0|1|2|3
+	/declare ${Me.Class.ShortName}spire0						int		Buffs 0
 	/call DeclareIniVar spireRaid										int 	Buffs 0
 	/call DeclareIniVar spireGroup									int 	Buffs 0
 	
@@ -664,8 +661,6 @@ sub set_declares()
 	/call DeclareIniVar switchRezEveryone 					bool 		Heal FALSE 
 	/call DeclareIniVar maxRezRange				 					int 		Heal 60 
 
-	| /if (${Select[${Me.Class.ShortName},CLR,PAL,DRU,NEC,SHM]}) {
-	| }
 	/call DeclareIniVar RezTokenList								string 	Heal |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU	
 	
 	| watch spawn stuff
@@ -970,8 +965,7 @@ sub set_declares()
   /declare shmType																string	outer |groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
   /declare warType																string	outer |spiregroup|spireraid
   /declare wizType																string	outer |forcetwincast|gather|manaburn|spiregroup|spireraid
-  
-  
+    
 	| cursor
   /declare cursorType															string	outer |auto|what|sell|keep|destroy|leave|announce|ignore|pause
 	/call DeclareIniVar switchAutoCursor						bool		Common FALSE	
@@ -1122,16 +1116,16 @@ sub declare_WIZ()
 	/call DeclareIniVar GatherSpell									string 	Spells "Quietscent Harvest"
 	/call DeclareIniVar switchGather			 					bool		Spells TRUE
 	/call DeclareIniVar GatherPercent			 					int			Spells 60
-	/call DeclareIniVar DoNuke										 	int			Spells 5
+	/call DeclareIniVar DoNuke										 	int			Spells 4
 	/call DeclareIniVar Nuke1 											string 	Spells "Cloudburst Stormstrike"
 	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
-	/call DeclareIniVar Nuke2 											string 	Spells "Claw of the Flameweaver"
+	/call DeclareIniVar Nuke2 											string 	Spells "Ethereal Rimeblast"
 	/call DeclareIniVar Nuke2Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke3 											string 	Spells "Narendi's Fire"
 	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4 											string 	Spells "Etherial Skyblaze"
 	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
-	/call DeclareIniVar Nuke5 											string 	Spells "Ethereal Rimeblast"
+	/call DeclareIniVar Nuke5 											string 	Spells FALSE
 	/call DeclareIniVar Nuke5Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke6 											string 	Spells FALSE
 	/call DeclareIniVar Nuke6Condition 							string	Spells FALSE
@@ -1428,6 +1422,8 @@ sub declare_PAL()
 	/call DeclareIniVar RampageTank									string	Heal FALSE
 	
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
+	/call DeclareIniVar spellYaulp 									string	Buffs FALSE
+	/call DeclareIniVar useYaulpPct									string	Buffs 98
 	/call DeclareIniVar DiscRest			 							string	Discs "Breather"
 	/call DeclareIniVar DiscFastRune	 							string	Discs "Repel"
 	/call DeclareIniVar DiscArmor			 							string	Discs "Armor of Ardency"
@@ -2066,13 +2062,15 @@ sub declare_CLR()
   /call DeclareIniVar useCelestialRegen						bool	  Heal TRUE
   /call DeclareIniVar healIssuance								string  Heal "Issuance of Spirit"
 	/call DeclareIniVar CRTXT												string	Heal "Celestial Regeneration (+11100HP / tic)"
-	/call DeclareIniVar 2				string	Heal FALSE
+	| /call DeclareIniVar 														string	Heal FALSE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
 	/call DeclareIniVar switchForceGroupHeal				bool		Heal FALSE
 	/call DeclareIniVar RampageTank									string	Heal FALSE
 	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
 	
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
+	/call DeclareIniVar spellYaulp 									string	Buffs FALSE
+	/call DeclareIniVar useYaulpPct									string	Buffs 98
 	/call DeclareIniVar sumWeaponSpell							string	Buffs "Hammer of	Reverence"
 	/call DeclareIniVar sumWeaponItem								string	Buffs "Hammer of	Reverence III"
 	/call DeclareIniVar AAFade											string	Buffs "Divine Peace"
@@ -3073,10 +3071,12 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
  *  NOTE:
  ***| 	
 #bind heal /heal
-sub Bind_heal(string _healType, int _healInt)
+sub Bind_heal(string _healType, string _verbage)
 	DEBUG ${cbug}Bind_heal(type: ${_healType})\ax
 	/declare _count		int local
 	/declare _bind string local heal
+	/declare _listout string local
+	/declare _sep bool local
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3092,7 +3092,8 @@ sub Bind_heal(string _healType, int _healInt)
 	| can I do this heal
 	/if (${Bool[${_healType.Equal[self]}]}) {
 		/if (${validate_class[TRUE, |CLR|SHM|DRU]}) {
-			VOUT CLR,DRU,SHM use /heal group only
+			VOUT Heal Classes [\a-wCLR,DRU,SHM\ax] use /heal group. Not /heal self.
+			/call writeINI switchHealSelf Heal FALSE
 			/return
 		}
 	} else /if (${Bool[${_healType.Equal[group]}]}) {
@@ -3116,16 +3117,14 @@ sub Bind_heal(string _healType, int _healInt)
 		/next _count
 	| heal override
 	} else /if (${_healType.Equal[override]}) {
-		/if (${Range.Between[0,99:${Int[${_healInt}]}]}) {
-			/call writeINI HealOverride Heal ${_healInt} 
-			VOUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_healInt},${_healInt},${odisabled}]}
+		/if (${Range.Between[0,99:${Int[${_verbage}]}]}) {
+			/call writeINI HealOverride Heal ${_verbage} 
+			VOUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_verbage},${_verbage},${odisabled}]}
 		} else {
 			VOUT /heal override [${cinfo}${HealOverride}\ax] allowable range ${cinfo}0 - 99\ax
 		}
 	}
-	/if (${Select[${Me.Class.ShortName},DRU,CLR,SHM]} && ${_healType.Equal[self]}) VOUT Heal Classes [CLR,DRU,SHM] use /heal group. Not /heal self.
-	/declare _listout string local
-	/declare _sep bool local
+
 	/for _count 1 to ${healType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${healType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
@@ -4419,7 +4418,7 @@ sub Event_send(string line, string _sender, string _location)
  ***|
 #bind setMovementControls /movement
 sub Bind_setMovementControls(string _movementType, string _verbage)
-	DEBUG ${cbug}Bind_setMovementControls(type:${_mcType}, verbage:${_mcVerbage})\ax
+	DEBUG ${cbug}Bind_setMovementControls(type:${_movementType}, verbage:${_verbage})\ax
 
 	/declare _count int local 0
 	/declare _bind string local movement

@@ -16,7 +16,7 @@
 	Required Plugins:	
 	- MQ2Cast
 	- MQ2EQBC
-	- EQBCS2
+	- EQBCS
 	- MQ2Exchange
 	- MQ2MoveUtils
 	- MQ2Netbots
@@ -73,6 +73,7 @@
 	Tab spaces set to 2 if you care.
 	
 	Credits/Inspiration
+		- cast pre-condition added for nukes, dots and a few other things. inspired by raiddruid mac.
 		- ultraedit v24 wordfile - http://www.macroquest2.com/phpBB3/viewtopic.php?f=46&t=19321&hilit=ultraedit (adapted and updated to current MQ2)
 		- NinjaADVLoot - 	is the core of the do_loot loot function used with VERY heavy mods/butchering. http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=19707
 		- whoHas.mac [/whohas] - http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=20212 (this is a genius idea)
