@@ -72,7 +72,7 @@ sub core_SHM()
 		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},HEAL]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		| /if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${is_target_valid[${Target2Kill}]}) {
 			/call check_deBuffs ${Target2Kill}
@@ -91,10 +91,8 @@ sub core_SHM()
 		/call check_cani
 		/call use_mod_rod
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
-	}
+	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 
@@ -158,12 +156,13 @@ sub check_cani()
  *  NOTE: 
  ***|
 sub check_heal_group_SHM()
-	DEBUGCLASS ${cbug}checkHealGroup.SHM()\ax
+	DEBUG ${cbug}check_heal_group_SHM()\ax
 
 	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
 	/declare _count	int	local 0
 
 	:loopheal
+	DEBUG :loopheal
 	CHECKEXIT
 	/doevents
 	CHECKTIE
@@ -185,6 +184,7 @@ sub check_heal_group_SHM()
 
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
+			DEBUG _count ${_count} ${Group.Member[${_count}].DisplayName}
 			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 			AMIDEAD
 
@@ -192,6 +192,7 @@ sub check_heal_group_SHM()
 				/varset WorstHurt ${Group.Member[${_count}].ID}
 				/varset WorstHp ${Group.Member[${_count}].PctHPs}
 				/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
+				DEBUG WorstHurt: ${Group.Member[${_count}].DisplayName}[${Group.Member[${_count}].ID}] ${Group.Member[${_count}].PctHPs}% - hp check loop
 			} 
 	    /if (!${Spawn[pc id ${Group.Member[${_count}].ID}].Dead} && (${Group.Member[${_count}].PctHPs}<85 || ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) && ${Group.Member[${_count}].PctHPs} > ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7 && ${Group.Member[${_count}].Distance} <= ${Spell[${healWholeGroup}].AERange}) {
 	      /varcalc MinorHurt ${MinorHurt}+1
@@ -201,7 +202,8 @@ sub check_heal_group_SHM()
 	    /doevents
 	  /next _count
 	}
-
+	
+  | check for surge
 	/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) /call cast_surge_heal
 	
 	| Group regenerations. Use all the time. Don't care if hurt or not.
@@ -211,28 +213,30 @@ sub check_heal_group_SHM()
 	  }
 	}
   
+  | /if ((!${MajorHurt} && !${MinorHurt}) || ${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]} ) /return
 
-  /if ((!${MajorHurt} && !${MinorHurt}) || ${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]} ) /return
+
 	/call check_no_cast_buffs
- 
-  /if (${Math.Calc[${MajorHurt}+${MinorHurt}]} >= 3 && ${Me.SpellReady[${healWholeGroup}]}) {
-    /call core_cast "${healWholeGroup}" 0 ${Me.ID} checkHP_${Me.Class.ShortName}
-    /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
-  } 
   
-  /if ( ${MajorHurt} >= 3 && ${Me.AltAbilityReady[Call of the Ancients]}) {
+	| group HoT
+	/if (${useGroupHeal} && ${Math.Calc[${MajorHurt}+${MinorHurt}]} >= 3 && ${Me.SpellReady[${healWholeGroup}]}) {
+		/call core_cast "${healWholeGroup}" 0 ${Me.ID} checkHP_${Me.Class.ShortName}
+		/if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
+	} 
+  
+  | stationary ward heal
+  /if (${MajorHurt} >= 3 && ${Me.AltAbilityReady[Call of the Ancients]}) {
     /call core_cast "Call of the Ancients" alt ${Me.ID} FALSE
   } 
-  
- | Intervention Heals 
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healIntervention}]}) {
-    /if (${Me.SpellReady[${healIntervention}]}) {
-     /call core_cast "${healIntervention}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
-      /goto :loopheal
-    } 
-  }
-    
-  
+
+	| Intervention Heal
+	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}*.4 && ${Me.SpellReady[${healIntervention}]}) {
+		/if (${Me.SpellReady[${healIntervention}]}) {
+			/call core_cast "${healIntervention}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
+			/goto :loopheal
+		} 
+	}
+
   | Single Heals
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healMain}]} || ${Me.SpellReady[${healReckless}]})) {
       /if (${Me.SpellReady[${healMain}]}) {
@@ -252,11 +256,7 @@ sub check_heal_group_SHM()
 		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) /call core_cast "Purified Spirits" alt ${Me.ID} FALSE
 	}  
   
- 	
-  /if ( ${Me.PctHPs} < ${SHMPoint}*.${tmpHealOverride} && !${Me.Song[${healGroupHot}].ID} && ${Me.SpellReady[${healGroupHot}]} ) {
-    /call core_cast "${healGroupHot}" 0 ${Me.ID} FALSE
-  }
-  
+  | check for surge
   /if (${Me.CombatState.Equal[COMBAT]} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) /call cast_surge_heal
 
 /return

@@ -9,6 +9,20 @@
  ***|
 
 
+
+20171116
+- events.inc updated for death checks
+- cast_rez()
+  -- will remove touch of divine if it's there.
+  -- adjusted the ECHOCHANNEL location so wont spam if not really casting spell or it gets inturrupted
+- class.clr.inc
+  -- dots added. priority will still be on healing
+- class.shm.inc
+  -- there was a check preventing single healing when there was less then 2 people hurt. the check is no more. the check was a lie.
+- all classes
+  -- combat loop exit check adjusted. priority set to automatic toons. should respond a little better.
+
+
 20171112
 - declare.inc undefined local variable (_verbage) in /heal switch. it has a purpose now
 - class.clr.inc 
@@ -19,13 +33,12 @@
   -- toon.ini->[buffs]->spellYaulp=[name of yaulp spell you wish to use]
   -- yaulp choice order: 
     -- spell is set in INI and memed.
-    -- donals help from SS hardcore if you have one.
+    -- donals helm from SS hardcore if you have one.
     -- AA if you have it.
 - class.wiz.inc
   -- changed buff validation routine. self runes now work.
   -- timing adjustments to force twincast routine.
   -- twincast condition available now. checks before either the AA or spell
-  
 
 
 20171111

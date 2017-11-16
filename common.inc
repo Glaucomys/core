@@ -553,8 +553,6 @@ sub cast_summon_weapons()
 		}
 
 	}
-		
-
 /return
 
 
@@ -2093,7 +2091,7 @@ sub use_glyph()
  *  NOTE2: How about we quit making changes to this....
  ***|
 sub core_cast(string _spell, string _type, int _tmpID, string _sub)
-	DEBUG ${cbug}core_cast(\ax spell:${cinfo}${_spell}\ax, type:${cinfo}${_type}\ax, ID:${cinfo}${_tmpID}\ax, sub:${cinfo}${_sub}\ax ${cbug})\ax
+	DEBUGCAST ${cbug}core_cast(\ax spell:${cinfo}${_spell}\ax, type:${cinfo}${_type}\ax, ID:${cinfo}${_tmpID}\ax, sub:${cinfo}${_sub}\ax ${cbug})\ax
 	/doevents
 	AMIDEAD
 	/declare _bail string local FALSE
@@ -2123,7 +2121,6 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 			/varset _type disc
 		}
 	}
-
 	
 	| READY CHECKS
 	| dead?
@@ -2154,13 +2151,13 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	/if (!${Select[${_type},alt,item,disc]} && !${Spell[${_spell}].Stacks} && ${Target.ID} == ${Me.ID}) /varset _bail does_not_stack
 
 	| bailing on this spell. its either out of range, immune or something..
-	DEBUGCAST ${owarning} ${sep} _bail = ${_bail} for ${_spell}
+	DEBUGCAST ${owarning} ${sep} _bail = ${_bail} for ${_spell} type ${_type}
 	/if (${Bool[${_bail}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /goto :cooldown
 	| /if (${Bool[${_bail}]}) /goto :cooldown
 	
 	| do not have the spell in the book... seriously why do we even try
 	/if (!${Select[${_type},alt,item,disc]} && !${Bool[${Me.Book[${_spell}]}]} && !${Me.AltAbilityReady[${_spell}]}) {
-	DEBUGCAST ${owarning} ${sep} _bail = ${_bail} for ${_spell}
+		DEBUGCAST ${owarning} ${sep} _bail = ${_bail} for ${_spell} type ${_type}
 		/varset _bail do_not_have
 		/if (${Bool[${_bail}]}) /goto :cooldown
 	}
@@ -2580,12 +2577,12 @@ sub cast_nuke_GoM(int _tmpID)
 	/if (${Me.SpellReady[${GoMNuke}]}) {
 		/target ID ${_tmpID}
 		/if (!${cast_condition[GoMNukeCondition]}) /return
-		VOUT Dichotomic ${sep} ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+		VOUT GoM ${sep} ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke}" gem${Me.Gem[${GoMNuke}]} -targetid|${_tmpID}
 	} else /if (${Me.SpellReady[${GoMNuke2}]}) {
 		/target ID ${_tmpID}
 		/if (!${cast_condition[GoMNuke2Condition]}) /return
-		VOUT Dichotomic Backup ${sep} ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+		VOUT GoM Backup ${sep} ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke2}" gem${Me.Gem[${GoMNuke2}]} -targetid|${_tmpID}
 	}
 /return
@@ -3481,6 +3478,7 @@ sub cast_rez(int _tmpID, string _rezAA)
 	DEBUGCAST ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
 	DEBUGREZ ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
 	AMIDEAD
+	CHECKEXIT
 		
 	/if (${timer_corpse_${_tmpID}}) /return
 
@@ -3511,6 +3509,7 @@ sub cast_rez(int _tmpID, string _rezAA)
 	
 		/if (${Select[${castReturn},CAST_SUCCESS]}) { 
 			/call create_timer timer_corpse_${_tmpID} ${tRez_Retry}
+			ECHOCHANNEL ${Me.Class.ShortName} Rez: ${Spawn[${_tmpID}].DisplayName}
 		} else  /if (${Select[${castReturn},CAST_CANCELLED,CAST_INTERRUPTED]}) {
 			/call create_timer timer_corpse_${_tmpID} 7s
 		} else {
@@ -3522,7 +3521,6 @@ sub cast_rez(int _tmpID, string _rezAA)
 				/call create_timer timer_corpse_${_tmpID} 45s
 			}
 		}
-		ECHOCHANNEL ${Me.Class.ShortName} Rez: ${Spawn[${_tmpID}].DisplayName}
 
 
 	}

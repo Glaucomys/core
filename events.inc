@@ -1152,7 +1152,6 @@ sub Event_PrimeCloud(string Line, string Person)
 	/if (!${coreEventsInc}) /return
   /echo ${Line.Arg[1]} - ${Line.Arg[2]} - ${Line.Arg[3]} - ${Line.Arg[4]} - ${Line.Arg[5]} - ${Line.Arg[6]} - ${Line.Arg[7]} - ${Line.Arg[8]} - ${Line.Arg[9]}
   /echo ${Line}
-|  /if (${Line.Find[Mayax]}) /echo I needs to KITE!!
   /if (${Line.Find[${Me.CleanName}]}) {
     /bc I HAVE TO KITE!!!
     /if (!${coreEventsInc}) /return
@@ -1783,7 +1782,7 @@ sub MoveToSpot()
  ***|
 sub CureDamselofDecay()
   /if (!${coreEventsInc}) /return
-  ISDEAD
+  AMIDEAD
 	| DPS classes BST,RNG,MON,ROG,ENC,WIZ,MAG,NEC,SHD,PAL,BRD,BST
 	/if (${Select[${Me.Class.ShortName},BST,RNG,MON,ROG,ENC,WIZ,MAG,NEC,SHD,PAL,BRD,BST]} && (${Me.Buff[Withering Physicality XIII].ID} || ${Me.Buff[Withering Limbs XIII].ID})) {
 		/if (${Me.Buff[Withering Physicality XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item

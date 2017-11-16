@@ -45,10 +45,12 @@ sub core_CLR()
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},HEAL]}) {
 		| /if (${switchLockMA}) /call lock_ma
@@ -56,8 +58,8 @@ sub core_CLR()
 		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/if (!${Me.Sitting} && ${Bool[${doYaulp}]}) /call cast_yaulp
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
 		/if (${doclickItem}) /call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
@@ -99,11 +101,21 @@ sub disc_CLR()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_yaulp
-	/call is_target_valid ${Target2Kill}
-	/if (${isValidTarget}) {
+	/if (!${Me.Sitting} && ${Bool[${doYaulp}]}) /call cast_yaulp
+
+	| /if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_yaulp
+	/if (${is_target_valid[${Target2Kill}]}) {
 		/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+
+
+	| stuff to add in!
+	| aa undead nuke
+
+
 	}
+	
+	
+	
 /return
 
 
@@ -154,12 +166,14 @@ sub check_heal_group_CLR()
 	
 
 	| Does the control toon need healing?
-	/if (!${Bool[${Group.Member[${toonControl}]}]} && ${Bool[${toonControl}]} && ${toonControlProtect} && (${Bool[${RampageTank}]} && ${RampageTank.NotEqual[${toonControl}]})) {
-		/if (!${Spawn[${toonControl}].Dead} && ${Bool[${Spawn[${toonControl}]}]} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
-			/varset WorstHurt ${Spawn[${toonControl}].ID}
-			/varset WorstHP ${Spawn[${toonControl}].PctHPs}
-			/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
-		} 
+	/if (${toonControlProtect} && ${Bool[${toonControl}]} && ${Bool[${Spawn[${toonControl}]}]}) {
+		/if (!${Bool[${Group.Member[${toonControl}]}]} && ${RampageTank.NotEqual[${toonControl}]}) {
+			/if (!${Spawn[${toonControl}].Dead} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
+				/varset WorstHurt ${Spawn[${toonControl}].ID}
+				/varset WorstHP ${Spawn[${toonControl}].PctHPs}
+				/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
+			} 
+		}
 	}
 
 	| Do group members need healing? ${Group.Member[${_count}].State.Equal[HOVER]}
@@ -193,7 +207,7 @@ sub check_heal_group_CLR()
 	
 	| Regen Heals 
 	| Use all the time in combat. Don't care if hurt or not.
- 	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) {
+ 	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1 && !${SafeZone}) {
  	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
 	 		/call core_cast "Celestial Regeneration" alt 0 FALSE
 	  } else /if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {

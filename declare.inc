@@ -228,7 +228,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 2017112
+	/declare coreBuild	 														int			outer 2017116
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -1791,7 +1791,7 @@ sub declare_SHM()
 	/call DeclareIniVar spellMalo 									string 	Spells FALSE
 	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar spellSlow										string 	Spells FALSE
-	/call DeclareIniVar spellAESlow 								string 	Spells "Srasku's Drowse"
+	| /call DeclareIniVar spellAESlow 								string 	Spells "Srasku's Drowse"
 	
 	/call DeclareIniVar TC1									 				string	Spells "Glacial Gift"	
 	/call DeclareIniVar TC2									 				string	Spells "Frigid Gift"
@@ -2088,6 +2088,19 @@ sub declare_CLR()
 	/call DeclareIniVar Nuke3Condition 							string	Spells FALSE
 	/call DeclareIniVar Nuke4					 							string	Spells FALSE
 	/call DeclareIniVar Nuke4Condition 							string	Spells FALSE
+	/call DeclareIniVar DoDoT								 				int			Spells 0
+	/call DeclareIniVar DoT1							 					string	Spells FALSE
+	/call DeclareIniVar DoT1chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT1Condition								string	Spells FALSE
+	/call DeclareIniVar DoT2							 					string	Spells FALSE
+	/call DeclareIniVar DoT2chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT2Condition								string	Spells FALSE
+	/call DeclareIniVar DoT3							 					string	Spells FALSE
+	/call DeclareIniVar DoT3chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT3Condition								string	Spells FALSE
+	/call DeclareIniVar DoT4							 					string	Spells FALSE
+	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
+	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 /return	
 
 
@@ -2244,11 +2257,11 @@ sub Event_EQBC(string line, string _sender, string _cmd)
   /if (${_cmd.Equal[lesson]} && ${Me.AltAbilityReady[Lesson of the Devoted]}) /call core_cast "Lesson of the Devoted" alt 0 FALSE
   
 	| commands to control all assist targets.  
-  /if (${_cmd.Equal[sma1]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
+  /if (${_cmd.Equal[sma1]} && !${switchPull}) {
 		/smartma 1
-  } else /if (${_cmd.Equal[sma2]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
+  } else /if (${_cmd.Equal[sma2]} && !${switchPull}) {
 		/smartma 2
-  } else /if (${_cmd.Equal[smag]} && !${switchPull} && !${Select[${Me.Class.ShortName},CLR]}) {
+  } else /if (${_cmd.Equal[smag]} && !${switchPull}) {
 		/smartma G
 	} else /if (${_cmd.Equal[smax]}) {
 		/smartma X
@@ -2833,7 +2846,7 @@ sub Bind_smartMA(string _assist)
 	/call clear_combat
 
 	| Raid Assist 1
-	/if ((${_assist.Equal[1]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
+	/if ((${_assist.Equal[1]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
 		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
  		/if (!${useSmartAssist1}) /call writeINI useSmartAssist1 Common TRUE
 		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
@@ -2842,7 +2855,7 @@ sub Bind_smartMA(string _assist)
 		VOUT Setting Assist ${sep} ${cinfo}Raid 1\ax
 
 	| Raid Assist 2
-	} else /if ((${_assist.Equal[2]} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
+	} else /if ((${_assist.Equal[2]} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
 		DEBUG ((${_assist} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
  		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
 		/if (!${useSmartAssist2}) /call writeINI useSmartAssist2 Common TRUE
@@ -2851,8 +2864,8 @@ sub Bind_smartMA(string _assist)
 		VOUT Setting Assist ${sep} ${cinfo}Raid 2\ax
 
 	| NO Assist
-	} else /if ((${_assist.Equal[X]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${Select[${Me.Class.ShortName},CLR]} || ${switchPull}) {
-		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${Select[${Me.Class.ShortName},CLR]} || ${switchPull})
+	} else /if ((${_assist.Equal[X]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
+		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
  		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
 		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
@@ -2862,8 +2875,8 @@ sub Bind_smartMA(string _assist)
 		VOUT Setting Assist ${sep} ${odisabled}\ax
 
 	| Goup Main Assist
-	} else /if ((${_assist.Equal[G]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
-		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
+	} else /if ((${_assist.Equal[G]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
+		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
  		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
 		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 		/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
