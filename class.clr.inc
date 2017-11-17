@@ -106,16 +106,8 @@ sub disc_CLR()
 	| /if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_yaulp
 	/if (${is_target_valid[${Target2Kill}]}) {
 		/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-
-
-	| stuff to add in!
-	| aa undead nuke
-
-
+		/if (${Me.AltAbilityReady[Turn Undead]} && ${Spawn[${Target2Kill}].Body.Name.Equal[Undead]} && !${Raid.Members}) /call core_cast "Turn Undead" alt ${Target2Kill} FALSE
 	}
-	
-	
-	
 /return
 
 

@@ -2535,7 +2535,7 @@ sub set_combat(str _mode)
 		
 	/if (${Select[${_mode},MELEE]}) {
 		/if (!${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
-		/if (${coreAuto} && ${Bool[${Target.DSed}]} && ${stoponDS}) {
+		/if (${coreAuto} && ${Bool[${Target.DSed}]} && ${stoponDS} && !${switchAgro}) {
 			/call set_stop FALSE
 			/call clear_combat
 		} else /if (!${Me.Combat}) {
@@ -5225,8 +5225,8 @@ sub cast_challenge(int _tmpID)
  *  NOTE: will sort silver subscriptions as well.
  ***|
 sub validate_buff(string _type, string _inisub, string _spell)
-	DEBUG ${cbug}validate_buff(type:${_type}, ini:${_inisub}, name:${_spell})\ax
-	DEBUG ${_spell} - ${${_spell}}
+	SDEBUG ${cbug}validate_buff(type:${_type}, ini:${_inisub}, name:${_spell})\ax
+	SDEBUG ${_spell} - ${${_spell}}
 
 	| check spell
 	/if (${_type.Equal[spell]}) {
@@ -5772,6 +5772,7 @@ sub validate_class(bool _error, string _class)
 	/declare _count int local 0
 
 	/for _count 1 to ${_class.Count[|]}
+		AMIDEAD
 		DEBUG _count:${_count}, arg: ${_class.Arg[${_count},|]}
 		/if (${Me.Class.ShortName.Upper.Equal[${_class.Arg[${_count},|]}]}) {
 			/varset _pass TRUE
@@ -5797,6 +5798,7 @@ sub validate_plugin(bool _error, string _plugin)
 	/declare _count int local 0
 
 	/for _count 1 to ${_plugin.Count[|]}
+		AMIDEAD
 		DEBUG _count:${_plugin}, arg: ${_plugin.Arg[${_count},|]}
 		/if (${Bool[${Plugin[${_plugin.Arg[${_count},|]}]}]}) {
 			/varcalc _plugcount ${_plugcount}+1

@@ -80,7 +80,7 @@ sub core_SHM()
 			/if (${DoNuke}) /call cast_nuke
 			/if (${doclickItem}) /call doclickItem
 			/call send_pet
-			/call clickDPS_${Me.Class.ShortName}
+			/call click_DPS_${Me.Class.ShortName}
 			/call disc_${Me.Class.ShortName}
 		}
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call check_pet
@@ -118,7 +118,7 @@ sub disc_SHM()
  *	INI: 
  *  NOTE: 
  ***|
-sub clickDPS_SHM()
+sub click_DPS_SHM()
 	DEBUGCLASS ${cbug}clickDPS.${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	/doevents

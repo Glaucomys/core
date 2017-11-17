@@ -86,7 +86,7 @@ sub Bind_hud(string _hcType, string _hcVerbage)
 sub HUDUpdate()
 	DEBUG ${cbug}HUDUpdate()\ax
 	NOUT This will only take a second ${sep}
-	/ini ".\..\MQ2HUD.ini" "core" NULL NULL
+	| /ini ".\..\MQ2HUD.ini" "core" NULL NULL
 	/delay 1s
 	
 	| Build

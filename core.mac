@@ -12,7 +12,6 @@
 	
 	/invoke ${Macro.Undeclared}
 	
-	
 	Required Plugins:	
 	- MQ2Cast
 	- MQ2EQBC
@@ -21,7 +20,6 @@
 	- MQ2MoveUtils
 	- MQ2Netbots
 	- MQ2Debuffs
-	
 		
 	Files:
 	- core.mac									You are looking at it
@@ -41,7 +39,6 @@
 	- core.SERVER.CLS.NAME.ini	Character specific INI settings.
 	- core.augmentdump.ini			list of all augments by toon.
 	
-	
 	Naming Conventions:
 	Local/Private Variables: _camelCasing						eg. _loopOutside, _count
 	Outer/Global Variables: camelCasing							eg. Nuke1 or healIntervention1
@@ -51,7 +48,6 @@
 	Functions [class specific]: name_SHORTNAME()  	eg. disc_WAR()
 	/goto :somethingmeaningful 											eg. :waitforrezbox
 	DEFINE: ALLUPPERCASE 														eg. #define AMIDEAD
-	
 		
 	Common Used Variables:
 	coreAuto						bool			automatic or manual Mode

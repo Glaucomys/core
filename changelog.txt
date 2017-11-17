@@ -9,6 +9,16 @@
  ***|
 
 
+20171117
+- class.clr.inc
+  -- added in the cleris AA Turn  Undead nuke. requires an undead target and not be in a raid.
+- class.mag.inc
+  -- typo in switchHealPet
+- class.rog.inc
+  -- typo in initial declare for DiscShadowHunter
+- class.shm.inc
+  -- clickDPS_SHM() -> sub click_DPS_SHM()	
+
 
 20171116
 - events.inc updated for death checks

@@ -228,7 +228,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 2017116
+	/declare coreBuild	 														int			outer 20171117
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -321,6 +321,16 @@ sub set_declares()
 	/declare wikiname																string outer [\a-wName\ax]
 	/declare wikispire															string outer [\ar0\ax\a-w|1|2|3\ax]
 	/declare wikipct																string outer [\a-w1,99\ax]
+
+	| echo switches
+	/call DeclareCoreIniVar echoAlt									string	Echo TRUE
+	/call DeclareCoreIniVar echoSpell								string	Echo TRUE
+	/call DeclareCoreIniVar echoDisc								string	Echo TRUE
+	/call DeclareCoreIniVar echoItem								string	Echo TRUE
+	/call DeclareCoreIniVar echoMelee								string	Echo TRUE
+
+
+
 
  	 	
 	| lists for .. you know..lists and stuff.
@@ -510,7 +520,7 @@ sub set_declares()
 	/call DeclareIniVar RangeItem										string	Common FALSE		
 	/call DeclareIniVar RangeItemSummon							string	Common FALSE
 	/call DeclareIniVar autoInventoryItem						string	Common "|Summoned: Giant Modulation Shard"
-	/call DeclareIniVar stoponDS										bool		Common TRUE		
+	/call DeclareIniVar stoponDS										bool		Common FALSE		
 	/call DeclareIniVar useGlyph										string	Common "Glyph of the Cataclysm"
 	/call DeclareIniVar ResidentMage								string	Common |FALSE|FALSE
 	/call DeclareIniVar ResidentrDruid							string	Common |FALSE|FALSE
@@ -1979,7 +1989,7 @@ sub declare_ROG()
 	/call DeclareIniVar DiscHiddenBlade							string 	Discs "Hidden Blade"	
 	/call DeclareIniVar DiscBladePoison							string 	Discs "Reefcrawler Blade"	
 	/call DeclareIniVar DiscSneakAttack							string 	Discs "Daggergash"	
-	/call DeclareIniVar DiscShadowHunter						string 	Discs "Shadow-Hunters Dagger"	
+	/call DeclareIniVar DiscShadowHunter						string 	Discs "Shadow-Hunter's Dagger"	
 	/call DeclareIniVar DiscDisassociative					string 	Discs "Disassociative Puncture"	
 
 	| disable for toast

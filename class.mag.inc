@@ -41,14 +41,14 @@ sub core_MAG()
 		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
 		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchPcSwarm}) /call cast_nuke_servant
 		/if (${useRain}) /call cast_nuke_rain		
 		/if (${doclickItem}) /call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
-		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {

@@ -17,7 +17,6 @@ sub core_WAR()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
 
 	:killtarget
@@ -34,6 +33,11 @@ sub core_WAR()
 		/call stick_to_target
 		/if (${doclickItem}) /call click_item
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/call disc_${Me.Class.ShortName}
+		/call click_BP
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${doclickItem}) /call click_item
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
@@ -116,13 +120,10 @@ sub get_agro_WAR()
 sub patch_heal_WAR()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
-
 	CHECKEXIT
 	CHECKTIE
 	/if (${Me.CombatAbilityReady[${DiscStoutDefense}]} && ${Me.CurrentEndurance} > ${Spell[${DiscStoutDefense}].EnduranceCost} && !${Raid.Members} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscStoutDefense}" disc 0 FALSE
-	
 	/if (${Me.PctHPs} <= ${PanicHPPCT}*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscNoTime}]} && ${Me.CurrentEndurance} >= ${Spell[${DiscNoTime}].EnduranceCost}) /call core_cast "${DiscNoTime}" disc 0 FALSE
-	
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 /return
@@ -138,7 +139,6 @@ sub patch_heal_WAR()
 sub click_DPS_WAR()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
-
 	/doevents
 	/call click_horn_of_unity 	
 /return
@@ -170,12 +170,9 @@ sub synergy_WAR()
 	}
 	/if (${Me.AltAbilityReady[${AAWarlordsTenacity}]}) /call core_cast "${AAWarlordsTenacity}" alt 0 FALSE
 	/if (${Me.AltAbilityReady[${AAWarlordsBravery}]}) /call core_cast "${AAWarlordsBravery}" alt 0 FALSE
-	
+
 	/call cast_AA_spire
-	
 	/if (${Me.CombatAbilityReady[${DiscFlash}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFlash}].EnduranceCost}) /call core_cast "${DiscFlash}" disc 0 FALSE
-
-
 	/call use_glyph
 	/call synergy_click_Circle
 	/if (${doclickItemBurn}) /call click_item_burn
