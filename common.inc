@@ -1328,7 +1328,7 @@ sub set_xtarget()
 		DEBUG Setting Protected Out of Group Players ${cinfo}${ProtectOutsideGroup}\ax
 		/for _x 1 to ${ProtectOutsideGroup.Count[|]}
 			DEBUG x:${_x} b:${_b} count:${ProtectOutsideGroup.Count[|]} spawn:${ProtectOutsideGroup.Arg[${_x},|]}
-			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /goto :exitoutside
+			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /continue
 			/if (${_b} > 13 || !${Bool[${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}]}]} || ${Group.Member[${ProtectOutsideGroup.Arg[${_x},|]}].ID}) /continue
 			/if (${Bool[${Me.XTarget[${ProtectOutsideGroup.Arg[${_x},|]}]}]}) {
 				/varcalc _b ${_b}+1
@@ -5225,8 +5225,7 @@ sub cast_challenge(int _tmpID)
  *  NOTE: will sort silver subscriptions as well.
  ***|
 sub validate_buff(string _type, string _inisub, string _spell)
-	SDEBUG ${cbug}validate_buff(type:${_type}, ini:${_inisub}, name:${_spell})\ax
-	SDEBUG ${_spell} - ${${_spell}}
+	DEBUG ${cbug}validate_buff(type:${_type}, ini:${_inisub}, name:${_spell})\ax
 
 	| check spell
 	/if (${_type.Equal[spell]}) {
