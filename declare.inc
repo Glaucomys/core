@@ -9,7 +9,7 @@
 
 
 |***
- *	DES: adjust the related ini
+ *	DES: adjust the related class ini
  *	USE: /call writeINI [variable] [INISection] [value]
  *	INI: 
  *  NOTE: 
@@ -19,7 +19,22 @@ sub writeINI(string _varName, string _section, string _value)
 	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
 		/varset ${_varName} ${_value}
 	 	/ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
-	 	| /ini ${INIClass} ${_section} ${_varName} "${_value}"
+	}
+/return
+
+
+
+|***
+ *	DES: adjust the related Core.INI
+ *	USE: /call writeCoreINI [variable] [INISection] [value]
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub writeCoreINI(string _varName, string _section, string _value)
+	DEBUG ${cbug}writeCoreINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
+	/if (${Defined[${_varName}]} && ${Ini[${INICore},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
+		/varset ${_varName} ${_value}
+	 	/ini "${INICore}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
 	}
 /return
 
@@ -74,7 +89,7 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
 sub DeclareIniVar(string _name, string _type, string _section, string _value)
 	| /echo \atDeclareIniVar\ax(_name:\a-w${_name}\ax, _type:\a-w${_type}\ax, _section:\a-w${_section}\ax, _value:\a-w${_value}\ax)
 	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]}) {
-		NOUT ${owarning} ${sep} INVALID INI SETTING/STRING [_name:${_name}/_type:${_type}/_section:${_section}] --\ax
+		VOUT ${owarning} ${sep} INVALID INI SETTING/STRING [_name:${_name}/_type:${_type}/_section:${_section}] --\ax
 		/return
 	}
 	
@@ -228,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171117
+	/declare coreBuild	 														int			outer 20171119
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -267,9 +282,7 @@ sub set_declares()
 	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
 	/call DeclareCoreIniVar smartasserrors					string	General TRUE
 	/call DeclareCoreIniVar forceNukeLoop						string	General FALSE
- 	
-	/call DeclareIniVar verbose											bool		Common TRUE
-		
+ 			
 		|** Output Color Display 
 			Default			\ax							Black				\ab
 			Blue				\au							Brown				\a-o
@@ -322,14 +335,18 @@ sub set_declares()
 	/declare wikispire															string outer [\ar0\ax\a-w|1|2|3\ax]
 	/declare wikipct																string outer [\a-w1,99\ax]
 
+
 	| echo switches
-	/call DeclareCoreIniVar echoAlt									string	Echo TRUE
-	/call DeclareCoreIniVar echoSpell								string	Echo TRUE
-	/call DeclareCoreIniVar echoDisc								string	Echo TRUE
-	/call DeclareCoreIniVar echoItem								string	Echo TRUE
-	/call DeclareCoreIniVar echoMelee								string	Echo TRUE
-
-
+	/declare echoType 															string 	outer |alt|bc|channel|disc|item|melee|spell|relay|verbose
+	/call DeclareIniVar switchEchoAlt								bool		Echo TRUE
+	/call DeclareIniVar switchEchoSpell							bool		Echo TRUE
+	/call DeclareIniVar switchEchoDisc							bool		Echo TRUE
+	/call DeclareIniVar switchEchoItem							bool		Echo TRUE
+	/call DeclareIniVar switchEchoMelee							bool		Echo TRUE
+	/call DeclareIniVar switchEchoBC								bool		Echo FALSE
+	/call DeclareIniVar echoChannel									string	Echo FALSE
+	/call DeclareIniVar relayTells									string	Echo FALSE
+	/call DeclareIniVar verbose											bool		Echo TRUE
 
 
  	 	
@@ -345,9 +362,8 @@ sub set_declares()
 		
 		
 	| core control
-	/declare coreType 															string 	outer |auto|control|echo|events|expadjust|expmaintain|explevel|fixini|invite|killcode|dbcash|raidinvite|relay|reset|rest|verbose|whitewash
+	/declare coreType 															string 	outer |auto|control|events|expadjust|expmaintain|explevel|fixini|invite|killcode|dbcash|raidinvite|rest|whitewash
 	/declare coreObscure														bool		outer FALSE
-	/call DeclareIniVar relayTells									string	Common FALSE
 	/call DeclareIniVar coreAuto				 						bool	 	Common FALSE
 	/call DeclareCoreIniVar remoteKillKey						string	General "CHANGE ME" 
 	/call DeclareCoreIniVar ${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}				int			DeathCount 0
@@ -357,7 +373,6 @@ sub set_declares()
 
 	/call DeclareIniVar toonControl			 						string	Common FALSE
 	/call DeclareIniVar autoRest 										int 		Common 90
-	/call DeclareIniVar echoChannel									string	Common FALSE 
 	/call DeclareIniVar AutoExpAdjust 							bool 		Common TRUE
 	/call DeclareIniVar MaintExpLvl   							int 		Common 99
 	/call DeclareIniVar MaxLevel      							int 		Common 105
@@ -3144,7 +3159,7 @@ sub Bind_heal(string _healType, string _verbage)
 			/call writeINI HealOverride Heal ${_verbage} 
 			VOUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_verbage},${_verbage},${odisabled}]}
 		} else {
-			VOUT /heal override [${cinfo}${HealOverride}\ax] allowable range ${cinfo}0 - 99\ax
+			VOUT /${_bind} override [${cinfo}${HealOverride}\ax] allowable range ${cinfo}0 - 99\ax
 		}
 	}
 
@@ -3152,7 +3167,7 @@ sub Bind_heal(string _healType, string _verbage)
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${healType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
 	/next _count
-	VOUT /heal [${_listout}] [${cinfo}##\ax]				
+	VOUT /${_bind} [${_listout}] [${cinfo}##\ax]				
 /return
 	
 
@@ -3323,7 +3338,8 @@ sub Bind_rez(string _rezType, string _verbage)
 		/next _count
 		VOUT /${_bind} pct [${_listout}]
 		/return
-	} else /if (${_rezType.Equal[range]}) {
+	} else /if (${_rezType.Equal[range]}) 
+		{
 		/if (${Range.Between[1,110:${Int[${_verbage}]}]}) {
 			/call writeINI maxRezRange Heal ${_verbage}
 			| VOUT /rez range [${cinfo}${_verbage}\ax]
@@ -3344,7 +3360,7 @@ sub Bind_rez(string _rezType, string _verbage)
 		}
 		/varset _sep TRUE
 	/next _count
-	VOUT /rez [${_listout}] [${cinfo}##\ax]		
+	VOUT /rez [${_listout}]	
 /return
 
 
@@ -3672,11 +3688,11 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 		}
 
 	| forced tied
-	| we like bsdm
+	| we like it rough
 	| this is under construction
 	} else /if (${Bool[${_tcType.Equal[lock]}]}) {
 		/call writeINI SetTieLock Movement ${If[${SetTieLock},FALSE,TRUE]}
-		VOUT /tc lock ${sep} ${If[${SetTieLock},${oenabled},${odisabled}]}
+		VOUT /${_bind} lock ${sep} ${If[${SetTieLock},${oenabled},${odisabled}]}
 
 	| set tie time
 	} else /if (${Bool[${_tcType.Equal[time]}]}) {
@@ -3684,7 +3700,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 			/call writeINI tCheck_Tie Timer ${_verbage} 
 		/call echos number "Tie Check Time" ${_verbage} 0 0
 		} else {
-			VOUT /tc time [${cinfo}${tCheck_Tie}\ax] allowable range is ${cinfo}5 - 50\ax
+			VOUT /${_bind} time [${cinfo}${tCheck_Tie}\ax] allowable range is ${cinfo}5 - 50\ax
 		}
 		
 	| set tie distance		
@@ -3693,7 +3709,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 			/call writeINI SetTieDistance Movement ${_verbage} 
 			/call echos number "Tie Distance" ${_verbage}	0 0	
 		} else {
-			VOUT /tc distance [${cinfo}${SetTieDistance}\ax] allowable range is ${cinfo}1 - 99\ax
+			VOUT /${_bind} distance [${cinfo}${SetTieDistance}\ax] allowable range is ${cinfo}1 - 99\ax
 		}
 
 	} else {
@@ -3760,7 +3776,7 @@ sub Bind_burn(string _burnType, string _verbage)
 			/call writeINI burnCount Common ${_verbage} 
 			/call echos number "Burn # Mob Count" ${_verbage} 0 0
 		} else {
-			VOUT /burn count [${cinfo}${burnCount}\ax] when # of mobs in range ${cinfo}1 - 99\ax
+			VOUT /${_bind} count [${cinfo}${burnCount}\ax] when # of mobs in range ${cinfo}1 - 99\ax
 		}
 
 	| Burn Engage at %
@@ -3769,7 +3785,7 @@ sub Bind_burn(string _burnType, string _verbage)
 			/call writeINI burnEngageat Common ${_verbage} 
 			/call echos number "Burn health enagage %" ${_verbage} 0 0
 		} else {
-			VOUT /burn engageat [${cinfo}${burnEngageat}\ax] % of mobs health to engage burn ${cinfo}1 - 99\ax
+			VOUT /${_bind} engageat [${cinfo}${burnEngageat}\ax] % of mobs health to engage burn ${cinfo}1 - 99\ax
 		}
 
 	| force constant burning
@@ -3830,30 +3846,28 @@ sub Bind_setCore(string _coreType, string _verbage)
 			/call set_stop TRUE
 			/call clear_combat
 		}
-		VOUT Core ${sep} ${cinfo}Automatic\ax ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
-
-	| enable/disable verbose EQBC Echos
-	} else /if (${Bool[${_coreType.Equal[verbose]}]}) {
-		/call writeINI verbose Common ${If[${verbose},FALSE,TRUE]}
-		VOUT Core ${sep} ${cinfo}Verbose\ax ${sep} ${If[${verbose},${oenabled},${odisabled}]}
+		/call echos setswitch /${_bind} coreAuto 0 ${_${_bind}Type}
+		| VOUT /${_bind} auto ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
 
 	| enable/disable obscure target names ## not documented
 	} else /if (${Bool[${_coreType.Equal[obscure]}]}) {
 		/varset coreObscure ${If[${coreObscure},FALSE,TRUE]}
-		VOUT Core ${sep} ${cinfo}Obscure Names\ax ${sep} ${If[${coreObscure},${oenabled},${odisabled}]}
+		/call echos setswitch /${_bind} coreObscure 0 ${_${_bind}Type}
+		| VOUT /${_bind} obscure ${sep} ${If[${coreObscure},${oenabled},${odisabled}]}
 
 	| enable/disable using events.inc file
 	} else /if (${Bool[${_coreType.Equal[events]}]}) {
 		/call writeINI coreEventsInc Common ${If[${coreEventsInc},FALSE,TRUE]}
-		VOUT Core ${sep} Use ${cinfo}Events.INC\ax file ${sep} ${If[${coreEventsInc},${oenabled},${odisabled}]}
+		/call echos setswitch /${_bind} coreEventsInc 0 ${_${_bind}Type}
+		| VOUT /${_bind} events ${sep} ${If[${coreEventsInc},${oenabled},${odisabled}]}
 
 	| set the kill code
 	} else /if (${Bool[${_coreType.Equal[killcode]}]}) {
 		/if (${Bool[${_verbage}]}) {
 			/call DeclareCoreIniVar NA remoteKillKey General ${_verbage} 
-			VOUT Core ${sep} ${cinfo}Remote Kill Code\ax ${sep} ${_verbage}
+			VOUT /${_bind} ${cinfo}killcode\ax ${sep} ${_verbage}
 		} else {
-			VOUT Current killcode: ${cinfo}${remoteKillKey}\ax
+			VOUT /${_bind} ${cinfo}killcode\ax ${sep} ${cinfo}${remoteKillKey}\ax
 		}
 
 	| runs the whitewash routine to clear all aliases
@@ -3863,8 +3877,10 @@ sub Bind_setCore(string _coreType, string _verbage)
 	} else /if (${Bool[${_coreType.Equal[rest]}]}) {
 		/if (${Range.Between[0,99:${Int[${_verbage}]}]}) {
 			/call writeINI autoRest Common ${_verbage}  
-			/call echos number "Auto Rest" ${If[${_verbage},${_verbage},${autoRest}]} 0 0
-		} 		
+			| /call echos setswitch /${_bind} autoRest ${_verbage} ${_${_bind}Type}
+			| /call echos number "Auto Rest" ${If[${_verbage},${_verbage},${autoRest}]} 0 0
+		} 
+		/call echos setswitch /${_bind} autoRest ${autoRest} ${_${_bind}Type}
 
 	| set control toon
 	} else /if (${Bool[${_coreType.Equal[control]}]}) {
@@ -3873,21 +3889,11 @@ sub Bind_setCore(string _coreType, string _verbage)
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI toonControl Common FALSE
 		}
-		VOUT Control Toon ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
+		VOUT /${_bind} ${cinfo}control\ax ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
 
-	| enable/disable relay tells
-	} else /if (${Bool[${_coreType.Equal[relay]}]}) {
-		/if (${Bool[${_verbage}]}) {
-			/call writeINI relayTells Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
-		} else /if (!${Bool[${_verbage}]}) {
-			/call writeINI relayTells Common FALSE
-		}
-		VOUT Relay Tells ${sep} ${If[${Bool[${relayTells}]},${cgood}${relayTells}\ax,${odisabled}]}
-		
 	| reset all core INIs
 	} else /if (${Bool[${_coreType.Equal[reset]}]}) {
 		/call core_reset
-
 
 	| take invites to raid/group
 	} else /if (${Bool[${_coreType.Equal[invite]}]}) {
@@ -3903,22 +3909,13 @@ sub Bind_setCore(string _coreType, string _verbage)
 	} else /if (${Bool[${_coreType.Equal[dbcash]}]}) {
 		/call check_free_ingame_cash
 
-	| set echo channel
-	} else /if (${Bool[${_coreType.Equal[echo]}]}) {
-		/declare _num int local ${_verbage}
-		/if (${Range.Between[1,9:${Int[${_num}]}]}) {
-			/call writeINI echoChannel Common ${_num} 0 0
-		} 
-		VOUT /core echo [${cinfo}${echoChannel}\ax] set Echo Channel ${cinfo}1 - 9\ax
-
-
 	| exp max level
 	} else /if (${Bool[${_coreType.Equal[expmaintain]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI MaintExpLvl Common ${_verbage} 
 			/call echos number "Maintain % of EXP in level" ${_verbage} 0 0
 		} else {
-			VOUT /core expmaintain [${cinfo}${MaintExpLvl}\ax] EXP % range ${cinfo}1 - 99\ax
+			VOUT /${_bind} ${cinfo}expmaintain\ax [${cinfo}${MaintExpLvl}\ax] EXP % range ${cinfo}1 - 99\ax
 		}	
 
 	| exp maintain level
@@ -3927,7 +3924,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 			/call writeINI MaxLevel Common ${_verbage} 
 			/call echos number "Max EXP Level" ${_verbage} 0 0
 		} else {
-			VOUT /core explevel [${cinfo}${MaxLevel}\ax] set Max Level ${cinfo}1 - 105\ax
+			VOUT /${_bind} ${cinfo}explevel\ax [${cinfo}${MaxLevel}\ax] set Max Level ${cinfo}1 - 105\ax
 		}	
 
 	| exp auto adjust
@@ -3993,7 +3990,7 @@ sub Bind_info()
 	/declare _listout string local
 	/declare _sep bool local
 	/declare _count int local
-	/declare _controls string local |buff|burn|cc|core|cursor|debuff|hc|heal|lc|mode|movement|onoff|override|pc|port|rez|tc|tie|ts|${Me.Class.ShortName}
+	/declare _controls string local |buff|burn|cc|core|cursor|debuff|echos|hc|heal|lc|mode|movement|onoff|override|pc|port|rez|tc|tie|ts|${Me.Class.ShortName}
 	
 	/for _count 1 to ${_controls.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
@@ -4614,3 +4611,72 @@ sub Bind_crew(string _crewNumber)
 	}
 /return
 
+
+
+|***
+ *	DES: echo controls
+ *	USE: /echos []
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind echos /echos
+sub Bind_echos(string _echoType, string _verbage)
+ 	DEBUG ${cbug}Bind_echos(type ${_echoType}, verbage ${_verbage})\ax
+
+	/declare _count int local 0
+	/declare _bind string local echo
+	/declare _listout string local
+	/declare _sep bool local FALSE
+	/declare _baseEchos string local |alt|disc|item|spell
+
+	| get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind.Lower}s ${cinfo}${_${_bind}Type}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind.Lower}s ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind.Lower}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+	
+	| base echos
+	/if (${Bool[${_baseEchos.Find[${_echoType}]}]}) {
+		/call writeINI switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower} Echo ${If[${switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower}},FALSE,TRUE]}  
+		| /call echos switch "Echo ${sep} ${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower}" switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower} 0 0
+		VOUT /${_bind}s ${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower} ${sep} ${If[${switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower}},${oenabled},${odisabled}]}
+
+	| set echo channel
+	} else /if (${Bool[${_echoType.Equal[channel]}]}) {
+		/if (${Range.Between[1,9:${Int[${_verbage}]}]}) {
+			/call writeINI echoChannel Echo ${_verbage} 0 0
+		} 
+		VOUT /${_bind}s channel [${cinfo}${echoChannel}\ax] set Echo Channel ${cinfo}1 - 9\ax
+
+	| enable/disable verbose EQBC Echos
+	} else /if (${Bool[${_echoType.Equal[verbose]}]}) {
+		/call writeINI verbose Echo ${If[${verbose},FALSE,TRUE]}
+		OUT /${_bind.Lower}s verbose ${sep} ${If[${verbose},${oenabled},${odisabled}]}
+
+	| enable/disable BC relay
+	} else /if (${Bool[${_echoType.Equal[bc]}]}) {
+		/call writeINI switchEchoBC Echo ${If[${switchEchoBC},FALSE,TRUE]}
+		VOUT /${_bind}s BC ${sep} ${If[${switchEchoBC},${oenabled},${odisabled}]}
+
+	| enable/disable relay tells
+	} else /if (${Bool[${_echoType.Equal[relay]}]}) {
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI relayTells Echo ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]}) {
+			/call writeINI relayTells Echo FALSE
+		}
+		VOUT /${_bind} ${cinfo}relay\ax ${sep} ${If[${Bool[${relayTells}]},${cgood}${relayTells}\ax,${odisabled}]}
+	
+	} else {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind}s [${_listout}]
+	} 
+/return

@@ -215,7 +215,7 @@ sub cast_AA_paragon()
 		/call core_cast "Paragon of Spirit" alt 0 FALSE
 		/if (${Bool[${Raid.Members}]}) /rs ${ParagonTXT}
 	} else /if (${Bool[${Me.Song[Paragon of Spirit]}]}) {
-		NOUT ${owarning} trying to cast ${csp}Paragon of Spirit\ax while its running.	
+		VOUT ${owarning} trying to cast ${csp}Paragon of Spirit\ax while its running.	
 	}		
 /return
 

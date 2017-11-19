@@ -42,7 +42,7 @@ sub Bind_mode(string _modeType, string _verbage)
 			/call writeINI setModeAgro Common ${_verbage}  
 			/call echos number "Mode Agro Range" ${_verbage} 0 0
 		} else {
-			NOUT /mode agro [${cinfo}${setModeAgro}\ax] allowable range is ${cinfo}1 - 99999\ax
+			VOUT /mode agro [${cinfo}${setModeAgro}\ax] allowable range is ${cinfo}1 - 99999\ax
 		}	
 
 	| all switches except stop
@@ -625,8 +625,8 @@ sub mode_tradeskill()
 	DEBUGMODE ${cbug}mode_tradeskill()\ax
 	
 	/if (!${Window[TradeskillWnd].Open}) {
-		NOUT Tradeskill window must be open.
-		NOUT Make All option must be deselected.
+		VOUT Tradeskill window must be open.
+		VOUT Make All option must be deselected.
 		/varset switchModeTradeskill FALSE
 		/return
 	}

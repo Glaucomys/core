@@ -39,7 +39,7 @@ sub check_plugin()
 
 	/for _count 1 to ${_plug.Count[|]}
 		/if (!${Bool[${Plugin[${_plug.Arg[${_count},|]}]}]})  {
-			VOUT Plugin \a-w${_plug.Arg[${_count},|]}\ax is missing. Loading it.
+			OUT Plugin \a-w${_plug.Arg[${_count},|]}\ax is missing. Loading it.
 			/squelch /plugin ${_plug.Arg[${_count},|]}
 		}
 	/next _count	
@@ -61,13 +61,18 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 	/if (${_type.Equal[switch]}) {
 		VOUT ${_verbage} ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
 
+	| control switches
+	} else /if (${_type.Equal[setswitch]}) {
+		VOUT ${_verbage} ${cinfo}${_verbage2}\ax ${If[${Bool[${_tmpID}]},[\a-w${_tmpID}\ax] ,]}${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+
+
 	| variable %s
 	} else /if (${_type.Equal[number]}) {
 		VOUT ${_verbage} ${sep} ${cinfo}${_tmpVariable}\ax
 
 	| core startup
 	} else /if (${_type.Equal[startup]}) {
-		VOUT Core Build ${sep} ${cinfo}${coreBuild}\ax
+		OUT Core Build ${sep} ${cinfo}${coreBuild}\ax
 
 	| zone initialization
 	} else /if (${_type.Equal[zone]}) {
@@ -80,6 +85,10 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 	| ending macro
 	} else /if (${_type.Equal[ending]}) {
 		VOUT ${owarning} ${sep} ${cbad}ENDING\ax Core Build ${sep} ${cinfo}${coreBuild}\ax
+
+	| BC echo for switchechoBC
+	} else /if (${_type.Equal[BC]}) {
+		/bc ${_verbage} - [+r+]${_tmpVariable}[+x+]  ${If[${Bool[${_tmpID}]},- [+y+]${Spawn[${_tmpID}].DisplayName}[+x+],]} 
 
 	| need target
 	} else /if (${_type.Equal[needtarget]}) {
@@ -957,7 +966,7 @@ sub check_buffs_BC()
 
 			/if (${Me.CurrentMana} > ${Spell[${Buff${_buff}}].Mana}) { 
 				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-  		  VOUT BC Buff ${sep} ${csp}${Buff${_buff}}\ax ${sep} [${cpc}${NetBots.Client[${_toon}]}\ax]
+  		  VSPELL BC Buff ${sep} ${csp}${Buff${_buff}}\ax ${sep} [${cpc}${NetBots.Client[${_toon}]}\ax]
 				/call MQ2Cast "${Buff${_buff}}" ${buffGem} 10s -targetid|${NetBots[${NetBots.Client[${_toon}]}].ID} 	
 				| /break
 			}
@@ -1573,13 +1582,13 @@ sub get_assist_target()
  *	DES: Make sure that what ever we are targeting is something we want to kill.
  *	USE: /call is_target_valid [target ID]
  *	INI: 
- *  NOTE: does not apply to manual mode. you are on your own there.
+ *  NOTE: in manual mode. anything is a valid target.
  ***|
 sub is_target_valid(int _tmpID)
 	DEBUG ${cbug}is_target_valid(\ax${_tmpID}${cbug})\ax checking: [${cinfo}${Spawn[${_tmpID}].DisplayName}\ax]
 	AMIDEAD
 	/doevents
-	/if (!${coreAuto}) /return
+	/if (!${coreAuto}) /return TRUE
 	/if (!${Target.ID} || !${Bool[${Target2Kill}]} || (${SafeZone} && !${switchOverrideSafezone} && ${coreAuto})) {
 		/varset isValidTarget FALSE
 		/return FALSE
@@ -1615,7 +1624,7 @@ sub is_target_valid(int _tmpID)
 	| /if (${coreAuto} && ${isValidTarget} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
 		
 	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
-/return ${isValidTarget}
+/return ${Bool[${isValidTarget}]}
 
 
 |***
@@ -1666,9 +1675,10 @@ sub is_target_dead(int _tmpID)
 	/declare _dead bool local FALSE
 	
 	/if (${coreAuto}) {
-		/if (!${_tmpID}) /varset _tmpID ${Target2Kill}
+		/if (!${Bool[${_tmpID}]}) /varset _tmpID ${Target2Kill}
 	} else /if (!${coreAuto}) {
-		/if (!${_tmpID}) /varset _tmpID ${Target.ID}
+		/if (!${Bool[${_tmpID}]} && ${Target.ID}) /varset _tmpID ${Target.ID}
+		/if (!${Bool[${_tmpID}]}) /return FALSE
 	}
 	
 	/if (!${Target.ID} && !${switchModeHunt}) /varset _dead TRUE
@@ -1922,8 +1932,8 @@ sub cast_AA_snare(int _tmpID)
 	CHECKEXIT
 
 	/if (!${Select[${Me.Class.ShortName},RNG,DRU,WAR,ROG,NEC,SHD,WIZ,MNK,PAL]}) {
-		VOUT ${onotice} ${sep} Not an AA snaring class. Please come back later.
-		/call WriteINI switchdeBuffSnare Common FALSE  
+		VOUT ${onotice} ${sep} Not an AA snaring class. Delete toon and reroll a ranger.
+		/call writeINI switchdeBuffSnare Common FALSE  
 		/call echos debuff "Snare" switchdeBuffSnare 0 0	
 		/return
 	}
@@ -2197,39 +2207,40 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| Spell
 	/if (!${Select[${_type},alt,item,disc]}) {
 		/if (${_tmpID} == 0) {
-			VOUT Spell ${sep} ${csp}${_spell}\ax
+			VSPELL Spell ${sep} ${csp}${_spell}\ax
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
 		} else /if (${_tmpID} != 0 && ${Target.ID}) {
 			/if (${Me.Song[Gift of Mana (${GoMLevel})].ID}) /call cast_nuke_GoM ${_tmpID}
 			DEBUGCAST MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
-			VOUT Spell ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			VSPELL Spell ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} ${If[${Bool[${_sub}]},${_sub},]} -targetid|${_tmpID}
 		}
 		/goto :cooldown
 	| AA
 	} else /if (${Select[${_type},alt]}) {
 		/if (${_tmpID} == 0) {
-			VOUT AA ${sep} ${csp}${_spell}\ax
+			VALT AA ${sep} ${csp}${_spell}\ax
 			/call MQ2Cast "${_spell}" alt 
 		} else /if (${_tmpID} != 0 && ${Target.ID}) {
-			VOUT AA ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			VALT AA ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" alt -targetid|${_tmpID}
 		}
+		VBC Alt "${_spell}" ${_tmpID} 0 
 		/goto :cooldown
 	| item
 	} else /if (${Select[${_type},item]}) {
 		/if (${_tmpID} == 0) {
-			VOUT Item ${sep} ${citem}${_spell}\ax
+			VITEM Item ${sep} ${citem}${_spell}\ax
 			/call MQ2Cast "${_spell}" item
 		} else /if (${_tmpID} != 0 && ${Target.ID}) {
-			VOUT Item ${sep} ${citem}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+			VITEM Item ${sep} ${citem}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" item -targetid|${_tmpID}
 		}
 		/goto :cooldown
 	| disc
 	} else /if (${Select[${_type},disc]}) {
-		/if (${_tmpID} == 0) VOUT Disc ${sep} ${csp}${_spell}\ax
-		/if (${_tmpID} != 0 && ${Target.ID}) VOUT Disc ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[ID ${_tmpID}].DisplayName}\ax]
+		/if (${_tmpID} == 0) VDISC Disc ${sep} ${csp}${_spell}\ax
+		/if (${_tmpID} != 0 && ${Target.ID}) VDISC Disc ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[ID ${_tmpID}].DisplayName}\ax]
 		/disc ${_spell}
 		/delay 5s !${Me.Casting.ID}
 		/goto :cooldown
@@ -2290,10 +2301,6 @@ sub cast_cure()
 	/doevents
 
 	/if (!${validate_plugin[TRUE, |mq2debuffs]}) /return
-	| /if (!${Bool[${Plugin[MQ2debuffs]}]}) {
-	| 	 VOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2debuffs\ax for any curing.
-	| 	/return
-	| }
 	
 	UPDATEHUD "CURE"
 
@@ -2321,11 +2328,6 @@ sub cast_cure()
 	}
 
 	/if (!${validate_plugin[TRUE, |mq2netbots]}) /return
-
-	| /if (!${Bool[${Plugin[MQ2netbots]}]}) {
-	| 	VOUT ${owarning} ${sep} You need the plugn ${cinfo}MQ2netbots\ax for group curing.
-	| 	/return
-	| }
 
 	/declare _count int local 0
 	/for _count 1 to ${Math.Calc[${NetBots.Client.Count[ ]}+1]}
@@ -2420,7 +2422,7 @@ sub use_skill_melee(int _tmpID)
 	| taunt /onoff agro
 	/if (${Bool[${taunt}]} && ${switchAgro}) {
 		/if (${Me.AbilityReady[Taunt]} && ${Spawn[${_tmpID}].Distance} <= 18 && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-			VOUT Melee ${sep} ${csp}Taunting\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Taunting\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Taunt
 		}
 	}
@@ -2428,17 +2430,15 @@ sub use_skill_melee(int _tmpID)
 	| disarm
 	/if (${Bool[${disarm}]} && !${Skill[Disarm].Auto}) {
 		/if (${Me.AbilityReady[Disarm]} && ${Spawn[${_tmpID}].Distance} <= 15 && ${switchAgro}) {
-			VOUT Melee ${sep} ${csp}Disarm\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Disarm\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Disarm
 		}
 	}
-	
-	| /if (${Me.Level} > 61) /return
-	
+		
 	| kick
 	/if (${Bool[${kick}]} && !${Skill[Kick].Auto}) {
 	 	/if (!${Select[${Me.Class.ShortName},MNK]} && ${Me.AbilityReady[Kick]} && ${Spawn[${_tmpID}].Distance} <= 15) {
-			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Kick
 		}
 	}
@@ -2446,7 +2446,7 @@ sub use_skill_melee(int _tmpID)
 	| bash
 	/if (${Bool[${bash}]} && !${Skill[Bash].Auto}) {
 		/if (${Me.AbilityReady[Bash]} && ${Spawn[${_tmpID}].Distance} <= 15) {
-			VOUT Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Bash
 		}
 	}
@@ -2455,7 +2455,7 @@ sub use_skill_melee(int _tmpID)
 	/if (${validate_class[FALSE, |BER]}) {
 		/if (${Bool[${frenzy}]} && && !${Skill[Frenzy].Auto}) {
 			/if (${Me.AbilityReady[Frenzy]} && ${Spawn[${_tmpID}].Distance} <= 13) {
-				VOUT Melee ${sep} ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+				VMELEE Melee ${sep} ${csp}Frenzy\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 				/if (${Target.ID}) /doability Frenzy
 			}
 		}
@@ -2465,7 +2465,7 @@ sub use_skill_melee(int _tmpID)
 	/if (${validate_class[FALSE, |ROG]}) { 
 		/if (${Bool[${backstab}]} && && !${Skill[Backstab].Auto}) {
 			/if (${Me.AbilityReady[Backstab]} && ${Spawn[${_tmpID}].Distance} <= 13) {
-				VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+				VMELEE Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
 				/if (${Target.ID}) /doability Backstab
 			}
 		}
@@ -2475,24 +2475,24 @@ sub use_skill_melee(int _tmpID)
 	/if (${validate_class[FALSE, |MON]} && ${Spawn[${_tmpID}].Distance} <= 15) {
 		| fist
 		/if (${Bool[${dragonpunch}]} && !${Skill[Dragon Punch].Auto} && ${Me.AbilityReady[Dragon Punch]}) {
-			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Dragon Punch\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Dragon Punch"
 		} else /if (${Bool[${eaglestrike}]} && !${Skill[Eagle Strike].Auto} && ${Me.AbilityReady[Eagle Strike]}) {
-			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Eagle Strike\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Eagle Strike"
 		} else /if (${Bool[${tigerclaw}]} && !${Skill[Tiger Claw].Auto} && ${Me.AbilityReady[Tiger Claw]}) {
-			VOUT Melee ${sep} ${csp}Backstab\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Tiger Claw\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Tiger Claw"
 		}
 		| kick
 	 	/if (${Bool[${kick}]} && !${Skill[Kick].Auto} && ${Me.AbilityReady[Kick]}) {
-			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Kick
 		} else /if (${Bool[${flyingkick}]} && !${Skill[Flying Kick].Auto} && ${Me.AbilityReady[Flying Kick]}) {
-			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Flying Kick"
 		} else /if (${Bool[${roundkick}]} && !${Skill[Rounf Kick].Auto} && ${Me.AbilityReady[Round Kick]}) {
-			VOUT Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Round Kick"
 		}		
 	}
@@ -2577,12 +2577,12 @@ sub cast_nuke_GoM(int _tmpID)
 	/if (${Me.SpellReady[${GoMNuke}]}) {
 		/target ID ${_tmpID}
 		/if (!${cast_condition[GoMNukeCondition]}) /return
-		VOUT GoM ${sep} ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+		VSPELL GoM ${sep} ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke}" gem${Me.Gem[${GoMNuke}]} -targetid|${_tmpID}
 	} else /if (${Me.SpellReady[${GoMNuke2}]}) {
 		/target ID ${_tmpID}
 		/if (!${cast_condition[GoMNuke2Condition]}) /return
-		VOUT GoM Backup ${sep} ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
+		VSPELL GoM Backup ${sep} ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke2}" gem${Me.Gem[${GoMNuke2}]} -targetid|${_tmpID}
 	}
 /return
@@ -2635,7 +2635,7 @@ sub check_buffs_raid()
 					/next _y
 					/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
 						CLEARCURSOR TRUE
-						VOUT Raid Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${Raid.Member[${_i}].DisplayName}\ax]
+						VSPELL Raid Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${Raid.Member[${_i}].DisplayName}\ax]
 						/call MQ2Cast "${Buff${_x}}" ${buffGem} -targetid|${Raid.Member[${_i}].ID} 
 					}
 					/call create_timer timer_Raid_Buffs${Spell[${Buff${_x}chk}].ID}${Raid.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
@@ -2666,7 +2666,7 @@ sub cast_buffs_queue(string _sender, string _verbage)
    		/doevents
       /if (${_verbage.Find["${Buff${_i}Alias.Arg[${_a},|]}"]}) {
         /if (${_verbage.Find["pet"]} || ${_verbage.Find[${Spawn[pc ${_sender}].Pet.DisplayName}]} || ${Spawn[pet ${_sender}].ID}) {
-          VOUT Buffing ${sep} ${cpc}${_sender}'s\ax Pet.
+          VSPELL Buffing ${sep} ${cpc}${_sender}'s\ax Pet.
           /call queue_buff_add ${Spawn[pc ${_sender}].Pet.ID} ${_i}
         } else {
           DEBUGCAST ${_sender} requested ${cinfo}${Buff${_i}}\ax
@@ -5144,14 +5144,14 @@ sub check_AA_agro()
 		| adjust bold attacks AA
 		/if (${Me.AltAbilityReady[Bold Attacks: Disabled]}) {
 			/call MQ2Cast "Bold Attacks: Disabled" alt
-			VOUT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${oenabled}
+			VALT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${oenabled}
 		}
 
 		| SHD Soul Flay
 		/if (${Select[${Me.Class.ShortName},SHD]}) {
 			/if (${Me.AltAbilityReady[Soul Flay: Disabled]}) {
 				/call MQ2Cast "Soul Flay: Disabled" alt
-				VOUT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${oenabled}
+				VALT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${oenabled}
 			}			
 		}
 		
@@ -5159,7 +5159,7 @@ sub check_AA_agro()
 		/if (${Select[${Me.Class.ShortName},RNG]}) {
 			/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Enabled]}) {
 				/call MQ2Cast "Ferocious Kick Subtlety: Enabled" alt
-				VOUT AA ${sep} ${cinfo}Ferocious Kick Subtlety\ax ${sep} ${odisabled}
+				VALT AA ${sep} ${cinfo}Ferocious Kick Subtlety\ax ${sep} ${odisabled}
 			}
 		}
 
@@ -5169,14 +5169,14 @@ sub check_AA_agro()
 		| adjust bold attacks AA
 		/if (${Me.AltAbilityReady[Bold Attacks: Enabled]}) {
 			/call MQ2Cast "Bold Attacks: Enabled" alt
-			VOUT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${odisabled}
+			VALT AA ${sep} ${cinfo}Bold Attacks\ax ${sep} ${odisabled}
 		}
 
 		| SHD Soul Flay
 		/if (${Select[${Me.Class.ShortName},SHD]}) {
 			/if (${Me.AltAbilityReady[Soul Flay: Enabled]}) {
 				/call MQ2Cast "Soul Flay: Enabled" alt
-				VOUT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${odisabled}
+				VALT AA ${sep} ${cinfo}Soul Flay\ax ${sep} ${odisabled}
 			}			
 		}
 
@@ -5184,7 +5184,7 @@ sub check_AA_agro()
 		/if (${Select[${Me.Class.ShortName},RNG]}) {
 			/if (${Me.AltAbilityReady[Ferocious Kick Subtlety: Disabled]}) {
 				/call MQ2Cast "Ferocious Kick Subtlety: Disabled" alt
-				VOUT AA ${sep} ${cinfo}Ferocious Kick Subtlety\ax ${sep} ${oenabled}
+				VALT AA ${sep} ${cinfo}Ferocious Kick Subtlety\ax ${sep} ${oenabled}
 			}
 		}
 
@@ -5742,6 +5742,11 @@ sub fix_INI_declares()
 
 	/ini "${INICore}" "hide" "hideLisdted" NULL
 
+	/ini "${INICore}" "Echo" NULL NULL
+	
+	/ini "${INIClass}" "Common" "echoChannel" NULL
+	/ini "${INIClass}" "Common" "relayTells" NULL
+	/ini "${INIClass}" "Common" "verbose" NULL
 
 	
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
@@ -5792,7 +5797,7 @@ sub validate_class(bool _error, string _class)
  ***|
 sub validate_plugin(bool _error, string _plugin)
 	DEBUG ${cbug}validate_class(error: ${_error}, plugin: ${_plugin})\ax
-	/if (!${Bool[${_plugin}]}) NOUT ${owarning} ${sep} validate_plugin failure.
+	/if (!${Bool[${_plugin}]}) VOUT ${owarning} ${sep} validate_plugin failure.
 	/declare _plugcount int local 0	
 	/declare _count int local 0
 

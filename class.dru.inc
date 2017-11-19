@@ -371,7 +371,7 @@ sub cast_AA_spirit_wood()
 		/call core_cast "Mass Group Buff" alt 0 FALSE
 		/call core_cast "Spirit of the Wood" alt 0 FALSE
 	} else /if (${Bool[${Me.Song[Spirit of the Wood]}]}) {
-		NOUT ${owarning} ${sep} trying to cast Spirit of the Wood while its running.	
+		VOUT ${owarning} ${sep} trying to cast Spirit of the Wood while its running.	
 	}		
 /return
 
@@ -467,7 +467,7 @@ sub Bind_setDRU(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			VOUT /${Me.Class.ShortName.Lower} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 
 	| set XT refresh list Time
@@ -476,7 +476,7 @@ sub Bind_setDRU(string _classType, string _classVerbage)
 			/call writeINI tXHeal Timer ${_classVerbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
-			NOUT /${Me.Class.ShortName.Lower} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+			VOUT /${Me.Class.ShortName.Lower} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
 
 

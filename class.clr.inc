@@ -814,7 +814,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 		
 	| set XT Heal refresh Time
@@ -823,7 +823,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 	
 	| set XT refresh list Time
@@ -832,7 +832,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI tXHeal Timer ${_classVerbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
 		
 	| to Yaulp or not		
@@ -842,7 +842,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI useYaulpPct Buffs ${_num}
 			VOUT /${_bind} Yaulp Ptc ${sep} ${cinfo}${_num}\ax
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		} else {
 		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
 		 	/call echos switch "Yaulp" doYaulp 0 0
@@ -855,7 +855,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI useVPPct Buffs ${_classVerbage} 
 			/call echos number "Veturika's Perseverance" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} vp [${cinfo}${useVPPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} vp [${cinfo}${useVPPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else /if (!${Bool[${_classVerbage}]}) {
 			/call writeINI useVP Buffs ${If[${useVP},FALSE,TRUE]}  
 			/call echos switch "Veturika's Perseverance ${sep} ${useVPPct}%" useVP 0 0
@@ -883,7 +883,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
 		/if (${Bool[${_classVerbage}]}) /declare _num int local ${_classVerbage}
-		/if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Equal.NotEqual[Pet]}) {
+		/if (${Target.ID} && ${_num}) {
 			/call writeINI ${Target.Class.ShortName}Point Heal ${_num}
 			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
 		} else /if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
@@ -900,9 +900,9 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			/call writeINI useAAFade Buffs ${_num}
 			VOUT Fade Combat ${sep} ${cinfo}${_num}\ax
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} fade [${cinfo}${useAAFade}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} fade [${cinfo}${useAAFade}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		} else {
-			NOUT /${_bind} fade [${cinfo}${useAAFade}\ax]
+			VOUT /${_bind} fade [${cinfo}${useAAFade}\ax]
 		}
 
 	| lock on MA

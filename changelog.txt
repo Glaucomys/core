@@ -8,6 +8,20 @@
  * Video: https://vimeo.com/235171246
  ***|
 
+20171119
+- echo switches
+  -- /echos [alt|bc|channel|disc|item|melee|spells|relay|verbose]
+  -- NOTE: ALL echo controlls are moved to here. verbose, echochannel, relay. you will need to reset them if they are being used
+  -- NOTE: it will take time to get these echos through the code to replace the generic VOUT echo.
+  -- core.ini-[echo]->
+    -- SwitchEchoMelee - echo melee skills to BC
+    -- SwitchEchoSpell - echo spells to BC
+    -- SwitchEchoAlt - echo alt abilities to BC
+    -- SwitchEchoDisc - echo discs to BC
+    -- SwitchEchoItem - echo items to BC
+    -- SwitchEchoBC - Relay casts to all in BC
+- is_target_valid() was returning a NULL if caught in the middle of a manual to auto switch crashing the mac. returns properly now.
+  
 
 20171117
 - class.clr.inc

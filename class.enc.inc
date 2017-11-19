@@ -378,7 +378,7 @@ sub cast_mez(int _tmpID)
 	| check for mez immune list mobs
 	/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
 	  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
-	  NOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
+	  VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
 	  /call list_delete addList ${_tmpID}	
 		/return
 	}
@@ -400,7 +400,7 @@ sub cast_mez(int _tmpID)
 			/call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
 			/if (${Select[${castReturn},CAST_IMMUNE]}) {
 			  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
-			  NOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
+			  VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
 			  ECHOCHANNEL MEZ IMMUNE to ${spellMez} ... ${Target.DisplayName}
 			  /call list_delete addList ${_tmpID}
 			}
@@ -575,7 +575,7 @@ sub Bind_setENC(string _classType, string _classVerbage)
 			/call writeINI GatherPercent Spells ${_classVerbage} 
 			/call echos number "Gather Mana %" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else /if (!${Bool[${_classVerbage}]}) {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
 			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0

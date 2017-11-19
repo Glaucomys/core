@@ -344,7 +344,7 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 			/call writeINI useYaulpPct Buffs ${_num}
 			VOUT /${_bind} Yaulp Ptc ${sep} ${cinfo}${_num}\ax
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		} else {
 		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
 		 	/call echos switch "Yaulp" doYaulp 0 0
@@ -414,7 +414,7 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 
 	| set XT refresh list Time
@@ -423,7 +423,7 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 			/call writeINI tXHeal Timer ${_classVerbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
 
 	| Stun Control

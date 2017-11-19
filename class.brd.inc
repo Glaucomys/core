@@ -407,7 +407,7 @@ sub cast_mez_BRD(int _tmpID)
 	| check for mez immune list mobs
 	/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].CleanName}]}) {
 	  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
-	  NOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.CleanName}\ax]
+	  VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.CleanName}\ax]
 	  /call list_delete addList ${_tmpID}	
 		/return
 	}
@@ -572,7 +572,7 @@ sub Bind_setBRD(string _classType, string _classVerbage)
 	| enable/disable rest song
 	/if (${Bool[${_classType.Equal[restsong]}]}) {
 		/call writeINI switchRestSong Song ${If[${switchRestSong},FALSE,TRUE]}
-		NOUT /${_bind} ${cinfo}Use Rest Song\ax ${sep} ${If[${switchRestSong},${oenabled},${odisabled}]}
+		VOUT /${_bind} ${cinfo}Use Rest Song\ax ${sep} ${If[${switchRestSong},${oenabled},${odisabled}]}
 
 	| enable/disable sets bard song line
 	} else /if (${Bool[${_classType.Equal[line]}]}) {

@@ -231,7 +231,7 @@ sub Bind_setBER(string _classType, string _classVerbage)
 	| AE or Focused Melee
 	/if (${Bool[${_classType.Equal[ae]}]}) {
 		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
-		NOUT /${_bind} ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
+		VOUT /${_bind} ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
 
 
 	| spire control

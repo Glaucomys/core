@@ -315,7 +315,7 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 			/call writeINI GatherPercent Spells ${_classVerbage} 
 			/call echos number "Gather Mana %" ${_classVerbage} 0 0
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
 			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0

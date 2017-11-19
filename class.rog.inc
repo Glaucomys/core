@@ -317,7 +317,7 @@ sub Bind_setROG(string _classType, string _classVerbage)
 			/call writeINI clickPoisonCount Poison ${_num}
 			VOUT Rogue Poison Keep ${sep} ${cinfo}${_num}\ax
 		} else /if (!${Bool[${_num}]} || !${Range.Between[1,100:${Int[${_num}]}]}) {
-			NOUT /${_bind} poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
+			VOUT /${_bind} poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
 		}
 
 	| spire control
@@ -335,12 +335,12 @@ sub Bind_setROG(string _classType, string _classVerbage)
 	| auto SOS... or not...
 	} else /if (${Bool[${_classType.Equal[autosos]}]}) {
 		/call writeINI switchSos Common ${If[${switchSos},FALSE,TRUE]}
-		NOUT /${_bind} ${cinfo}autosos\ax ${sep} ${If[${switchSos},${oenabled},${odisabled}]}
+		VOUT /${_bind} ${cinfo}autosos\ax ${sep} ${If[${switchSos},${oenabled},${odisabled}]}
 
 	| AE or Focused Melee
 	} else /if (${Bool[${_classType.Equal[ae]}]}) {
 		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
-		NOUT /${_bind} ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
+		VOUT /${_bind} ${cinfo}AE Melee\ax ${sep} ${If[${AEMelee},${oenabled},${odisabled}]}
 
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}

@@ -127,7 +127,7 @@ sub cast_AA_auspice()
 		| /if (${Bool[ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
 	 	| /if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
 	} else /if (${Bool[${Me.Song[${RNGauspice}]}]}) {
-		NOUT ${cbad}QUIT\ax trying to cast ${csp}Auspice of the Hunter\ax while its running.	
+		VOUT ${cbad}QUIT\ax trying to cast ${csp}Auspice of the Hunter\ax while its running.	
 	}		
 /return
 

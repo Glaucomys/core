@@ -87,9 +87,19 @@
 #define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGMODE "/if (${switchDebugMode} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
+
 #define OUT "/echo ${c-}-\ax"
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
-#define NOUT "/echo ${c-}-\ax"
+| #define NOUT "/echo ${c-}-\ax"
+#define VMELEE "/if (${switchEchoMelee}) /echo ${c-}-\ax"
+#define VSPELL "/if (${switchEchoSpell}) /echo ${c-}-\ax"
+#define VITEM "/if (${switchEchoItem}) /echo ${c-}-\ax"
+#define VDISC "/if (${switchEchoDisc}) /echo ${c-}-\ax"
+#define VALT "/if (${switchEchoAlt}) /echo ${c-}-\ax"
+#define VBC "/if (${switchEchoBC}) /call echos bc"
+#define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
+
+
 #define HUDPATH ".\..\MQ2HUD.ini core"
 #define LOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
 #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
@@ -100,7 +110,6 @@
 #define CHECKSAFELIST "/if (!${safelist.Find[${_sender}]} && !${switchOverrideSafelist}) /return"
 #define UPDATEHUD "/call update_HUD_notices"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) && !${timer_auto_cursor_pause}) /call sort_cursor"
-#define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 
 
 #include tc\declare.inc
@@ -157,9 +166,9 @@ sub main()
 	AMIDEAD
 
 	LOG .. Starting Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
-  /if (${switchOverrideLos}) NOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
+  /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
 
-	OUT Commands ${sep} ${cinfo}/info\ax
+	VOUT Commands ${sep} ${cinfo}/info\ax
 	OUT ${cgood}Ready\ax
   
 	:loopmain
@@ -255,7 +264,8 @@ sub main()
 sub base_preperation()
 
 	| clean INIs?
-	/if (${autoinihousekeeping}) /call fix_INI_declares
+	| /if (${autoinihousekeeping}) /call fix_INI_declares
+	/call fix_INI_declares
 
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
@@ -314,9 +324,9 @@ sub base_preperation()
 		
 	| KillCode Warning for stupid fucks that like to AFK farm
 	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE,0]}) {
-		OUT ${sep} Hey.. You!
-		OUT ${owarning} ${sep} FIX: \aw/core killcode=\ax${remoteKillKey}
-		OUT ${cbad}CHANGE THIS\ax
+		VOUT ${sep} Hey.. You!
+		VOUT ${owarning} ${sep} FIX: \aw/core killcode=\ax${remoteKillKey}
+		VOUT ${cbad}CHANGE THIS\ax
 	}		
 		
 /return

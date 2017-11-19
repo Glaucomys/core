@@ -393,7 +393,7 @@ sub doAid()
 		/call core_cast "Ancestral Aid" alt 0
 		/if (${Bool[${Raid.Members}]}) /rs ${AidTXT}
 	} else /if (${Bool[${Me.Song[Ancestral Aid]}]}) {
-		NOUT ${cbad}Quit\ax trying to cast ${csp}Ancestral Aid\ax while its running.	
+		VOUT ${cbad}Quit\ax trying to cast ${csp}Ancestral Aid\ax while its running.	
 	}		
 /return
 
@@ -474,7 +474,7 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 
 	| set XT refresh list Time
@@ -483,7 +483,7 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 			/call writeINI tXHeal Timer ${_classVerbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
 		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
-			NOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
 
 	| spire control

@@ -62,7 +62,7 @@ sub Bind_hud(string _hcType, string _hcVerbage)
 
 	| delete the hud
 	} else /if (${Bool[${_${_bind}Type.Find[delete]}]}) {
-		NOUT Deleteing HUD ${sep}
+		VOUT Deleteing HUD ${sep}
 		/ini ".\..\MQ2HUD.ini" "core" NULL NULL
 
 	} else {
@@ -85,7 +85,7 @@ sub Bind_hud(string _hcType, string _hcVerbage)
  ***|
 sub HUDUpdate()
 	DEBUG ${cbug}HUDUpdate()\ax
-	NOUT This will only take a second ${sep}
+	VOUT This will only take a second ${sep}
 	| /ini ".\..\MQ2HUD.ini" "core" NULL NULL
 	/delay 1s
 	
