@@ -308,7 +308,7 @@ sub mode_hunt()
 		/if (${Spawn[npc ${HuntMobList.Arg[${_count},|]} radius ${setModeAgro} targetable].ID}) {
 			/varset Target2Kill ${NearestSpawn[npc ${HuntMobList.Arg[${_count},|]}].ID}
 			/call echos hunt 0 0 ${Target2Kill} 0
-			/call Event_SetVar NA watchSpawn Common "${Spawn[${Target2Kill}].DisplayName}"
+			/call writeINI watchSpawn Common "${Spawn[${Target2Kill}].DisplayName}"
 			/goto :haveatarget
 		}
 	/next _count	

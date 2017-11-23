@@ -227,6 +227,12 @@ sub check_splash_group_PAL()
 		
 	| AA Splash
   /if (${useGroupHeal} && ${groupHurt} >= 3) /if (${Me.AltAbilityReady[Hand of Piety]}) /call core_cast "Hand of Piety" alt 0 FALSE
+  
+	AMIDEAD
+ 	/doevents
+	| Touch Heal 
+  /if (${useGroupHeal} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healTouch}]}) /call core_cast "${healTouch}" 0 ${WorstHurt} FALSE
+  
 	 
 	UPDATEHUD
 /return

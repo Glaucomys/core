@@ -1,0 +1,33 @@
+|*****
+ * testing things
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ * 
+ *****|
+
+
+
+| uncomment the next line and copy to mq2hud.INI->[Elements]
+| testvar=19,5,26,255,255,255,testvar=${testvar}
+
+
+
+
+Sub Main()
+
+	/declare testvar string outer hopeless
+
+	:mainloop
+	/delay 1s
+	/goto :mainloop
+
+/return
+
+/end
+
+
+

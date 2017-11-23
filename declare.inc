@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171119
+	/declare coreBuild	 														int			outer 20171123
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -1441,7 +1441,8 @@ sub declare_PAL()
   /call DeclareIniVar splashGroup									string 	Heal "Wave of Grief"
   /call DeclareIniVar healPanic										string 	Heal FALSE
   /call DeclareIniVar splashPanic									string 	Heal "Aurora of Dayspring"
-	| /declare rezID 													int 		outer
+  /call DeclareIniVar healPanic										string 	Heal FALSE
+  /call DeclareIniVar healTouch										string 	Heal "Ardent Touch"
 	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
 	/call DeclareIniVar RampageTank									string	Heal FALSE
@@ -2540,7 +2541,7 @@ sub Event_echoaugment()
  *	DES: 
  *	USE: 
  *	INI: 
- *  NOTE: 
+ *  NOTE: this is being done away with.. slowly..
  ***| 	
 #event checkOneOff "[MQ2] - Force OneOff Check!"
 sub Event_checkOneOff()
@@ -2583,7 +2584,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 	:loopgivemorecash
 		VOUT Giving ${_coin} stack ${sep} ${_countloop} of ${_stacks}
 		/if (!${Window[InventoryWindow].Open}) /return
-		/if (!${Target.ID} || ${Taret.ID} == (${Me.ID} || ${Pet.ID})) /return
+		/if (!${Target.ID} || ${Target.ID} == (${Me.ID} || ${Pet.ID})) /return
 		/delay 2s
 		/for _count 1 to ${_stacks}
 			AMIDEAD
@@ -2980,7 +2981,7 @@ sub Bind_watchspawn(string _spawn)
 	} else /if (!${Bool[${_spawn}]} && ${Target.ID}) {
 		/call writeINI watchSpawn Common "${Target.DisplayName}"
 	} else /if (!${Bool[${_spawn}]} && !${Target.ID}) {
-		VOUT ${sep} ${cinfo}/watchspawn\ax requires a taret or mob partial name. 
+		VOUT ${sep} ${cinfo}/watchspawn\ax requires a target or mob partial name. 
 		VOUT ${sep} NPC and CORPSE is also acceptable.
 		/if (!${Bool[${_spawn}]}) /call writeINI watchSpawn Common FALSE
 	}
@@ -4075,7 +4076,7 @@ sub Bind_ts(string _tsType)
 	} 
 /return
 
-	
+Tar
 
 |***
  *	DES: core controls
@@ -4484,7 +4485,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			/call writeINI HomeRadius Movement ${_verbage} 
 			/call echos number "Home Radius" ${_verbage} 0 0
 		} else {
-			VOUT /movement radius [${cinfo}${HomeRadius}\ax] Home Radius range ${cinfo}1 - 200\ax
+			VOUT /${_bind} radius [${cinfo}${HomeRadius}\ax] Home Radius range ${cinfo}1 - 200\ax
 		}
 
 	| set leash range
@@ -4493,7 +4494,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			/call writeINI HomeLeash Movement ${_verbage} 
 			/call echos number "Leash to Home" ${_verbage} 0 0
 		} else {
-			VOUT /movement leash [${cinfo}${HomeLeash}\ax] Home Leash range ${cinfo}1 - 200\ax
+			VOUT /${_bind} leash [${cinfo}${HomeLeash}\ax] Home Leash range ${cinfo}1 - 200\ax
 		}	
 
 	| set facing arc
@@ -4503,13 +4504,13 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			/call writeINI SetFaceArc Movement ${_num} 
 			/call echos number "Facing Arc Buffer" ${_num} 0 0
 		} else {
-			VOUT /movement arc [${cinfo}${SetFaceArc}\ax] Facing Movement buffer range ${cinfo}1 - 45\ax
+			VOUT /${_bind} arc [${cinfo}${SetFaceArc}\ax] Facing Movement buffer range ${cinfo}1 - 45\ax
 		}	
 		
 	| i need mounts
 	} else /if (${Bool[${_movementType.Equal[mount]}]}) {
 		/if (!${Bool[${_verbage}]}) {
-			VOUT /movement mount [${cinfo}on\ax ${sep} ${cinfo}off\ax]
+			VOUT /${_bind} mount [${cinfo}on\ax ${sep} ${cinfo}off\ax]
 		} else /if (${Bool[${_verbage.Equal[off]}]}) {
 			/if (!${Bool[${Me.Mount.ID}]}) {
 				/return

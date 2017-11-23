@@ -928,7 +928,7 @@ sub check_buffs_BC()
 	UPDATEHUD "BUFF: BC"	
 
 	/declare _toon int local 1
-	/declare _buff int local 0
+	/declare _buff int local 1
 
 	| each toon
 	DEBUG (${_toon} <= ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]})
@@ -941,34 +941,48 @@ sub check_buffs_BC()
 		AMIDEAD
 		CHECKEXIT
 
-		| each buff
+		| each buff. cycle all ${BuffCount}, used or not
 		/for _buff 1 to ${BuffCount}
 			DEBUG _buff: ${_buff}
+			
+			| make sure the count is in the correct range
 			/if (!${Range.Between[1,${BuffCount}:${Int[${_buff}]}]}) /continue
 			/doevents
 			AMIDEAD
-			/if (!${Bool[${BCBuff${_buff}Class}]} || !${Bool[${Buff${_buff}}]}) /continue    
-			/if (${Spawn[pc ${NetBots.Client[${_toon}]}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
-			/if (!${Bool[${Spawn[${NetBots.Client[${_toon}]}].ID}]} || ${Spawn[${NetBots.Client[${_toon}]}].Dead}) /continue
-				
+
+			| no BC Buff
+			/if (!${Bool[${Buff${_buff}}]}) /continue
+	
 			| no class to buff?
 			/if (!${Bool[${BCBuff${_buff}Class}]}) /continue
-			| targets class not listed
-			/if (!${BCBuff${_buff}Class.Find[${Spawn[${NetBots.Client[${_toon}]}].Class.ShortName}]}) /continue
-			DEBUG ${_buff} / ${BuffCount} class - ${Bool[${BCBuff${_buff}Class}]}
+
+			| no use this BC buff in raids
 			/if (${Raid.Members} && ${Buff${_buff}noBCinRaid}) /continue
 			DEBUG ${_buff} / ${BuffCount} raid - ${Raid.Members} && ${Buff${_buff}noBCinRaid}
+
+			| buffee is dead?			
+			/if (!${Bool[${Spawn[pc ${NetBots.Client[${_toon}]}].ID}]} || ${Spawn[pc ${NetBots.Client[${_toon}]}].Dead}) /continue
+			
+			| targets class not listed
+			/if (!${BCBuff${_buff}Class.Find[${Spawn[pc ${NetBots.Client[${_toon}]}].Class.ShortName}]}) /continue
+			DEBUG ${_buff} / ${BuffCount} class - ${Bool[${BCBuff${_buff}Class}]}
+
+			| bufeee out of range
+			/if (${Spawn[pc ${NetBots.Client[${_toon}]}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
+
+			| is the spell ready?
 			/if (!${Me.SpellReady[${Buff${_buff}}]} && ${Me.Gem[${Buff${_buff}}]}) /continue
 			DEBUG ${_buff} / ${BuffCount} ready -${Me.SpellReady[${Buff${_buff}}]} && ${Me.Gem[${Buff${_buff}}]}
-			| stacks?
+
+			| spell stacks ?
 			/if (!${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
 			DEBUG ${_buff} / ${BuffCount} stack - ${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}
 
 			/if (${Me.CurrentMana} > ${Spell[${Buff${_buff}}].Mana}) { 
+				| bards STFU
 				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
   		  VSPELL BC Buff ${sep} ${csp}${Buff${_buff}}\ax ${sep} [${cpc}${NetBots.Client[${_toon}]}\ax]
 				/call MQ2Cast "${Buff${_buff}}" ${buffGem} 10s -targetid|${NetBots[${NetBots.Client[${_toon}]}].ID} 	
-				| /break
 			}
 		/next _buff
 		/varcalc _toon ${_toon}+1
@@ -1114,7 +1128,6 @@ sub do_rest()
 			} else /if (${Select[${Me.Class.ShortName},BER]}) {
 			}
 			
-		
 		| Caster: CLR,DRU,SHM,ENC,WIZ,NEC,MAG
 		} else /if (!${MeleeList.Find[${Me.Class.ShortName}]} && ${CastList.Find[${Me.Class.ShortName}]}) {
 			DEBUG REST CLR,DRU,SHM,ENC,WIZ,NEC,MAG
@@ -1624,40 +1637,10 @@ sub is_target_valid(int _tmpID)
 	| /if (${coreAuto} && ${isValidTarget} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
 		
 	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
-/return ${Bool[${isValidTarget}]}
+/return ${isValidTarget}
 
 
-|***
- *	DES: Seriously, do you need to ask?
- *	USE: mob dead = win!
- *	INI: 
- *  NOTE: ass.U.ME the mob is alive until, it is not.
 
-sub is_target_dead(int _tmpID)
-	DEBUG ${cbug}is_target_dead(\ax${Spawn[${Target2Kill}].DisplayName} [${Target2Kill}]${cbug})\ax
-	AMIDEAD
-	/declare _dead bool local FALSE
-	| /declare _tmpID int local ${Target2Kill}
-
-	/if (!${Target.ID} && !${switchModeHunt}) /varset _dead TRUE
-	/if (${Target2Kill} == 0) /varset _dead TRUE
-	/if (${_dead}) /goto :dead
-
-	
-	/if (${Target.Dead} || ${Target.Type.Equal[Corpse]}) /varset _dead TRUE
-	/if (${_dead}) /goto :dead
-
-
-	/if (${Bool[${Spawn[${Target2Kill}].Type.Equal[CORPSE]}]} || ${Spawn[${Target.ID}].Type.Equal[CORPSE]}) /varset _dead TRUE
-	/if (${Bool[${Spawn[${Target2Kill}]].Dead}]} || ${Spawn[${Target.ID}].Dead}) /varset _dead TRUE
-	/if (!${Spawn[${Target2Kill}].ID} || !${Bool[${Spawn[ID ${Target2Kill}]}]}) /varset _dead TRUE
-	/if (${Spawn[${Target.ID}].Type.Equal[PCCORPSE]}) /varset _dead TRUE
-
-	:dead
-	/if (${_dead}) /call clear_combat
-	DEBUG ${cbug}is_target_dead(\ax${ctar}${Spawn[${Target2Kill}].DisplayName}\ax [${cinfo}${Target2Kill}\ax]${cbug})\ax Dead: ${If[${_dead},${cgood}TRUE\ax,${cbad}FALSE\ax]}
-/return ${_dead}
- ***|
 
 
 
@@ -1890,7 +1873,7 @@ sub get_target_2kill()
 
 |***
  *	DES: Uses Entropy of Nature/EradicateMagic/Whatever on target. only once every 60 seconds.
- *	USE: /call cast_eradicate_magic [target ID] & /debufferadicate [toggle]
+ *	USE: /call cast_eradicate_magic [target ID] & /debuff eradicate
  *	INI: 
  *  NOTE: 
  ***|

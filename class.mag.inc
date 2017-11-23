@@ -56,7 +56,7 @@ sub core_MAG()
 	/if (${coreAuto}) {	
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/if (${switchdHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
 	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget

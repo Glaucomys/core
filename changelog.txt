@@ -8,6 +8,17 @@
  * Video: https://vimeo.com/235171246
  ***|
 
+
+20171123
+- class.clr.inc
+  -- removed HealSpell from XTarget Healing. since its not a real spell or anything.. /shrug
+- class.mag.inc
+  -- missed one of the typos for pet healing.
+- would appear i cannot spell target properly. corrected three instances of "taret". and turned on autocomplete for my editor /sigh
+- bug in /mode hunt. bad call to write INI
+- check_buffs_bc() spawn type was returning mounts. mounts dont need no buffs. thanks Stockli for finding it
+
+
 20171119
 - echo switches
   -- /echos [alt|bc|channel|disc|item|melee|spells|relay|verbose]
@@ -25,7 +36,7 @@
 
 20171117
 - class.clr.inc
-  -- added in the cleris AA Turn  Undead nuke. requires an undead target and not be in a raid.
+  -- added in the clerics AA Turn Undead nuke. requires an undead target and not be in a raid.
 - class.mag.inc
   -- typo in switchHealPet
 - class.rog.inc
