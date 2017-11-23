@@ -216,7 +216,7 @@ sub patch_heal_MAG()
  ***| 
 sub synergy_MAG()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
-	CHECKEXITs
+	CHECKEXIT
 	CHECKTIE
 	/if (${Me.AltAbilityReady[Elemental Ward]}) /call core_cast "Elemental Ward" alt 0 FALSE
 	

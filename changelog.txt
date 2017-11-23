@@ -17,6 +17,7 @@
 - would appear i cannot spell target properly. corrected three instances of "taret". and turned on autocomplete for my editor /sigh
 - bug in /mode hunt. bad call to write INI
 - check_buffs_bc() spawn type was returning mounts. mounts dont need no buffs. thanks Stockli for finding it
+- cant spell "unpause" either..
 
 
 20171119

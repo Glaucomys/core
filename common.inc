@@ -988,7 +988,6 @@ sub check_buffs_BC()
 		/varcalc _toon ${_toon}+1
 	}
 
-	| /next _toon
 	UPDATEHUD FALSE
 /return
 
@@ -1069,7 +1068,7 @@ sub do_rest()
 	/declare _needrest bool local FALSE
 	
 	/if (${HomeSet} && !${SpawnCount[npc radius ${CombatDistance}*2 playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX}))) {
-		/if (${switchPull}) /makecamp upause
+		/if (${switchPull}) /makecamp unpause
 		/makecamp return
 		/delay 3s ((${Me.Y} == ${MakeCamp.AnchorY}) && (${Me.X} == ${MakeCamp.AnchorX}))
 	}
