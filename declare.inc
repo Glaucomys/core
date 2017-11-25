@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171123
+	/declare coreBuild	 														int			outer 20171124
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -2930,6 +2930,11 @@ sub Bind_cast_AA_invis()
 		/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
 		ECHOCHANNEL AA: Group Perfected Invisibility to Undead
 	}
+	/if (${Me.AltAbilityReady[Group Silent Presence]} && ${Select[${Me.Class.ShortName},SHM]}) {
+		/delay 5
+		/call MQ2Cast "Group Silent Presence" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Group Silent Presence
+	}	
 /return		
 
 

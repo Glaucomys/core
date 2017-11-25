@@ -9,6 +9,17 @@
  ***|
 
 
+20171124
+- /invis and /stack
+  -- shaman group presence (invis) added
+- get_target()
+  -- this is the pull routine for.. the puller. it has been changed.
+  -- it will not longer search the immediate combatRange (default 30) for mobs, then search the full agro range.
+    -- this was causing mobs to be selected by the entire mob ranged based on spawn orders. so it would pull mobs farther while ones were closer.
+  -- it now turns the pullers agro range in to steps of 10. the routine will cycle each step looking for a mob. when a valid one is found. that will be the target and the loop is broken.
+  -- pets will continue to remain dead last as long as valid targets are available.
+
+
 20171123
 - class.clr.inc
   -- removed HealSpell from XTarget Healing. since its not a real spell or anything.. /shrug
@@ -18,6 +29,8 @@
 - bug in /mode hunt. bad call to write INI
 - check_buffs_bc() spawn type was returning mounts. mounts dont need no buffs. thanks Stockli for finding it
 - cant spell "unpause" either..
+- get_mob() target acquisition for puller
+  --  forced exclusion of mounts: ${Spawn[id ${_tmpID}].Type.NotEqual[Mount]}
 
 
 20171119

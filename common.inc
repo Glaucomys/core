@@ -1273,6 +1273,7 @@ sub sort_cursor(bool _ignoreTimer)
 		/if (!${coreAuto} && !${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /return
 		/if (!${Bool[${Cursor.ID}]}) /return
 	}
+	/if (!${coreAuto} && !${switchOverrideLoot}) /return
 	
 	/while (${Cursor.ID}) {
 		DEBUG /while item on cursor
@@ -2128,7 +2129,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| target in range?
 	/if (${_tmpID} != 0 && (${Target.Distance} > ${Spell[${_spell}].MyRange} || ${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range})) /varset _bail out_of_range
 	| enough mana?
-	/if (!${Select[${_type},item,disc]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /varset _bail mana_too_low
+	/if (!${Select[${_type},item,disc]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 	| spell ready?
 	/if (!${Select[${_type},alt,item,disc]} && !${Me.SpellReady[${_spell}]} && !${Me.AltAbilityReady[${_spell}]}) /varset _bail spell_not_ready
 	| item ready?
@@ -2136,9 +2137,9 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| AA ready?
 	/if (${Select[${_type},alt]} && !${Me.AltAbilityReady[${_spell}]}) /varset _bail aa_not_ready
 	| disc ready?
-	/if (${Select[${_type},disc]} && !${Me.CombatAbilityReady[${_spell}]}) /varset _bail disc_not_ready
+	/if (${Select[${_type},disc]} && !${Me.CombatAbilityReady[${_spell}]}) /return FALSE
 	| check enough end for disc?
-	/if (${Select[${_type},disc]} && ${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /varset _bail disc_endurance
+	/if (${Select[${_type},disc]} && ${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
 	| spell stacks on self?
 	/if (!${Select[${_type},alt,item,disc]} && !${Spell[${_spell}].Stacks} && ${Target.ID} == ${Me.ID}) /varset _bail does_not_stack
 
@@ -4231,7 +4232,7 @@ sub check_disc_now()
 	}	
 /return
 
-
+${Spawn[id ${_tmpID}].Type.NotEqual[Mount]}
 
 |***
  *	DES: last mob is dedded we need a new thing(s) to kill
@@ -4245,55 +4246,48 @@ sub get_target()
 	/if (!${switchPull} || !${coreAuto}) /return
 	AMIDEAD
 	/declare _tmpID int local
-	/declare _tmpRange int local 25
-	/declare _tmpRangeLoop int local 1
+	/declare _tmpRange int local ${Math.Calc[${mobagro}/10]}
 	/declare _count int local
 	/declare _mobHP int local 100
 	/declare _priorityMob bool local FALSE
+	
 
-	| search local ${combatRadius} range for mob	acquisition
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
-		DEBUG Mob is close. Within:${combatRadius} 
-		/for _count 1 to ${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}
-			/if (!${switchPull} || !${coreAuto}) /return
-			AMIDEAD
-			/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable].ID}
-	
-			/if (!${_priorityMob} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].PctHPs} <= ${_mobHP} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1 || ${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-				/varset Target2Kill ${_tmpID}
-				/varset _mobHP ${Spawn[id ${_tmpID}].PctHPs}
-				/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-					/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) VOUT Mez Immune ${sep} ${cbad}${Spawn[ID ${_tmpID}].DisplayName}\ax
-					/if (${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) VOUT Named ${sep} ${cbad}${Spawn[ID ${_tmpID}].DisplayName}\ax
-					/varset _priorityMob TRUE
-				}
-			}
-		/next _count
+	| time to step the agro range out so we get mobs closer first	
+	/while (${_tmpRange} <= ${MobAgro} && !${Target2Kill}) {
+		DEBUG range search:${_tmpRange}
+
+		| search local ${MobAgro} range in steps of 10 for mob acquisition
+		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable]}) {
+			DEBUG mob found within:${_tmpRange} 
+			/for _count 1 to ${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable]}
+				/if (!${switchPull} || !${coreAuto}) /return
+				AMIDEAD
+				/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable].ID}
 		
-	| search full ${MobAgro} range for mob acquisition
-	} else /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${Me.Buff[Resurrection Sickness].ID}) {
-		DEBUG Mob is not close. Within:${combatRadius}... Searching
-		/for _count 1 to ${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]}
-			/if (!${switchPull} || !${coreAuto}) /return
-			AMIDEAD
-			/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable].ID}
-			
-			/if (${Spawn[id ${_tmpID}].Distance} < ${MobAgro} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && (${Spawn[id ${_tmpID}].LineOfSight} && !${switchOverrideLos}) && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1) {
-				/varset Target2Kill ${_tmpID}
- 			}
-		/next _count	
-	
+				/if (!${_priorityMob} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].PctHPs} <= ${_mobHP} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Mount]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1 || ${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
+					/varset Target2Kill ${_tmpID}
+					/varset _mobHP ${Spawn[id ${_tmpID}].PctHPs}
+					/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
+						/varset _priorityMob TRUE
+						/break
+					}
+				}
+			/next _count
+		}
+		/varcalc _tmpRange ${_tmpRange}+10
+	}		
+		
 	| lastly, kill all the evil pets. if the owner is dead.
-	} else /if (${SpawnCount[pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
-		DEBUG A pet is close. Within:${MobAgro}
+	/if (${SpawnCount[pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
+		DEBUG Found a pet within:${MobAgro}
 		/for _count 1 to ${SpawnCount[pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]}
 			/if (!${switchPull} || !${coreAuto}) /return
 			AMIDEAD
 			/varset _tmpID ${NearestSpawn[${_count}, pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable].ID}
 			/if (${Spawn[${Spawn[${_tmpID}].Master}].Type.Equal[Corpse]} || !${Spawn[${Spawn[${_tmpID}].Master}].ID}) /varset Target2Kill ${_tmpID}
 		/next _count	
-	}
-	
+	} 
+		
 	/if (${Spawn[${Target2Kill}].Type.NotEqual[Aura]} && ${Target2Kill}) /target id ${Target2Kill}
 	DEBUG Red Rover send [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] right over. Distance:${If[${Spawn[${Target}].LineOfSight},${cgood}${Target.Distance}\ax,${cbad}${Target.Distance}\ax]}
 
@@ -4664,7 +4658,7 @@ sub is_burn_time()
 sub check1offBuffs()
 	AMIDEAD
 	/if (${Me.Buff[Holistic Health].ID}) /call cure_Anashti_DT
-	/if (${Me.Buff[Pyroignition].ID}) /call CurePyroignitionDot
+	| /if (${Me.Buff[Pyroignition].ID}) /call CurePyroignitionDot
 	/if (${Me.Buff[Withering Physicality].ID} || ${Me.Buff[Withering Limbs].ID} || ${Me.Buff[Withering Faith].ID}) /call CureDamselofDecay
 /return
 

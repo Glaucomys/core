@@ -222,7 +222,7 @@ sub main()
 		/if (${coreAuto} && ${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && (!${SafeZone} || ${switchOverrideSafezone})) /makecamp return
 
 		| looter stuffs
-		 /if ((${coreAuto} || ${switchOverrideLoot}) && (!${SafeZone} || ${switchOverrideSafezone})) /call do_loot
+		/if ((${coreAuto} || ${switchOverrideLoot}) && (!${SafeZone} || ${switchOverrideSafezone})) /call do_loot
 
 		/doevents		
 		
