@@ -233,6 +233,8 @@ sub wait_for_rez()
 	/declare validRezFound 		bool 	local FALSE
 	/declare rezWindowPct 		int 	local 0
 	/delay 3s
+	VBC Needs a rez: "${Me.DisplayName}" 0 0 
+
 	:loopwaitforrezbox
 	DEBUGREZ start wait for rez
 		/delay 10s ${Window[ConfirmationDialogBox].Open}
@@ -1268,12 +1270,19 @@ sub sort_cursor(bool _ignoreTimer)
 	AMIDEAD
 	/declare _cursorChoice string local 
 
+	| we have faith in the all mighty AutoInventoryItem=
+	/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /autoinventory 
+	/if (!${Bool[${Cursor.ID}]}) /return
+
 	/if (!${Bool[${_ignoreTimer}]} && ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) {
-		/if (${coreAuto} && ${timer_clear_cursor}) /return
-		/if (!${coreAuto} && !${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /return
+		/if (${switchAutoCursor} && ${timer_clear_cursor}) /return
+		/if (!${switchAutoCursor} && !${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /return
 		/if (!${Bool[${Cursor.ID}]}) /return
 	}
-	/if (!${coreAuto} && !${switchOverrideLoot}) /return
+	
+	| allow for absence of override for not in same zone as master looter
+	/if (!${switchAutoCursor} && !${switchOverrideLoot}) /return
+	
 	
 	/while (${Cursor.ID}) {
 		DEBUG /while item on cursor
@@ -1294,7 +1303,7 @@ sub sort_cursor(bool _ignoreTimer)
 		}
 		/delay 1
 	} 
-	/if (${coreAuto}) /call create_timer timer_clear_cursor ${tClear_Cursor}
+	/if (${switchAutoCursor}) /call create_timer timer_clear_cursor ${tClear_Cursor}
 /return
 
 
@@ -2198,6 +2207,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 			VSPELL Spell ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} ${If[${Bool[${_sub}]},${_sub},]} -targetid|${_tmpID}
 		}
+		VBC Spell "${_spell}" ${_tmpID} 0 
 		/goto :cooldown
 	| AA
 	} else /if (${Select[${_type},alt]}) {
@@ -2219,11 +2229,13 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 			VITEM Item ${sep} ${citem}${_spell}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 			/call MQ2Cast "${_spell}" item -targetid|${_tmpID}
 		}
+		VBC Item "${_spell}" ${_tmpID} 0 
 		/goto :cooldown
 	| disc
 	} else /if (${Select[${_type},disc]}) {
 		/if (${_tmpID} == 0) VDISC Disc ${sep} ${csp}${_spell}\ax
 		/if (${_tmpID} != 0 && ${Target.ID}) VDISC Disc ${sep} ${csp}${_spell}\ax ${sep} [${ctar}${Spawn[ID ${_tmpID}].DisplayName}\ax]
+		VBC Disc "${_spell}" ${_tmpID} 0 
 		/disc ${_spell}
 		/delay 5s !${Me.Casting.ID}
 		/goto :cooldown
@@ -5637,7 +5649,6 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Common" "CombatBuff" NULL
 	/ini "${INIClass}" "Common" "BalanceHP" NULL
 	/ini "${INIClass}" "Common" "DoDebuff" NULL
-	/ini "${INIClass}" "Common" "Mount" NULL
 	/ini "${INIClass}" "Common" "HealOverride" NULL
 	/ini "${INIClass}" "Spells" "RuneSpell" NULL
 	/ini "${INIClass}" "Spells" "RuneType" NULL
@@ -6067,3 +6078,40 @@ sub check_deBuffs(int _tmpID)
 	}
 
 /return
+
+
+
+|***
+ *	DES: checks the build increments. if theres a farriance, will check INIs
+ *	USE: check_deBuffs
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub verify_build()
+
+	| if mismatch #s
+	/if (${classBuild} != ${coreBuild}) {
+
+		/if (${forceINIcheck}) {
+			| clean INIs?
+			/call fix_INI_declares	
+			
+			| fix INI version builds
+			/call writeINI classBuild common ${coreBuild}
+			
+			| clean out all old aliases.
+			/call whitewash TRUE
+			
+			| re establish aliases
+			/call set_alias
+		}
+	}
+
+/return
+
+
+
+
+
+
+

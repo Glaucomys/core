@@ -23,9 +23,9 @@ sub Bind_hud(string _hcType, string _hcVerbage)
 	/declare _bind string local hc	
 	
 	| get help
-	/if (${_hcType.Equal[info]}) {
-		/for _count 1 to ${hudType.Count[|]}
-			VOUT /${_bind} ${cinfo}${hudType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${hudType.Arg[${_count},|]}]}
+	/if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
 	} else /if (${Bool[${${_bind}Type.Find[${_hcType}]}]} && ${_${_bind}Verbage.Equal[info]}) {
@@ -33,18 +33,8 @@ sub Bind_hud(string _hcType, string _hcVerbage)
 		/return
 	}		
 	
-	| get help
-	/if (${hudType.Find[${_${_bind}Type}]} && ${_${_bind}Verbage.Equal[info]}) {
-		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
-		/return
-	}	
-	/if (${_${_bind}Type.Equal[info]}) {
-		/for _count 1 to ${hudType.Count[|]}
-			VOUT /${_bind} ${cinfo}${hudType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${hudType.Arg[${_count},|]}]}
-		/next _count
-	
 	| adjust hud clock
-	} else /if (${Bool[${_${_bind}Type.Find[time]}]}) {
+	/if (${Bool[${_${_bind}Type.Find[time]}]}) {
 		/varset HUDTime ${If[${HUDTime},FALSE,TRUE]}
 		/if (${HUDTime}) VOUT HUD Showing ${cinfo}Real Life\ax time.
 		/if (!${HUDTime}) VOUT HUD Showing ${cinfo}In Game\ax time.
@@ -107,8 +97,8 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "loc2" "3,44,62,100,149,237,${Int[${Me.Y}]}, ${Int[${Me.X}]}, ${Int[${Me.Z}]}"
 
 	| mode
-	/noparse /ini HUDPATH "mode0" "19,5,74,0,255,0,${If[${switchAutoCursor} && !${timer_auto_cursor_pause},Mode,]}"
-	/noparse /ini HUDPATH "mode1" "19,5,74,255,0,0,${If[!${switchAutoCursor} || (${switchAutoCursor} && ${timer_auto_cursor_pause}),Mode,]}"	
+	/noparse /ini HUDPATH "mode0" "19,5,74,0,255,0,${If[${switchAutoCursor},Mode,]}"
+	/noparse /ini HUDPATH "mode1" "19,5,74,255,0,0,${If[!${switchAutoCursor},Mode,]}"	
 	/noparse /ini HUDPATH "mode2" "19,44,74,255,255,0,${If[${Bool[${tmpMode}]},${tmpMode},]}"
 	/noparse /ini HUDPATH "mode3" "19,44,74,25,25,25,${If[${Bool[${tmpMode}]},,NONE]}"
 
@@ -215,14 +205,10 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "rez11" "19,215,62,0,255,0,${If[${switchRezEmergency},!,]}"
 	/noparse /ini HUDPATH "rez12" "19,215,62,25,25,25,${If[${switchRezEmergency},,!]}"
 	/noparse /ini HUDPATH "rez13" "19,225,62,255,255,255,${If[${switchRezGive},${maxRezRange},]}"
-	
-	
-	
 
 	| HUD WARNING/OVERIDE notices
 	/noparse /ini HUDPATH "hudwarning0" "3,110,1,100,149,237,[                                                     ]"
 	/noparse /ini HUDPATH "hudwarning1" "19,115,2,240,0,0,${If[${Bool[${hudWarning}]},${hudWarning},]}"
-
 
 	| group broadcast stauts
 	/noparse /ini HUDPATH "hudbroadcast0" "19,280,1,0,255,0,${If[${Bool[${setBroadcast}]},[                                         ],]}"

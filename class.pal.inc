@@ -344,7 +344,7 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 		/return
 	}	
 	| to Yaulp or not		
-	 } else /if (${Bool[${_classType.Equal[yaulp]}]}) {
+	/if (${Bool[${_classType.Equal[yaulp]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
 			/declare _num int local ${_classVerbage}
 			/call writeINI useYaulpPct Buffs ${_num}

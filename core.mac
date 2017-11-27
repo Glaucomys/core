@@ -23,9 +23,9 @@
 		
 	Files:
 	- core.mac									You are looking at it
-	- core.ini									Script settings that affect all the toons and environment, fishing and foraging results.
+	- core.ini									Script settings that affect all the toons and environment.
 	- common.inc								All common use functions.
-	- events.inc								Contains responses to EQ generated changes (environment).
+	- events.inc								Contains responses to EQ generated changes (environment/emotes).
 	- hud.inc										Sets the hud.
 	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias, binds'.
 	- test.inc									empty. testing purposes.
@@ -87,10 +87,8 @@
 #define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGMODE "/if (${switchDebugMode} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-
 #define OUT "/echo ${c-}-\ax"
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
-| #define NOUT "/echo ${c-}-\ax"
 #define VMELEE "/if (${switchEchoMelee}) /echo ${c-}-\ax"
 #define VSPELL "/if (${switchEchoSpell}) /echo ${c-}-\ax"
 #define VITEM "/if (${switchEchoItem}) /echo ${c-}-\ax"
@@ -98,8 +96,6 @@
 #define VALT "/if (${switchEchoAlt}) /echo ${c-}-\ax"
 #define VBC "/if (${switchEchoBC}) /call echos bc"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
-
-
 #define HUDPATH ".\..\MQ2HUD.ini core"
 #define LOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
 #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
@@ -109,7 +105,7 @@
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"
 #define CHECKSAFELIST "/if (!${safelist.Find[${_sender}]} && !${switchOverrideSafelist}) /return"
 #define UPDATEHUD "/call update_HUD_notices"
-#define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) && !${timer_auto_cursor_pause}) /call sort_cursor"
+#define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 
 
 #include tc\declare.inc
@@ -159,6 +155,7 @@ sub main()
 	/call set_alias
 	/call declare_timers
 	/call echos startup 0 0 0 0
+	/call verify_build
 	/call Event_Zone
 	/call base_preperation
 
@@ -194,7 +191,9 @@ sub main()
 
 		| check all buff types, rest and auras
 		/if (${coreAuto}) {
-			/if (${HomeSet}) /makecamp off
+			/if (!${HomeSet}) /makecamp off
+			
+			| keep an eye out for real rezes
 			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
 			/call check1offBuffs
 			AMIDEAD
@@ -263,12 +262,9 @@ sub main()
  ***|
 sub base_preperation()
 
-	| clean INIs?
-	| /if (${autoinihousekeeping}) /call fix_INI_declares
-	/call fix_INI_declares
-
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
+
 	| /call Event_SetVar NA SetTie Movement FALSE
 	
 	| set me some xtargets
@@ -300,8 +296,8 @@ sub base_preperation()
 	/if (${Bool[${Plugin[mq2melee]}]}) /squelch /melee reset
 
 	| bard stuffs
-	/if (${Bool[${Plugin[mq2twist]}]} && ${Select[${Me.Class.ShortName},BRD]}) /squelch /twist clear
-	/if (${Bool[${Plugin[mq2twist]}]} && ${Select[${Me.Class.ShortName},BRD]}) /squelch /twist quiet
+	/if (${Bool[${Plugin[mq2twist]}]} && ${validate_class[FALSE, |BRD]}) /squelch /twist clear
+	/if (${Bool[${Plugin[mq2twist]}]} && ${validate_class[FALSE, |BRD]}) /squelch /twist quiet
 
 	| cpu stuffs
 	/if (${Bool[${Plugin[mq2cpuload]}]}) /squelch /cpu auto
@@ -320,10 +316,10 @@ sub base_preperation()
 	/squelch /loadhud ${HudName}
 			
 	| forcs sos switch for non rogues
-	/if (${switchSos} && !${Select[${Me.Class.ShortName},ROG]}) /call writeINI switchSos Common FALSE
+	/if (${switchSos} && !${validate_class[FALSE, |ROG]}) /call writeINI switchSos Common FALSE
 		
 	| KillCode Warning for stupid fucks that like to AFK farm
-	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE,0]}) {
+	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE]}) {
 		VOUT ${sep} Hey.. You!
 		VOUT ${owarning} ${sep} FIX: \aw/core killcode=\ax${remoteKillKey}
 		VOUT ${cbad}CHANGE THIS\ax

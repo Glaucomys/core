@@ -243,7 +243,9 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171124
+	/declare coreBuild	 														int			outer 20171127
+	/call DeclareIniVar classBuild									int 		Common 0
+	/declare forceINIcheck													bool		outer TRUE
 
 	/declare _count 																int 		local 0
 	/declare combat																	string	outer
@@ -252,7 +254,7 @@ sub set_declares()
 	/declare canCast																bool		outer	TRUE
 
 	| HUD controls
-	/declare hudType																string	outer |time|update|broadcast|delete
+	/declare hcType																	string	outer |time|update|broadcast|delete
 	/declare hudNotice															string	outer FALSE
 	/declare hudWarning															string	outer	FALSE
 	/declare hudTarNotice														string	outer FALSE
@@ -348,8 +350,7 @@ sub set_declares()
 	/call DeclareIniVar relayTells									string	Echo FALSE
 	/call DeclareIniVar verbose											bool		Echo TRUE
 
-
- 	 	
+	 	
 	| lists for .. you know..lists and stuff.
 	/declare AllClassList														string 	outer |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU
 	/declare MeleeList    		  										string 	outer |WAR|ROG|BST|MNK|SHD|PAL|BER|BRD|RNG
@@ -382,9 +383,9 @@ sub set_declares()
 	| OCD Shit - 
 	/call DeclareCoreIniVar setMQFontSize						int			General 2
 	/call DeclareCoreIniVar setMQCaptions						string	General off
-
 	/call DeclareCoreIniVar setTGB									string	General on
 	/call DeclareCoreIniVar setAutoAssist						string	General off
+
 	
 	| buff queue variables
 	/call DeclareCoreIniVar queueCountMax						int			General 10
@@ -393,6 +394,7 @@ sub set_declares()
 	/declare queueList[${queueCountMax},2] 				 	int  		outer
 		
 	| /declare status_check_string						string	outer NULL
+
 	
 	| set /crew stuffs
 	/call DeclareCoreIniVar main													string	Group |FALSE|FALSE
@@ -427,6 +429,8 @@ sub set_declares()
 	/call DeclareCoreIniVar emptyHands							bool		Here	TRUE
 	/call DeclareCoreIniVar hereZRadius							int			Here	30
 	
+	
+	| please take a number and have a seat.
 	/declare bitchcount															int			outer	29	
 	/declare bitch1																	string	outer	"Seriously... Again..."
 	/declare bitch2																	string	outer	"Did your parents ever ask you to run away from home?"
@@ -459,6 +463,7 @@ sub set_declares()
 	/declare bitch29																string 	outer "Don't worry about it too much. I did the same thing when I was eleven."
 	/declare bitch30																string 	outer ""
 
+
 	| hide switches for /hidecorpse command
 	/call DeclareCoreIniVar hideNone								bool		hide FALSE
 	/call DeclareCoreIniVar hideAll									bool		hide FALSE
@@ -489,6 +494,7 @@ sub set_declares()
 	/declare switchModeHarvest											bool		outer FALSE
 	/declare switchModeTradeskill										bool		outer FALSE
 	/declare switchModeLush													bool		outer FALSE
+
 
 	| burns
 	/declare burnType																string	outer |auto|count|engageat|force
@@ -526,7 +532,6 @@ sub set_declares()
 	/call DeclareIniVar autoControl			 						bool		Common FALSE 
 	/call DeclareIniVar noCastWith									string	Common "|Quick Defense|Protection of Bayle|Interrogation Intimidation|Energy Charge|Cloud of Terror|Faith"
 
-
 	/call DeclareIniVar shrinkItem 									string 	Common "Ring of the Ancients"
 	/call DeclareIniVar IllusionItem								string	Common FALSE
 	/call DeclareIniVar IllusionBuff								string	Common FALSE
@@ -549,7 +554,6 @@ sub set_declares()
 	/declare ${Me.Class.ShortName}spire0						int		Buffs 0
 	/call DeclareIniVar spireRaid										int 	Buffs 0
 	/call DeclareIniVar spireGroup									int 	Buffs 0
-	
 
 	| Cleric
 	/declare CLRspire1															string	outer Fundament: First Spire of Divinity
@@ -685,13 +689,14 @@ sub set_declares()
 	/call DeclareIniVar switchRezCombat 						bool 		Heal FALSE 
 	/call DeclareIniVar switchRezEveryone 					bool 		Heal FALSE 
 	/call DeclareIniVar maxRezRange				 					int 		Heal 60 
-
 	/call DeclareIniVar RezTokenList								string 	Heal |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU	
+
 	
 	| watch spawn stuff
 	/declare hudwatchspawn													string	outer FALSE
 	/declare watchSpawnCount												int			outer	FALSE
 	/call DeclareIniVar watchSpawn									string	Common FALSE 
+
 		
 	| tie control
   /declare tcType																	string	outer |distance|lock|name|time
@@ -699,9 +704,11 @@ sub set_declares()
 	/declare SetTie       													bool 		outer FALSE
 	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
 	/call DeclareIniVar SetTieLock	 								bool 		Movement FALSE
+
 	
 	| follow
-	/declare SetFollow															bool 		outer FALSE
+	| /declare SetFollow															bool 		outer FALSE
+   
    
  	| Movement control
   /declare movementType														string	outer |arc|behind|fast|home|leash|mount|radius
@@ -717,7 +724,8 @@ sub set_declares()
 	/declare tempHomeSet														bool		outer FALSE	
 	/declare tempsnapstuck													bool		outer	FALSE  
 	
-	| debuff switches by class	
+	
+	| debuff switches	
   /declare deBuffType															string	outer |stop|mezz|malo|tash|cripple|slow|eradicate|snare
 	/declare switchdeBuff														bool		outer FALSE
 	/declare switchdeBuffStop												bool		outer FALSE
@@ -729,6 +737,8 @@ sub set_declares()
 	/call DeclareIniVar switchdeBuffEradicate				bool		Buffs FALSE
 	/call DeclareIniVar switchdeBuffSnare						bool		Buffs FALSE
 	
+	
+	| clickie things
 	/call DeclareIniVar doclickItem									int			Items 0 
 	/call DeclareIniVar clickItem1									string	Items FALSE 
 	/call DeclareIniVar clickItem2									string	Items FALSE 
@@ -750,16 +760,17 @@ sub set_declares()
 	/call DeclareIniVar CircleofLife								string	Items FALSE	
 	/call DeclareIniVar CircleofMana								string	Items FALSE	
 	
-	
 	/call DeclareIniVar doclickOdds									int			Odds 0 
 	/call DeclareIniVar clickOddItem1								string	Odds FALSE 
 	/call DeclareIniVar clickOddItem2								string	Odds FALSE 
 	/call DeclareIniVar clickOddItem3								string	Odds FALSE 
 	/call DeclareIniVar clickOddItem4								string	Odds FALSE 	
+
 	
-	| aas that you want to always keep going
+	| AAs that you want to always keep going
 	/call DeclareIniVar AANow1											string	AANow FALSE 
 	/call DeclareIniVar AANow2											string	AANow FALSE 
+
 
 	| discs that you want to always keep going
 	/call DeclareIniVar DiscNow1										string	DiscNow FALSE 
@@ -935,11 +946,9 @@ sub set_declares()
 	
 	| pet control
   /declare 		pcType											string	outer |pet|swarm|tank|type|build|bag
-	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD,CLR,WIZ,RNG,BRD,BST]}) {
-		/call DeclareIniVar PcPetengageat							int			Pet 99
-		/call DeclareIniVar switchPcPettank						bool 		Pet FALSE
-		/call DeclareIniVar PcPettype									string	Pet FALSE
-	}
+	/call DeclareIniVar PcPetengageat								int			Pet 99
+	/call DeclareIniVar switchPcPettank							bool 		Pet FALSE
+	/call DeclareIniVar PcPettype										string	Pet FALSE
 	/call DeclareIniVar switchPcPet									bool 		Pet FALSE
 	/call DeclareIniVar switchPcSwarm								bool 		Pet FALSE	
 	/call DeclareIniVar PcSwarmengageat							int			Pet 99
@@ -2131,67 +2140,54 @@ sub declare_CLR()
 
 
 
+
+
+
+
+
 |***
  *	DES: This will clear all store alises that core has created in your MacroQuest2.INI file. or those with matching names.
  *	USE: /core whitewash
  *	INI: MacroQuest2.INI
  *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry it's slow as fuck.
  ***|
-sub whitewash()
-	VOUT ${owarning} ${sep} Deleting all Core ${cinfo}${versionCore}\ax aliases. ${cbad}Please Wait\ax
-	/declare _count 				int local
-	/declare _todelete[11] 	string local
-	/declare _index 				int local
+sub whitewash(bool _silent)
+	/if (!${_silent}) VOUT ${owarning} ${sep} Deleting all Core ${cinfo}${coreBuild}\ax aliases. ${cbad}Please Wait\ax
+	/declare _count 				int local 0
+	/declare _todelete[1] 	string local
+	/declare _index 				int local 0
 	/declare _increment			int local 1
 	
-	| commands to remove forever
-	| /varset _todelete[15] |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion|home|paragon|combatradius|HuntMobAgro
-	| /varset _todelete[16] |spice|stop|setagro|smartma|setpull|HUDTime|banestrike|broadcast|ib|sb|pb|resetcore|verbose|buildpet|autorest|toastauto|primary|secondary|invis|info|whohas
-	| /varset _todelete[17] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable|core|invites|facefast|stickbehind|hudupdate|qmpct|qm|toastmobcount|toastengageat|combatdistance
-	| /varset _todelete[18] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash|agro|engageat|autorest|smartengageat|watchspawn|petengageat|petswarmengageat
-	| /varset _todelete[19] |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|tie|ignorelos|forage|fish|train|petfarm|drag|ri|hunt|tietoon|tiedistance|tietime
-	| /varset _todelete[20]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
-	| /varset _todelete[21] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore|pettype|pettank|whitewash|doyaulp|cr|ma1|ma2|info|huntagro|killcode|useeradicate
+	| retired aliases
+	| /varset _todelete[xx] |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion|home|paragon|combatradius|HuntMobAgro
+	| /varset _todelete[xx] |spice|stop|setagro|smartma|setpull|HUDTime|banestrike|broadcast|ib|sb|pb|resetcore|verbose|buildpet|autorest|toastauto|primary|secondary|invis|info|whohas
+	| /varset _todelete[xx] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable|core|invites|facefast|stickbehind|hudupdate|qmpct|qm|toastmobcount|toastengageat|combatdistance
+	| /varset _todelete[xx] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash|agro|engageat|autorest|smartengageat|watchspawn|petengageat|petswarmengageat
+	| /varset _todelete[xx] |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|tie|ignorelos|forage|fish|train|petfarm|drag|ri|hunt|tietoon|tiedistance|tietime
+	| /varset _todelete[xx]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
+	| /varset _todelete[xx] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore|pettype|pettank|whitewash|doyaulp|cr|ma1|ma2|info|huntagro|killcode|useeradicate
+	| /varset _todelete[xx] |control|smartengageat|killmob|combat|on|off|maxlevel|autoadjustexp|oneoff|userain|crew|autologin|usebuffkill|pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel|core
+	| /varset _todelete[xx] |mirror|maintexplvl|autocontrol|echoaugments|relay|givecoin|stop|usegrouphot|usegroupheal|rc|purify|sendpets|harvest|gather|rod|redorod|rods|song|glyph|lesson|wood|cani
+	| /varset _todelete[xx] |here|take|homeradius|homeleash
 		
-	| misc HUD commnads
-	/varset _todelete[1] |control|smartengageat
-	
-	| assist
-	/varset _todelete[2] |killmob
+	| core aliases
+	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson
 
-	| modes
-	/varset _todelete[3] |combat|on|off
-
-	| Misc commands
-	/varset _todelete[4] |maxlevel|autoadjustexp|oneoff|userain|crew|autologin|usebuffkill
-	/varset _todelete[5] |pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel|core
-	/varset _todelete[6] |mirror|maintexplvl|autocontrol|echoaugments|relay|givecoin|stop
-
-	| heal
-	/varset _todelete[7] |usegrouphot|usegroupheal|rc|purify
-
-	| pets
-	/varset _todelete[8]	|sendpets
-
-	| commands
-	/varset _todelete[9] |harvest|gather|rod|redorod|rods|song
-	/varset _todelete[10] |glyph|lesson|wood|cani
-
-	| movement
-	/varset _todelete[11]	|here|take|homeradius|homeleash
 	
 	/for _count 1 to ${_todelete.Size}
 		DEBUG _count: ${_count}-${_todelete.Size}
 		/for _index 1 to ${_todelete[${_count}].Count[|]}
 			DEBUG _index: ${_count}-${_todelete.Size}: ${_index} ${_todelete[${_count}].Arg[${_index},|]}
-			VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
+			/if (!${_silent}) VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
 			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
 			/varcalc _increment ${_increment}+1
 		/next _index	
 	/next _count
 	
-	/call echos ending
-	/endm
+	/if (!${_silent}) {
+		/call echos ending
+		/endm
+	}
 /return
 
 
@@ -2338,9 +2334,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	/if (${_cmd.Equal[door]}) {
 		/call create_timer timer_try_door 4s
 		:retrydoortarget
-		/echo here
 		/if (!${timer_try_door}) /return
-		/echo here 2
 		/doortarget 
 		/delay 1
 		/if (!${Switch.ID}) /goto :retrydoortarget

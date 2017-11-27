@@ -3,11 +3,36 @@
  * Core Change Log
  * Timestamp: YYYYMMDD
  *
+ *
  * WHITEWASH means a '/core whitewash' needs to be run to reset the aliases
- * HUDUPDATE means you need to do a '/hc update' to make needed changes to the hud.ini
- * Video: https://vimeo.com/235171246
+ * HUDUPDATE means you need to do a '/hc delete' then a '/hc update' to make needed changes to the MQ2Hud.INI
+ *
  ***|
 
+
+
+
+
+20171127
+HUDUPDATE
+- /cursor
+  -- /cursor is now independent of automated or manual control
+  -- anything in the Toon.INI->[Common]->AutoInventoryItem= will be shoved in the inventory as fast as it can no matter what your settings. best to keep this list short
+  -- /cursor auto enabled will apply everything that crosses your cursor to the loot ini file
+  -- /cursor auto disabled wont do shit. you will hang on to that item 'till hell freezes over
+- ture/false error in /movement home setting for main mac loop. thanks to mousetohome for finding it
+- class.mag.inc
+  -- adjustments to the mage to keep twincast/twincst nuke up as much as possible
+- class.pal.inc
+  -- error in /pal switch logic
+- /bc echos added in a shit tonne of places. /echos bc to enable/disable
+- verify_build()
+  -- an entry has been added to the toons INI->[genera]->classbuild=
+  -- this will be matched to the coreBuild increment. when they dont match, stuff will happen, then they will be made to match. 
+  -- more of a way to keep INIs clean from stale entries, old aliases, etc
+- some debug echos removed
+- mount issue found. shouldn't vanish anymore
+  
 
 20171124
 - /invis and /stack
@@ -38,7 +63,7 @@
   -- /echos [alt|bc|channel|disc|item|melee|spells|relay|verbose]
   -- NOTE: ALL echo controlls are moved to here. verbose, echochannel, relay. you will need to reset them if they are being used
   -- NOTE: it will take time to get these echos through the code to replace the generic VOUT echo.
-  -- core.ini-[echo]->
+  -- core.ini->[echo]->
     -- SwitchEchoMelee - echo melee skills to BC
     -- SwitchEchoSpell - echo spells to BC
     -- SwitchEchoAlt - echo alt abilities to BC

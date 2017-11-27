@@ -74,8 +74,7 @@ sub disc_MAG()
 	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKTIE
-	/call is_target_dead
-	/if (!${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Me.AltAbilityReady[Force of Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Force of Elements].MyRange}) /call core_cast "Force of Elements" alt ${Target2Kill} FALSE
 	/if (${switchForceTwincast} && ${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) /call core_cast "${TwincastSpell}" 0 ${Target2Kill} FALSE
@@ -268,8 +267,7 @@ sub force_twincast_MAG()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return  
+	/if (${is_target_dead[${Target2Kill}]}) /return 
 	
 	| SDEBUG pass checks
 	
