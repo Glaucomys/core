@@ -1247,11 +1247,12 @@ sub click_item(bool _clickEpic)
 
 	/declare _count int local 0
 	/for _count 1 to ${doclickItem}
+		DEBUG _count:${_count} item:${clickItem${_count}} ready:${Me.ItemReady[${clickItem${_count}}]} 
 		/doevents
 		AMIDEAD
 		CHECKTIE
 		/if (${is_target_dead[${Target2Kill}]}) /return
-		/if (${Me.ItemReady[${clickItem${_count}}]}) /call core_cast "${clickItem${_count}}" item ${Target2Kill} FALSE
+		/if (${Me.ItemReady[${clickItem${_count}}]}) /call core_cast "${clickItem${_count}}" item 0 FALSE
 
 	/next _count
 /return
@@ -2438,13 +2439,34 @@ sub use_skill_melee(int _tmpID)
 		}
 	}
 	
-	| bash
+	|** | bash
 	/if (${Bool[${bash}]} && !${Skill[Bash].Auto}) {
 		/if (${Me.AbilityReady[Bash]} && ${Spawn[${_tmpID}].Distance} <= 15) {
 			VMELEE Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Bash
 		}
 	}
+	**|
+	
+	| bash
+	/if (${Bool[${bash}]} && !${Skill[Bash].Auto}) {
+		/if (${Me.AbilityReady[Bash]} && ${Spawn[${_tmpID}].Distance} <= 15) {
+			VMELEE Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			/if (${Bool[${switchBandolier}]} && ${Bool[${bandolierBash}]} && ${Bool[${bandolierNormal}]}) {
+				/if (${Target.ID}) {
+					/bandolier Activate ${bandolierBash}
+					/delay 1
+					/doability Bash
+					/delay 1
+					/bandolier Activate ${bandolierNormal}
+				}
+			} else if (!${Bool[${switchBandolier}]}) {
+				/if (${Target.ID}) /doability Bash
+			}
+		}
+	}	
+	
+	
 	
 	| Zerker only skill
 	/if (${validate_class[FALSE, |BER]}) {
@@ -4334,12 +4356,14 @@ sub get_target()
 			/if (${Me.Stunned}) /return
 			/if (!${switchPull} || !${coreAuto}) /return
 			| /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance} targetable playerstate 4]}) /return
-			/if (${Select[${Me.Class.ShortName},SHD]} && ${Me.AltAbilityReady[Hate's Attraction]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} < ${Spell[Hate's Attraction].MyRange}) /call core_cast "Hate's Attraction" alt ${Target2Kill} FALSE
-			} else /if (${Select[${Me.Class.ShortName},PAL]} && ${Me.AltAbilityReady[Divine Call]}) {
+			
+			/if (${Select[${Me.Class.ShortName},SHD]}) {
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) /call core_cast "Hate's Attraction" alt ${Target2Kill} FALSE
+			} else /if (${Select[${Me.Class.ShortName},PAL]}) {
 				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} <= 45) /call core_cast "Divine Call" alt ${Target2Kill} FALSE
-			} else /if (${Select[${Me.Class.ShortName},WAR]} && ${Me.AltAbilityReady[Warlord's Grasp]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} < ${Spell[Warlord's Grasp].MyRange}) /call core_cast "Warlord's Grasp" alt ${Target2Kill} FALSE
+			} else /if (${Select[${Me.Class.ShortName},WAR]}) {
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) /call core_cast "Warlord's Grasp" alt ${Target2Kill} FALSE
+				/if (${Target.Distance} < 31 && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost}) /call core_cast "${DiscInsult}" disc ${Target2Kill} FALSE
 			}
 
 			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && < ${MobAgro}) {

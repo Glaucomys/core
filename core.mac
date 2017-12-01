@@ -191,7 +191,7 @@ sub main()
 
 		| check all buff types, rest and auras
 		/if (${coreAuto}) {
-			/if (!${HomeSet}) /makecamp off
+			/if (${HomeSet}) /makecamp off
 			
 			| keep an eye out for real rezes
 			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE

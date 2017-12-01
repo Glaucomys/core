@@ -10,7 +10,16 @@
  ***|
 
 
-
+20171130
+- get_target()
+  -- ${DiscInsult} added to warrior pull for more initial hate.
+- bandolier swapping for bash added (framework for other bandolier options as well)
+  -- /cc [bandolier] - enable/disable
+  -- toon.INI->[melee] ->
+    -- SwitchBandolier=  /cc bandolier to enable/disable
+    -- BandolierNormal=  name of bandolier you normaly use
+    -- BandolierBash=   name of bandolier you want to use to bash with.  if you need it.
+	-- thanks to Materous Apps for the idea and the code.
 
 
 20171127

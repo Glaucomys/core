@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171127
+	/declare coreBuild	 														int			outer 20171130
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -659,7 +659,7 @@ sub set_declares()
 
 
 	| combat controls
-	/declare ccType																	string	outer |agro|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|zradius
+	/declare ccType																	string	outer |agro|bandolier|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|zradius
 	/call DeclareIniVar combat					 						string	Common melee
 	/call DeclareIniVar MA1			 										string 	Common FALSE
 	/call DeclareIniVar MA2			 										string 	Common FALSE
@@ -674,6 +674,8 @@ sub set_declares()
 	/call DeclareIniVar CombatDistance							int			Movement 15
 	/call DeclareCoreIniVar combatRadius						string	General 30
 	/call DeclareIniVar zradius											int			Common 60	
+	/call DeclareIniVar switchBandolier							bool		meleedisc FALSE
+
 		
 			
 	| rez	control
@@ -796,6 +798,10 @@ sub set_declares()
 	/call DeclareIniVar bash												bool		meleedisc FALSE
 	/call DeclareIniVar taunt												bool		meleedisc FALSE
 	/call DeclareIniVar disarm											bool		meleedisc FALSE
+	/call DeclareIniVar bandolierNormal							string  meleedisc FALSE
+	/call DeclareIniVar bandolierBash								string	meleedisc FALSE
+
+	
 	/if (${Select[${Me.Class.ShortName},BER]}) {
 		/call DeclareIniVar frenzy										bool		meleedisc FALSE
 	}
@@ -4140,6 +4146,10 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 				VOUT /${_bind} force [${_listout}]	
 			}
 
+	| set bandolier swapping
+	} else /if (${Bool[${_ccType.Equal[bandolier]}]}) {
+		/call writeINI switchBandolier meleedisc ${If[${switchBandolier},FALSE,TRUE]}
+		VOUT /${_bind} bandolier swap ${sep} ${cinfo}${combat}\ax
 
 	| set Melee combat
 	} else /if (${Bool[${_ccType.Equal[melee]}]}) {

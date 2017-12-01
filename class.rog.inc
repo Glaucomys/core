@@ -91,6 +91,10 @@ sub disc_ROG()
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Target.ID} && ${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	/call use_skill_melee ${Target2Kill}
+	
+	| epic item
+	/if (${Me.ItemReady[${Epic}]})  /call core_cast "${Epic}" item 0 FALSE
+
 
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0 FALSE
 	/if (${validate_buff[disc, discs, DiscVision]}) /call core_cast "${DiscVision}" disc 0 FALSE
