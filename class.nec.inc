@@ -44,7 +44,7 @@ sub core_NEC()
 		/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
 		/if (${DoNuke}) /call cast_nuke
 		/if (${DoDoT}) /call cast_DOT
-		/if (${doclickItem}) /call click_item TRUE
+		/call click_item TRUE
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
@@ -172,7 +172,7 @@ sub synergy_NEC()
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

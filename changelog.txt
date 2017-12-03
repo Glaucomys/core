@@ -10,6 +10,38 @@
  ***|
 
 
+
+20171203
+- updates to wiki
+- /tie
+  -- can now do /tie [on|off]
+- cast_disc_breather()
+  -- added COOLDOWN to the combat status check. breather should trigger a LOT more
+- major changes to the burn routine detection
+- switchAutoCursor defaults to TRUE in new INI creation
+- lot of old coded moved to file 13
+- melee classes with the breather disc will now trigger it in manual mode w/o having to worry about it.
+- updated some missing epic clicks
+- removed counts for
+  -- doclickItem .. now hardcoded to 6
+  -- doclickItemBurn .. now hardcoded to 6
+  -- doclickOdds .. now hardcoded to 4
+- class.rng.inc
+  -- synergy burns now detect range or melee combat modes and adjust
+- class.ber.inc
+  -- overhaul of disc usage and burn routine
+- class.brd.inc
+  -- bug in the dots routine trying to cast a nuke
+  -- bard will sing in rest mode now. you have been warned
+- class.pal.inc
+  -- adjustment to Steel line. will not hang on core start is spell is not ready
+- class.clr.inc
+  -- /clr [ch] - enable/disable Complete Heal. you're still on your own to mem the spell.
+  
+
+
+ 
+
 20171130
 - get_target()
   -- ${DiscInsult} added to warrior pull for more initial hate.

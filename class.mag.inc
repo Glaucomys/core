@@ -44,7 +44,7 @@ sub core_MAG()
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchPcSwarm}) /call cast_nuke_servant
 		/if (${useRain}) /call cast_nuke_rain		
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
@@ -251,7 +251,7 @@ sub synergy_MAG()
 	/if (${switchPcSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill} FALSE
 
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

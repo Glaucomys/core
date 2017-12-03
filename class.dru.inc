@@ -49,7 +49,7 @@ sub core_DRU()
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}			
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 	} else /if (${combat.Equal[HEAL]}) {
 		CHECKREZ
 		/call set_combat HEAL
@@ -71,7 +71,7 @@ sub core_DRU()
 			/if (${DoNuke}) /call cast_nuke
 			/call disc_${Me.Class.ShortName}			
 			/call click_DPS_${Me.Class.ShortName}
-			/if (${doclickItem}) /call click_item
+			/call click_item
 		}
 	}
 	/if (${coreAuto}) {	
@@ -411,7 +411,7 @@ sub synergy_DRU()
 	/if (${useGroupHeal} && ${Me.AltAbilityReady[Nature's Boon]}) /call core_cast "Nature's Boon" alt 0 FALSE
 
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

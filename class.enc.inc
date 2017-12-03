@@ -36,7 +36,7 @@ sub core_ENC()
 		/call stick_to_target
 		/call check_deBuffs ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
@@ -46,7 +46,7 @@ sub core_ENC()
 		/call stick_to_target
 		/call check_deBuffs
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke			
@@ -55,7 +55,7 @@ sub core_ENC()
 		/call send_pet
 		/call check_deBuffs ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
@@ -98,7 +98,7 @@ sub core_ENC()
 			/if (!${addList.Count[|]}) /call disc_ENC
 		}
 		/call click_BP
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 	/if (${coreAuto}) {	
@@ -538,7 +538,7 @@ sub synergy_ENC()
 	
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

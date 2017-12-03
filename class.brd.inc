@@ -33,6 +33,7 @@ sub core_BRD()
 		/if (${DoDoT}) /call bard_dot
 		/if (${DoNuke}) /call bard_nuke
 		/call pulse
+		/call click_item
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
@@ -40,9 +41,11 @@ sub core_BRD()
 		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
 		/if (${DoDoT}) /call bard_dot
 		/if (${DoNuke}) /call bard_nuke
+		/call click_item
 	} else /if (${Select[${combat},HEAL]}) {
 		/call set_combat HEAL
 		/call pulse
+		/call click_item
 	} else /if (${Select[${combat},DUAL]}) {
 		/call get_assist_target
 		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
@@ -244,7 +247,7 @@ sub pulse()
  ***|
 sub pulse_valid(_gem)
 	DEBUGCLASS ${cbug}pulse_valid(gem: ${_gem})\ax
-	/declare _pulseSong			bool local TRUE
+	/declare _pulseSong bool local TRUE
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /varset _pulseSong FALSE
 	/if (${Me.Buff[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
@@ -284,10 +287,10 @@ sub core_sing(_spellgem)
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem int local ${Macro.Return}
-	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /return	
+	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}]}].Mana}) /return	
 	/call stick_to_target
 	/if (${Me.Casting.ID}) /stopcast
-	VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
+	VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}]}\ax
 	/melody ${_gem}
 	| /delay 25
 	/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
@@ -338,7 +341,7 @@ sub bard_dot()
 		/doevents
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Target.BuffDuration[${DoT${_count}}]} >= 2) /return
-		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${DoT${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${DoT${_count}}].MyRange} && ${Me.CurrentMana} >= ${DoT[${Nuke${_count}}].Mana}) {
+		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${DoT${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${DoT${_count}}].MyRange} && ${Me.CurrentMana} >= ${DoT[${DoT${_count}}].Mana}) {
 			/call stick_to_target
 			/call core_sing ${Me.Gem[${DoT${_count}}]}
 		}
@@ -469,6 +472,9 @@ sub synergy_BRD()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Me.Casting.ID}) /call pulse_stop
 	
+	| epic item
+	/call core_cast "${Epic}" item 0 FALSE	
+	
  	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0 FALSE
  	/if (${Me.CombatAbilityReady[Thousand Blades]}) /call core_cast "Thousand Blades" disc 0 FALSE	
 	/if (${Me.AltAbilityReady[Fierce Eye]}) /call core_cast "Fierce Eye" alt 0 FALSE
@@ -478,7 +484,7 @@ sub synergy_BRD()
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn	
+	/call click_item_burn	
 /return
 
 

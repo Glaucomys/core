@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171130
+	/declare coreBuild	 														int			outer 20171203
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -741,17 +741,19 @@ sub set_declares()
 	
 	
 	| clickie things
-	/call DeclareIniVar doclickItem									int			Items 0 
 	/call DeclareIniVar clickItem1									string	Items FALSE 
 	/call DeclareIniVar clickItem2									string	Items FALSE 
 	/call DeclareIniVar clickItem3									string	Items FALSE 
 	/call DeclareIniVar clickItem4									string	Items FALSE 
+	/call DeclareIniVar clickItem5									string	Items FALSE 
+	/call DeclareIniVar clickItem6									string	Items FALSE 
 		
-	/call DeclareIniVar doclickItemBurn							int			Items 0 
 	/call DeclareIniVar clickItemBurn1							string	Items FALSE 
 	/call DeclareIniVar clickItemBurn2							string	Items FALSE 
 	/call DeclareIniVar clickItemBurn3							string	Items FALSE 
 	/call DeclareIniVar clickItemBurn4							string	Items FALSE 	
+	/call DeclareIniVar clickItemBurn5							string	Items FALSE 	
+	/call DeclareIniVar clickItemBurn6							string	Items FALSE 	
 	
 	/call DeclareIniVar Breastplate1		 						string	Items FALSE	
 	/call DeclareIniVar Breastplate1effect					string	Items FALSE
@@ -762,7 +764,6 @@ sub set_declares()
 	/call DeclareIniVar CircleofLife								string	Items FALSE	
 	/call DeclareIniVar CircleofMana								string	Items FALSE	
 	
-	/call DeclareIniVar doclickOdds									int			Odds 0 
 	/call DeclareIniVar clickOddItem1								string	Odds FALSE 
 	/call DeclareIniVar clickOddItem2								string	Odds FALSE 
 	/call DeclareIniVar clickOddItem3								string	Odds FALSE 
@@ -799,7 +800,9 @@ sub set_declares()
 	/call DeclareIniVar taunt												bool		meleedisc FALSE
 	/call DeclareIniVar disarm											bool		meleedisc FALSE
 	/call DeclareIniVar bandolierNormal							string  meleedisc FALSE
+	/declare bandolierSwap													string 	outer ${bandolierNormal}
 	/call DeclareIniVar bandolierBash								string	meleedisc FALSE
+	/call DeclareIniVar bandolierBurn								string	meleedisc FALSE
 
 	
 	/if (${Select[${Me.Class.ShortName},BER]}) {
@@ -992,7 +995,7 @@ sub set_declares()
   /declare brdType																string	outer |line|restsong|spiregroup|spireraid
   /declare berType																string	outer |ae|spiregroup|spireraid
   /declare bstType																string	outer |spiregroup|spireraid
-  /declare clrType																string	outer |aggressive|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
+  /declare clrType																string	outer |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
   /declare druType																string	outer |groupheal|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
   /declare encType																string	outer |gather|spiregroup|spireraid
   /declare magType																string	outer |fade|forcetwincast|gather|mana|rods|spiregroup|spireraid
@@ -1008,7 +1011,7 @@ sub set_declares()
     
 	| cursor
   /declare cursorType															string	outer |auto|what|sell|keep|destroy|leave|announce|ignore|pause
-	/call DeclareIniVar switchAutoCursor						bool		Common FALSE	
+	/call DeclareIniVar switchAutoCursor						bool		Common TRUE	
   
   | list control
 	/declare listType																string	outer |safe|reset|remove|exclude|name|nomezz|nocast|range|nomelee|nomagic|nodisease|nofire|nopoison|nocold|nocorruption|huntmob
@@ -1442,7 +1445,7 @@ sub declare_SHD()
 sub declare_PAL()
 	/call setTimer	tcheck_MG												string	Timer	10s timer_check_MG
 	/call setTimer tcheck_Steel											string 	Timer 2m timer_check_Steel
-	/call setTimer tcheck_Stance										string 	Timer 7.5m timer_check_stance
+	/call setTimer tcheck_Stance										string 	Timer 7.5m timer_check_Stance
 
 	/declare mobAECount															int			outer 0 
 	/declare groupHurt 															int 		outer 0
@@ -1619,6 +1622,7 @@ sub declare_BER()
  	/call DeclareIniVar DiscDicho		 								string 	Discs "Dichotomic Rage"
  	/call DeclareIniVar DiscDisconcert							string 	Discs "Disconcerting Discipline"
  	/call DeclareIniVar DiscEnduranceTap						string 	Discs "Sapping Strikes"
+ 	/call DeclareIniVar DiscPet											string 	Discs "Phantom Assailant"
 
 	/declare OpenWoundEffect												string 	outer Open Wound
   /if (${OpenWoundDisc.Find[rk. III]}) {
@@ -2108,6 +2112,7 @@ sub declare_CLR()
 	/call DeclareIniVar switchForceGroupHeal				bool		Heal FALSE
 	/call DeclareIniVar RampageTank									string	Heal FALSE
 	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
+	/call DeclareIniVar switchCompleteHeal					string	Heal FALSE
 	
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar spellYaulp 									string	Buffs FALSE
@@ -3725,22 +3730,35 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 		/next _count
 		VOUT /${_bind} [${_listout}]
 	}
-	
-	
 /return
 
 
 
 |***
  *	DES: enable/disable Tie
- *	USE: /tie
+ *	USE: /tie [on|off]
  *	INI: 
  *  NOTE:
  ***| 	
 #bind setTie /tie
-sub Bind_setTie()
-	/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie ${If[${SetTie},FALSE,TRUE]}  
-	/if (!${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie FALSE 
+sub Bind_setTie(string _tieType)
+
+	| tie toon not in zone?
+	/if (!${Bool[${Spawn[pc ${SetTieToon}].ID}]}) {
+		/varset SetTie FALSE 
+		/return
+	}
+
+	/if (${_tieType.Equal[on]}) {
+		/if (${SetTie}) /return
+		/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie TRUE
+	} else /if (${_tieType.Equal[off]}) {
+		/if (!${SetTie}) /return
+		/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie FALSE
+	} else {
+		/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie ${If[${SetTie},FALSE,TRUE]}  
+	}
+	
 	VOUT Tie to ${cpc}${SetTieToon}\ax ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
 /return
 
@@ -4065,13 +4083,6 @@ sub Bind_ts(string _tsType)
 			VOUT Open Realestate Items Window
 		}
 
-| /click left ${Me.Inventory[1].Item[23].Name} 
-| /nomodkey /itemnotify in Pack${Math.Calc[${FindItem[=${Me.Inventory[23].Item[1].Name}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${Me.Inventory[23].Item[1].Name}].ItemSlot2}+1]} leftmouseup
-| /nomodkey /itemnotify in Pack${Math.Calc[${FindItem[=${Me.Inventory[23].Item[1].Name}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${Me.Inventory[23].Item[1].Name}].ItemSlot2}+1]} rightmouseup
-| ${Window[RealEstateItemsWnd].Open}
-| /nomodkey /itemnotify "${Me.Inventory[23].Name}" rightmouseup
-| /nomodkey /shift /notify RealEstateItemsWnd REIW_Move_Closet_Button leftmouseup
-
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
@@ -4081,7 +4092,7 @@ sub Bind_ts(string _tsType)
 	} 
 /return
 
-Tar
+
 
 |***
  *	DES: core controls

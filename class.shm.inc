@@ -43,7 +43,7 @@ sub core_SHM()
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
@@ -55,7 +55,7 @@ sub core_SHM()
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke			
@@ -66,7 +66,7 @@ sub core_SHM()
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
@@ -78,7 +78,7 @@ sub core_SHM()
 			/call check_deBuffs ${Target2Kill}
 			/if (${DoDoT}) /call cast_DOT
 			/if (${DoNuke}) /call cast_nuke
-			/if (${doclickItem}) /call doclickItem
+			/call doclickItem
 			/call send_pet
 			/call click_DPS_${Me.Class.ShortName}
 			/call disc_${Me.Class.ShortName}
@@ -302,11 +302,12 @@ sub check_heal_XTarget_SHM()
  *  NOTE: this will try and get a twinheal proc first.
  ***|
 sub cast_surge_heal()
-	DEBUGCLASS ${cbug}cast_surge_heal()\ax
-	AMIDEAD
+	DEBUGCLASS ${cbug}cast_surge_heal(nuke1:${TC1}, nuke2:${TC2})\ax
+	/if ((!${Bool[${TC1}]} && !${Bool[${TC1}]})) /return
+	/if (${Bool[${Me.Song[Touch of the Divine]}]} || (!${Bool[${TC1}]} && !${Bool[${TC1}]})) /return
 
+	AMIDEAD
 	/doevents
-	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
 	/declare _tmpTarget int local
 	
 	
@@ -414,7 +415,7 @@ sub synergy_SHM()
 
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

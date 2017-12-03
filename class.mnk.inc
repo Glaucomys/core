@@ -36,7 +36,7 @@ sub core_MNK()
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}		
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -144,7 +144,7 @@ sub synergy_MNK()
 	
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

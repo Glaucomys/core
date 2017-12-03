@@ -37,7 +37,7 @@ sub core_RNG()
 		/call click_BP
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
@@ -48,7 +48,7 @@ sub core_RNG()
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
@@ -69,7 +69,7 @@ sub core_RNG()
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call use_skill_melee ${Target2Kill}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} 
 	/if (${coreAuto}) {	
@@ -267,7 +267,7 @@ sub synergy_RNG()
 	CHECKEXIT
 	/doevents
 	
-	| mele disc
+	|** mele disc
 	/if (${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
 		/call core_cast "Empowered Blades" alt 0 FALSE
 	} else /if (${Me.CombatAbilityReady[${DiscMele}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
@@ -276,6 +276,27 @@ sub synergy_RNG()
 		/call use_glyph
 	} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
 		/call core_cast "${Epic}" item 0 FALSE
+	}
+	**|
+	
+	| MELEE
+	/if (${combat.Equal[MELEE]}) {
+		/if (${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/call core_cast "Empowered Blades" alt 0 FALSE
+		} else /if (${Me.CombatAbilityReady[${DiscMele}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/call core_cast "${DiscMele}" disc 0 FALSE
+		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]}) {
+			/call use_glyph
+		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/call core_cast "${Epic}" item 0 FALSE
+		}
+	| RANGE
+	} else /if (${combat.Equal[RANGE]}) {
+		/if (${Me.CombatAbilityReady[${DiscRange}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/call core_cast "${DiscRange}" disc 0 FALSE
+		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscRange}]}) {
+			/call use_glyph
+		}
 	}
 	
 	/call cast_AA_spire
@@ -310,7 +331,7 @@ sub synergy_RNG()
 	
 		
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
  /return
  	
 

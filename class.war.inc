@@ -31,13 +31,13 @@ sub core_WAR()
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}
 		/call stick_to_target
-		/if (${doclickItem}) /call click_item
+		/call click_item
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
@@ -175,7 +175,7 @@ sub synergy_WAR()
 	/if (${Me.CombatAbilityReady[${DiscFlash}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFlash}].EnduranceCost}) /call core_cast "${DiscFlash}" disc 0 FALSE
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

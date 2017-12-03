@@ -47,7 +47,7 @@ sub core_SHD()
 		/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
-		/if (${doclickItem}) /call click_item TRUE
+		/call click_item TRUE
 		/if (${switchHarmonious}) /call check_harmonious
 		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
 		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
@@ -236,7 +236,7 @@ sub synergy_SHD()
 
 	/call use_glyph	
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

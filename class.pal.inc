@@ -36,11 +36,11 @@ sub core_PAL()
 		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
 		/call use_skill_melee ${Target2Kill}
 		/call stick_to_target
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${switchHarmonious}) /call check_harmonious
 		/if (${switchSteel} && !${timer_check_Steel}) /call check_steel	
-		/if (${switchStance} && (!${timer_check_stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
+		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
 		/if (${useMG} && !${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -265,10 +265,15 @@ sub cast_AA_marrs_gift()
  ***|
 sub check_steel()
 	DEBUGCAST ${cbug}check_steel()\ax
+	/if (!${Me.SpellReady[${Steel}]}) {
+		/call create_timer timer_check_Steel ${tcheck_Steel}
+		/return	
+	}
+	/if (${SafeZone} && !${switchOverrideSafezone} || !${switchSteel}) /return
+	
 	AMIDEAD
 	CHECKEXIT
 
-	/if (${SafeZone} && !${switchOverrideSafezone} || !${switchSteel}) /return
 	/if (${validate_buff[spell, buffs, Steel]}) {
 		/call core_cast "${Steel}" 0 0 FALSE
 		/call create_timer timer_check_Steel ${tcheck_Steel}
@@ -312,7 +317,7 @@ sub synergy_PAL()
 	
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

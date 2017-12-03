@@ -39,7 +39,7 @@ sub core_WIZ()
 		/call click_BP
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -50,7 +50,7 @@ sub core_WIZ()
 		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
 		/call disc_${Me.Class.ShortName}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_BP
 	} else /if (${Select[${combat},HEAL]}) {
@@ -235,7 +235,7 @@ sub synergy_WIZ()
 
 	/call use_glyph	
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 	
 /return
 

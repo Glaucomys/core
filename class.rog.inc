@@ -37,7 +37,7 @@ sub core_ROG()
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call use_skill_melee ${Target2Kill}
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
@@ -45,7 +45,7 @@ sub core_ROG()
 		CHECKTIE
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
@@ -92,10 +92,6 @@ sub disc_ROG()
 	/if (${Target.ID} && ${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	/call use_skill_melee ${Target2Kill}
 	
-	| epic item
-	/if (${Me.ItemReady[${Epic}]})  /call core_cast "${Epic}" item 0 FALSE
-
-
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0 FALSE
 	/if (${validate_buff[disc, discs, DiscVision]}) /call core_cast "${DiscVision}" disc 0 FALSE
 
@@ -145,6 +141,10 @@ sub click_DPS_ROG()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
+
+	| epic item
+	/call core_cast "${Epic}" item 0 FALSE	
+	
 /return
 
 
@@ -275,12 +275,13 @@ sub synergy_ROG()
 	/call cast_AA_spire
 	/if (${Me.AltAbilityReady[Intensity of the Resolute]} && ${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
   /if (${Me.CombatAbilityReady[${DiscFrenzy}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscFrenzy}" disc 0 FALSE
+  /delay 1
   /if (${Me.CombatAbilityReady[${DiscTwistedChance}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscTwistedChance}" disc 0 FALSE
   /if (${Me.CombatAbilityReady[${DiscEradicator}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscEradicator}" disc 0 FALSE
   /if (${Me.CombatAbilityReady[${DiscRazor}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRazor}" disc 0 FALSE
 
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 

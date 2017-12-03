@@ -508,9 +508,10 @@ sub cast_summon_weapons()
 		AMIDEAD
 		DEBUG Found ${summonedWepClosedBag}
 		DEBUG have a bag. best not in hands
-		/call sort_cursor TRUE
-		/delay 2s !${Cursor.ID}
-		/delay 5
+		/while (${Cursor.ID}) {
+			/autoinventory
+			/delay 1s !${Cursor.ID}
+		}
 		DEBUG Exchange ${FindItem[${summonedWepClosedBag}].ID} pack${PetBagSlotNumber}
 		/squelch /exchange ${FindItem[${summonedWepClosedBag}].ID} pack${PetBagSlotNumber}
 		/call sort_cursor TRUE
@@ -1064,16 +1065,16 @@ sub create_timer(string _my_timer, string _my_duration)
  ***|
 sub do_rest()
 	DEBUG ${cbug}do_Rest(\ax${cinfo}manna:${Me.PctMana}% endurance:${Me.PctEndurance}%\ax${cbug})\ax
+	/if (!${coreAuto}) /return
 	AMIDEAD
 
-	/if (!${coreAuto}) /return
-	/declare _needrest bool local FALSE
-	
 	/if (${HomeSet} && !${SpawnCount[npc radius ${CombatDistance}*2 playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX}))) {
 		/if (${switchPull}) /makecamp unpause
 		/makecamp return
 		/delay 3s ((${Me.Y} == ${MakeCamp.AnchorY}) && (${Me.X} == ${MakeCamp.AnchorX}))
 	}
+
+	/declare _needrest bool local FALSE
 	
 	:loopneedmorerest
 	/varset _needrest FALSE
@@ -1104,8 +1105,20 @@ sub do_rest()
 			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/if (${Me.Class.ShortName.Equal[BRD]}) {
+				
+				DEBUG Rest Bard
 				/call cast_AA_Rallying
-				/if (${switchRestSong}) /call core_sing ${Me.Gem[${spellRestSong}]}
+					/if (${switchRestSong}) {
+						/if (!${Bool[${Me.Song[${spellRestSong}]}]}) {
+						/if (${Me.Casting.ID} != ${Spell[${spellRestSong}].ID}) {
+							DEBUG song rest
+							/call scribe "${spellRestSong}" ${buffGem} TRUE
+							/melody ${Me.Gem[${spellRestSong}]}
+							/delay 3s !${Me.Casting.ID}
+						}
+					}
+				}
+				
 			} else {
 				/call use_mod_rod
 				/call cast_disc_breather
@@ -1117,7 +1130,7 @@ sub do_rest()
 			} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			} 
 
-		| Melee: WAR,MNK,ROG,BER
+		| Melee: WAR,MNK,ROG,BER=
 		} else /if (${MeleeList.Find[${Me.Class.ShortName}]} && !${CastList.Find[${Me.Class.ShortName}]}) {
 			DEBUG REST WAR,MNK,ROG,BER
 			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
@@ -1241,17 +1254,17 @@ sub set_stop(bool _noecho)
  ***|
 sub click_item(bool _clickEpic)
 	DEBUGCAST ${cbug}click_item()\ax
-	/call check_exit
-	/if (${Bool[${Macro.Return}]} || ${Spawn[${Target.ID}].PctHPs} < 15*.${tmpHealOverride}) /return
 	/if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0 FALSE
 
 	/declare _count int local 0
-	/for _count 1 to ${doclickItem}
+	/for _count 1 to 6
 		DEBUG _count:${_count} item:${clickItem${_count}} ready:${Me.ItemReady[${clickItem${_count}}]} 
+		/if (!${Bool[${clickItem${_count}}]}) /continue
 		/doevents
 		AMIDEAD
 		CHECKTIE
-		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (${Spawn[${Target.ID}].PctHPs} < 5*.${tmpHealOverride}) /break
+		/if (${is_target_dead[${Target2Kill}]}) /break
 		/if (${Me.ItemReady[${clickItem${_count}}]}) /call core_cast "${clickItem${_count}}" item 0 FALSE
 
 	/next _count
@@ -1946,7 +1959,7 @@ sub cast_AA_snare(int _tmpID)
 	/if (${validate_class[FALSE, |WIZ]}) /varset _debuffSnare Atol's Shackles	
 	/if (${validate_class[FALSE, |MNK]}) /varset _debuffSnare Crippling Strike	
 	
-	
+	| ber Binding Axe disc .. ?? 
 	
 	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} && !${Target.Snared.ID}) {
 		/if (!${Select[${Me.Class.ShortName},PAL]}) /call core_cast "${_debuffSnare}" alt ${_tmpID} FALSE
@@ -2125,7 +2138,24 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 		}
 	}
 	
+	
+	
 	| READY CHECKS
+
+	| AA ready?
+	/if (${Select[${_type},alt]} && !${Me.AltAbilityReady[${_spell}]}) /return FALSE
+	| disc ready?
+	/if (${Select[${_type},disc]} && !${Me.CombatAbilityReady[${_spell}]}) /return FALSE
+	| item ready?
+	/if (${Select[${_type},item]} && !${Me.ItemReady[${_spell}]}) /return FALSE
+	| spell ready?
+	/if (!${Select[${_type},alt,item,disc]} && !${Me.SpellReady[${_spell}]}) /varset _bail spell_not_ready
+	| enough mana?
+	/if (!${Select[${_type},item,disc]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
+	| check enough end for disc?
+	/if (${Select[${_type},disc]} && ${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
+
+
 	| dead?
 	/if (${Target.Type.Equal[Corpse]} || ${Spawn[${_tmpID}].Type.Equal[corpse]}) /varset _bail target_dead
 	| no target
@@ -2138,18 +2168,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	/if (${_tmpID} != 0 && !${switchOverrideLos} && !${Target.LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /varset _bail bad_LoS
 	| target in range?
 	/if (${_tmpID} != 0 && (${Target.Distance} > ${Spell[${_spell}].MyRange} || ${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range})) /varset _bail out_of_range
-	| enough mana?
-	/if (!${Select[${_type},item,disc]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
-	| spell ready?
-	/if (!${Select[${_type},alt,item,disc]} && !${Me.SpellReady[${_spell}]} && !${Me.AltAbilityReady[${_spell}]}) /varset _bail spell_not_ready
-	| item ready?
-	/if (${Select[${_type},item]} && !${Me.ItemReady[${_spell}]}) /varset _bail item_not_ready
-	| AA ready?
-	/if (${Select[${_type},alt]} && !${Me.AltAbilityReady[${_spell}]}) /varset _bail aa_not_ready
-	| disc ready?
-	/if (${Select[${_type},disc]} && !${Me.CombatAbilityReady[${_spell}]}) /return FALSE
-	| check enough end for disc?
-	/if (${Select[${_type},disc]} && ${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
+
 	| spell stacks on self?
 	/if (!${Select[${_type},alt,item,disc]} && !${Spell[${_spell}].Stacks} && ${Target.ID} == ${Me.ID}) /varset _bail does_not_stack
 
@@ -2454,11 +2473,13 @@ sub use_skill_melee(int _tmpID)
 			VMELEE Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Bool[${switchBandolier}]} && ${Bool[${bandolierBash}]} && ${Bool[${bandolierNormal}]}) {
 				/if (${Target.ID}) {
-					/bandolier Activate ${bandolierBash}
-					/delay 1
+					/call bandolier_swap Bash
+					| /bandolier Activate ${bandolierBash}
+					| /delay 1
 					/doability Bash
-					/delay 1
-					/bandolier Activate ${bandolierNormal}
+					| /delay 1
+					| /bandolier Activate ${bandolierNormal}
+					/call bandolier_swap Normal
 				}
 			} else if (!${Bool[${switchBandolier}]}) {
 				/if (${Target.ID}) /doability Bash
@@ -2672,7 +2693,7 @@ sub check_buffs_raid()
  *  NOTE: need to remome the pet crap someday...
  ***|
 sub cast_buffs_queue(string _sender, string _verbage)
-	DEBUGCAST ${cbug}cast_buffs_queue()\ax
+	DEBUGCAST ${cbug}cast_buffs_queue(sender:${_sender}, request:${_verbage})\ax
 
   /declare _a int local 0
   /declare _i int local 0
@@ -2847,12 +2868,13 @@ sub check_free_ingame_cash()
 *  NOTE: good for poisons, foods, whatevers.
 ***|
 sub odds_and_ends()
-	DEBUGCAST ${cbug}odds_and_ends(${doclickOdds})\ax
+	DEBUGCAST ${cbug}odds_and_ends()\ax
 	/call check_exit
 	/if (${Macro.Return}) /return
 	/call create_timer timer_check_odds_and_ends ${tOdds_and_Ends}
 	/declare _count int local
-	/for _count 1 to ${doclickOdds}
+	/for _count 1 to 4
+		/if (!${Bool[${clickOddItem${_count}}]}) /continue
 		AMIDEAD
 		CLEARCURSOR TRUE
 		/doevents
@@ -2918,7 +2940,6 @@ sub check_exit()
 	
 	/if (${coreAuto} && ${Target.ID} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) /return TRUE
 	/if (${coreAuto} && ${Target.ID} && ${Bool[${Target.Mezzed}]} && !${switchPull}) /return TRUE
-	
 
 /return FALSE
 
@@ -3204,7 +3225,7 @@ sub cast_yaulp()
  *  NOTE: 
  ***|
 sub cast_disc_breather()
- 	DEBUGCAST ${cbug}cast_disc_breather(${Me.CombatAbilityReady[${DiscRest}]})\ax
+ 	DEBUGCAST ${cbug}cast_disc_breather(ready: ${Me.CombatAbilityReady[${DiscRest}]})\ax
 	AMIDEAD
 	/doevents
  	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.CombatAbilityReady[${DiscRest}]}) /return
@@ -3214,8 +3235,12 @@ sub cast_disc_breather()
 	/if (${Me.CombatAbility[Breather Rk. II]}) /varset _endurancePoint 25
 	/if (${Me.CombatAbility[Breather]}) /varset _endurancePoint 21
 
- 	/if (${Me.PctEndurance} < ${_endurancePoint} && ${Select[${Me.CombatState},RESTING]} && !${Bool[${Me.ActiveDisc}]}) {
+ 	DEBUG {Me.PctEndurance} < ${_endurancePoint} && ${Select[${Me.CombatState},RESTING,COOLDOWN]} && !${Bool[${Me.ActiveDisc}]}
+ 	/if (${Me.PctEndurance} < ${_endurancePoint} && ${Select[${Me.CombatState},RESTING,COOLDOWN]} && !${Bool[${Me.ActiveDisc}]}) {
 		/call core_cast "${DiscRest}" disc 0 FALSE
+		| VDISC Disc ${sep} ${csp}${DiscRest}\ax
+		| VBC Disc "${DiscRest}" 0 0 
+		| /disc "${DiscRest}"
 	}
 
 /return
@@ -4280,7 +4305,7 @@ sub get_target()
 	/if (!${switchPull} || !${coreAuto}) /return
 	AMIDEAD
 	/declare _tmpID int local
-	/declare _tmpRange int local ${Math.Calc[${mobagro}/10]}
+	/declare _tmpRange int local ${Math.Calc[${MobAgro}/10]}
 	/declare _count int local
 	/declare _mobHP int local 100
 	/declare _priorityMob bool local FALSE
@@ -4626,17 +4651,24 @@ sub prep_combat()
 				/call clear_combat
 				/varset _gokillstuff FALSE
 			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
+				| /if (${is_burn_time[]}) /call synergy_${Me.Class.ShortName}
 				/call is_burn_time
 				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
 			}
 		} else /if (${Select[${combat},HEAL,DUAL]}) {
+			| /if (${is_burn_time[]}) /call synergy_${Me.Class.ShortName}
 			/call is_burn_time
 			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
 		}
 	} else /if (!${coreAuto}) {
 		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
 		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /varset _gokillstuff FALSE
-		/if (${burnForce} && ${Me.Combat}) /call synergy_${Me.Class.ShortName}
+		/if (!${SafeZone} && ${burnForce} && ${Select[${Me.CombatState},COMBAT]}) {
+			/call synergy_${Me.Class.ShortName}
+		} else /if (${SafeZone} && ${burnForce} && ${Select[${Me.CombatState},ACTIVE]}) {
+			/call synergy_${Me.Class.ShortName}
+		}			
+
 	}
 
 	/if (${_gokillstuff} && (!${SafeZone} && !${switchOverrideSafezone})) /call set_base_target_timers ${Target2Kill}
@@ -5077,12 +5109,13 @@ sub synergy_click_Circle()
  ***|
 sub click_item_burn()
 	DEBUG ${cbug}click_item_burn()\ax
-	/if (!${Defined[_count]}) /declare _count int local
-	/for _count 1 to ${doclickItemBurn}
-		/call check_exit
-		/if (${Macro.Return}) /return	
+	/declare _count int local 0
+	/for _count 1 to 6
+		/if (!${Bool[${clickItemBurn${_count}}]}) /continue
 		/doevents
-		/if (${is_target_dead[${Target2Kill}]}) /return
+		AMIDEAD
+		CHECKTIE
+		/if (${is_target_dead[${Target2Kill}]}) /break
 		/if (${Me.ItemReady[${clickItemBurn${_count}}]}) /call core_cast "${clickItemBurn${_count}}" item 0 FALSE
 	/next _count
 /return  
@@ -5349,7 +5382,6 @@ sub validate_cast(string _type, string _spell, int _tmpID)
  *	USE: /call core_cast "SPELLNAME" NULL NULL if you want to let the sub decide what you have to cast/use.
  *	INI: 
  *  NOTE: MQ2Cast ["spell name"|"item name"|"AA name"|"AA#"] [[item|slotname]|alt|gem#] [give up time][s|m] [custom subroutine name] [-targetid|###] [-maxtries|#] [-recast|#] [-setin|setname] [-bandolier|setname]
- *  NOTE2: How about we quit making changes to this....
  ***|
 sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
 	DEBUG ${cbug}core_cast(\ax spell:${cinfo}${_spell}\ax, type:${cinfo}${_type}\ax, ID:${cinfo}${_tmpID}\ax, sub:${cinfo}${_sub}\ax ${cbug})\ax
@@ -5759,7 +5791,11 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Common" "relayTells" NULL
 	/ini "${INIClass}" "Common" "verbose" NULL
 
-	
+	/ini "${INIClass}" "Items" "doclickItem" NULL
+	/ini "${INIClass}" "Items" "doclickItemBurn" NULL
+	/ini "${INIClass}" "Odds" "doclickOdds" NULL
+
+
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
 
@@ -6112,7 +6148,7 @@ sub check_deBuffs(int _tmpID)
  *  NOTE: 
  ***|
 sub verify_build()
-
+	DEBUG ${cbug}verify_build()\ax
 	| if mismatch #s
 	/if (${classBuild} != ${coreBuild}) {
 
@@ -6130,10 +6166,28 @@ sub verify_build()
 			/call set_alias
 		}
 	}
-
 /return
 
 
+
+
+|***
+ *	DES: swaps the bandolier if needed
+ *	USE: /call bandolier_swap BANDTYPE
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub bandolier_swap(string _band)
+	DEBUG ${cbug}bandolier_swap(band: ${_band})\ax
+	
+	/if (${bandolierSwap.Equal[${bandolier${_band}}]) /return TRUE
+	/if (!${switchBandolier}) /return FALSE
+	/if (!${bandolierNormal}) /return FALSE
+	/if (!${bandolier${_band}}) /return FALSE
+	/timed 1 /bandolier Activate ${bandolier${_band}}
+	/varset bandolierSwap ${bandolier${_band}}
+
+/return TRUE
 
 
 

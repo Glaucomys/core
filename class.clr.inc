@@ -60,7 +60,7 @@ sub core_CLR()
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
-		/if (${doclickItem}) /call click_item
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
@@ -354,6 +354,19 @@ sub check_heal_group_CLR()
      }
   }  
   
+ | Complete Heal
+	/doevents
+	AMIDEAD
+	/if (${switchCompleteHeal} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) /call core_cast "Complete Heal" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+
+	
+	| single target regen
+ 	/if (${Bool[${healHoT}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+ 	 	/if (${Me.SpellReady[${healHoT}]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
+	 		/call core_cast "${healHoT}"  0 ${WorstHurt} FALSE
+	  } 
+	}
+
   | check for group debuffs
 	/if (${switchHealCure} && ${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure
 	
@@ -692,12 +705,10 @@ sub auto_control_swap()
 sub synergy_CLR()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	SIMPLEEXIT
-
 	| please note. All of the clerics, what would be considerd heal burns, are built into the cleric routine.
-
 	/call use_glyph
 	/call synergy_click_Circle
-	/if (${doclickItemBurn}) /call click_item_burn
+	/call click_item_burn
 /return
 
 
@@ -736,10 +747,6 @@ sub lock_ma()
 				${Me.RaidAssistTarget[1]}
 				${Me.RaidAssistTarget[2]}
 				${Me.RaidAssistTarget[3]}
-
-
-
-
 		
 	}
 	
@@ -922,7 +929,10 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 		/call writeINI switchLockMA Heal ${If[${switchLockMA},FALSE,TRUE]}
 	 	/call echos switch "Lock to MA" switchLockMA 0 0
 
-
+	| Complete Heal
+	} else /if (${Bool[${_classType.Equal[ch]}]}) {
+		/call writeINI switchCompleteHeal Heal ${If[${switchCompleteHeal},FALSE,TRUE]}
+	 	/call echos switch "Complete Heal" switchCompleteHeal 0 0
 	
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
