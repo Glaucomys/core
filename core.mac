@@ -68,20 +68,6 @@
 		- puller/targ acquisition is very loosely based off nytemyst pull code for his SK and the healing foundation
 		- i stole the base forage functions from someone years ago. Thank You Whomever. fish code based off same processes. and then promptly adapted. rewritten to use core.loot.ini list.
 
-	expansions:	${Me.HaveExpansion[]}	
-	01	The Ruins of Kunark											02	The Scars of Velious
-	03	The Shadows of Luclin										04	The Planes of Power
-	05	The Legacy of Ykesha										06	Lost Dungeons of Norrath
-	07	Gates of Discord												08	Omens of War
-	09	Dragons of Norrath											10	Depths of Darkhollow
-	11	Prophecy of Ro													12	The Serpent's Spine
-	13	The Buried Sea													14	Secrets of Faydwer
-	15	Seeds of Destruction										16	Underfoot
-	17	House of Thule													18	Veil of Alaris
-	19	Rain of Fear														20	Call of the Forsaken
-	21	The Darkened Sea												22	The Broken Mirror
-	23	Empires of Kunark												24	Ring of Scale		
-		
 ***|
 
 

@@ -195,16 +195,29 @@ sub check_heal_group_CLR()
 	CHECKREZ
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 	DEBUGCLASS WorstHurt:${Spawn[id ${WorstHurt}].DisplayName} ${sep} HP:${WorstHP}
-	
+
+	| Complete Heal
+	| requires group roll Main Tank set to function
+	/doevents
+	AMIDEAD
+	/if (${switchCompleteHeal}) { 
+		/if (${Spawn[${Group.MainTank.ID}].ID}) { 
+			/if (${WorstHurt} == ${Group.MainTank.ID} && ${Spawn[${Group.MainTank.ID}].PctHPs} <= ${${Group.MainTank.Class.ShortName}Point}*.${CompleteHealpct}) {
+				/call core_cast "Complete Heal" 0 ${Group.MainTank.ID} check_HP_${Me.Class.ShortName}
+			}
+		}
+	}
 	
 	| Regen Heals 
 	| Use all the time in combat. Don't care if hurt or not.
- 	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1 && !${SafeZone}) {
- 	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
-	 		/call core_cast "Celestial Regeneration" alt 0 FALSE
-	  } else /if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
-	    /call core_cast "${healWholeGroupHoT}" 0 0 FALSE
-	  }
+ 	/if (${useGroupHoT}) {
+	 	/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1 && !${SafeZone}) {
+	 	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
+		 		/call core_cast "Celestial Regeneration" alt 0 FALSE
+		  } else /if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
+		    /call core_cast "${healWholeGroupHoT}" 0 0 FALSE
+		  }
+		}
 	}
 
 	| Focused Celestial Regeneration
@@ -264,10 +277,12 @@ sub check_heal_group_CLR()
 	}
     
   | Group Heal
-  /if (${useGroupHeal} && ${groupHurt} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
-    /call core_cast "${healWholeGroup}" 0 0 check_HP_${Me.Class.ShortName}
-    /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /return
-  } 
+  /if (${useGroupHeal}) {
+	  /if (${groupHurt} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
+	    /call core_cast "${healWholeGroup}" 0 0 check_HP_${Me.Class.ShortName}
+	    /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /return
+	  } 
+	}
   
   
 	AMIDEAD
@@ -277,11 +292,13 @@ sub check_heal_group_CLR()
 	/if (!${Bool[${timer_heal_ward}]} && ${Me.SpellReady[${healWard}]}) /call check_heal_ward
 
 	| check for personal debuffs
-	/if (${switchHealCure} && ${Debuff.Count}) {
-		| AA Purified Spirits SELF ONLY 0' range 2 min
-		/if (${Me.AltAbilityReady[Purified Spirits]}) /call core_cast "Purified Spirits" alt ${Me.ID} FALSE
-		| AA Radient Cure SELF ONLY 100' range 1 min
-		/if (${Me.AltAbilityReady[Radiant Cure]}) /call core_cast "Radiant Cure" alt 0 FALSE 
+	/if (${switchHealCure}) {
+		/if (${Debuff.Count}) {
+			| AA Purified Spirits SELF ONLY 0' range 2 min
+			/if (${Me.AltAbilityReady[Purified Spirits]}) /call core_cast "Purified Spirits" alt ${Me.ID} FALSE
+			| AA Radient Cure SELF ONLY 100' range 1 min
+			/if (${Me.AltAbilityReady[Radiant Cure]}) /call core_cast "Radiant Cure" alt 0 FALSE 
+		}
 	}
 	
 	AMIDEAD
@@ -354,12 +371,6 @@ sub check_heal_group_CLR()
      }
   }  
   
- | Complete Heal
-	/doevents
-	AMIDEAD
-	/if (${switchCompleteHeal} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) /call core_cast "Complete Heal" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
-
-	
 	| single target regen
  	/if (${Bool[${healHoT}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
  	 	/if (${Me.SpellReady[${healHoT}]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
@@ -867,7 +878,6 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 		 	/call echos switch "Yaulp" doYaulp 0 0
 		}
 
-
 	| Veturika's Perseverance	Control	
 	} else /if (${Bool[${_classType.Equal[vp]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
@@ -931,9 +941,16 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 
 	| Complete Heal
 	} else /if (${Bool[${_classType.Equal[ch]}]}) {
-		/call writeINI switchCompleteHeal Heal ${If[${switchCompleteHeal},FALSE,TRUE]}
-	 	/call echos switch "Complete Heal" switchCompleteHeal 0 0
-	
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			/call writeINI CompleteHealpct Heal ${_classVerbage} 
+			/call echos number "Complete Heal Pct" ${_classVerbage} 0 0
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+			VOUT /${_bind} ch [${cinfo}${CompleteHealpct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}	else /if (!${Bool[${_classVerbage}]}) {
+			/call writeINI switchCompleteHeal Heal ${If[${switchCompleteHeal},FALSE,TRUE]}  
+			/call echos switch "Complete Heal ${sep} ${CompleteHealpct}%" switchCompleteHeal 0 0
+		}
+
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax

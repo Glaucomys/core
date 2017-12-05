@@ -6170,7 +6170,6 @@ sub verify_build()
 
 
 
-
 |***
  *	DES: swaps the bandolier if needed
  *	USE: /call bandolier_swap BANDTYPE
@@ -6179,17 +6178,54 @@ sub verify_build()
  ***|
 sub bandolier_swap(string _band)
 	DEBUG ${cbug}bandolier_swap(band: ${_band})\ax
-	
 	/if (${bandolierSwap.Equal[${bandolier${_band}}]) /return TRUE
 	/if (!${switchBandolier}) /return FALSE
 	/if (!${bandolierNormal}) /return FALSE
 	/if (!${bandolier${_band}}) /return FALSE
 	/timed 1 /bandolier Activate ${bandolier${_band}}
 	/varset bandolierSwap ${bandolier${_band}}
-
 /return TRUE
 
 
 
+|***
+ *	DES: check to see that you have a specific expansion
+ *	USE: /if (!${validate_expansion[TRUE/FALSE, |#|#|#]}) /return
+ *	INI: 
+ *  NOTE: THIS CHECKS FOR FALSE RETURNS !!!
+ *  
+ *  01	The Ruins of Kunark											02	The Scars of Velious
+ *  03	The Shadows of Luclin										04	The Planes of Power
+ *  05	The Legacy of Ykesha										06	Lost Dungeons of Norrath
+ *  07	Gates of Discord												08	Omens of War
+ *  09	Dragons of Norrath											10	Depths of Darkhollow
+ *  11	Prophecy of Ro													12	The Serpent's Spine
+ *  13	The Buried Sea													14	Secrets of Faydwer
+ *  15	Seeds of Destruction										16	Underfoot
+ *  17	House of Thule													18	Veil of Alaris
+ *  19	Rain of Fear														20	Call of the Forsaken
+ *  21	The Darkened Sea												22	The Broken Mirror
+ *  23	Empires of Kunark												24	Ring of Scale		 
+ *   
+ ***|
+sub validate_expansion(bool _error, string _exp)
+	DEBUG ${cbug}validate_expansion(error: ${_error}, expansion: ${_exp})\ax
+	/declare _pass bool local TRUE
+	/declare _count int local 0
+
+	/for _count 1 to ${_class.Count[|]}
+		AMIDEAD
+		DEBUG _count:${_count}, arg: ${_exp.Arg[${_count},|]}
+		
+		/if (!${Me.HaveExpansion[${_exp.Arg[${_count},|]}]}) {
+			/varset _pass FALSE
+			/break
+		}
+	
+	/next _count
+
+	/if (!${_pass} && ${_error}) OUT ${onotice} ${sep} Expansion ${cinfo}${expansion${_count}}\ax required for this feature.
+/return ${_pass}
 
 
+/if (!${validate_expansion[TRUE, |16}) /return

@@ -10,6 +10,11 @@
  ***|
 
 
+20171204
+- ${validate_expansion[T/F, |#|#|#]} 
+  -- can now check for expansions before features are allowed.
+  
+
 
 20171203
 - updates to wiki
@@ -38,9 +43,6 @@
 - class.clr.inc
   -- /clr [ch] - enable/disable Complete Heal. you're still on your own to mem the spell.
   
-
-
- 
 
 20171130
 - get_target()

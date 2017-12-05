@@ -44,7 +44,7 @@ sub writeCoreINI(string _varName, string _section, string _value)
  *	DES: adjust the related ini
  *	USE: /call Event_SetaliasVar NA [variable] [INISection] [value]
  *	INI: 
- *  NOTE: 
+ *  NOTE: THIS IE BEING DONE AWAY WITH
  ***|
 #event SetaliasVar 			"[MQ2] - Core: #1# -> [#2#] -> #3#"
 sub Event_SetaliasVar(string line, string _varName, string _section, string _value)
@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171203
+	/declare coreBuild	 														int			outer 20171204
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -421,7 +421,6 @@ sub set_declares()
 	/call DeclareCoreIniVar combatBST								string	Here MELEE
 	/call DeclareCoreIniVar combatRNG								string	Here MELEE
 	/call DeclareCoreIniVar combatBRD								string	Here MELEE
-
 	/call DeclareCoreIniVar makeVisible							bool		Here	TRUE
 	/call DeclareCoreIniVar clearTarget							bool		Here	TRUE
 	/call DeclareCoreIniVar defaultTimerDelay				string	Here	1m
@@ -437,7 +436,7 @@ sub set_declares()
 	/declare bitch3																	string	outer	"Aha, I see the Fuck-Up Fairy has visited us again!"
 	/declare bitch4																	string	outer	"Will trade a Halfling for a rez, or three Gn0mes."
 	/declare bitch5																	string	outer	"I'm sorry I bit you... pulled your hair... and punched you in the face..."
-	/declare bitch6																	string	outer	" Go ahead, tell them everything you know. It'll only take 10 seconds."
+	/declare bitch6																	string	outer	"Go ahead, tell them everything you know. It'll only take 10 seconds."
 	/declare bitch7																	string	outer	"Sometimes the first step to forgiveness, is realising the other person was born an idiot."
 	/declare bitch8																	string	outer	"I'm getting Disc lag . . . again."
 	/declare bitch9																	string	outer	"oh man....i figured out why i was lagging the other day...i look in my case and my kids knocked off my cpu fan"
@@ -462,6 +461,34 @@ sub set_declares()
 	/declare bitch28																string 	outer "Your mother was a hamster and your father smelt of elderberries!"
 	/declare bitch29																string 	outer "Don't worry about it too much. I did the same thing when I was eleven."
 	/declare bitch30																string 	outer ""
+
+
+	| expansions
+	/declare expansion1															string 	outer "The Ruins of Kunark"
+	/declare expansion2															string 	outer "The Scars of Velious"
+	/declare expansion3															string 	outer "The Shadows of Luclin"
+	/declare expansion4															string 	outer "The Planes of Power"
+	/declare expansion5															string 	outer "The Legacy of Ykesha"
+	/declare expansion6															string 	outer "Lost Dungeons of Norrath"
+	/declare expansion7															string 	outer "Gates of Discord"
+	/declare expansion8															string 	outer "Omens of War"
+	/declare expansion9															string 	outer "Dragons of Norrath"
+	/declare expansion10														string 	outer "Depths of Darkhollow"
+	/declare expansion11														string 	outer "Prophecy of Ro"
+	/declare expansion12														string 	outer "The Serpent's Spine"
+	/declare expansion13														string 	outer "The Buried Sea"
+	/declare expansion14														string 	outer "Secrets of Faydwer"
+	/declare expansion15														string 	outer "Seeds of Destruction"
+	/declare expansion16														string 	outer "Underfoot"
+	/declare expansion17														string 	outer "House of Thule"
+	/declare expansion18														string 	outer "Veil of Alaris"
+	/declare expansion19														string 	outer "Rain of Fear"
+	/declare expansion20														string 	outer "Call of the Forsaken"
+	/declare expansion21														string 	outer "The Darkened Sea"
+	/declare expansion22														string 	outer "The Broken Mirror"
+	/declare expansion23														string 	outer "Empires of Kunark"
+	/declare expansion24														string 	outer "Ring of Scale"
+
 
 
 	| hide switches for /hidecorpse command
@@ -940,6 +967,7 @@ sub set_declares()
 		/call DeclareIniVar BERPoint 									int 		Heal 70
 		/call DeclareIniVar PALPoint 									int 		Heal 90
 		/call DeclareIniVar GoMpoint 									int 		Heal 80	
+		
 		/call DeclareIniVar XHealClass								string	Heal |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
 		/call setTimer tXHeal													string	Timer 3m timer_set_xtarget
 		/call DeclareIniVar toonControlXTslot					int			Heal 13
@@ -2113,6 +2141,8 @@ sub declare_CLR()
 	/call DeclareIniVar RampageTank									string	Heal FALSE
 	/call DeclareIniVar switchHealAggressive				string	Heal FALSE
 	/call DeclareIniVar switchCompleteHeal					string	Heal FALSE
+	/call DeclareIniVar CompleteHealpct							int 		Heal 70	
+
 	
 	/call DeclareIniVar doYaulp 										string	Buffs TRUE
 	/call DeclareIniVar spellYaulp 									string	Buffs FALSE
@@ -2873,7 +2903,11 @@ sub Bind_setstop()
  ***| 	
 #bind smartMA /smartma
 sub Bind_smartMA(string _assist)
-	DEBUG ${cbug}Event_smartma()\ax
+	DEBUG ${cbug}Event_smartma(assist: ${_assist})\ax
+	/if (!${validate_expansion[TRUE, |16}) {
+		OUT Use /cc MA1 or MA2
+		/return
+	}
 	/call clear_combat
 
 	| Raid Assist 1
@@ -4246,6 +4280,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 	| Smart Assist engage at %
 	} else /if (${Bool[${_ccType.Equal[smartengage]}]}) {
+		/if (!${validate_expansion[TRUE, |16}) /return
 		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
 			/call writeINI smartengageAt Common ${_verbage}  
 			/call echos number "Smart Assist Engage at" ${If[${_verbage},${_verbage},${smartengageAt}]} 0 0
