@@ -101,13 +101,13 @@ sub disc_BRD()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call stick_to_target
 	/if (${Me.Casting.ID}) /call pulse_stop
-	/if (${Me.ItemReady[Darkened Breath of Harmony]} && !${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
+	/if (!${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill} FALSE
 	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Cacophony]}) /call core_cast "Cacophony" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Boastful Bellow]}) /call core_cast "Boastful Bellow" alt ${Target2Kill} FALSE
-
+	/call core_cast "Cacophony" alt ${Target2Kill} FALSE
+	/call core_cast "Bladed Song" alt ${Target2Kill} FALSE
+	/call core_cast "Boastful Bellow" alt ${Target2Kill} FALSE
+	
 /return
 
 
@@ -267,8 +267,8 @@ sub pulse_valid(_gem)
 sub pulse_stop()
 	DEBUGCLASS ${cbug}pulse_stop()\ax 
 	/while (${Me.Casting.ID}) {
-		/delay 1
 		/stopcast
+		/delay 1
 	}
 /return
 
@@ -289,7 +289,7 @@ sub core_sing(_spellgem)
 	/declare _gem int local ${Macro.Return}
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}]}].Mana}) /return	
 	/call stick_to_target
-	/if (${Me.Casting.ID}) /stopcast
+	/if (${Me.Casting.ID}) /call pulse_stop
 	VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}]}\ax
 	/melody ${_gem}
 	| /delay 25
@@ -379,7 +379,7 @@ sub mez_adds_BRD()
 			/if (${SpawnCount[npc los radius 30 zradius 15 targetable]} > 3 ) {
 				VOUT ${sepO} ${cinfo}${SpawnCount[npc radius 30 zradius 15]}\ax ${sepC} Targets in point blank range.
 				/if (${Me.Gem[${spellpbaeMez}]} && ${Me.SpellReady[${spellpbaeMez}]}) {
-					/if (${Me.Casting.Name.NotEqual[${spellpbaeMez}]}) /stopcast
+					/if (${Me.Casting.Name.NotEqual[${spellpbaeMez}]}) /call pulse_stop
 					/call core_sing ${Me.Gem[${spellpbaeMez}]}
 				}
 			}

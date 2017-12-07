@@ -223,7 +223,7 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "pull2" "19,295,14,255,0,0,${If[${switchPull},,P]}"	
 	/noparse /ini HUDPATH "agro4" "19,312,14,255,255,255,${MobAgro}"
 	/noparse /ini HUDPATH "zrad" "19,339,14,255,255,255,${zradius}"
-	/noparse /ini HUDPATH "cr1" "19,364,14,100,149,237,${combatRadius}"
+	/noparse /ini HUDPATH "cr1" "19,364,14,255,255,255,${combatRadius}"
 
 	| ass..isting and stuff
 	/noparse /ini HUDPATH "ma11" "3,280,26,100,149,237,MA1"

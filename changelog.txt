@@ -9,12 +9,61 @@
  *
  ***|
 
+Current Requests:
+ - pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
+ - fix chanter charm mob code
+ - add body types to hud target
+ 
+ 
+ 
+
+
+20171207
+HUDUPDATE
+- updates to inmacro wiki
+- fixed the dumb xpac checker
+- clients w/o underfoot expansion will not be able to assist using smartma anymore
+- /cc combatradius is now by toon not macro
+- correcting a lot of / command outputs to follow the same pattern
+- complete reworking of the smart assist / commands
+  -- /cc smartma [1|2|G|X|NULL]
+  -- /cc smartma 1 sets toon to raid assist 1
+  -- /cc smartma 2 sets toon to raid assist 2
+  -- /cc smartma G sets toon to group assist
+  -- /cc smartma X disables all smart assists
+  -- /cc smartma NULL - is a 4 way cycle that will cycle through all the smart assist modes
+  -- the /bc alias sma1,sma2,smag,smax all redirect to /cc smartma
+  -- the bind /smartma redirects to /cc smarma
+  -- /cc smartma has no effect on MA1 or MA2 settings.
+- get_assist_target() 
+  -- adjusted to redirect to new Bind_setCombatControl()
+- class.enc.inc
+  -- /enc [charm] enables using charm spell or divine charm to charm mobs. (will default to divine if mob is lvl 46 or less and aa available)
+  -- find_mob_to_charm()
+  -- requires /pc pet enabled
+  -- requires /enc charm enabled
+  -- while /enc charm is enables, the chanter will not try and make the normal summoned pet. all other /pc build skills will still work.
+  -- chanter will ae mezz if a mob is detected that it can charm, tash it, if it is not, then attempt to charm.
+- class.brd.inc
+  -- adjusted pulse_stop() check and added to clear_combat()
+  
+NOTE - Group Assisting (2 things)
+- expansion 16 is underfoot. 16 was the release of extended targets. Core makes extensive use of extended targets. 
+  However, some servers do not have underfoot. this was causing errors. smart assist has been disabled for anyone that does not have expansion 16
+
+- the assist fallbacks are being adjusted. while using group smart assist, you can still set MA1 and MA2. If something happens to the Group Assist
+  MA1 will take over. if MA1 is unavailable or dead or not in zone or whatever, MA2 will take over. these are automatic. do not need to turn off 
+  smartassist for the MAs to assume responsibility any more. this process DOES NOT work for RAID assist. MQ does not posses a way to find the raid 1/2
+  Assist toons name. we can only pull the RaidAssist which is limited to the first raid assist. Still have not decided how i want to handle this.
+
+  
+ 
+
 
 20171204
 - ${validate_expansion[T/F, |#|#|#]} 
   -- can now check for expansions before features are allowed.
   
-
 
 20171203
 - updates to wiki

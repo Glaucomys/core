@@ -30,8 +30,7 @@ sub core_CLR()
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
-		/if (${Me.PctMana} < ${useVPPct}*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez} && !${SafeZone}) /call core_cast "Veturika's Perseverance" alt 0
-		| /if (!${flagCallNeedRez} && !${timer_check_QM}) /call cast_AA_quiet_miracle
+		/if (${Me.PctMana} < ${useVPPct}*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez} && !${SafeZone}) /call core_cast "Veturika's Perseverance" alt 0 FALSE
 	}	
 
 	:killtarget
@@ -840,6 +839,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
+		/if (!${validate_expansion[TRUE, |16]}) /return
 		/if (${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
 			/call writeINI XTHealRadius Heal ${_classVerbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
@@ -847,17 +847,9 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 		
-	| set XT Heal refresh Time
-	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
-		/if (${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			/call writeINI XTHealRadius Heal ${_classVerbage}
-			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
-		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
-		}	
-	
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
+		/if (!${validate_expansion[TRUE, |16]}) /return
 		/if (${Range.Between:${Int[${_classVerbage}]}]}) {
 			/call writeINI tXHeal Timer ${_classVerbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0

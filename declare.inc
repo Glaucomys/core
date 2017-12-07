@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171204
+	/declare coreBuild	 														int			outer 20171207
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -587,6 +587,10 @@ sub set_declares()
 	/declare CLRspire2															string	outer Fundament: Second Spire of Divinity
 	/declare CLRspire3															string	outer Fundament: Third Spire of Divinity
 	/declare CLRsynergyAA														string	outer Templar's Synergy
+	/declare CLREpic1																string	outer 
+	/declare CLREpic15															string	outer 
+	/declare CLREpic2																string	outer 
+	
 
 	| Druid
 	/declare DRUspire1															string	outer Fundament: First Spire of Nature
@@ -686,8 +690,8 @@ sub set_declares()
 
 
 	| combat controls
-	/declare ccType																	string	outer |agro|bandolier|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|zradius
-	/call DeclareIniVar combat					 						string	Common melee
+	/declare ccType																	string	outer |agro|bandolier|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|zradius
+	/call DeclareIniVar combat					 						string	Common MELEE
 	/call DeclareIniVar MA1			 										string 	Common FALSE
 	/call DeclareIniVar MA2			 										string 	Common FALSE
 	/call DeclareIniVar MobAgro											int 		Common 60
@@ -699,7 +703,7 @@ sub set_declares()
 	/call DeclareIniVar switchAgro									bool		Common FALSE 
 	/call DeclareIniVar switchPull									bool		Common FALSE
 	/call DeclareIniVar CombatDistance							int			Movement 15
-	/call DeclareCoreIniVar combatRadius						string	General 30
+	/call DeclareIniVar combatRadius								string	Common 30
 	/call DeclareIniVar zradius											int			Common 60	
 	/call DeclareIniVar switchBandolier							bool		meleedisc FALSE
 
@@ -920,7 +924,7 @@ sub set_declares()
 
 	
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
-		/call DeclareIniVar buffGem 									string 	Spells "gem12"
+		/call DeclareIniVar buffGem 									string 	Spells "gem8"
 		/call DeclareIniVar GoMLevel									int			Spells 105
 		/call DeclareIniVar GoMNuke										string	Spells FALSE
 		/call DeclareIniVar GoMNukeCondition					string	Spells FALSE
@@ -1025,7 +1029,7 @@ sub set_declares()
   /declare bstType																string	outer |spiregroup|spireraid
   /declare clrType																string	outer |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
   /declare druType																string	outer |groupheal|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
-  /declare encType																string	outer |gather|spiregroup|spireraid
+  /declare encType																string	outer |charm|gather|spiregroup|spireraid
   /declare magType																string	outer |fade|forcetwincast|gather|mana|rods|spiregroup|spireraid
   /declare mnkType																string	outer |spiregroup|spireraid
   /declare necType																string	outer |spiregroup|spireraid
@@ -1276,6 +1280,8 @@ sub declare_ENC()
 	/declare mobList																string	outer
 	/declare addList 																string 	outer
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer |5|8|12|17|18|42|44|80|106|129|144
+	
+	/call DeclareIniVar switchCharmPet							bool		Pet FALSE
 
 	/call DeclareIniVar switchGather			 					bool		Spells TRUE
 	/call DeclareIniVar GatherPercent			 					int			Spells 60
@@ -2321,13 +2327,13 @@ sub Event_EQBC(string line, string _sender, string _cmd)
   
 	| commands to control all assist targets.  
   /if (${_cmd.Equal[sma1]} && !${switchPull}) {
-		/smartma 1
+		/call Bind_setCombatControl smartma 1
   } else /if (${_cmd.Equal[sma2]} && !${switchPull}) {
-		/smartma 2
+		/call Bind_setCombatControl smartma 2
   } else /if (${_cmd.Equal[smag]} && !${switchPull}) {
-		/smartma G
+		/call Bind_setCombatControl smartma G
 	} else /if (${_cmd.Equal[smax]}) {
-		/smartma X
+		/call Bind_setCombatControl smartma X
 	}
  
 
@@ -2897,57 +2903,14 @@ sub Bind_setstop()
 
 |***
  *	DES: Adjusts the smart assist through Raid 1 then Raid 2 then Group then off
- *	USE: /smartma [1|2|X|G]
+ *	USE: /smartma [1|2|X|G|NULL]
  *	INI: 
  *  NOTE: this is a four way toggle
  ***| 	
 #bind smartMA /smartma
-sub Bind_smartMA(string _assist)
-	DEBUG ${cbug}Event_smartma(assist: ${_assist})\ax
-	/if (!${validate_expansion[TRUE, |16}) {
-		OUT Use /cc MA1 or MA2
-		/return
-	}
-	/call clear_combat
-
-	| Raid Assist 1
-	/if ((${_assist.Equal[1]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
-		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
- 		/if (!${useSmartAssist1}) /call writeINI useSmartAssist1 Common TRUE
-		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
-		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
-		/xtarget set 1 Raidassist1target
-		VOUT Setting Assist ${sep} ${cinfo}Raid 1\ax
-
-	| Raid Assist 2
-	} else /if ((${_assist.Equal[2]} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
-		DEBUG ((${_assist} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
- 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
-		/if (!${useSmartAssist2}) /call writeINI useSmartAssist2 Common TRUE
-		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
-		/xtarget set 1 Raidassist1target
-		VOUT Setting Assist ${sep} ${cinfo}Raid 2\ax
-
-	| NO Assist
-	} else /if ((${_assist.Equal[X]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
-		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
- 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
-		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
-		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
-		| /if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		| /if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
-		/xtarget set 1 Autohater
-		VOUT Setting Assist ${sep} ${odisabled}\ax
-
-	| Goup Main Assist
-	} else /if ((${_assist.Equal[G]} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
-		DEBUG ((${_assist} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
- 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
-		/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
-		/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
-		/xtarget set 1 Groupassisttarget
-		VOUT Setting Assist ${sep} ${cinfo}Group\ax
-	}
+sub Bind_smartMA(string _verbage)
+	DEBUG ${cbug}Bind_smartMA(assist: ${_verbage})\ax
+	/call Bind_setCombatControl smartma ${_verbage}
 /return
 
 
@@ -3174,7 +3137,7 @@ sub Bind_heal(string _healType, string _verbage)
 	
 	| can I do this heal
 	/if (${Bool[${_healType.Equal[self]}]}) {
-		/if (${validate_class[TRUE, |CLR|SHM|DRU]}) {
+		/if (${validate_class[FALSE, |CLR|SHM|DRU]}) {
 			VOUT Heal Classes [\a-wCLR,DRU,SHM\ax] use /heal group. Not /heal self.
 			/call writeINI switchHealSelf Heal FALSE
 			/return
@@ -3191,6 +3154,7 @@ sub Bind_heal(string _healType, string _verbage)
 		/if (${Defined[switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}]}) {
 			/call writeINI switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower} Heal ${If[${switchHeal${_healType.Left[1].Upper}${_healType.Right[-1].Lower}},FALSE,TRUE]}  
 		} 
+		
 	| stop all healing
 	} else /if (${_healType.Equal[stop]}) {
 		/for _count 1 to ${healType.Count[|]}
@@ -3198,21 +3162,31 @@ sub Bind_heal(string _healType, string _verbage)
 				/call writeINI switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower} Heal FALSE  
 			}
 		/next _count
+
+
+	| heal xtarget correction
+	} else /if (${_healType.Equal[xtarget]}) {
+		/if (!${validate_expansion[TRUE, |16]}) {
+			/call writeINI switchHealXtarget Heal FALSE 
+			/return
+		}
+		
 	| heal override
 	} else /if (${_healType.Equal[override]}) {
 		/if (${Range.Between[0,99:${Int[${_verbage}]}]}) {
 			/call writeINI HealOverride Heal ${_verbage} 
-			VOUT Heal ${sep} ${cinfo}override\ax ${sep} ${If[${_verbage},${_verbage},${odisabled}]}
+			VOUT /${_bind} override ${sep} ${If[${_verbage},${_verbage},${odisabled}]}
 		} else {
 			VOUT /${_bind} override [${cinfo}${HealOverride}\ax] allowable range ${cinfo}0 - 99\ax
 		}
+		/return
 	}
 
 	/for _count 1 to ${healType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${healType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
 	/next _count
-	VOUT /${_bind} [${_listout}] [${cinfo}##\ax]				
+	VOUT /${_bind} [${_listout}]				
 /return
 	
 
@@ -4142,6 +4116,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	/declare _bind string local cc
 	/declare _listout string local
 	/declare _sep bool local FALSE
+	/declare _combatModes string local |melee|range|nuke|heal|dual
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -4163,22 +4138,20 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset isValidTarget TRUE
 					/varset combat MELEE
 					/varset Target2Kill ${Target.ID}
-					VOUT Combat ${sep} ${cinfo}Melee\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 				| engage Range combat
 				} else /if (${Bool[${_verbage.Equal[range]}]}) {
 					/if (${Target.Distance} > 31) {
 						/varset isValidTarget TRUE
 						/varset combat RANGE
 						/varset Target2Kill ${Target.ID}	
-						VOUT Combat ${sep} ${cinfo}Range\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 					} 
 				| engage Nuke combat
 				} else /if (${Bool[${_verbage.Equal[nuke]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
-					VOUT Combat ${sep} ${cinfo}Nuke\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 				}
+				VOUT /${_bind} force ${cinfo}${_verbage}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 			}
 			 
 			| echo options
@@ -4194,41 +4167,25 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	| set bandolier swapping
 	} else /if (${Bool[${_ccType.Equal[bandolier]}]}) {
 		/call writeINI switchBandolier meleedisc ${If[${switchBandolier},FALSE,TRUE]}
-		VOUT /${_bind} bandolier swap ${sep} ${cinfo}${combat}\ax
+		VOUT /${_bind} bandolier ${sep} ${cinfo}${combat}\ax
 
-	| set Melee combat
-	} else /if (${Bool[${_ccType.Equal[melee]}]}) {
-		/call writeINI combat Common ${_ccType.Upper}
-		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
-
-	| set Range combat
-	} else /if (${Bool[${_ccType.Equal[range]}]}) {
-		/call writeINI combat Common ${_ccType.Upper}
-		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
-
-	| set Nuke combat
-	} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
-		/call writeINI combat Common ${_ccType.Upper}
-		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
-
-	| set Heal combat
-	} else /if (${Bool[${_ccType.Equal[heal]}]}) {
-		/call writeINI combat Common ${_ccType.Upper}
-		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
-
-	| set Dual combat
-	} else /if (${Bool[${_ccType.Equal[dual]}]}) {
-		/call writeINI combat Common ${_ccType.Upper}
-		VOUT Core Auto Combat ${sep} ${cinfo}${combat}\ax
-
+	| set automated combat
+	} else /if (${Bool[${_ccType.Equal[melee]}]} || ${Bool[${_ccType.Equal[range]}]} || ${Bool[${_ccType.Equal[nuke]}]} || ${Bool[${_ccType.Equal[heal]}]} || ${Bool[${_ccType.Equal[dual]}]}) {
+		/if (${combat.NotEqual[${_ccType}]}) /call writeINI combat Common ${_ccType.Upper}
+		/for _count 1 to ${_combatModes.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${combat.Equal[${_combatModes.Arg[${_count},|]}]},${cgood}${combat.Lower}\ax,${cinfo}${_combatModes.Arg[${_count},|]}\ax]}   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]	
+				
 	| set Pull
 	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
-		VOUT Combat ${sep} ${cinfo}Pull\ax ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
+		VOUT /${_bind} pull ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
 		/if (${switchPull}) {
-			/if (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) /smartma X
-			/if (${switchPull} && ${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-			/if (${switchPull} && ${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+			/if (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) /call Bind_setCombatControl smartma X
+			/if (${switchPull} && ${Bool[${MA1}]}) /call Bind_setCombatControl MA1 FALSE
+			/if (${switchPull} && ${Bool[${MA2}]}) /call Bind_setCombatControl MA2 FALSE
 		}
 		
 	| delay in nuking	
@@ -4244,12 +4201,12 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[agro]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,400:${Int[${_verbage}]}]}) {
 			/call writeINI MobAgro Common ${_verbage} 
-			/call echos number "Combat Agro Range" ${_verbage} 0 0
+			VOUT /${_bind} agro ${sep} ${cinfo}${_verbage}\ax
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,400:${Int[${_verbage}]}]})  {
-			VOUT /cc agro [${cinfo}${MobAgro}\ax] allowable range is ${cinfo}1 - 400\ax
+			VOUT /${_bind} agro [${cinfo}${MobAgro}\ax] allowable range is ${cinfo}1 - 400\ax
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchAgro Common ${If[${switchAgro},FALSE,TRUE]}
-			VOUT Combat ${sep} ${cinfo}Agro\ax ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
+			VOUT /${_bind} agro ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
 		}
 		/call check_AA_agro		
 
@@ -4273,47 +4230,96 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[engage]}]}) {
 		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
 			/call writeINI engageAt Common ${_verbage}  
-			/call echos number "MA Engage at" ${If[${_verbage},${_verbage},${engageAt}]} 0 0
+			| /call echos number "MA Engage at" ${If[${_verbage},${_verbage},${engageAt}]} 0 0
+			VOUT /${_bind} engage ${sep} ${cinfo}${engageAt}\ax
 		} else {
-			VOUT /${_bind} engage [${cinfo}${engageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
+			VOUT /${_bind} engage [${cinfo}${engageAt}\ax] allowable range ${cinfo}1 - 99\ax
 		}
 
 	| Smart Assist engage at %
 	} else /if (${Bool[${_ccType.Equal[smartengage]}]}) {
-		/if (!${validate_expansion[TRUE, |16}) /return
+		/if (!${validate_expansion[TRUE, |16]}) /return
 		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
 			/call writeINI smartengageAt Common ${_verbage}  
-			/call echos number "Smart Assist Engage at" ${If[${_verbage},${_verbage},${smartengageAt}]} 0 0
+			VOUT /${_bind} smartengage ${sep} ${cinfo}${smartengageAt}\ax
 		} else {
-			VOUT /${_bind} smartengage [${cinfo}${smartengageAt}\ax] % of mobs health to engage ${cinfo}1 - 100\ax
+			VOUT /${_bind} smartengage [${cinfo}${smartengageAt}\ax] allowable range ${cinfo}1 - 99\ax
 		}
 
 	| set melee combat distance to target
 	} else /if (${Bool[${_ccType.Equal[combatdistance]}]}) {
 		/if (${Range.Between[1,50:${Int[${_verbage}]}]}) {
 			/call writeINI CombatDistance Movement ${_verbage}
-			/call echos number "Melee Combat Distance" ${_verbage} 0 0
+			VOUT /${_bind} combatdistance ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /${_bind} combatdistance [${cinfo}${CombatDistance}\ax] minimum range to melee mob ${cinfo}1 - 50\ax
 		}
 
 	| set fake safe radius
 	} else /if (${Bool[${_ccType.Equal[saferadius]}]}) {
-		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+		/if (${Range.Between[1,50:${Int[${_verbage}]}]}) {
 			/call writeINI combatRadius Common ${_verbage}
-			/call echos number "Fake Safe Combat Radius" ${_verbage} 0 0
+			VOUT /${_bind} saferadius ${sep} ${cinfo}${combatRadius}\ax
 		} else {
-			VOUT /${_bind} saferadius [${cinfo}${combatRadius}\ax] fake safe combat radius ${cinfo}1 - 50\ax
+			VOUT /${_bind} saferadius [${cinfo}${combatRadius}\ax] allowable radius ${cinfo}1 - 50\ax
 		}
 	
 	| set Z radius
 	} else /if (${Bool[${_ccType.Equal[zradius]}]}) {
 		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
 			/call writeINI zradius Common ${_verbage} 
+			VOUT /${_bind} zradius ${sep} ${cinfo}${zradius}\ax
 			/call echos number "Set ZRadius" ${_verbage} 0 0
 		} else {
-			VOUT /${_bind} zradius [${cinfo}${zradius}\ax] of mobs Z Radius range ${cinfo}1 - 200\ax
+			VOUT /${_bind} zradius [${cinfo}${zradius}\ax] allowable range ${cinfo}1 - 200\ax
 		}	
+		
+	| set smart assist
+	} else /if (${Bool[${_ccType.Equal[smartma]}]}) {
+		/if (!${validate_expansion[TRUE, |16]}) {
+			OUT Use /cc MA1 [NAME] or MA2 [NAME]
+			/return
+		}
+		/call clear_combat
+
+		| Raid Assist 1
+		/if ((${_verbage.Equal[1]} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
+	 		/if (!${useSmartAssist1}) /call writeINI useSmartAssist1 Common TRUE
+			/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
+			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+			/xtarget set 1 Raidassist1target
+		| Raid Assist 2
+		} else /if ((${_verbage.Equal[2]} || (!${Bool[${_verbage}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
+	 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
+			/if (!${useSmartAssist2}) /call writeINI useSmartAssist2 Common TRUE
+			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+			/xtarget set 1 Raidassist1target
+		| NO Assist
+		} else /if ((${_verbage.Equal[x]} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
+	 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
+			/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
+			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+			/xtarget set 1 Autohater
+		| Goup Main Assist
+		} else /if ((${_verbage.Equal[g]} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
+	 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
+			/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
+			/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
+			/xtarget set 1 Groupassisttarget
+		}		
+		/declare _assistMode string local |1|2|G
+		/declare _assM string local
+		/for _count 1 to ${_assistMode.Count[|]}
+			/varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
+			DEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${_assM},${cgood}${_assistMode.Arg[${_count},|]}\ax,${cinfo}${_assistMode.Arg[${_count},|]}\ax]}
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} smartma [${_listout}]
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
@@ -4520,12 +4526,12 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	| set stick behind
 	} else /if (${Bool[${_movementType.Equal[behind]}]}) {
 		/call writeINI SetStickBehind Movement ${If[${SetStickBehind},FALSE,TRUE]}  
-		/call echos switch "Stick Behind Target"  SetStickBehind 0 0
+		/VOUT /${_bind} behind ${sep} ${If[${SetStickBehind},${oenabled},${odisabled}]}
 
 		| disable mezzing with stickbehind enabled.
 		/if (${switchdeBuffMezz} && ${SetStickBehind}) {
 			/if (${Defined[switchdeBuffMezz]}) /call writeINI switchdeBuffMezz Buffs FALSE  
-			/call echos switch "deBuff Mezz" switchdeBuffMezz 0 0
+			/VOUT /${_bind} behind ${sep} ${If[${switchdeBuffMezz},${oenabled},${odisabled}]}
 		}
 
 	| set face fast

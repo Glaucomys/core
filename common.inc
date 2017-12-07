@@ -63,7 +63,7 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 
 	| control switches
 	} else /if (${_type.Equal[setswitch]}) {
-		VOUT ${_verbage} ${cinfo}${_verbage2}\ax ${If[${Bool[${_tmpID}]},[\a-w${_tmpID}\ax] ,]}${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
+		VOUT ${_verbage} ${_verbage2} ${If[${Bool[${_tmpID}]},[\a-w${_tmpID}\ax] ,]}${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
 
 
 	| variable %s
@@ -1330,11 +1330,13 @@ sub sort_cursor(bool _ignoreTimer)
  ***|
 sub set_xtarget()
 	DEBUG ${cbug}set_xtarget()\ax 
+	/if (!${validate_expansion[TRUE, |16]}) /return	
 	/if (!${Select[${Me.Class.ShortName},SHM,CLR,PAL,DRU]}) {
 		/call echo_bitch EQBC
 		/if (${Defined[switchHealXtarget]}) /call writeINI switchHealXtarget Heal FALSE 
 		/return
 	}
+	
 
 	/call create_timer timer_set_xtarget ${tXHeal}
 
@@ -1507,27 +1509,39 @@ sub get_assist_target()
 	} 	
 	
 	| cannnot assist yourself
-	/if (${Spawn[pc ${MA1}].ID} == ${Me.ID}) /call Bind_setCore ma1 FALSE
-	/if (${Spawn[pc ${MA2}].ID} == ${Me.ID}) /call Bind_setCore ma2 FALSE
-	/if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call writeINI useSmartAssistG Common FALSE
+	/if (${Spawn[pc ${MA1}].ID} == ${Me.ID}) /call Bind_setCombatControl MA1 FALSE
+	/if (${Spawn[pc ${MA2}].ID} == ${Me.ID}) /call Bind_setCombatControl MA2 FALSE
+	
+	| if we dont have underfoot expansion, skip ALL smartassist go directly to jail. 
+	/if (!${validate_expansion[FALSE, |16]}) /goto :skippingtoMAtarget
+
+	| no, you still cannot assist yourself. get over it
+	/if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call Bind_setCombatControl smartma X
+	/if (${Spawn[pc ${Raid.MainAssist}].ID} == ${Me.ID}) /call Bind_setCombatControl smartma X
 
 	| tar acquisition when using smart assist. set XTarget positions.
 	/if (${Bool[${useSmartAssist1}]} || ${Bool[${useSmartAssist2}]} || ${Bool[${useSmartAssistG}]}) {
 		DEBUG Using SmartMA
+
+		| if the raid/group roles are not set, move on tho MA1/2	
+		/if (${Bool[${useSmartAssistG}]} && (!${Bool[${Group.MainAssist}]} || ${Bool[${Spawn[${Group.MainAssist}].Dead}]})) /goto :skippingtoMAtarget
+		| /if (${Bool[${useSmartAssist1}]} &&
+		| /if (${Bool[${useSmartAssist2}]} &&
 	
 		/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 1 Target]} && ${Raid.Members} && ${Bool[${useSmartAssist1}]}) {
 			/xtarget set 1 raidassist1target
 			/xtarget set 2 Autohater
 		} else /if (${Me.XTarget[2].TargetType.NotEqual[Raid Assist 2 Target]} && ${Raid.Members} && ${Bool[${useSmartAssist2}]}) {
-			/xtarget set 1 raidassist1target
+			/xtarget set 1 raidassist2target
 			/xtarget set 2 Autohater
 		} else /if (${Me.XTarget[1].TargetType.NotEqual[Group Assist Target]} && ${Bool[${Group.Members}]} && ${Bool[${useSmartAssistG}]}) {
 			/xtarget set 1 groupassisttarget
 		}
 		
-		| smart assist raid 1		
+		| smart assist raid 1
 		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssist1}]}) {
 			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
+				DEBUG Setting SMA1
 				/varset Target2Kill ${Me.XTarget[1].ID}
 				/delay 1
 				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
@@ -1537,6 +1551,7 @@ sub get_assist_target()
 		| smart assist raid 2
 		/if (${Bool[${Spawn[${Me.XTarget[2].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssist2}]}) {
 			/if (${Me.XTarget[2].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
+				DEBUG Setting SMA2
 				/varset Target2Kill ${Me.XTarget[2].ID}
 				/delay 1
 				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
@@ -1546,6 +1561,7 @@ sub get_assist_target()
 		| smart assist group
 		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssistG}]}) {
 			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat} || (${Select[${Me.Class.ShortName},ENC]} && ${Select[${combat},DUAL]})) {
+				DEBUG Setting SMAG
 				/varset Target2Kill ${Me.XTarget[1].ID}
 				/delay 1
 				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
@@ -1556,54 +1572,41 @@ sub get_assist_target()
 	} 
 
 	| target acquisition when not using smart assist.
+	:skippingtoMAtarget
+	/if (${SpawnCount[npc radius ${MobAgro}]} && (${Bool[${MA1}]} || ${Bool[${MA2}]})) {
+		| MA1
+		/if (${Bool[${MA1}]} && ${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA1}].Dead}]}) {
+			DEBUG MA1 finding assist from ${MA1}
+			/assist ${MA1}
+			/delay 1s ${Me.AssistComplete}
+			/if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
+				/varset Target2Kill ${Target.ID}
+				DEBUG get_assist_target() target = ${Target2Kill}
+			} else /if (${Target2Kill} != ${Target.ID} && ${Target2Kill} != 0 && ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
+				/delay 1
+				/varset Target2Kill 0
+				DEBUG get_assist_target() ${Target2Kill} != ${Target.ID} CLEAR TARGET.. BAD
+				/return
+			}	
 	
-	| MA1
-	/if (${SpawnCount[npc radius ${MobAgro}]} && ${Bool[${MA1}]} && ${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA1}].Dead}]} && !${Bool[${useSmartAssist1}]} && !${Bool[${useSmartAssist2}]} && !${Bool[${useSmartAssistG}]}) {
-		:getassistma1
-		/assist ${MA1}
-		/delay 1s ${Me.AssistComplete}
-		/if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
-			/varset Target2Kill ${Target.ID}
-			DEBUG get_assist_target() target = ${Target.ID}
-		} else /if (${Target2Kill} != ${Target.ID} && ${Target2Kill} != 0 && ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
-			/delay 1
-			/varset Target2Kill 0
-			DEBUG get_assist_target() ${Target2Kill} != ${Target.ID} CLEAR TARGET
-			/return
-		}	
-		/doevents
-		AMIDEAD
-		/if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
-			/if (${Target.PctHPs} > ${engageAt} && !${switchOverrideEngageat}) {
-			DEBUG get_assist_target() Waiting to ENGAGE
-				/delay 3
-				/goto :getassistma1
-			} 
-		} else {
-			DEBUG ${cbad}NO MA1 TARGET\ax
-			/if (${Target.ID}) /squelch /target clear
-			/return
+		| MA2
+		} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${Spawn[${MA2}].Dead}]} && (!${Bool[${Spawn[${MA1}].ID}]} || ${Bool[${Spawn[${MA1}].Dead}]})) {
+			/assist ${MA2}
+			/delay 1s ${Me.AssistComplete}
+			/if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
+				/varset Target2Kill ${Target.ID}
+			} else /if (${Target2Kill} != ${Target.ID} && ${Target2Kill} != 0 && ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
+				/delay 1
+				/varset Target2Kill 0
+				/return
+			}	
 		}
-	}
-	
-	| MA2
-	/if (${SpawnCount[npc radius ${MobAgro}]} && ${Bool[${MA2}]} && ${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${Spawn[${MA2}].Dead}]} && !${Bool[${useSmartAssist1}]} && !${Bool[${useSmartAssist2}]} && !${Bool[${useSmartAssistG}]} && (!${Bool[${Spawn[${MA1}].ID}]} || ${Bool[${Spawn[${MA1}].Dead}]})) {
-		:getassistma2
-		/assist ${MA2}
-		/delay 1s ${Me.AssistComplete}
-		/if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
-			/varset Target2Kill ${Target.ID}
-		} else /if (${Target2Kill} != ${Target.ID} && ${Target2Kill} != 0 && ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
-			/delay 1
-			/varset Target2Kill 0
-			/return
-		}	
 		/doevents
 		AMIDEAD
 		/if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
 			/if (${Target.PctHPs} > ${engageAt} && !${switchOverrideEngageat}) {
 				/delay 3
-				/goto :getassistma1
+				/goto :skippingtoMAtarget
 			} 
 		} else {
 			/if (${Target.ID}) /squelch /target clear
@@ -1631,16 +1634,19 @@ sub is_target_valid(int _tmpID)
 	}
 	/varset isValidTarget TRUE
 
+	| /if (!${validate_expansion[FALSE, |16]}) /goto :skippingtoMAtarget
+
 	| check smart assists
 	/if (${Target.ID}) {
 		/if (${useSmartAssist1} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 			/call clear_combat
 		} else /if (${useSmartAssist2} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[2].ID}) {
 			/call clear_combat
-		} else /if (${useSmartAssistG} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
+		} else /if (${useSmartAssistG} && ${Bool[${Group.MainAssist}]} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 			/call clear_combat
 		}
 	}
+	
 	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${switchPull} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && !${switchOverrideEngageat}) {
 		/delay 1
 		/varset isValidTarget FALSE
@@ -1717,6 +1723,10 @@ sub is_target_dead(int _tmpID)
 sub clear_combat()
 	DEBUG ${cbug}clear_combat()\ax
 	AMIDEAD
+	/if (${validate_class[FALSE, |BRD]}) {
+		/call pulse_stop
+		/if (${validate_plugin[FALSE, |mq2twist]}) /squelch /twist clear
+	}
 	/if (${Me.AutoFire}) /squelch /autofire
 	/if (${Me.Combat}) /squelch /attack off
 	/if (${Bool[${Me.Casting}]} && (!${Spell[${Me.Casting.ID}].Category.Equal[Transport]} || !${Spell[${Me.Casting.ID}].Category.Equal[Heals]})) /stopcast
@@ -1725,7 +1735,6 @@ sub clear_combat()
 		/varset Target2Kill 0
 	}
 	/if (${isValidTarget}) /varset isValidTarget FALSE
-	/if (${validate_plugin[FALSE, |mq2twist]}) /squelch /twist clear
 	/if (${Stick.Active}) /squelch /stick off
 	/if (${coreAuto} && ${Target.ID}) /squelch /target clear
 	/if (!${coreAuto} && !${Spawn[${Target.ID}].Type.Equal[CORPSE]}) /squelch /target clear
@@ -2807,6 +2816,7 @@ sub sort_familiar()
  ***|
 sub protect_always_xt()
 	DEBUG ${cbug}protect_always_xt()\ax
+	/if (!${validate_expansion[FALSE, |16]}) /return
 	/doevents
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect} && ${Bool[${Spawn[pc ${toonControl}].ID}]} && !${Bool[${Spawn[${toonControl}].Dead}]}) {
 		/if (${Group.Member[${toonControl}].ID}) {
@@ -4721,7 +4731,7 @@ sub is_burn_time()
  *	DES: Designed to check for the one-off crap.
  *	USE: /call check1offBuffs
  *	INI: 
- *  NOTE: THIS NEEDS TO BE WORKED OUT OF THE CODE.. MOVE THIS CRAP TO check_exit...
+ *  NOTE: THIS NEEDS TO BE WORKED OUT OF THE CODE.. MOVE TO check_exit...
  ***|
 sub check1offBuffs()
 	AMIDEAD
@@ -5303,11 +5313,8 @@ sub validate_buff(string _type, string _inisub, string _spell)
 		/if (${Bool[${Me.Song[${${_spell}}].Duration}]}) /return FALSE
 		/if (${Bool[${Me.Buff[${_spell}].Duration}]}) /return FALSE
 
-
 	| check item
 	} else /if (${_type.Equal[item]}) {
-
-
 	}
 
 /return TRUE
@@ -5784,6 +5791,7 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Pet" "switchHealPet" NULL
 
 	/ini "${INICore}" "hide" "hideLisdted" NULL
+	/ini "${INICore}" "General" "combatRadius" NULL
 
 	/ini "${INICore}" "Echo" NULL NULL
 	
@@ -6081,7 +6089,6 @@ sub check_deBuffs(int _tmpID)
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return
 			} else {
-				| /call cast_malo_tash ${_tmpID}
 			}
 		}
 	}
@@ -6178,11 +6185,12 @@ sub verify_build()
  ***|
 sub bandolier_swap(string _band)
 	DEBUG ${cbug}bandolier_swap(band: ${_band})\ax
-	/if (${bandolierSwap.Equal[${bandolier${_band}}]) /return TRUE
+	/if (${bandolierSwap.Equal[${bandolier${_band}}]}) /return TRUE
 	/if (!${switchBandolier}) /return FALSE
-	/if (!${bandolierNormal}) /return FALSE
-	/if (!${bandolier${_band}}) /return FALSE
-	/timed 1 /bandolier Activate ${bandolier${_band}}
+	/if (!${Bool[${bandolierNormal}]}) /return FALSE
+	/if (!${Bool[${bandolier${_band}}]}) /return FALSE
+	/delay 1
+	/bandolier Activate ${bandolier${_band}}
 	/varset bandolierSwap ${bandolier${_band}}
 /return TRUE
 
@@ -6192,13 +6200,13 @@ sub bandolier_swap(string _band)
  *	DES: check to see that you have a specific expansion
  *	USE: /if (!${validate_expansion[TRUE/FALSE, |#|#|#]}) /return
  *	INI: 
- *  NOTE: THIS CHECKS FOR FALSE RETURNS !!!
+ *  NOTE: check for any FALSE returns. if even one, bail as bad.
  *  
- *  01	The Ruins of Kunark											02	The Scars of Velious
- *  03	The Shadows of Luclin										04	The Planes of Power
- *  05	The Legacy of Ykesha										06	Lost Dungeons of Norrath
- *  07	Gates of Discord												08	Omens of War
- *  09	Dragons of Norrath											10	Depths of Darkhollow
+ *  1	The Ruins of Kunark												2	The Scars of Velious
+ *  3	The Shadows of Luclin											4	The Planes of Power
+ *  5	The Legacy of Ykesha											6	Lost Dungeons of Norrath
+ *  7	Gates of Discord													8	Omens of War
+ *  9	Dragons of Norrath												10	Depths of Darkhollow
  *  11	Prophecy of Ro													12	The Serpent's Spine
  *  13	The Buried Sea													14	Secrets of Faydwer
  *  15	Seeds of Destruction										16	Underfoot
@@ -6213,19 +6221,16 @@ sub validate_expansion(bool _error, string _exp)
 	/declare _pass bool local TRUE
 	/declare _count int local 0
 
-	/for _count 1 to ${_class.Count[|]}
+	/for _count 1 to ${_exp.Count[|]}
 		AMIDEAD
 		DEBUG _count:${_count}, arg: ${_exp.Arg[${_count},|]}
-		
 		/if (!${Me.HaveExpansion[${_exp.Arg[${_count},|]}]}) {
 			/varset _pass FALSE
 			/break
 		}
-	
 	/next _count
 
 	/if (!${_pass} && ${_error}) OUT ${onotice} ${sep} Expansion ${cinfo}${expansion${_count}}\ax required for this feature.
 /return ${_pass}
 
 
-/if (!${validate_expansion[TRUE, |16}) /return

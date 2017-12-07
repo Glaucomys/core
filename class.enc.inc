@@ -23,7 +23,7 @@ sub core_ENC()
 	
 	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_engaged
-		/if (!${Bool[${Macro.Return}]} && ${switchPcPet}) /call check_pet
+		/if (!${Bool[${Macro.Return}]} && ${switchPcPet} && !${switchCharmPet}) /call check_pet
 	}
 
 	:killtarget
@@ -103,6 +103,7 @@ sub core_ENC()
 	}
 	/if (${coreAuto}) {	
 		/call use_mod_rod
+		/if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
 		/if (${switchBuffItem}) /call check_crystals
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
@@ -520,7 +521,7 @@ sub get_target_ENC()
 
 
 
- |***
+|***
  *	DES: Enchanter burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
@@ -539,6 +540,48 @@ sub synergy_ENC()
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn
+/return
+
+
+
+
+|***
+ *	DES: Charm Mobs. cause fucking charmed mobs and shits 
+ *	USE: /call find_mob_to_charm()
+ *	INI: fgeeds from core.zone.ini->[zone]->CharmMobList
+ *	NOTE: 
+ ***|   
+sub find_mob_to_charm()
+
+	/declare _count int local 0
+	/declare _spawns int local 0
+	/declare _tmpID int local 0
+	/delcare _maxlvl int local ${Int[${Math.Calc[${Me.Level}-1]}]}
+	
+	/delay 1
+	
+	/if (${SpawnCount[npc los Range 1 ${_maxlvl} radius ${MobAgro} targetable]}) {
+		/varset _spawns ${SpawnCount[npc los Range 1 ${_maxlvl} radius ${MobAgro} targetable]} 
+		/for _count 1 to ${_spawns}
+			/varset _tmpID ${NearestSpawn[${_count}, npc los Range 1 ${_maxlvl} radius ${MobAgro} targetable].ID}
+			/if (${CharmMobList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && !${Spawn[${_tmpID}].Master.Type.Equal[Pet]} && !${Spawn[${_tmpID}].Master.Type.Equal[Corpse]}) {	
+				ECHOCHANNEL Oh yeah found a mob to charm up in this bitch! Grabbing ${Spawn[id ${_tmpID}].DisplayName}
+
+				/squelch /target ID ${_tmpID}
+				/if (!${Target.Tashed.Duration}) /call cast_tash ${_tmpID}
+				/call core_cast "${spellpbaeMez}" 0 0 check_for_adds
+
+				/if (${Target.Level} <= 46  && ${Me.AltAbilityReady[Dire Charm]}) {
+					/call core_cast "Dire Charm" alt ${_tmpID} FALSE					
+				} else {
+					/call core_cast "${spellCharm}" 0 ${_tmpID} FALSE
+				}
+				
+				/if (${Defined[timer_mez_${_tmpID}]}) /deletevar timer_mez_${_tmpID}
+				/break
+			}
+		/next _count
+	}
 /return
 
 
@@ -569,8 +612,14 @@ sub Bind_setENC(string _classType, string _classVerbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
+	
+	| charm pet
+	/if (${Bool[${_classType.Find[charm]}]}) {
+		/call writeINI switchCharmPet Pet ${If[${switchCharmPet},FALSE,TRUE]}  
+		VOUT /${_bind} charm ${sep} ${If[${switchCharmPet},${oenabled},${odisabled}]}
+
 	| gather enable/disable /pct
-	/if (${Bool[${_classType.Find[gather]}]}) {
+	} else /if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
 			/call writeINI GatherPercent Spells ${_classVerbage} 
 			/call echos number "Gather Mana %" ${_classVerbage} 0 0

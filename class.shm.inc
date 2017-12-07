@@ -78,7 +78,7 @@ sub core_SHM()
 			/call check_deBuffs ${Target2Kill}
 			/if (${DoDoT}) /call cast_DOT
 			/if (${DoNuke}) /call cast_nuke
-			/call doclickItem
+			/call click_item
 			/call send_pet
 			/call click_DPS_${Me.Class.ShortName}
 			/call disc_${Me.Class.ShortName}

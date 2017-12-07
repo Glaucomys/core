@@ -261,8 +261,6 @@ sub base_preperation()
 
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
-
-	| /call Event_SetVar NA SetTie Movement FALSE
 	
 	| set me some xtargets
  	/if (!${Bool[${Group.Members}]} && !${Bool[${Raid.Members}]}) {
@@ -289,19 +287,23 @@ sub base_preperation()
 	/squelch /tgb ${setTGB}
 	
 	| disable the melee plugin and reset combat so you just stand there.
-	/if (${Bool[${Plugin[mq2melee]}]}) /melee off
-	/if (${Bool[${Plugin[mq2melee]}]}) /squelch /melee reset
+	/if (${validate_plugin[FALSE, |mq2melee]}) {
+		/melee off
+		/squelch /melee reset
+	}
 
 	| bard stuffs
-	/if (${Bool[${Plugin[mq2twist]}]} && ${validate_class[FALSE, |BRD]}) /squelch /twist clear
-	/if (${Bool[${Plugin[mq2twist]}]} && ${validate_class[FALSE, |BRD]}) /squelch /twist quiet
+	/if (${validate_plugin[FALSE, |mq2twist]} && ${validate_class[FALSE, |BRD]}) {
+		/squelch /twist clear
+		/squelch /twist quiet
+	}
 
 	| cpu stuffs
-	/if (${Bool[${Plugin[mq2cpuload]}]}) /squelch /cpu auto
+	/if (${validate_plugin[FALSE, |mq2cpuload]}) /squelch /cpu auto
 
 	| make sure netbots is running	
-	/if (${Bool[${Plugin[mq2netbots]}]}) /squelch /netbots ON send=ON grab=ON	
-	
+	/if (${validate_plugin[FALSE, |mq2netbots]}) /squelch /netbots ON send=ON grab=ON	
+
 	| turn off forced burn routines if there still on
 	| /if (${Bool[${burnForce}]}) /varset burnForce FALSE
 
@@ -312,7 +314,7 @@ sub base_preperation()
 	/squelch /hud ${HudType}
 	/squelch /loadhud ${HudName}
 			
-	| forcs sos switch for non rogues
+	| force sos switch for non rogues
 	/if (${switchSos} && !${validate_class[FALSE, |ROG]}) /call writeINI switchSos Common FALSE
 		
 	| KillCode Warning for stupid fucks that like to AFK farm
