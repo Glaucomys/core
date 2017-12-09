@@ -587,7 +587,7 @@ sub auto_adjust_EXP()
 		/alternateadv off
 	| set to AA cause the group healer is awesom	
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && ${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}) {
-		VOUT Maintain EXP [${cinfo}${MaxLevel}\ax] ${sep} ${cinfo}${MaintExpLvl}%\ax. AA:${cinfo}${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}\ax 
+		| VOUT Maintain EXP [${cinfo}${MaxLevel}\ax] ${sep} ${cinfo}${MaintExpLvl}%\ax. AA:${cinfo}${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}\ax 
 		/alternateadv on 100
 	| set back to exp cause nothing else to buy
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && (${Me.AAPoints} == ${Float[${Math.Calc[${Me.Level}*2]}].Int})) {
@@ -4301,7 +4301,7 @@ sub check_disc_now()
 	}	
 /return
 
-${Spawn[id ${_tmpID}].Type.NotEqual[Mount]}
+
 
 |***
  *	DES: last mob is dedded we need a new thing(s) to kill
@@ -4401,13 +4401,39 @@ sub get_target()
 				/if (${Target.Distance} < 31 && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost}) /call core_cast "${DiscInsult}" disc ${Target2Kill} FALSE
 			}
 
+
+			| get mob to us
 			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && < ${MobAgro}) {
-				/if (${Target.ID}) /range
+				/if (${Target.ID}) {
+					
+					| spell pull mob
+					/if (${Bool[${Spell[${RangeSpell}]}]} && ${Bool[${Me.Gem[${RangeSpell}]}]} && ${Me.SpellReady[${RangeSpell}]}) {
+						/call core_cast "${RangeSpell}" 0 ${Target2Kill} FALSE
+
+					| item pull mob
+					} else /if (${Me.ItemReady[${RangeClickItem}]}) {
+						/call core_cast "${RangeClickItem}" item ${Target2Kill} FALSE
+
+					| disc pull mob
+					} else /if (${Me.CombatAbilityReady[${RangeDisc}]}) {
+						/call core_cast "${RangeDisc}" disc ${Target2Kill} FALSE
+		
+					| range item pull mob
+					} else {				
+					 /range
+					}
+				}
+				
+				
+				
 			} else 	/if (${Spawn[ID ${Target2Kill}].Distance} <= 31) {
 				/if (${coreAuto}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 				/if (${Select[${combat},RANGE]}) /return
 				/squelch /stick ID ${Target2Kill} ${CombatDistance} 
 			}
+			
+			
+			
 		}
 
 	| if the mob is less the arrow range, move to the bastard
@@ -5259,9 +5285,6 @@ sub cast_challenge(int _tmpID)
 	AMIDEAD
 	CHECKEXIT
 	
-	| /if (!${switchAgro} && !${Target.Body.Name.Equal[Undead]}) /return
-	| /if (${Me.SpellReady[${ChallengeSpell}]} && ${Target.Distance} <= ${Spell[${ChallengeSpell}].MyRange} && !${Target.Buff[${ChallengeSpell}].ID}) /call core_cast "${ChallengeSpell}"  0 ${_tmpID} cast_break
-
 	/if (${Me.SpellReady[${ChallengeSpell}]} && !${Target.Buff[${ChallengeSpell}].ID}) {
 		/if (${switchAgro}) {
 			/call core_cast "${ChallengeSpell}" 0 ${_tmpID} cast_break
@@ -6157,7 +6180,7 @@ sub check_deBuffs(int _tmpID)
 sub verify_build()
 	DEBUG ${cbug}verify_build()\ax
 	| if mismatch #s
-	/if (${classBuild} != ${coreBuild}) {
+	/if (${Int[${classBuild}]} != ${Int[${coreBuild}]}) {
 
 		/if (${forceINIcheck}) {
 			| clean INIs?

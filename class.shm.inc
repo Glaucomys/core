@@ -72,7 +72,7 @@ sub core_SHM()
 		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},HEAL]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		| /if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${is_target_valid[${Target2Kill}]}) {
 			/call check_deBuffs ${Target2Kill}

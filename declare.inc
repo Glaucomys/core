@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171207
+	/declare coreBuild	 														int			outer 20171209
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -271,7 +271,6 @@ sub set_declares()
 	/declare noInvis 																bool 		outer TRUE
 	/declare noFeigning 														bool 		outer TRUE
 	/declare Target2Kill														int			outer 0
-	| /declare UseRange																bool		outer FALSE
 	/declare currentLootCount												int			outer	0
 	/declare markerDead															bool		outer FALSE
 
@@ -566,6 +565,10 @@ sub set_declares()
 	/call DeclareIniVar switchAApicker							bool 		Common FALSE
 	/call DeclareIniVar RangeItem										string	Common FALSE		
 	/call DeclareIniVar RangeItemSummon							string	Common FALSE
+	/call DeclareIniVar RangeSpell									string	Common FALSE
+	/call DeclareIniVar RangeClickItem							string	Common FALSE
+	/call DeclareIniVar RangeDisc										string	Common FALSE
+	
 	/call DeclareIniVar autoInventoryItem						string	Common "|Summoned: Giant Modulation Shard"
 	/call DeclareIniVar stoponDS										bool		Common FALSE		
 	/call DeclareIniVar useGlyph										string	Common "Glyph of the Cataclysm"
@@ -2315,10 +2318,12 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	DEBUG cmd: ${_cmd} _sender ${_sender}
 
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
-  /if (${_cmd.Equal[killmob]}) {
-  	/varset switchOverrideEngageat ${If[${switchOverrideEngageat},FALSE,TRUE]}
-		/call echos override "Engageat" switchOverrideEngageat
-  }
+  /if (${_cmd.Equal[killmob]}) /call Bind_override engageat
+ 
+   | 	/varset switchOverrideEngageat ${If[${switchOverrideEngageat},FALSE,TRUE]}
+		| /call echos override "Engageat" switchOverrideEngageat
+ 
+  
   /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item 0 FALSE
   /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0 FALSE
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
@@ -3284,17 +3289,18 @@ sub Bind_cursor(string _cursorType, string _verbage)
 		
 	/if (${_cursorType.Equal[auto]}) {
 		/call writeINI switchAutoCursor Common ${If[${switchAutoCursor},FALSE,TRUE]}  
-		VOUT Cursor ${sep} ${cinfo}Auto\ax ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
+		VOUT /cursor ${_cursorType.Lower} ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
 		/if (${timer_auto_cursor_pause}) /varset timer_auto_cursor_pause 1
 	} else /if (${_cursorType.Equal[pause]}) {
 		/call create_timer timer_auto_cursor_pause ${If[${Bool[${_verbage}]},${_verbage},30s]}
-		VOUT Cursor ${sep} ${cinfo}Pause\ax ${sep} ${If[${Bool[${_verbage}]},${_verbage},30s]}
+		VOUT /cursor ${_cursorType.Lower} ${sep} ${cinfo}${If[${Bool[${_verbage}]},${_verbage},30s]}\ax
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.Equal[what]}) {
-		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
+		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.NotEqual[what]} && ${_cursorType.NotEqual[auto]}) {
 		/varset _properType ${_cursorType.Left[1].Upper}${_cursorType.Right[-1].Lower}
 		/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" "${_properType}"
-		/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
+		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
+	| 	/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 		/if (${Cursor.ID} && ${_cursorType.Equal[Destroy]}) /destroy
 	} else {	
 		/call echos listtype cursor cursor 0 0 0
@@ -3357,8 +3363,7 @@ sub Bind_rez(string _rezType, string _verbage)
 		/next _count
 		VOUT /${_bind} pct [${_listout}]
 		/return
-	} else /if (${_rezType.Equal[range]}) 
-		{
+	} else /if (${_rezType.Equal[range]}) {
 		/if (${Range.Between[1,110:${Int[${_verbage}]}]}) {
 			/call writeINI maxRezRange Heal ${_verbage}
 			| VOUT /rez range [${cinfo}${_verbage}\ax]
@@ -3800,22 +3805,22 @@ sub Bind_burn(string _burnType, string _verbage)
 	| Burn Automatic on/off
 	/if (${Bool[${_burnType.Find[auto]}]}) {
 		/call writeINI burnAuto Common ${If[${burnAuto},FALSE,TRUE]}  
-		/call echos switch "Burn Auto" burnAuto 0 0
+		VOUT /${_bind} auto ${sep} ${If[${burnAuto},${oenabled},${odisabled}]}
 
 	| Mob count #
 	} else /if (${Bool[${_burnType.Equal[count]}]}) {
 	 	/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI burnCount Common ${_verbage} 
-			/call echos number "Burn # Mob Count" ${_verbage} 0 0
+			VOUT /${_bind} count ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /${_bind} count [${cinfo}${burnCount}\ax] when # of mobs in range ${cinfo}1 - 99\ax
 		}
 
 	| Burn Engage at %
-	} else /if (${Bool[${_burnType.Equal[engageatat]}]}) {
+	} else /if (${Bool[${_burnType.Equal[engageat]}]}) {
 	 	/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI burnEngageat Common ${_verbage} 
-			/call echos number "Burn health enagage %" ${_verbage} 0 0
+			VOUT /${_bind} engageat ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /${_bind} engageat [${cinfo}${burnEngageat}\ax] % of mobs health to engage burn ${cinfo}1 - 99\ax
 		}
@@ -3823,7 +3828,7 @@ sub Bind_burn(string _burnType, string _verbage)
 	| force constant burning
 	} else /if (${Bool[${_burnType.Equal[force]}]}) {
 		/varset burnForce ${If[${burnForce},FALSE,TRUE]}
-		/call echos switch "Constant Burn" burnForce 0 0
+		VOUT /${_bind} force ${sep} ${If[${burnForce},${oenabled},${odisabled}]}
 
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
@@ -4526,7 +4531,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	| set stick behind
 	} else /if (${Bool[${_movementType.Equal[behind]}]}) {
 		/call writeINI SetStickBehind Movement ${If[${SetStickBehind},FALSE,TRUE]}  
-		/VOUT /${_bind} behind ${sep} ${If[${SetStickBehind},${oenabled},${odisabled}]}
+		VOUT /${_bind} behind ${sep} ${If[${SetStickBehind},${oenabled},${odisabled}]}
 
 		| disable mezzing with stickbehind enabled.
 		/if (${switchdeBuffMezz} && ${SetStickBehind}) {

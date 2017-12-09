@@ -132,9 +132,24 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "pettarget5" "19,86,98,25,25,25,${If[!${switchOverrideEngageat} && !${switchPcSwarm},##,]}"
 	/noparse /ini HUDPATH "pettarget6" "19,88,98,255,0,0,${If[${switchOverrideEngageat},X,]}"
 
+	| target body types
+	/noparse /ini HUDPATH "bodytype1" "3,5,109,100,149,237,[                ]"
+	/noparse /ini HUDPATH "bodytype2" "19,10,110,0,255,0,${If[${Target.Body.Name.Equal[Proc Pet]},X,]}"
+	/noparse /ini HUDPATH "bodytype3" "19,10,110,25,25,25,${If[${Target.Body.Name.Equal[Proc Pet]},,X]}"	
+	/noparse /ini HUDPATH "bodytype4" "19,18,110,0,255,0,${If[${Target.Body.Name.Equal[Animal]},A,]}"
+	/noparse /ini HUDPATH "bodytype5" "19,18,110,25,25,25,${If[${Target.Body.Name.Equal[Animal]},,A]}"	
+	/noparse /ini HUDPATH "bodytype6" "19,27,110,0,255,0,${If[${Target.Body.Name.Equal[Construct]},C,]}"
+	/noparse /ini HUDPATH "bodytype7" "19,27,110,25,25,25,${If[${Target.Body.Name.Equal[Construct]},,C]}"	
+	/noparse /ini HUDPATH "bodytype8" "19,35,110,0,255,0,${If[${Target.Body.Name.Equal[Humanoid]},H,]}"
+	/noparse /ini HUDPATH "bodytype9" "19,35,110,25,25,25,${If[${Target.Body.Name.Equal[Humanoid]},,H]}"	
+	/noparse /ini HUDPATH "bodytype10" "19,42,110,0,255,0,${If[${Target.Body.Name.Equal[Plant]},P,]}"
+	/noparse /ini HUDPATH "bodytype11" "19,42,110,25,25,25,${If[${Target.Body.Name.Equal[Plant]},,P]}"		
+	/noparse /ini HUDPATH "bodytype12" "19,48,110,0,255,0,${If[${Target.Body.Name.Equal[Undead]},U,]}"
+	/noparse /ini HUDPATH "bodytype13" "19,49,110,25,25,25,${If[${Target.Body.Name.Equal[Undead]},,U]}"		
+
 	| target effect notice
-	/noparse /ini HUDPATH "tarnotice1" "3,39,109,100,149,237,[                                                                                                        ][       ]"
-	/noparse /ini HUDPATH "tarnotice2" "19,45,110,255,255,255,${hudTarNotice}"
+	/noparse /ini HUDPATH "tarnotice1" "3,60,109,100,149,237,[                                                                                                 ][       ]"
+	/noparse /ini HUDPATH "tarnotice2" "19,64,110,255,255,255,${hudTarNotice}"
 	/noparse /ini HUDPATH "watchspawn1" "19,362,110,0,255,0,${If[${Bool[${watchSpawn}]},${hudwatchspawn},]}"
 	/noparse /ini HUDPATH "watchspawn2" "19,362,110,25,25,25,${If[${Bool[${watchSpawn}]},,###]}"
 

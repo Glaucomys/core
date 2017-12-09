@@ -12,10 +12,25 @@
 Current Requests:
  - pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
  - fix chanter charm mob code
- - add body types to hud target
+
  
  
  
+
+20171209
+HUDUPDATE
+- /movement behind
+  -- fixed a typo
+- verify_build() will foce intiger validation
+- error in /burn engageat command.  
+- body types are now displayed under the target
+- pulling with Spells/Items/Discs..
+  -- toon.INI->[Common]->RangeSpell=SPELL YOU WANT TO PULL WITH
+  -- toon.INI->[Common]->RangeClickItem=CLICK ITEM YOU WANT TO PULL WITH
+  -- toon.INI->[Common]->RangeDisc=DISC YOU WANT TO PULL WITH
+  -- these are all FALSE by default. executed in order listed with /range last.
+  
+  
 
 
 20171207
@@ -42,7 +57,7 @@ HUDUPDATE
   -- find_mob_to_charm()
   -- requires /pc pet enabled
   -- requires /enc charm enabled
-  -- while /enc charm is enables, the chanter will not try and make the normal summoned pet. all other /pc build skills will still work.
+  -- while /enc charm is enabled, the chanter will not try and make the normal summoned pet. all other /pc build skills will still work.
   -- chanter will ae mezz if a mob is detected that it can charm, tash it, if it is not, then attempt to charm.
 - class.brd.inc
   -- adjusted pulse_stop() check and added to clear_combat()
@@ -57,9 +72,6 @@ NOTE - Group Assisting (2 things)
   Assist toons name. we can only pull the RaidAssist which is limited to the first raid assist. Still have not decided how i want to handle this.
 
   
- 
-
-
 20171204
 - ${validate_expansion[T/F, |#|#|#]} 
   -- can now check for expansions before features are allowed.
