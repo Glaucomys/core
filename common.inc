@@ -626,7 +626,7 @@ sub check_aura()
 		/if (${Bool[${Aura1Buff}]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
 			/call fix_gem_id "${buffGem}"
 			/if (!${Defined[_gem]}) /declare _gem int local ${Macro.Return}
-			/call scribe "${Aura1Buff}" "${_gem}" 10
+			/call scribe "${Aura1Buff}" "${_gem}" TRUE
 			VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
 			/melody ${_gem}
 			/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}

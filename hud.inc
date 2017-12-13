@@ -134,8 +134,8 @@ sub HUDUpdate()
 
 	| target body types
 	/noparse /ini HUDPATH "bodytype1" "3,5,109,100,149,237,[                ]"
-	/noparse /ini HUDPATH "bodytype2" "19,10,110,0,255,0,${If[${Target.Body.Name.Equal[Proc Pet]},X,]}"
-	/noparse /ini HUDPATH "bodytype3" "19,10,110,25,25,25,${If[${Target.Body.Name.Equal[Proc Pet]},,X]}"	
+	/noparse /ini HUDPATH "bodytype2" "19,10,110,0,255,0,${If[${Target.Body.Name.Equal[Magical]},M,]}"
+	/noparse /ini HUDPATH "bodytype3" "19,10,110,25,25,25,${If[${Target.Body.Name.Equal[Magical]},,M]}"	
 	/noparse /ini HUDPATH "bodytype4" "19,18,110,0,255,0,${If[${Target.Body.Name.Equal[Animal]},A,]}"
 	/noparse /ini HUDPATH "bodytype5" "19,18,110,25,25,25,${If[${Target.Body.Name.Equal[Animal]},,A]}"	
 	/noparse /ini HUDPATH "bodytype6" "19,27,110,0,255,0,${If[${Target.Body.Name.Equal[Construct]},C,]}"

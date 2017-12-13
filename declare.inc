@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171209
+	/declare coreBuild	 														int			outer 20171213
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -375,7 +375,7 @@ sub set_declares()
 	/call DeclareIniVar autoRest 										int 		Common 90
 	/call DeclareIniVar AutoExpAdjust 							bool 		Common TRUE
 	/call DeclareIniVar MaintExpLvl   							int 		Common 99
-	/call DeclareIniVar MaxLevel      							int 		Common 105
+	/call DeclareIniVar MaxLevel      							int 		Common 110
 	/call DeclareIniVar coreEventsInc  							bool 		Common TRUE
 
 
@@ -503,13 +503,14 @@ sub set_declares()
 	
 	
 	| non-standard mode control
-	/declare modeType																string	outer |stop|agro|drag|fish|forage|harvest|hunt|lush|petfarm|scorch|tradeskill
+	/declare modeType																string	outer |stop|agro|drag|fish|forage|harvest|harvestcount|hunt|lush|petfarm|scorch|tradeskill
 	/declare setMode																bool		outer FALSE
 	/declare switchModeStop													bool		outer FALSE
 	/declare switchModeAgro													bool		outer FALSE
 	/declare setModeType														string	outer FALSE
 	/declare setModeCount														int			outer 0
 	/call DeclareIniVar setModeAgro									int			Common FALSE 
+	/call DeclareIniVar modeHarvestCount						int			Common 999999 
 	/declare switchModeDrag													bool		outer FALSE 
 	/declare switchModeForage												bool		outer FALSE
 	/declare switchModePetfarm											bool		outer FALSE
@@ -593,43 +594,67 @@ sub set_declares()
 	/declare CLREpic1																string	outer 
 	/declare CLREpic15															string	outer 
 	/declare CLREpic2																string	outer 
-	
+	/declare CLRAlliance														string	outer
 
 	| Druid
 	/declare DRUspire1															string	outer Fundament: First Spire of Nature
 	/declare DRUspire2															string	outer Fundament: Second Spire of Nature
 	/declare DRUspire3															string	outer Fundament: Third Spire of Nature
 	/declare DRUsynergyAA														string	outer Preserver's Synergy
+	/declare DRUEpic1																string	outer 
+	/declare DRUEpic15															string	outer 
+	/declare DRUEpic2																string	outer 
+	/declare DRUAlliance														string	outer
 
 	| Shaman
 	/declare SHMspire1															string	outer Fundament: First Spire of Ancestors
 	/declare SHMspire2															string	outer Fundament: Second Spire of Ancestors
 	/declare SHMspire3															string	outer Fundament: Third Spire of Ancestors
 	/declare SHMsynergyAA														string	outer Luminary's Synergy
+	/declare SHMEpic1																string	outer 
+	/declare SHMEpic15															string	outer 
+	/declare SHMEpic2																string	outer 
+	/declare SHMAlliance														string	outer
 
 	| Warrior
 	/declare WARspire1															string	outer Fundament: First Spire of the Warlord
 	/declare WARspire2															string	outer Fundament: Second Spire of the Warlord
 	/declare WARspire3															string	outer Fundament: Third Spire of the Warlord
 	/declare WARsynergyAA														string	outer Myrmidon's Synergy
+	/declare WAREpic1																string	outer 
+	/declare WAREpic15															string	outer 
+	/declare WAREpic2																string	outer 
+	/declare WARAlliance														string	outer
 
 	| Shadow Knight
 	/declare SHDspire1															string	outer Fundament: First Spire of the Reavers
 	/declare SHDspire2															string	outer Fundament: Second Spire of the Reavers
 	/declare SHDspire3															string	outer Fundament: Third Spire of the Reavers
 	/declare SHDsynergyAA														string	outer Knight's Synergy
+	/declare SHDEpic1																string	outer 
+	/declare SHDEpic15															string	outer 
+	/declare SHDEpic2																string	outer 
+	/declare SHDAlliance														string	outer
 
 	| Paladin
 	/declare PALspire1															string	outer Fundament: First Spire of Holiness
 	/declare PALspire2															string	outer Fundament: Second Spire of Holiness
 	/declare PALspire3															string	outer Fundament: Third Spire of Holiness
 	/declare PALsynergyAA														string	outer Knight's Synergy
+	/declare PALEpic1																string	outer 
+	/declare PALEpic15															string	outer 
+	/declare PALEpic2																string	outer Nightbane, Sword of the Valiant
+	/declare PALAlliance														string	outer
 
 	| Magician
 	/declare MAGspire1															string	outer Fundament: First Spire of the Elements
 	/declare MAGspire2															string	outer Fundament: Second Spire of the Elements
 	/declare MAGspire3															string	outer Fundament: Third Spire of the Elements
 	/declare MAGsynergyAA														string	outer Conjurer's Synergy
+	/declare MAGEpic1																string	outer 
+	/declare MAGEpic15															string	outer 
+	/declare MAGEpic2																string	outer 
+	/declare MAGAlliance														string	outer
 
 	| Enchanter	
 	/declare ENCspire1															string	outer Fundament: First Spire of Enchantment
@@ -638,6 +663,10 @@ sub set_declares()
 	/declare ENCIoG																	string	outer Illusions of Grandeur
 	/declare ENCMC																	string	outer Mental Contortion
 	/declare ENCsynergyAA														string	outer Begulier's Synergy
+	/declare ENCEpic1																string	outer 
+	/declare ENCEpic15															string	outer 
+	/declare ENCEpic2																string	outer 
+	/declare ENCAlliance														string	outer
 		
 	| Wizard 
 	/declare WIZspire1															string	outer Fundament: First Spire of Arcanum
@@ -645,12 +674,20 @@ sub set_declares()
 	/declare WIZspire3															string	outer Fundament: Third Spire of Arcanum
 	/declare WIZmannaburn														string	outer Manna Burn
 	/declare WIZsynergyAA														string	outer Evoker's Synergy
+	/declare WIZEpic1																string	outer 
+	/declare WIZEpic15															string	outer 
+	/declare WIZEpic2																string	outer 
+	/declare WIZAlliance														string	outer
 
 	| Necromancer
 	/declare NECspire1															string	outer Fundament: First Spire of Necromancy
 	/declare NECspire2															string	outer Fundament: Second Spire of Necromancy
 	/declare NECspire3															string	outer Fundament: Third Spire of Necromancy
 	/declare NECsynergyAA														string	outer Defiler's Synergy
+	/declare NECEpic1																string	outer 
+	/declare NECEpic15															string	outer 
+	/declare NECEpic2																string	outer 
+	/declare NECAlliance														string	outer
 
 	| Ranger
 	/declare RNGspire1															string	outer Fundament: First Spire of the Pathfinders
@@ -660,36 +697,60 @@ sub set_declares()
 	/declare RNGcheetah															string	outer Scarlet Cheetah's Fang
 	/declare RNGgroupguardian												string	outer Group Guardian of the Forest
 	/declare RNGsynergyAA														string	outer Outrider's Synergy
+	/declare RNGEpic1																string	outer 
+	/declare RNGEpic15															string	outer 
+	/declare RNGEpic2																string	outer 
+	/declare RNGAlliance														string	outer
 
 	| Bard
 	/declare BRDspire1															string	outer Fundament: First Spire of the Minstrel
 	/declare BRDspire2															string	outer Fundament: Second Spire of the Minstrel
 	/declare BRDspire3															string	outer Fundament: Third Spire of the Minstrel
 	/declare BRDsynergyAA														string	outer Troubadour's Synergy
+	/declare BRDEpic1																string	outer 
+	/declare BRDEpic15															string	outer 
+	/declare BRDEpic2																string	outer 
+	/declare BDDAlliance														string	outer
 
 	| Monk
 	/declare MONspire1															string	outer Fundament: First Spire of the Sensei
 	/declare MONspire2															string	outer Fundament: Second Spire of the Sensei
 	/declare MONspire3															string	outer Fundament: Third Spire of the Sensei
 	/declare MONsynergyAA														string	outer 
+	/declare MONEpic1																string	outer 
+	/declare MONEpic15															string	outer 
+	/declare MONEpic2																string	outer 
+	/declare MONAlliance														string	outer
 
 	| Beastlord
 	/declare BSTspire1															string	outer Fundament: First Spire of the Savage Lord
 	/declare BSTspire2															string	outer Fundament: Second Spire of the Savage Lord
 	/declare BSTspire3															string	outer Fundament: Third Spire of the Savage Lord
 	/declare BSTsynergyAA														string	outer Primalist's Synergy
+	/declare BSTEpic1																string	outer 
+	/declare BSTEpic15															string	outer 
+	/declare BSTEpic2																string	outer 
+	/declare BSTAlliance														string	outer
 
 	| Berzerker
 	/declare BERspire1															string	outer Fundament: First Spire of Savagery
 	/declare BERspire2															string	outer Fundament: Second Spire of Savagery
 	/declare BERspire3															string	outer Fundament: Third Spire of Savagery
 	/declare BERsynergyAA														string	outer Fury's Synergy
+	/declare BEREpic1																string	outer 
+	/declare BEREpic15															string	outer 
+	/declare BEREpic2																string	outer 
+	/declare BERAlliance														string	outer
 
 	| Rogue
 	/declare ROGspire1															string	outer Fundament: First Spire of the Rake
 	/declare ROGspire2															string	outer Fundament: Second Spire of the Rake
 	/declare ROGspire3															string	outer Fundament: Third Spire of the Rake
 	/declare ROGsynergyAA														string	outer Blackguard's Synergy
+	/declare ROGEpic1																string	outer 
+	/declare ROGEpic15															string	outer 
+	/declare ROGEpic2																string	outer 
+	/declare ROGAlliance														string	outer
 
 
 	| combat controls
@@ -3427,7 +3488,7 @@ sub Bind_listControl(string _list, string _verbage)
 		/call echos needtarget 0 0 0 0
 	} 
 
-	| validate _name and correct the case
+	| validate _list and correct the case
 	/if (${Bool[${_list}]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
 		/for _count 1 to ${listType.Count[|]}
 			DEBUG Match: ${listType.Arg[${_count},|]} ${If[${Bool[${_list.Find[${listType.Arg[${_count},|]}]}]},${cgood}==\ax,${cbad}!=\ax]} ${_list}
@@ -3436,9 +3497,11 @@ sub Bind_listControl(string _list, string _verbage)
 				/if (${_list.Left[2].Equal[no]}) {
 					DEBUG ${_list.Left[2].Left[1].Upper}${_list.Left[2].Right[-1].Lower}${_list.Right[-2].Left[1].Upper}${_list.Right[-2].Right[-1].Lower}
 					/varset _list ${_list.Left[2].Left[1].Upper}${_list.Left[2].Right[-1].Lower}${_list.Right[-2].Left[1].Upper}${_list.Right[-2].Right[-1].Lower}
+				}	else /if (${_list.Left[4].Equal[hunt]}) {
+					/varset _list ${_list.Left[4].Left[1].Upper}${_list.Left[4].Right[-1].Lower}${_list.Right[3].Left[1].Upper}${_list.Right[3].Right[-1].Lower}
 				} else /if (${_list.Left[2].NotEqual[no]}) {
 					/varset _list ${_list.Left[1].Upper}${_list.Right[-1].Lower}
-				}	
+				}
 				/varset _validName TRUE
 				DEBUG ProperList: ${cinfo}${_list}\ax
 				/goto :validname
@@ -3496,7 +3559,7 @@ sub Bind_listControl(string _list, string _verbage)
 		/if (${${_list}List.Find[${Target.DisplayName}]}) {
 			VOUT ${onotice} ${sep} [${ctar}${Target.DisplayName}\ax] already exists in ${sep} ${cinfo}${Zone.Name}\ax
 		} else /if (!${${_list}List.Find[${Target.DisplayName}]}) {
-			DEBUG Adding
+			DEBUG Adding |${Target.DisplayName} to ${${_list}List}
 			VOUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
 			/if (${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "${${_list}List}|${Target.DisplayName}"
 			/if (!${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "|${Target.DisplayName}"

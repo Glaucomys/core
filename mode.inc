@@ -40,11 +40,19 @@ sub Bind_mode(string _modeType, string _verbage)
 	/if (${Bool[${_modeType.Find[agro]}]}) {
 		/if (${Range.Between[1,999999:${Int[${_verbage}]}]}) {
 			/call writeINI setModeAgro Common ${_verbage}  
-			/call echos number "Mode Agro Range" ${_verbage} 0 0
+			VOUT /mode agro ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /mode agro [${cinfo}${setModeAgro}\ax] allowable range is ${cinfo}1 - 99999\ax
 		}	
-
+		
+	| set harvest counts	
+	} else /if (${Bool[${_modeType.Find[harvestcount]}]}) {
+		/if (${Range.Between[1,999999:${Int[${_verbage}]}]}) {
+			/call writeINI modeHarvestCount Common ${_verbage}  
+			VOUT /mode harvestcount ${sep} ${cinfo}${_verbage}\ax
+		} else {
+			VOUT /mode harvestcount [${cinfo}${modeHarvestCount}\ax] allowable range is ${cinfo}1 - 999999\ax
+		}	
 	| all switches except stop
 	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
 		/varset setModeType ${_modeType.Left[1].Upper}${_modeType.Right[-1].Lower}
@@ -559,6 +567,11 @@ sub mode_harvest()
 
 	CLEARCURSOR TRUE
 	/for _count 1 to ${HarvestList.Count[|]}
+		/if (${FindItemCount[${HarvestList.Arg[${_count},|]}]} >= (${modeHarvestCount})) {
+			/varset switchModeHarvest FALSE
+			/autoinventory
+			/return
+		}
 		/if (${GroundItemCount[${HarvestList.Arg[${_count},|]}]}) {
 			/call get_ground_harvest "${HarvestList.Arg[${_count},|]}"
 		} else {

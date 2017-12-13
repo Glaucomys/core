@@ -79,7 +79,6 @@ sub disc_PAL()
 	
 	/if (${validate_buff[disc, discs, DiscFastRune]}) /call core_cast "${DiscFastRune}" disc 0 FALSE
 	
-	
 	| Hand of Piety AA Group heal	
 	/if (${switchHealSelf} && ${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0 FALSE
 	| dpsheal
@@ -91,6 +90,8 @@ sub disc_PAL()
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} > 2) {
 		/if (${Me.AltAbilityReady[${AAInquisitor}]} && !${Me.Song[[${AAGroupInquisitor}].ID}) { 
 			/call core_cast "${AAInquisitor}" alt 0 FALSE
+		| dont use group armor in raids
+		
 		} else /if (${Me.AltAbilityReady[${AAGroupInquisitor}]} && !${Me.Song[${AAInquisitor}].ID} && !${Raid.Members}) {
 			/call core_cast "${AAGroupInquisitor}" alt 0 FALSE
 		}
@@ -104,8 +105,23 @@ sub disc_PAL()
 	| Yaulp.. all the time!!
 	/if (!${Me.Sitting} && ${doYaulp}) /call cast_yaulp
 
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0 FALSE
+	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
+	
+	| defensive	
+	/if (${coreAuto} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} > 1) {
+		/if (${Me.CombatAbilityReady[${DiscArmor}]}) {
+			/call core_cast "${DiscArmor}" disc 0 FALSE
+		} else /if (!${Me.CombatAbilityReady[${DiscArmor}]} && !${Bool[${Me.ActiveDisc}]}) {
+			/call core_cast "${DiscGuard}" disc 0 FALSE
+		} else /if (!${Me.CombatAbilityReady[${DiscArmor}]} && !${Me.CombatAbilityReady[${DiscGuard}]} && !${Bool[${Me.ActiveDisc}]}) {
+			/call core_cast "${DiscHoly}" disc 0 FALSE
+		}
+
+		| deflection
+		/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]}) /call core_cast "Deflection Discipline" disc 0 FALSE
+	}
+	
 /return
 
 

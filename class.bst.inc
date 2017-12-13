@@ -46,6 +46,17 @@ sub core_BST()
 		/call cast_AA_focused_paragon
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/call send_pet
+		/call click_BP
+		/call check_deBuffs ${Target2Kill}
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke}) /call cast_nuke
+		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
+		/call click_item
+		/call click_DPS_${Me.Class.ShortName}
+		/call cast_AA_focused_paragon
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/call send_pet
@@ -95,10 +106,10 @@ sub disc_BST()
 	/if (${Me.AltAbilityReady[Feral Swipe]} && ${Target.Distance} < ${Spell[Feral Swipe].MyRange}) /call core_cast "Feral Swipe" alt ${Target2Kill} FALSE
 	/if (${Me.AltAbilityReady[Bite of the Asp]} && ${Target.Distance} < ${Spell[Bite of the Asp].MyRange}) /call core_cast "Bite of the Asp" alt ${Target2Kill} FALSE
 	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Target.Distance} < ${Spell[${DiscForay}].MyRange} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${DiscFocusClaws}]}) /call core_cast "${DiscFocusClaws}" disc ${Target2Kill} FALSE
+	/call core_cast "${DiscFocusClaws}" disc ${Target2Kill} FALSE
 	/if (${Me.AltAbilityReady[Roar of thunder]}) /call core_cast "Roar of Thunder" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[${DiscEnduring}]} && ${Target.Distance} < ${Spell[${DiscEnduring}].MyRange} && !${Bool[${Targe.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${DiscRending}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill} FALSE
+	/if (!${Bool[${Target.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill} FALSE
+	/if (${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill} FALSE
 /return
 
 

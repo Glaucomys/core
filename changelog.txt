@@ -12,9 +12,20 @@
 Current Requests:
  - pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
  - fix chanter charm mob code
+ - no melee buff list
 
- 
- 
+
+
+
+
+20171213
+- /mode [harvestcount] - set the max number of items you will harvest. defaults to 999999
+- /lc huntmob
+  -- fix compilation error for new targets
+- class.pal.inc
+  -- adjusted defensives to be used more. 
+- class.ber.inc
+  -- error in discs with shammy epic going
  
 
 20171209
@@ -29,8 +40,6 @@ HUDUPDATE
   -- toon.INI->[Common]->RangeClickItem=CLICK ITEM YOU WANT TO PULL WITH
   -- toon.INI->[Common]->RangeDisc=DISC YOU WANT TO PULL WITH
   -- these are all FALSE by default. executed in order listed with /range last.
-  
-  
 
 
 20171207

@@ -201,7 +201,7 @@ sub synergy_BER()
 		/if (${Me.AltAbilityReady[Intensity of the Resolute]} && !${Me.Song[Reckless Abandon].ID} && ${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
 
 	| savage spirit .. does not stack with shaman epic buff
-	} else /if (${Me.AltAbilityReady[Savage Spirit]} && ${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && !${Me.Song[Prophet's Gift of the Ruchu]}) {
+	} else /if (${Me.AltAbilityReady[Savage Spirit]} && ${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && !${Bool[${Me.Song[Prophet's Gift of the Ruchu]}]}) {
 		/if (${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID})  /call core_cast "${DiscOpenWound}" disc 0 FALSE
 		/call core_cast "${DiscFrenzyResolve}" disc 0 FALSE
 		/delay 3
