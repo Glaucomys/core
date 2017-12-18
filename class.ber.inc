@@ -202,7 +202,7 @@ sub synergy_BER()
 
 	| savage spirit .. does not stack with shaman epic buff
 	} else /if (${Me.AltAbilityReady[Savage Spirit]} && ${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && !${Bool[${Me.Song[Prophet's Gift of the Ruchu]}]}) {
-		/if (${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID})  /call core_cast "${DiscOpenWound}" disc 0 FALSE
+		| /if (${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID})  /call core_cast "${DiscOpenWound}" disc 0 FALSE
 		/call core_cast "${DiscFrenzyResolve}" disc 0 FALSE
 		/delay 3
 		/call core_cast "Savage Spirit" alt 0 FALSE

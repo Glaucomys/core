@@ -31,7 +31,7 @@ sub core_PAL()
 		/call use_skill_melee ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
-		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealGroup} || ${switchHealSelf}) /call check_splash_group_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
 		/call use_skill_melee ${Target2Kill}
@@ -46,7 +46,7 @@ sub core_PAL()
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 		/call set_combat HEAL
-		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealGroup} || ${switchHealSelf}) /call check_splash_group_${Me.Class.ShortName}
 	} else /if (${Select[${combat},DUAL]}) {
 	} 
 	/if (${coreAuto}) {	
@@ -110,11 +110,13 @@ sub disc_PAL()
 	
 	| defensive	
 	/if (${coreAuto} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} > 1) {
-		/if (${Me.CombatAbilityReady[${DiscArmor}]}) {
+		/if (!${Bool[${Me.ActiveDisc}]}) {
 			/call core_cast "${DiscArmor}" disc 0 FALSE
 		} else /if (!${Me.CombatAbilityReady[${DiscArmor}]} && !${Bool[${Me.ActiveDisc}]}) {
 			/call core_cast "${DiscGuard}" disc 0 FALSE
 		} else /if (!${Me.CombatAbilityReady[${DiscArmor}]} && !${Me.CombatAbilityReady[${DiscGuard}]} && !${Bool[${Me.ActiveDisc}]}) {
+					/echo here DISC..................
+
 			/call core_cast "${DiscHoly}" disc 0 FALSE
 		}
 
@@ -236,7 +238,7 @@ sub check_splash_group_PAL()
 	AMIDEAD
 	CHECKEXIT
 	| Group Splash
-  /if (${useGroupHeal} && ${groupHurt} >= 2 && ${Me.SpellReady[${splashGroup}]}) {
+  /if (${useGroupHeal} && ${groupHurt} >= 1 && ${Me.SpellReady[${splashGroup}]}) {
     /call core_cast "${splashGroup}" 0 FALSE
     /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
   } 
@@ -248,7 +250,6 @@ sub check_splash_group_PAL()
  	/doevents
 	| Touch Heal 
   /if (${useGroupHeal} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healTouch}]}) /call core_cast "${healTouch}" 0 ${WorstHurt} FALSE
-  
 	 
 	UPDATEHUD
 /return

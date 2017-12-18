@@ -18,7 +18,6 @@ sub core_SHD()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
 	
 	/if (${coreAuto}) {

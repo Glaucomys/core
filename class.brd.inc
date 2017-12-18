@@ -184,10 +184,10 @@ sub mem_song_line(string _line)
 		/for _index 1 to ${_list[${_count}].Count[|]}
 			/varset _currentSong ${Spell[${_list[${_count}].Arg[${_index},|]}].RankName}
 			/if (${Me.Gem[${_index}].Name.Equal[${_currentSong}]}) /continue
-			/call scribe "${_currentSong}" "${_index}" FALSE
+			/call mem_spell TRUE "${_currentSong}" "${_index}" FALSE
 		/next _index	
 	/next _count	
-	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax scribe completed.
+	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax memorization completed.
 /return
 
 

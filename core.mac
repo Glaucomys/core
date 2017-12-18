@@ -11,6 +11,7 @@
 	GitHub Wiki: https://github.com/exspes007/core/wiki
 	
 	/invoke ${Macro.Undeclared}
+	/echo ${EverQuest.LastMouseOver.Name}
 	
 	Required Plugins:	MQ2Cast, MQ2EQBC, EQBCS, MQ2Exchange, MQ2MoveUtils, MQ2Netbots, MQ2Debuffs
 		
@@ -263,14 +264,27 @@ sub base_preperation()
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
 	
 	| set me some xtargets
- 	/if (!${Bool[${Group.Members}]} && !${Bool[${Raid.Members}]}) {
+ 	/if (${validate_expansion[TRUE, |16]} && !${Bool[${Group.Members}]} && !${Bool[${Raid.Members}]}) {
  		 /xtarget set 1 Autohater
  	} else /if (${Bool[${Group.Members}]} && !${Bool[${Raid.Members}]}) {
  		 /xtarget set 1 Groupassisttarget
  	}
-	/if (${Bool[${Raid.Members}]}) {
+ 	
+ 	
+	/if (${validate_expansion[TRUE, |16]} && ${Bool[${Raid.Members}]}) {
 		/xtarget set 1 Raidassist1target
 		/xtarget set 2 Autohater
+	}
+	
+	| fuck these plugins in particular
+	/if (${validate_plugin[FALSE, |MQ2Bucles]}) /plugin MQ2Bucles unload
+
+
+	| disable smart assists for TLP w/o underfoot
+	/if (!${validate_expansion[TRUE, |16]}) {
+		/if (${useSmartAssist1}) /call writeIni useSmartAssist1 FALSE
+		/if (${useSmartAssist2}) /call writeIni useSmartAssist2 FALSE
+		/if (${useSmartAssistG}) /call writeIni useSmartAssistG FALSE
 	}
 	
 	| clear the spawn watch
@@ -316,6 +330,16 @@ sub base_preperation()
 			
 	| force sos switch for non rogues
 	/if (${switchSos} && !${validate_class[FALSE, |ROG]}) /call writeINI switchSos Common FALSE
+		
+	| check debuffs		
+	/call validate_debuff FALSE mezz
+	/call validate_debuff FALSE malo
+	/call validate_debuff FALSE tash
+	/call validate_debuff FALSE cripple
+	/call validate_debuff FALSE slow
+	/call validate_debuff FALSE eradicate
+	/call validate_debuff FALSE snare		
+		
 		
 	| KillCode Warning for stupid fucks that like to AFK farm
 	/if (${Select[${remoteKillKey},"CHANGE ME",NULL,FALSE]}) {

@@ -17,17 +17,13 @@ sub core_MNK()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
-
-	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
 
 	:killtarget
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/if (${isValidTarget}) /call stick_to_target
 		/call set_combat MELEE
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
@@ -60,19 +56,18 @@ sub disc_MNK()
 	DEBUGCLASS ${cbug}disc_MNK()\ax
 	CHECKEXIT
 	/doevents
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call check_deBuffs ${Target2Kill}
 	/call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
-	/if (${Me.AltAbilityReady[Five Point Palm]}) /call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Eye Gouge]} && !${switchdeBuffSnare}) /call core_cast "Eye Gouge" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Stunning Kick]}) /call core_cast "Stunning Kick" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Two-Finger Wasp Touch]}) /call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
+	/call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
+	/if (!${switchdeBuffSnare}) /call core_cast "Eye Gouge" alt ${Target2Kill} FALSE
+	/call core_cast "Stunning Kick" alt ${Target2Kill} FALSE
+	/call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
 	
-	/if (${Me.CombatAbilityReady[Drunken Monkey Style]} && ${Me.CurrentEndurance} > ${Spell[Drunken Monkey Style].EnduranceCost}) /call core_cast "Drunken Monkey Style" disc 0 FALSE
-	/if (${Me.CombatAbilityReady[Whorl of Fists]} && ${Me.CurrentEndurance} > ${Spell[Whorl of Fists].EnduranceCost}) /call core_cast "Whorl of Fists" disc 0 FALSE
+	/call core_cast "Drunken Monkey Style" disc 0 FALSE
+	/call core_cast "Whorl of Fists" disc 0 FALSE
 
 /return
 
@@ -176,7 +171,6 @@ sub Bind_setMNK(string _classType, string _classVerbage)
 		/return
 	}	
 	/if (${Bool[${_classType.Equal[TEST]}]}) {
-		| /call Event_SetVar NA switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {

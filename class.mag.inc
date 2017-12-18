@@ -333,8 +333,8 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 		}
 		| group mod rod
 		/if (${Bool[${ModRodName}]} && !${FindItem[${ModRodName}].ID} && !${Cursor.Name.Equal[${ModRodName}]}) {
-			/target ID ${Me.ID}
-			/call core_cast "${ModRodSpell}" alt 0 FALSE
+			| /target ID ${Me.ID}
+			/call core_cast "${ModRodSpell}" alt ${Me.ID} FALSE
 			/call sort_cursor TRUE
 		}
 		| paradox rod	

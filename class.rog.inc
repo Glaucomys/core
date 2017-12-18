@@ -51,6 +51,7 @@ sub core_ROG()
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}
+	/if (${coreAuto}) /call cast_disc_breather
 	/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
 	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
@@ -90,6 +91,7 @@ sub disc_ROG()
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill} FALSE
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${Target.ID} && ${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
+	/call core_cast "Shadow's Flanking" alt 0 FALSE
 	/call use_skill_melee ${Target2Kill}
 	
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0 FALSE
@@ -128,6 +130,7 @@ sub disc_ROG()
 
 
 
+
 |***
  *	DES: DPS Clickies
  *	USE: this shits auto, learn to love it.
@@ -143,7 +146,7 @@ sub click_DPS_ROG()
 	/call click_horn_of_unity 	
 
 	| epic item
-	/call core_cast "${Epic}" item 0 FALSE	
+	/if (${Me.ItemReady[${Epic}]}) /call core_cast "${Epic}" item 0 FALSE	
 	
 /return
 
@@ -258,7 +261,7 @@ sub synergy_ROG()
 	}
 
 	/if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]}) /call core_cast "Dirty Fighting" alt ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[Dichotomic Weapons]}) /call core_cast "Dichotomic Weapons" disc 0 FALSE
+	/call core_cast "Dichotomic Weapons" disc 0 FALSE
 	/call use_skill_melee ${Target2Kill}
 	
 	/if (!${AEMelee}) {
@@ -267,18 +270,20 @@ sub synergy_ROG()
 		/if (${Me.AltAbilityReady[Rake's Rampage]}) /call core_cast "Rake's Rampage" alt 0 FALSE
 	}
 
-	/if (${Me.CombatAbilityReady[${DiscPinPoint}]}) /call core_cast "${DiscPinPoint}" disc ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Envenomed Blades]}) /call core_cast "Envenomed Blades" alt 0 FALSE
+	/call core_cast "${DiscPinPoint}" disc ${Target2Kill} FALSE
+	/call core_cast "Envenomed Blades" alt 0 FALSE
 	/if (${Bool[${Target2Kill}]} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Rogue's Fury]}) /call core_cast "Rogue's Fury" alt 0 FALSE
-	/if (${Me.CombatAbilityReady[${DiscMark}]} && ${Me.PctEndurance} > 15) /call core_cast "${DiscMark}" disc ${Target2Kill} FALSE
+	/call core_cast "Rogue's Fury" alt 0 FALSE
+	/if ( ${Me.PctEndurance} > 15) /call core_cast "${DiscMark}" disc ${Target2Kill} FALSE
 	/call cast_AA_spire
-	/if (${Me.AltAbilityReady[Intensity of the Resolute]} && ${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
-  /if (${Me.CombatAbilityReady[${DiscFrenzy}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscFrenzy}" disc 0 FALSE
+	/if (${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
+  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscFrenzy}" disc 0 FALSE
   /delay 1
-  /if (${Me.CombatAbilityReady[${DiscTwistedChance}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscTwistedChance}" disc 0 FALSE
-  /if (${Me.CombatAbilityReady[${DiscEradicator}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscEradicator}" disc 0 FALSE
-  /if (${Me.CombatAbilityReady[${DiscRazor}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRazor}" disc 0 FALSE
+  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscTwistedChance}" disc 0 FALSE
+  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscEradicator}" disc 0 FALSE
+  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRazor}" disc 0 FALSE
+
+  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscAspBleeder}" disc 0 FALSE
 
 	/call synergy_click_Circle
 	/call click_item_burn

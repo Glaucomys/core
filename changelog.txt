@@ -13,9 +13,55 @@ Current Requests:
  - pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
  - fix chanter charm mob code
  - no melee buff list
+ - add more checks to the buff combat routines. and rechecks. and then more checks.
+ 
+ 
 
 
 
+20171217
+- validation functions for debuffs on Core start and /debuff bind execution. classes that do not have that debuff type will be switched off
+- more checks for underfoot to disable xtarget on TLP
+- check_deBuffs()
+  -- adjusted debuff checks for cripple routine
+
+
+20171216
+HUDUPDATE
+- hud adjustments: there were more body types then i ever though about.
+- MQ2Bucles (redbuides plugin) will be forced unloaded due to conflicts.
+- introducing check_no_do_a_thing_buff()
+  -- will check yourself and your target for specific buffs.
+  -- Toon.INI->[common]->noCastWith=|buff1|buff2|buffso'on 
+- rename scribe() -> mem_spell()
+  -- adjusted for better response when spells does not exist or already in gem bar.
+  -- reduced wait times.
+  -- boolean T|T for echo memming SPELLNAME
+- check_aura()
+  -- fixed a member type mismatch for bard aura check.
+- self buffing changes
+  -- buffs will check combat status on each itteration.
+  -- buffs can now be memed in completion before the mq2cast routine times out.
+  -- if this works as advertised, i'll apply it to all buffing routines.
+- class.enc.inc
+  -- chanter now considers any counts higher then 1 as AE acceptable.
+- class.ber.inc
+  -- commented out all calls to open wound disc. fuck that thing.
+- class.mag.inc
+  -- removed self targeting for the main modulation cast. (TLP request)
+- class.clr.inc
+  -- third remedy in heal cycles.
+  -- fourth introvention added to heal cycles.
+  -- AA Burst of Life moved from introventions to panic heals.
+- class.rog.inc
+  -- AA Shadow's Flanking added to normal cooldown discs
+  -- will now use breather while in combat. we wait for no man!
+- class.pal.inc
+  -- healing adjustments
+  -- /heal group or /heal self will enable the no target fast cast group splash when 1 or more members are hurt.
+- class.bst.inc
+  -- added dragonpunch, eaglestrike, tigerclaw, flyingkick, roundkick  
+  -- go into the toons INI and set TRUE the on you want to use.
 
 
 20171213
@@ -39,7 +85,7 @@ HUDUPDATE
   -- toon.INI->[Common]->RangeSpell=SPELL YOU WANT TO PULL WITH
   -- toon.INI->[Common]->RangeClickItem=CLICK ITEM YOU WANT TO PULL WITH
   -- toon.INI->[Common]->RangeDisc=DISC YOU WANT TO PULL WITH
-  -- these are all FALSE by default. executed in order listed with /range last.
+  -- these are all FALSE by default. executed in order listed with /range last.i
 
 
 20171207

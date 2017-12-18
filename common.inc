@@ -626,14 +626,14 @@ sub check_aura()
 		/if (${Bool[${Aura1Buff}]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
 			/call fix_gem_id "${buffGem}"
 			/if (!${Defined[_gem]}) /declare _gem int local ${Macro.Return}
-			/call scribe "${Aura1Buff}" "${_gem}" TRUE
+			/call mem_spell FALSE "${Aura1Buff}" "${_gem}" TRUE
 			VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}].Name}\ax
 			/melody ${_gem}
 			/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
 			/delay 2 
 
 			:stoppulse
-			/if ((${Bool[${Me.Aura[1].Equal[${Aura1Buff}]}]} || ${Me.Song[${Me.Gem[${_gem}].ID}]}) && (${Me.Casting.ID} == ${Me.Gem[${_gem}].ID})) {
+			/if ((${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]} || ${Me.Song[${Me.Gem[${_gem}].ID}]}) && (${Me.Casting.ID} == ${Me.Gem[${_gem}].ID})) {
 				/delay 2
 				/melody ${_gem}	
 				/goto :stoppulse
@@ -808,6 +808,7 @@ sub check_buffs_self()
 	/declare _count int local 0
 
 	/for _count 1 to ${BuffCount}
+		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /break
 		UPDATEHUD "BUFF: Self"
 		AMIDEAD
 		CHECKEXIT
@@ -897,7 +898,34 @@ sub check_no_cast_buffs()
 		/doevents
 		/if (${Bool[${Me.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Target.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Me.Song[${noCastWith.Arg[${_count},|]}]}]}) /varset canCast FALSE
 	/next _count	
-/return ${Bool[${canCast}]}
+/return ${canCast}
+
+
+
+|***
+ *	DES: checks your toon and target for buffs that should prevent a thing
+ *	USE: /call check_no_do_a_thing_buff
+ *	INI: 
+ *  NOTE: we assume return FALSE, as in no buffs found. if we find a buff, return TRUE
+ ***|
+sub check_no_do_a_thing_buff(string _type)
+	DEBUG ${cbug}check_no_do_a_thing_buff(type: ${_type})\ax
+	/if (!${Bool[${no${_type.Left[1].Upper}${_type.Right[-1].Lower}}]}) /return FALSE
+	/if (!${Bool[${_type}]}) /return FALSE
+	/declare _count int local 0
+
+	/for _count 1 to ${no${_type.Left[1].Upper}${_type.Right[-1].Lower}With.Count[|]}
+		AMIDEAD
+		/doevents
+
+		/if (${Bool[${Me.Buff[${no${_type.Left[1].Upper}${_type.Right[-1].Lower}With.Arg[${_count},|]}]}]}) /return TRUE
+		/if (${Target.ID}) {
+			/if (${Bool[${Target.Buff[${no${_type.Left[1].Upper}${_type.Right[-1].Lower}With.Arg[${_count},|]}]}]}) /return TRUE
+		}
+		/if (${Bool[${Me.Song[${no${_type.Left[1].Upper}${_type.Right[-1].Lower}With.Arg[${_count},|]}]}]}) /return TRUE
+	
+	/next _count	
+/return FALSE
 
 
 
@@ -947,6 +975,7 @@ sub check_buffs_BC()
 		| each buff. cycle all ${BuffCount}, used or not
 		/for _buff 1 to ${BuffCount}
 			DEBUG _buff: ${_buff}
+			/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /break
 			
 			| make sure the count is in the correct range
 			/if (!${Range.Between[1,${BuffCount}:${Int[${_buff}]}]}) /continue
@@ -1112,7 +1141,7 @@ sub do_rest()
 						/if (!${Bool[${Me.Song[${spellRestSong}]}]}) {
 						/if (${Me.Casting.ID} != ${Spell[${spellRestSong}].ID}) {
 							DEBUG song rest
-							/call scribe "${spellRestSong}" ${buffGem} TRUE
+							/call mem_spell FALSE "${spellRestSong}" ${buffGem} TRUE
 							/melody ${Me.Gem[${spellRestSong}]}
 							/delay 3s !${Me.Casting.ID}
 						}
@@ -1330,7 +1359,7 @@ sub sort_cursor(bool _ignoreTimer)
  ***|
 sub set_xtarget()
 	DEBUG ${cbug}set_xtarget()\ax 
-	/if (!${validate_expansion[TRUE, |16]}) /return	
+	/if (!${validate_expansion[FALSE, |16]}) /return	
 	/if (!${Select[${Me.Class.ShortName},SHM,CLR,PAL,DRU]}) {
 		/call echo_bitch EQBC
 		/if (${Defined[switchHealXtarget]}) /call writeINI switchHealXtarget Heal FALSE 
@@ -1525,8 +1554,6 @@ sub get_assist_target()
 
 		| if the raid/group roles are not set, move on tho MA1/2	
 		/if (${Bool[${useSmartAssistG}]} && (!${Bool[${Group.MainAssist}]} || ${Bool[${Spawn[${Group.MainAssist}].Dead}]})) /goto :skippingtoMAtarget
-		| /if (${Bool[${useSmartAssist1}]} &&
-		| /if (${Bool[${useSmartAssist2}]} &&
 	
 		/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 1 Target]} && ${Raid.Members} && ${Bool[${useSmartAssist1}]}) {
 			/xtarget set 1 raidassist1target
@@ -1667,10 +1694,6 @@ sub is_target_valid(int _tmpID)
 		
 	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
 /return ${isValidTarget}
-
-
-
-
 
 
 
@@ -2048,7 +2071,6 @@ sub use_mod_rod()
 		/if (${Me.ItemReady[Rod of Prime Transvergence]} && ${Me.CurrentHPs} > 1000) /call core_cast "Rod of Prime Transvergence" item 0 FALSE
 		/if (${Me.ItemReady[Rod of Mystical Transvergence]} && ${Me.CurrentHPs} > 550) /call core_cast "Rod of Mystical Transvergence" item 0 FALSE
 	}
-
 	
 	| ask for a rod cause i'm fu'kn lazy...
 	/if (!${Select[${Me.Class.ShortName},MAG]} && !${Bool[${FindItem[Modulation Shard]}]}) {
@@ -2115,7 +2137,7 @@ sub use_glyph()
  *  NOTE: MQ2Cast ["spell name"|"item name"|"AA name"|"AA#"] [[item|slotname]|alt|gem#] [give up time][s|m] [custom subroutine name] [-targetid|###] [-maxtries|#] [-recast|#] [-setin|setname] [-bandolier|setname]
  *  NOTE2: How about we quit making changes to this....
  ***|
-sub core_cast(string _spell, string _type, int _tmpID, string _sub)
+sub core_cast(string _spell, string _type, int _tmpID, string _sub, bool _forcewait)
 	DEBUGCAST ${cbug}core_cast(\ax spell:${cinfo}${_spell}\ax, type:${cinfo}${_type}\ax, ID:${cinfo}${_tmpID}\ax, sub:${cinfo}${_sub}\ax ${cbug})\ax
 	/doevents
 	AMIDEAD
@@ -2163,6 +2185,10 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	/if (!${Select[${_type},item,disc]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 	| check enough end for disc?
 	/if (${Select[${_type},disc]} && ${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
+	
+	| buff check cast self ant target
+	/if (${check_no_do_a_thing_buff[cast]}) /return FALSE
+	
 
 
 	| dead?
@@ -2227,6 +2253,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub)
 	| output echos
 	| Spell
 	/if (!${Select[${_type},alt,item,disc]}) {
+		| /if (${_forcewait}) /call mem_spell FALSE "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} TRUE
 		/if (${_tmpID} == 0) {
 			VSPELL Spell ${sep} ${csp}${_spell}\ax
 			/call MQ2Cast "${_spell}" ${If[${Bool[${_type}]},${_type},gem${Me.Gem[${_spell}]}]} -targetid|${_tmpID}
@@ -2518,8 +2545,8 @@ sub use_skill_melee(int _tmpID)
 		}
 	}
 	
-	| monk only skill 
-	/if (${validate_class[FALSE, |MON]} && ${Spawn[${_tmpID}].Distance} <= 15) {
+	| monk/bst only skill 
+	/if (${validate_class[FALSE, |MON,BST]} && ${Spawn[${_tmpID}].Distance} <= 15) {
 		| fist
 		/if (${Bool[${dragonpunch}]} && !${Skill[Dragon Punch].Auto} && ${Me.AbilityReady[Dragon Punch]}) {
 			VMELEE Melee ${sep} ${csp}Dragon Punch\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
@@ -2712,13 +2739,13 @@ sub cast_buffs_queue(string _sender, string _verbage)
 			AMIDEAD
    		/doevents
       /if (${_verbage.Find["${Buff${_i}Alias.Arg[${_a},|]}"]}) {
-        /if (${_verbage.Find["pet"]} || ${_verbage.Find[${Spawn[pc ${_sender}].Pet.DisplayName}]} || ${Spawn[pet ${_sender}].ID}) {
-          VSPELL Buffing ${sep} ${cpc}${_sender}'s\ax Pet.
-          /call queue_buff_add ${Spawn[pc ${_sender}].Pet.ID} ${_i}
-        } else {
+        | /if (${_verbage.Find["pet"]} || ${_verbage.Find[${Spawn[pc ${_sender}].Pet.DisplayName}]} || ${Spawn[pet ${_sender}].ID}) {
+        |   VSPELL Buffing ${sep} ${cpc}${_sender}'s\ax Pet.
+        |   /call queue_buff_add ${Spawn[pc ${_sender}].Pet.ID} ${_i}
+        | } else {
           DEBUGCAST ${_sender} requested ${cinfo}${Buff${_i}}\ax
           /call queue_buff_add ${Spawn[pc ${_sender}].ID} ${_i}
-        }
+        | }
       }
     /next _a
   /next _i
@@ -2941,12 +2968,15 @@ sub check_exit()
 	/if (${Me.Charmed.ID}) /return TRUE
 	
 	| check for ${noCastWith} buffs on self and target
-	/declare _count int local 0
-	/for _count 1 to ${noCastWith.Count[|]}
-		/if (${Bool[${Me.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Target.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Me.Song[${noCastWith.Arg[${_count},|]}]}]}) /return TRUE
-	/next _count	
+	| /declare _count int local 0
+	| /for _count 1 to ${noCastWith.Count[|]}
+	| 	/if (${Bool[${Me.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Target.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Me.Song[${noCastWith.Arg[${_count},|]}]}]}) /return TRUE
+	| /next _count	
 	
-	| check no cast list and meze?
+	
+	
+	
+	| check no cast list and mezz?
 	
 	/if (${coreAuto} && ${Target.ID} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) /return TRUE
 	/if (${coreAuto} && ${Target.ID} && ${Bool[${Target.Mezzed}]} && !${switchPull}) /return TRUE
@@ -3177,8 +3207,6 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
 			/if (${_resistCount} >= 3) /call create_timer timer_slow_${_tmpID} ${Spell[${_tmpSpell}].Duration.TotalSeconds}m
 		}
 	}
-	
-
 /return
 
 
@@ -3236,23 +3264,32 @@ sub cast_yaulp()
  ***|
 sub cast_disc_breather()
  	DEBUGCAST ${cbug}cast_disc_breather(ready: ${Me.CombatAbilityReady[${DiscRest}]})\ax
+ 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.CombatAbilityReady[${DiscRest}]}) /return
+
 	AMIDEAD
 	/doevents
- 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.CombatAbilityReady[${DiscRest}]}) /return
+
 	/declare _endurancePoint int local 0
  	
 	/if (${Me.CombatAbility[Breather Rk. III]}) /varset _endurancePoint 29
 	/if (${Me.CombatAbility[Breather Rk. II]}) /varset _endurancePoint 25
 	/if (${Me.CombatAbility[Breather]}) /varset _endurancePoint 21
-
- 	DEBUG {Me.PctEndurance} < ${_endurancePoint} && ${Select[${Me.CombatState},RESTING,COOLDOWN]} && !${Bool[${Me.ActiveDisc}]}
- 	/if (${Me.PctEndurance} < ${_endurancePoint} && ${Select[${Me.CombatState},RESTING,COOLDOWN]} && !${Bool[${Me.ActiveDisc}]}) {
-		/call core_cast "${DiscRest}" disc 0 FALSE
-		| VDISC Disc ${sep} ${csp}${DiscRest}\ax
-		| VBC Disc "${DiscRest}" 0 0 
-		| /disc "${DiscRest}"
+	
+	| rogue trigger breather while in combat
+	/if (${validate_class[FALSE, |ROG]} && ${Select[${Me.CombatState},COMBAT]} && ${Me.PctEndurance} < ${_endurancePoint} && ${Me.AltAbilityReady[Escape]}) {
+		/call clear_combat
+		/call set_stop TRUE
+		/call core_cast "Escape" alt 0 FALSE
+		/delay 1
+		/call core_cast "${DiscRest}" disc 0 FALSE			
+		/return
 	}
 
+	| need to be out of combat to use
+ 	/if (!${Select[${Me.CombatState},RESTING,COOLDOWN]}) /return
+
+ 	DEBUG ${Me.PctEndurance} < ${_endurancePoint} && !${Bool[${Me.ActiveDisc}]}
+ 	/if (${Me.PctEndurance} < ${_endurancePoint} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRest}" disc 0 FALSE
 /return
 
 
@@ -3282,26 +3319,33 @@ sub fix_gem_id(string _spellGem)
 
 |***
  *	DES: Memorize a spell/song
- *	USE: /call scribe [spell name] [gem to mem it in] [TRUE|FALSE wait for recycle to cast]
+ *	USE: /call mem_spell [T|F echo memming] [spell name] [gem to mem it in] [TRUE|FALSE wait for recycle to cast]
  *	INI: 
- *  NOTE:
+ *  NOTE: 
  ***|
-sub scribe(string _spellname, string _spellgem, bool _wait)
- 	DEBUGCAST ${cbug}scribe("${_spellname}", ${_spellgem}, ${_wait})\ax
+sub mem_spell(bool _echo, string _spellname, string _spellgem, bool _wait)
+ 	DEBUGCAST ${cbug}mem_spell("${_spellname}", gem:${_spellgem}, wait:${_wait})\ax
+ 	/if (${Me.Gem[${_spellname}]}) /return TRUE
 	AMIDEAD
-	CHECKEXIT
-	/call fix_gem_id "${_spellgem}"
-	/declare _gem int local ${Macro.Return}
+
+	| do we even have the spell?
 	/if (!${Me.Book[${_spellname}]}) {
-		/if (!${Me.Book[${_spellname}]} && !${timer_scribe_timer}) {
-			/call create_timer timer_scribe_timer 60s
+		/if (!${Me.Book[${_spellname}]} && !${timer_mem_spell_timer}) {
+			/call create_timer timer_mem_spell_timer 60s
 			VOUT ${onotice} ${sep} You don't have ${csp}${_spellname}\ax in your book.
 		}
 		/return FALSE
 	}
 
-	/if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /return TRUE
-	VOUT Scribe ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
+	| just the facts ma'am
+	/call fix_gem_id "${_spellgem}"
+	/declare _gem int local ${Macro.Return}
+	
+
+	
+	| /if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /return TRUE
+	
+	/if (${_echo}) VOUT Mem ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
 	DEBUGCAST ${_gem} "${Spell[${_spellname}].RankName}"
 	/memspell ${_gem} "${Spell[${_spellname}].RankName}"
 	/if (${_wait}) {
@@ -3310,7 +3354,7 @@ sub scribe(string _spellname, string _spellgem, bool _wait)
 		/delay 4
 		/if (!${Me.SpellReady[${_spellname}]}) /goto :waitforgem
 	} else /if (!${_wait}) {
-		/delay 3s
+		/delay 3s ${Me.SpellReady[${_spellname}]}
 	}
 /return TRUE
 
@@ -3349,7 +3393,6 @@ sub tell_resident_mage(string _request)
 				DEBUG Resident Mage: ${ResidentMage.Arg[${_count},|]} timer: timer_ask_for_rod_${ResidentMage.Arg[${_count},|]}
 				/t ${ResidentMage.Arg[${_count},|]} shard
 				/call create_timer timer_ask_for_rod_${ResidentMage.Arg[${_count},|]} ${tAsk_for_rod}
-				
 			}
 		}
 	/next _count	
@@ -3573,8 +3616,6 @@ sub cast_rez(int _tmpID, string _rezAA)
 				/call create_timer timer_corpse_${_tmpID} 45s
 			}
 		}
-
-
 	}
 /return
 
@@ -3869,6 +3910,8 @@ sub queue_buff_delete(int _buffee, int _buffnumber)
  ***|
 sub check_buffs_tell()
 	DEBUG ${cbug}check_buffs_tell()\ax
+	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
+
 	UPDATEHUD "BUFF: Tell"
 	/doevents
 	/declare _count					int local
@@ -3878,6 +3921,8 @@ sub check_buffs_tell()
 
 	/for _count 1 to ${queueCount}
 		/if (!${Range.Between[1,${queueCount}:${Int[${_count}]}]}) /continue
+		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /break
+
 
 		DEBUGARRAY Tell queue count: ${queueCount}
 		AMIDEAD
@@ -5201,10 +5246,10 @@ sub mem_spell_line(string _line)
 		/for _index 1 to ${_list[${_count}].Count[|]}
 			/varset _currentSpell ${Spell[${_list[${_count}].Arg[${_index},|]}].RankName}
 			/if (${Me.Gem[${_index}].Name.Equal[${_currentSong}]}) /continue
-			/call scribe "${_currentSpell}" "${_index}" FALSE
+			/call mem_spell TRUE "${_currentSpell}" "${_index}" FALSE
 		/next _index	
 	/next _count	
-	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax scribe completed.
+	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax memorization complete.
 /return
 
 
@@ -6135,9 +6180,9 @@ sub check_deBuffs(int _tmpID)
 	}
 		
 	| cripple
-	/if (${switchdeBuffCripple} && !${validate_class[FALSE, |WIZ]}) {
+	/if (${switchdeBuffCripple}) {
 		/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
-			/if (${validate_class[FALSE, |ENC|SHM]}) { 
+			/if (!${validate_class[FALSE, |DRU]}) { 
 				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
 				/if (${validate_class[FALSE, |ENC]}) {
 					/call check_for_adds
@@ -6255,5 +6300,74 @@ sub validate_expansion(bool _error, string _exp)
 
 	/if (!${_pass} && ${_error}) OUT ${onotice} ${sep} Expansion ${cinfo}${expansion${_count}}\ax required for this feature.
 /return ${_pass}
+
+
+
+|***
+ *	DES: check and adjust the debuff switches
+ *	USE: /call validate_debufs [T|F echo error] [debuff switch|NULL]
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub validate_debuff(bool _error, string _deBuffType)
+	DEBUG ${cbug}validate_debuff(debuff: ${_deBuffType})\ax
+
+	| check mezz switch
+	/if (${Bool[${_deBuffType.Equal[mezz]}]} || ${switchdeBuffMezz}) {
+		/if (!${validate_class[${_error}, |ENC|BRD|MAG|NEC]}) {
+			/call writeINI switchdeBuffMezz Buffs FALSE  
+			/return FALSE
+		}
+	}
+	
+	| check malo switch
+	/if (${Bool[${_deBuffType.Equal[malo]}]} || ${switchdeBuffMalo}) {
+		/if (!${validate_class[${_error}, |MAG|SHM]}) {
+			/call writeINI switchdeBuffMalo Buffs FALSE  
+			/return FALSE
+		}
+	}
+	
+	| check tash switch
+	/if (${Bool[${_deBuffType.Equal[tash]}]} || ${switchdeBuffTash}) {
+		/if (!${validate_class[${_error}, |ENC]}) {
+			/call writeINI switchdeBuffTash Buffs FALSE  
+			/return FALSE
+		}
+	}
+	
+	| check cripple switch
+	/if (${Bool[${_deBuffType.Equal[cripple]}]} || ${switchdeBuffCripple}) {
+		/if (!${validate_class[${_error}, |ENC|SHM|DRU|MAG|NEC|SHD|BST]}) {
+			/call writeINI switchdeBuffCripple Buffs FALSE  
+			/return FALSE
+		}
+	}
+	
+	| check slow swich
+	/if (${Bool[${_deBuffType.Equal[slow]}]} || ${switchdeBuffSlow}) {
+		/if (!${validate_class[${_error}, |ENC|SHM|BRD|NEC|BST]}) {
+			/call writeINI switchdeBuffSlow Buffs FALSE  
+			/return FALSE
+		}
+	}
+	
+	| check eradicate switch
+	/if (${Bool[${_deBuffType.Equal[eradicate]}]} || ${switchdeBuffEradicate}) {
+		/if (!${validate_class[${_error}, ${AAEradicateList}]}) {
+			/call writeINI switchdeBuffEradicate Buffs FALSE  
+			/return FALSE
+		}
+	}
+	
+	| check snare switch
+	/if (${Bool[${_deBuffType.Equal[snare]}]} || ${switchdeBuffSnare}) {
+		/if (!${validate_class[${_error}, ${AASnareList}]}) {
+			/call writeINI switchdeBuffSnare Buffs FALSE  
+			/return FALSE
+		}
+	}
+/return TRUE
+
 
 

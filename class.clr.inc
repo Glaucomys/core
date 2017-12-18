@@ -247,9 +247,9 @@ sub check_heal_group_CLR()
 
 	| Panic Heal 
   /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} < ${Spell[${healPanic}].MyRange} && ${Me.SpellReady[${healPanic}]}) {
-  	/target ID ${WorstHurt}
   	DEBUG WorstHurt ID:${WorstHurt} .. ME ID:${Me.ID}  .. Target ID:${Target.ID}
-    /call core_cast "${healPanic}" 0 ${WorstHurt}
+		/call core_cast "Burst of Life" alt ${WorstHurt} FALSE
+    /call core_cast "${healPanic}" 0 ${WorstHurt} FALSE
   }
 
 	| Arbitration
@@ -333,26 +333,28 @@ sub check_heal_group_CLR()
 		
 	| Intervention Heals
 	:interventionheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]})) {
-  	/if (${Me.AltAbilityReady[Burst of Life]}) {
-			/call core_cast "Burst of Life" alt ${WorstHurt} check_HP_${Me.Class.ShortName}
-		} else /if (${Me.SpellReady[${healIntervention1}]}) {
+  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  	/if (${Me.SpellReady[${healIntervention1}]}) {
      /call core_cast "${healIntervention1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healIntervention2}]}) {
       /call core_cast "${healIntervention2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healIntervention3}]}) {
       /call core_cast "${healIntervention3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+    } else /if (${Me.SpellReady[${healIntervention4}]}) {
+      /call core_cast "${healIntervention4}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
     }
   }
 	AMIDEAD
  	/doevents
 	| Remedy Heals 
 	:remedyheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healRemedy1}]} || ${Me.SpellReady[${healRemedy2}]})) {
+  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
       /if (${Me.SpellReady[${healRemedy1}]}) {
         /call core_cast "${healRemedy1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName} 
       } else /if (${Me.SpellReady[${healRemedy2}]}) {
         /call core_cast "${healRemedy2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      } else /if (${Me.SpellReady[${healRemedy3}]}) {
+        /call core_cast "${healRemedy3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
       } 
   }    
 	AMIDEAD
@@ -393,6 +395,7 @@ sub check_heal_group_CLR()
  ***|
 sub check_heal_XTarget_CLR()
 	DEBUGCLASS ${cbug}check_heal_XTarget_${Me.Class.ShortName}()\ax
+	/if (!${validate_expansion[FALSE, |16]}) /return
   /declare _count int local 0
 
   /for _count 1 to 13
@@ -681,6 +684,7 @@ sub check_heal_ward()
  ***|
 sub auto_control_swap()
 	DEBUGCLASS ${cbug}auto_control_swap()\ax
+	/if (!${validate_expansion[FALSE, |16]}) /return
 	/return
 	/if (!${autoControl}) /return
 	/call create_timer timer_auto_toon_control ${tAuto_Control_Toon}

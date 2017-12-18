@@ -175,10 +175,10 @@ sub check_rune_WIZ()
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
 	/call create_timer timer_check_runes ${tCheck_Runes}
-	/if (${validate_buff[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE
-	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE
-	/if (${validate_buff[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE
-	/if (${validate_buff[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE
+	/if (${validate_buff[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_buff[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_buff[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE TRUE
 	UPDATEHUD FALSE
 /return
 

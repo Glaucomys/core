@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171213
+	/declare coreBuild	 														int			outer 20171217
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -251,7 +251,6 @@ sub set_declares()
 	/declare combat																	string	outer
 		
 	/declare isValidTarget													bool		outer FALSE
-	/declare canCast																bool		outer	TRUE
 
 	| HUD controls
 	/declare hcType																	string	outer |time|update|broadcast|delete
@@ -519,6 +518,7 @@ sub set_declares()
 	/declare switchModeFish													bool		outer FALSE
 	/declare switchModeSkill												bool		outer FALSE
 	/declare switchModeHarvest											bool		outer FALSE
+	/declare switchModeHarvestcount									bool		outer FALSE
 	/declare switchModeTradeskill										bool		outer FALSE
 	/declare switchModeLush													bool		outer FALSE
 
@@ -558,7 +558,10 @@ sub set_declares()
 
 	/call DeclareIniVar autoControl			 						bool		Common FALSE 
 	/call DeclareIniVar noCastWith									string	Common "|Quick Defense|Protection of Bayle|Interrogation Intimidation|Energy Charge|Cloud of Terror|Faith"
-
+	/declare canCast																bool		outer	TRUE
+	/call DeclareIniVar noMeleeWith									string	Common "|Itching Poison"
+	/declare canMelee																bool		outer TRUE
+	
 	/call DeclareIniVar shrinkItem 									string 	Common "Ring of the Ancients"
 	/call DeclareIniVar IllusionItem								string	Common FALSE
 	/call DeclareIniVar IllusionBuff								string	Common FALSE
@@ -699,7 +702,7 @@ sub set_declares()
 	/declare RNGsynergyAA														string	outer Outrider's Synergy
 	/declare RNGEpic1																string	outer 
 	/declare RNGEpic15															string	outer 
-	/declare RNGEpic2																string	outer 
+	/declare RNGEpic2																string	outer Aurora, the Heartwood Blade
 	/declare RNGAlliance														string	outer
 
 	| Bard
@@ -749,7 +752,7 @@ sub set_declares()
 	/declare ROGsynergyAA														string	outer Blackguard's Synergy
 	/declare ROGEpic1																string	outer 
 	/declare ROGEpic15															string	outer 
-	/declare ROGEpic2																string	outer 
+	/declare ROGEpic2																string	outer Nightshade, Bane of Entropy
 	/declare ROGAlliance														string	outer
 
 
@@ -910,7 +913,7 @@ sub set_declares()
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
 		/call DeclareIniVar seloskick									bool		meleedisc FALSE
 	}
-	/if (${Select[${Me.Class.ShortName},MNK]}) {
+	/if (${Select[${Me.Class.ShortName},MNK,BST]}) {
 		/call DeclareIniVar dragonpunch								bool		meleedisc FALSE
 		/call DeclareIniVar eaglestrike								bool		meleedisc FALSE
 		/call DeclareIniVar tigerclaw									bool		meleedisc FALSE
@@ -1050,9 +1053,9 @@ sub set_declares()
 	}
 	
 	| pet control
-  /declare 		pcType											string	outer |pet|swarm|tank|type|build|bag
+  /declare 		pcType											string	outer |pet|swarm|type|build|bag
 	/call DeclareIniVar PcPetengageat								int			Pet 99
-	/call DeclareIniVar switchPcPettank							bool 		Pet FALSE
+	| /call DeclareIniVar switchPcTank								bool 		Pet FALSE
 	/call DeclareIniVar PcPettype										string	Pet FALSE
 	/call DeclareIniVar switchPcPet									bool 		Pet FALSE
 	/call DeclareIniVar switchPcSwarm								bool 		Pet FALSE	
@@ -1368,7 +1371,7 @@ sub declare_ENC()
 	/call DeclareIniVar mannaCrystal								string 	Spells "Azure Mind Crystal"
 	/call DeclareIniVar healCrystal									string 	Spells "Sanguine Mind Crystal"
 	
-	/call DeclareIniVar spellCripple 								string 	Spells "Undermining Helix"
+	    	/call DeclareIniVar spellCripple 								string 	Spells "Undermining Helix"
 	/call DeclareIniVar spellSlow		 								string	Spells "Undermining Helix"		
 	/call DeclareIniVar AASlow			 								string	Spells "Dreary Deeds"		
 	/call DeclareIniVar spellTash 									string 	Spells "Decree of Tashan"
@@ -2085,6 +2088,7 @@ sub declare_BST()
 	/call DeclareIniVar groupParagon	 							int			Spells 70
 	/call DeclareIniVar minConsumptionHP						int			Spells 50
 	/call DeclareIniVar spellSlow		 								string	Spells "Sha's Reprisal"		
+	/call DeclareIniVar spellCripple 								string 	Spells "Incapacitate"
 
 /return	
 
@@ -2124,6 +2128,7 @@ sub declare_ROG()
 	/call DeclareIniVar DiscSneakAttack							string 	Discs "Daggergash"	
 	/call DeclareIniVar DiscShadowHunter						string 	Discs "Shadow-Hunter's Dagger"	
 	/call DeclareIniVar DiscDisassociative					string 	Discs "Disassociative Puncture"	
+	/call DeclareIniVar DiscAspBleeder							string 	Discs "Aceleus Discipline"	
 
 	| disable for toast
 	/call DeclareIniVar DiscVision 									string 	Discs "Thief's Vision"	
@@ -2189,13 +2194,15 @@ sub declare_CLR()
   /call DeclareIniVar healWholeGroup2							string 	Heal "Syllable of Convalescence"
   /call DeclareIniVar healWholeGroup3							string 	Heal "Word of Convalescence"
   /call DeclareIniVar healWholeGroupHoT						string 	Heal "Elixir of the Seas"
-  /call DeclareIniVar healRemedy1									string 	Heal "Spiritual Remedy"
-  /call DeclareIniVar healRemedy2									string 	Heal "Graceful Remedy"
+  /call DeclareIniVar healRemedy1									string 	Heal "Merciful Remedy"
+  /call DeclareIniVar healRemedy2									string 	Heal "Spiritual Remedy"
+  /call DeclareIniVar healRemedy3									string 	Heal "Graceful Remedy"
   /call DeclareIniVar healHoT 										string 	Heal "Ardent Elixir"
   /call DeclareIniVar healSplash									string 	Heal "Convalescent Splash"
-  /call DeclareIniVar healIntervention1 					string 	Heal "Virtuous Intervention"
-  /call DeclareIniVar healIntervention2 					string  Heal "Elysian Intervention"
-  /call DeclareIniVar healIntervention3 					string  Heal "Mystical Intervention"
+  /call DeclareIniVar healIntervention1 					string  Heal "Merciful Intervention"
+  /call DeclareIniVar healIntervention2 					string  Heal "Mystical Intervention"
+  /call DeclareIniVar healIntervention3 					string 	Heal "Virtuous Intervention"
+  /call DeclareIniVar healIntervention4 					string  Heal "Elysian Intervention"
   /call DeclareIniVar healRenewal1	 							string  Heal "Fervid Renewal"
   /call DeclareIniVar healRenewal2	 							string  Heal "Fraught Renewal"
   /call DeclareIniVar healRenewal3	 							string  Heal "Fervent Renewal"
@@ -2486,10 +2493,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	| wis healers only
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
 		| radient Cure
-		/if (${_cmd.Equal[rc]} &&  ${Me.AltAbilityReady[Radiant Cure]}) {
-			/call core_cast "Radiant Cure" alt 0 FALSE
-			ECHOCHANNEL Radient Cure
-		}
+		/if (${_cmd.Equal[rc]}) /call core_cast "Radiant Cure" alt 0 FALSE
 		
 		| Purify Spirits
 		/if (${_cmd.Equal[purify]} &&  && ${Me.AltAbilityReady[Purified Spirits]}) {
@@ -2514,17 +2518,17 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 sub Event_EQBC_say(string line, string _sender, string _verbage)
 	DEBUG _sender ${_sender} _verbage ${_verbage}
  	| have everyone say the same thing to the same target with a touch of random delay
- 		/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Bool[${Spawn[pc ${_sender} radius 40].ID}]}) {
-			/assist ${_sender}
-			/delay 5s ${Me.AssistComplete} 
-			/if (!${Target.ID}) /return
-		}
-		/if (${Me.Invis}) {
-			/makemevisible
-			/delay 1s !${Me.Invis}
-		}
-		/say ${_verbage}
-		/delay 1s		
+	/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Bool[${Spawn[pc ${_sender} radius 60].ID}]}) {
+		/assist ${_sender}
+		/delay 5s ${Me.AssistComplete} 
+		/if (!${Target.ID}) /return
+	}
+	/if (${Me.Invis}) {
+		/makemevisible
+		/delay 1s !${Me.Invis}
+	}
+	/say ${_verbage}
+	/delay 1s		
 /return
 
 	
@@ -3134,19 +3138,19 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
 	
 	| can i do this debuff?
 	/if (${Bool[${_deBuffType.Equal[mezz]}]}) {
-		/if (!${validate_class[TRUE, |ENC|BRD]}) /return
+		/if (!${validate_debuff[TRUE, mezz]}) /return
 	} else /if (${Bool[${_deBuffType.Equal[malo]}]}) {
-		/if (!${validate_class[TRUE, |MAG|SHM]}) /return
+		/if (!${validate_debuff[TRUE, malo]}) /return
 	} else /if (${Bool[${_deBuffType.Equal[tash]}]}) {
-		/if (!${validate_class[TRUE, |ENC]}) /return
+		/if (!${validate_debuff[TRUE, tash]}) /return
 	} else /if (${Bool[${_deBuffType.Equal[cripple]}]}) {
-		
+		/if (!${validate_debuff[TRUE, cripple]}) /return
 	} else /if (${Bool[${_deBuffType.Equal[slow]}]}) {
-		/if (!${validate_class[TRUE, |ENC|SHM|BRD|NEC|BST]}) /return
+		/if (!${validate_debuff[TRUE, slow]}) /return
 	} else /if (${Bool[${_deBuffType.Equal[eradicate]}]}) {
-		/if (!${validate_class[TRUE, ${AAEradicateList}]}) /return
+		/if (!${validate_debuff[TRUE, eradicate]}) /return
 	} else /if (${Bool[${_deBuffType.Equal[snare]}]}) {
-		/if (!${validate_class[TRUE, ${AASnareList}]}) /return
+		/if (!${validate_debuff[TRUE, snare]}) /return
 	}
 								
 	/if (${Bool[${deBuffType.Find[${_deBuffType}]}]} && ${_deBuffType.NotEqual[stop]}) {
@@ -3170,7 +3174,7 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
 	| clear stickbehind. it will force bad targeting fot the mezzer.
 	/if (${SetStickBehind} && ${switchdeBuffMezz}) {
 		/call writeINI SetStickBehind Movement FALSE  
-		/call echos switch "Stick behind target"  SetStickBehind 0 0
+		VOUT /movement behind ${sep} ${SetStickBehind}
 	}
 /return
 
