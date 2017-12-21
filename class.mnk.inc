@@ -27,6 +27,7 @@ sub core_MNK()
 		/call set_combat MELEE
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
+		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call stick_to_target
@@ -62,14 +63,32 @@ sub disc_MNK()
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	/call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
-	/if (!${switchdeBuffSnare}) /call core_cast "Eye Gouge" alt ${Target2Kill} FALSE
-	/call core_cast "Stunning Kick" alt ${Target2Kill} FALSE
 	/call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
 	
 	/call core_cast "Drunken Monkey Style" disc 0 FALSE
 	/call core_cast "Whorl of Fists" disc 0 FALSE
 
+	/call core_cast "Zan Fi's Whistle" alt ${Target2Kill} FALSE
+		
+	/call core_cast "Drunken Monkey Style" disc 0 FALSE
+	/call core_cast "Torrent of Fists Rk. II" disc 0 FALSE
+	/call core_cast "Doomwalker's Synergy" disc 0 FALSE
+	/call core_cast "Zalikor's Fang" disc 0 FALSE
+	/call core_cast "Curse of the Thirteen Fingers" disc 0 FALSE
+
+	/call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
+	/call core_cast "Zan Fi's Whistle" alt ${Target2Kill} FALSE
+	/call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
+		
+	/call core_cast "Drunken Monkey Style" disc 0 FALSE
+	/call core_cast "Torrent of Fists Rk. II" disc 0 FALSE
+	/call core_cast "Doomwalker's Synergy" disc 0 FALSE
+	/call core_cast "Zalikor's Fang" disc 0 FALSE
+	/call core_cast "Curse of the Thirteen Fingers" disc 0 FALSE
+
 /return
+
+
 
 
 
@@ -85,7 +104,9 @@ sub patch_heal_MNK()
 	/if (${Me.PctHPs} > 81*.${tmpHealOverride}) /return
 	
 	/if (${Me.PctHPs} <= 50*.${tmpHealOverride}) /doability Mend
-	/if (${Me.CombatAbilityReady[Defer Death]} && ${Me.PctHPs} <= 50*.${tmpHealOverride}) /call core_cast "Defer Death" disc 0 FALSE
+	/if (${Me.PctHPs} <= 50*.${tmpHealOverride}) /call core_cast "Defer Death" disc 0 FALSE
+	
+	
 
 /return
 

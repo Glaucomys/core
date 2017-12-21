@@ -25,6 +25,7 @@ sub core_CLR()
     /call set_xtarget
     /call create_timer timer_set_xtarget ${tXHeal}
   }	
+
 	
 	CHECKREZ
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
@@ -101,6 +102,7 @@ sub disc_CLR()
 	AMIDEAD
 	CHECKEXIT
 	/if (!${Me.Sitting} && ${Bool[${doYaulp}]}) /call cast_yaulp
+	/call check_deBuffs ${Target2Kill}
 
 	| /if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_yaulp
 	/if (${is_target_valid[${Target2Kill}]}) {

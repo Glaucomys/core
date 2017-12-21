@@ -56,6 +56,7 @@ sub core_DRU()
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
+		/call check_deBuffs ${Target2Kill}
 	} else /if (${Select[${combat},DUAL]}) {
 		CHECKREZ
 		/call set_combat HEAL

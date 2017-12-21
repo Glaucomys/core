@@ -66,6 +66,7 @@ sub disc_WAR()
 	/if (${Bool[${Macro.Return}]}) /return
 	/if (${switchAgroMode}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+	/call check_deBuffs ${Target2Kill}
 	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 
 	/if (${Me.AltAbilityReady[${AABraceforImpact}]}) /call core_cast "${AABraceforImpact}" alt 0 FALSE

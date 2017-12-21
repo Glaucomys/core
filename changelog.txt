@@ -10,13 +10,24 @@
  ***|
 
 Current Requests:
- - pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
- - fix chanter charm mob code
- - no melee buff list
- - add more checks to the buff combat routines. and rechecks. and then more checks.
+- pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
+- fix chanter charm mob code
+- no melee buff list
+- add more checks to the buff combat routines. and rechecks. and then more checks.
+
  
  
 
+20171221
+- rewrite of check_engaged() to be use as /if (${check_engaged[]})
+- corrected BST validation for using new monk skills. it should work this time. honestly.
+- core.mac
+  -- several adjustmetns to execution orderd for auto and manual actions
+- debuff check on mobs moved to end of discs for rogue, bezerker. should prevent them trying to pause on engaging a new mbo
+- squashed a bug that was preventing a lot (all but healing and ports) of casting while in manual mode.
+- new mod rod coded in
+- get_target() main pull routine
+  -- added in 2 second time out for mobs leaving your /cc agro ## range. if they leave, puller will disengage and find a new target.
 
 
 20171217
@@ -24,12 +35,13 @@ Current Requests:
 - more checks for underfoot to disable xtarget on TLP
 - check_deBuffs()
   -- adjusted debuff checks for cripple routine
+- added in another check for curing outside of combat for all classes.
 
 
 20171216
 HUDUPDATE
 - hud adjustments: there were more body types then i ever though about.
-- MQ2Bucles (redbuides plugin) will be forced unloaded due to conflicts.
+- MQ2Bucles (redguides plugin) will be forced unloaded due to conflicts.
 - introducing check_no_do_a_thing_buff()
   -- will check yourself and your target for specific buffs.
   -- Toon.INI->[common]->noCastWith=|buff1|buff2|buffso'on 

@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171217
+	/declare coreBuild	 														int			outer 20171221
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -1218,6 +1218,7 @@ sub declare_MAG()
 	/call DeclareIniVar ElementRodSpell 						string 	Rods "Summon Mutinous Minion"
 	/call DeclareIniVar ElementRodName 							string 	Rods "Summoned: Exigent Minion XXI"
 
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar GatherSpell									string 	Spells "Gather Magnitude"
 	/call DeclareIniVar switchGather			 					bool		Spells TRUE
 	/call DeclareIniVar GatherPercent			 					int			Spells 60
@@ -1420,6 +1421,7 @@ sub declare_NEC()
 	/call DeclareIniVar spellMalo										string 	Spells "Scent of Terris"
 	/call DeclareIniVar spellBlood									string 	Spells "Impose for Blood"
 	/call DeclareIniVar spellSlow		 								string	Spells "Scent of Terris"
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	
 	/call DeclareIniVar DoDoT								 				int			Spells 0
 	/call DeclareIniVar DoT1							 					string	Spells FALSE
@@ -1526,6 +1528,7 @@ sub declare_SHD()
 	/call DeclareIniVar DoT4chk						 					string	Spells FALSE
 	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	 
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar switchHarmonious 						bool	 	Buffs TRUE
 	/call DeclareIniVar Harmonious 									string 	Buffs "Harmonious Disruption"
 	/call DeclareIniVar switchStance 								bool	 	Buffs TRUE
@@ -1625,6 +1628,7 @@ sub declare_PAL()
 	/call DeclareIniVar DoT4Condition 							string	Spells FALSE
 	
 
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar ChallengeSpell							string 	Spells "Impose for Honor"
 	/call DeclareIniVar ValiantDefense							string 	Spells "Valiant Defense"
 		
@@ -1683,6 +1687,8 @@ sub declare_WAR()
 	/call DeclareIniVar AAWarlordsBravery						string	Discs "Warlords Bravery"
 	
 	/call DeclareIniVar PanicHPPCT		 							int			Heal 25
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
+	
 /return	
 
 
@@ -1737,6 +1743,9 @@ sub declare_BER()
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
 		/varset AugmentedFrenzyEffect ${AugmentedFrenzyDisc.Left[-6]} effect II
   } 
+    
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
+
 /return	
 
 
@@ -1785,6 +1794,7 @@ sub declare_RNG()
 	/call DeclareIniVar DoTSwarmDS		 							string	Spells "Swarm of Glistenwings"
 	/call DeclareIniVar DoTSwarmDSdeBuff 						string	Spells "Glistenwing Swarm"
 	
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar SlowHeal										string	Spells "Cloudfont" 
 	/call DeclareIniVar FastHeal			 							string	Spells "Desperate Dousing" 
 	/call DeclareIniVar FastHealPCT		 							int			Spells 25
@@ -1818,6 +1828,7 @@ sub declare_DRU()
 	/call DeclareIniVar debuffRo			 							string	Spells "Blessing of Ro"	
 	/call DeclareIniVar WoodTXT											string	Spells "SoWood cast."
 
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar DoNuke					 						int			Spells 0
 	/call DeclareIniVar Nuke1					 							string	Spells FALSE
 	/call DeclareIniVar Nuke1Condition 							string	Spells FALSE
@@ -2024,6 +2035,7 @@ sub declare_BRD()
 	/call DeclareIniVar spellSlow										string	Song "Requiem of Time"
 	/call DeclareIniVar switchRestSong							bool		Song FALSE
 	/call DeclareIniVar spellRestSong								string	Song FALSE
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	
 /return	
 
@@ -2101,6 +2113,8 @@ sub declare_BST()
  *  NOTE: 
  ***|
 sub declare_MNK()
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
+
 /return	
 
 
@@ -2130,10 +2144,10 @@ sub declare_ROG()
 	/call DeclareIniVar DiscDisassociative					string 	Discs "Disassociative Puncture"	
 	/call DeclareIniVar DiscAspBleeder							string 	Discs "Aceleus Discipline"	
 
-	| disable for toast
+	| disable for burn
 	/call DeclareIniVar DiscVision 									string 	Discs "Thief's Vision"	
 
-	| toast
+	| burn
 	/call DeclareIniVar DiscPinPoint 								string 	Discs "Pinpoint Deficiencies"
 	/call DeclareIniVar DiscMark 										string 	Discs "Wide-Eyed Mark"
 	/call DeclareIniVar DiscEradicator 							string 	Discs "Executioner Discipline"
@@ -2148,6 +2162,9 @@ sub declare_ROG()
 	/call DeclareIniVar clickPoisonItem							string 	Poison Consigned Bite of the Shissar XVIII
 	/call DeclareIniVar clickPoisonDispenser				string 	Poison Selrach's Shadowscale Leggings
 	/call DeclareIniVar clickPoisonCount						int		 	Poison 60
+
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
+
 /return	
 
 
@@ -2231,6 +2248,8 @@ sub declare_CLR()
 
 	/call DeclareIniVar useVP												bool		Buffs TRUE
 	/call DeclareIniVar useVPPct										int			Buffs 40
+
+	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 
 	/call DeclareIniVar DoNuke					 						int			Spells 0
 	/call DeclareIniVar Nuke1					 							string	Spells FALSE	

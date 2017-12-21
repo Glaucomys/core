@@ -36,7 +36,6 @@ sub core_SHD()
 		/call use_skill_melee ${Target2Kill}
 		/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
-		/call check_deBuffs ${Target2Kill}
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}
 		/call stick_to_target
@@ -79,6 +78,7 @@ sub disc_SHD()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	CHECKTIE
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
+	/call check_deBuffs ${Target2Kill}
 	
 	| check challenge
 	/call cast_challenge ${Target2Kill}

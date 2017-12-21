@@ -28,11 +28,11 @@ sub core_ROG()
 	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call send_pet
-		/call stick_to_target
-		/if (${Me.Invis}) /call sneak_attack
 		/call set_combat MELEE
+		/if (${Me.Invis}) /call sneak_attack
+		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
+		/call send_pet
 		/call stick_to_target
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
@@ -126,6 +126,7 @@ sub disc_ROG()
 
 	| /if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
+	/call check_deBuffs ${Target2Kill}
 /return
 
 

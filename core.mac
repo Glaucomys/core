@@ -94,7 +94,8 @@
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 #define HUDPATH ".\..\MQ2HUD.ini core"
 #define LOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
-#define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
+| #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
+#define AMIDEAD "/if ((${Me.Dead}) && ${switchRezTake}) /call wait_for_rez"
 #define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
 #define CHECKTIE "/if (${SetTie} && !${Bool[${timer_check_Tie}]}) /call set_tie"
@@ -183,40 +184,54 @@ sub main()
 	 	/doevents
 		CLEARCURSOR
 
-		| check all buff types, rest and auras
+		| non class specific automated thingies.
 		/if (${coreAuto}) {
-			/if (${HomeSet}) /makecamp off
+			/if (${HomeSet}) /squelch /makecamp off
 			
 			| keep an eye out for real rezes
 			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
+			
 			/call check1offBuffs
 			AMIDEAD
+			
+			| check to see if someone needs a doctor?
+			/if (${switchHealCure}) {
+				/call cast_cure
+			}
 			/if (${autoRest} && !${switchPull} || ${autoRest} && ${switchPull} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]}) /call do_rest
 			/call check_buff_routines
+
+			| fix exp
+			/if (!${timer_check_EXP} && (!${SafeZone} || !${switchOverrideSafezone})) /call auto_adjust_EXP
+
+			| fix ur pet!
+			/if (!${timer_Check_Familiar}) /call sort_familiar
+			
+			| food/drink
+			/if (${Bool[${clickFoodDispenser}]} && !${timer_click_food}) /call click_summon_food
+			/if (${Bool[${clickDrinkDispenser}]} && !${timer_click_drink}) /call click_summon_drink
+
+			| check constant AA buffs
+			/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
+			| check constant Disc buffs
+			/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
+
+			| sort out return to camp
+			/if (${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && (!${SafeZone} || ${switchOverrideSafezone})) /makecamp return
+
 		}
 		
-		/if (!${coreAuto}) {
+		/if (!${coreAuto} && ${Me.PctEndurance} < 32) {
 			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MON|BST]}) /call cast_disc_breather
 		}
 
-		| check to see if someone needs a doctor?
-		/if (${coreAuto} && !${timer_check_cast_cure} && ${switchHealCure}) /call cast_cure
-		| fix exp
-		/if (${coreAuto} && !${timer_check_EXP} && (!${SafeZone} || !${switchOverrideSafezone})) /call auto_adjust_EXP
 		| watch for spawn
 		/if (${Bool[${watchSpawn}]} && !${timer_check_watch_spawn}) /call check_watch_spawn
 		| guns need ammo
 		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
-		| fix ur pet!
-		/if (${coreAuto} && !${timer_Check_Familiar}) /call sort_familiar
 		/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]}) /pet get lost
-		| food/drink
-		/if (${coreAuto} && ${Bool[${clickFoodDispenser}]} && !${timer_click_food}) /call click_summon_food
-		/if (${coreAuto} && ${Bool[${clickDrinkDispenser}]} && !${timer_click_drink}) /call click_summon_drink
 		
 		CHECKTIE
-		| sort out return to camp
-		/if (${coreAuto} && ${HomeSet} && !${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && (!${SafeZone} || ${switchOverrideSafezone})) /makecamp return
 
 		| looter stuffs
 		/if ((${coreAuto} || ${switchOverrideLoot}) && (!${SafeZone} || ${switchOverrideSafezone})) /call do_loot
@@ -229,10 +244,6 @@ sub main()
 		| use the one off clickies in the Toons INI
 		/if (!${timer_check_odds_and_ends}) /call odds_and_ends
 
-		| check constant AA buffs
-		/if (${coreAuto} && (${Bool[${AANow1}]} || ${Bool[${AANow2}]})) /call check_AA_now
-		| check constant Disc buffs
-		/if (${coreAuto} && (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]})) /call check_Disc_now
 
 		| do we pull or assist	
 		/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {	

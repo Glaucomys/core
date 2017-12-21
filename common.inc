@@ -199,7 +199,7 @@ sub check_engaged()
  *  NOTE: 
  *  NOTE: 96 rez: - "HiImaCleric wants to cast Blessing of Resurrection (96 percent) upon you. Do you wish this?"
  *	NOTE: call - "you will still be able to get a resurrection later"
- *	NOTE: rez increments: 0, 10, 20, 35, 50, 60, 75, 90, 96
+ *	NOTE: rez increments: 0, 10, 20, 35, 50, 60, 75, 90, 93, 96
  *	NOTE: lots of debug here. this is a problem child function.
  ***|
 sub wait_for_rez()
@@ -207,13 +207,11 @@ sub wait_for_rez()
 	DEBUGREZ call Flag:${flagCallNeedRez}
 	DEBUGREZ events flushed
 	/doevents flush
-	DEBUGREZ into rez, clear event marker
+	DEBUGREZ into rez, all event markers cleared. delay 2s to let script catch up.
+	/delay 2s
 	/if (!${Me.State.Equal[HOVER]} && !${Me.Hovering} && !${Me.Dead} && !${markerDead} && !${flagCallNeedRez}) /return
 	DEBUGREZ update death count
 	/ini "${INICore}" "deathcount" "${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}" "${Int[${Math.Calc[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}+1]}]}"
-	| DEBUGREZ update MQ LOG
-	| MQLOG Death ${Ini[${INICore},deathcount,${Me.DisplayName}]}
-	| /if (!${flagCallNeedRez} && ${Bool[${Ini[${INICore},bitch]}]}) ECHOCHANNEL ${Ini[${INICore},bitch,${Int[${Math.Calc[${Math.Rand[${Ini[${INICore},bitch,count]}]}+1]}]}]}
 
 	DEBUGREZ stop movement
 	/varset SetTie FALSE
@@ -340,7 +338,7 @@ sub wait_for_rez()
 	/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
 	:cleardeadmarkers
 		DEBUGREZ delays for rez status to clear
-		| /call set_stop
+		/call set_stop
 		/delay 2s !${Me.State.Equal[HOVER]}
 		/delay 2s !${Me.Hovering}
 		/delay 2s !${Me.Dead}
@@ -435,8 +433,7 @@ sub cast_shrink_pet()
 	DEBUGCAST ${cbug}cast_shrink_pet()\ax
 	AMIDEAD
 	CHECKEXIT
-	/call check_engaged
-	/if (${Macro.Return}) /return
+	/if (${check_engaged[]}) /return
 	/if (${Me.Pet.ID} && ${Bool[${shrinkPet}]} && ${Me.Pet.Height} > 1.40) {
 		/if (${Me.Book[${shrinkPet}]}) {
 			/call core_cast "${shrinkPet}" ${buffGem} ${Me.Pet.ID} FALSE
@@ -854,8 +851,7 @@ sub check_pet_buffs()
 		AMIDEAD
 		CHECKEXIT
 		CHECKTIE
-		/call check_engaged
-		/if (${Macro.Return}) /return	
+		/if (${check_engaged[]}) /return
 		UPDATEHUD "BUFF: Pet"
 		/varset _spellType FALSE
 
@@ -910,7 +906,7 @@ sub check_no_cast_buffs()
  ***|
 sub check_no_do_a_thing_buff(string _type)
 	DEBUG ${cbug}check_no_do_a_thing_buff(type: ${_type})\ax
-	/if (!${Bool[${no${_type.Left[1].Upper}${_type.Right[-1].Lower}}]}) /return FALSE
+	/if (!${Bool[${no${_type.Left[1].Upper}${_type.Right[-1].Lower}With}]}) /return FALSE
 	/if (!${Bool[${_type}]}) /return FALSE
 	/declare _count int local 0
 
@@ -1119,8 +1115,7 @@ sub do_rest()
 	/doevents
 	| check self click buffs
 	/if (!${Me.Invis}) {
-		/call check_engaged
-		/if (!${Macro.Return} && ${switchBuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
+		/if (!${check_engaged[]} && ${switchBuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
 		/if (${switchBuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
 	}
 
@@ -1470,7 +1465,7 @@ sub stick_to_target()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/doevents
 	AMIDEAD	
-	/if (${coreAuto} && ${SetStickBehind}) {
+	/if (${SetStickBehind}) {
 		DEBUG ${cbug}stick_to_target(behind ${SetStickBehind})\ax coreAuto
 		/call get_assist_target
 		/if (${Target.ID} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
@@ -1664,7 +1659,7 @@ sub is_target_valid(int _tmpID)
 	| /if (!${validate_expansion[FALSE, |16]}) /goto :skippingtoMAtarget
 
 	| check smart assists
-	/if (${Target.ID}) {
+	/if (${Target.ID} && ${coreAuto}) {
 		/if (${useSmartAssist1} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 			/call clear_combat
 		} else /if (${useSmartAssist2} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[2].ID}) {
@@ -1716,14 +1711,14 @@ sub is_target_dead(int _tmpID)
 		/if (!${Bool[${_tmpID}]}) /return FALSE
 	}
 	
+	| no target ID? shits dead 'till we get one to check..
 	/if (!${Target.ID} && !${switchModeHunt}) /varset _dead TRUE
 	/if (${_tmpID} == 0 || !${Bool[${_tmpID}]}) /varset _dead TRUE
 	/if (${_dead}) /goto :dead
 
-	
+	| targets dead? were done here
 	/if (${Target.Dead} || ${Target.Type.Equal[Corpse]}) /varset _dead TRUE
 	/if (${_dead}) /goto :dead
-
 
 	/if (${Bool[${Spawn[${_tmpID}].Type.Equal[CORPSE]}]} || ${Spawn[${Target.ID}].Type.Equal[CORPSE]}) /varset _dead TRUE
 	/if (${Bool[${Spawn[${_tmpID}]].Dead}]} || ${Spawn[${Target.ID}].Dead}) /varset _dead TRUE
@@ -1752,7 +1747,7 @@ sub clear_combat()
 	}
 	/if (${Me.AutoFire}) /squelch /autofire
 	/if (${Me.Combat}) /squelch /attack off
-	/if (${Bool[${Me.Casting}]} && (!${Spell[${Me.Casting.ID}].Category.Equal[Transport]} || !${Spell[${Me.Casting.ID}].Category.Equal[Heals]})) /stopcast
+	/if (${coreAuto} && ${Bool[${Me.Casting}]} && (!${Spell[${Me.Casting.ID}].Category.Equal[Transport]} || !${Spell[${Me.Casting.ID}].Category.Equal[Heals]})) /stopcast
 	/if (${Bool[${Target2Kill}]}) {
 		/call clear_timer ${Target2Kill}
 		/varset Target2Kill 0
@@ -2051,6 +2046,7 @@ sub use_mod_rod()
 		
 	| use all the rods!!
 	/if (${Me.PctMana} < 70*.${tmpHealOverride}) {
+		/if (${Me.ItemReady[Summoned: Glowing Modulation Shard]} && ${Me.CurrentHPs} > 45500) /call core_cast "Summoned: Glowing Modulation Shard" item 0 FALSE
 		/if (${Me.ItemReady[Summoned: Giant Modulation Shard]} && ${Me.CurrentHPs} > 37500) /call core_cast "Summoned: Giant Modulation Shard" item 0 FALSE
 		/if (${Me.ItemReady[Summoned: Large Modulation Shard]} && ${Me.CurrentHPs} > 23100) /call core_cast "Summoned: Large Modulation Shard" item 0 FALSE
 		/if (${Me.ItemReady[Summoned: Medium Modulation Shard]} && ${Me.CurrentHPs} > 15100) /call core_cast "Summoned: Medium Modulation Shard" item 0 FALSE
@@ -2168,9 +2164,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub, bool _forcew
 			/varset _type disc
 		}
 	}
-	
-	
-	
+		
 	| READY CHECKS
 
 	| AA ready?
@@ -2546,7 +2540,7 @@ sub use_skill_melee(int _tmpID)
 	}
 	
 	| monk/bst only skill 
-	/if (${validate_class[FALSE, |MON,BST]} && ${Spawn[${_tmpID}].Distance} <= 15) {
+	/if (${validate_class[FALSE, |MON|BST]} && ${Spawn[${_tmpID}].Distance} <= 15) {
 		| fist
 		/if (${Bool[${dragonpunch}]} && !${Skill[Dragon Punch].Auto} && ${Me.AbilityReady[Dragon Punch]}) {
 			VMELEE Melee ${sep} ${csp}Dragon Punch\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
@@ -3265,7 +3259,7 @@ sub cast_yaulp()
 sub cast_disc_breather()
  	DEBUGCAST ${cbug}cast_disc_breather(ready: ${Me.CombatAbilityReady[${DiscRest}]})\ax
  	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.CombatAbilityReady[${DiscRest}]}) /return
-
+	/if (${Me.PctEndurance} > 33) /return
 	AMIDEAD
 	/doevents
 
@@ -3276,13 +3270,15 @@ sub cast_disc_breather()
 	/if (${Me.CombatAbility[Breather]}) /varset _endurancePoint 21
 	
 	| rogue trigger breather while in combat
-	/if (${validate_class[FALSE, |ROG]} && ${Select[${Me.CombatState},COMBAT]} && ${Me.PctEndurance} < ${_endurancePoint} && ${Me.AltAbilityReady[Escape]}) {
-		/call clear_combat
-		/call set_stop TRUE
-		/call core_cast "Escape" alt 0 FALSE
-		/delay 1
-		/call core_cast "${DiscRest}" disc 0 FALSE			
-		/return
+	/if (${validate_class[FALSE, |ROG]}) {
+		/if (${Select[${Me.CombatState},COMBAT]} && ${Me.PctEndurance} < ${_endurancePoint} && ${Me.AltAbilityReady[Escape]}) {
+			/call clear_combat
+			/call set_stop TRUE
+			/call core_cast "Escape" alt 0 FALSE
+			/delay 1
+			/call core_cast "${DiscRest}" disc 0 FALSE			
+			/return
+		}
 	}
 
 	| need to be out of combat to use
@@ -4424,6 +4420,8 @@ sub get_target()
 		/if (${Target.ID} && ${Select[${combat},MELEE,RANGE]} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 
 		/if (${Target.ID}) {
+			
+			| check target is LoS. if stays out of sight too long. reset
 			/if (!${Spawn[${Target}].LineOfSight} && !${switchOverrideLos}) {
 				/delay 2s ${Spawn[${Target}].LineOfSight}
 				/if (!${Spawn[${Target}].LineOfSight}) {
@@ -4431,6 +4429,16 @@ sub get_target()
 					/return
 				}
 			}
+			
+			| check targets range. if out of range too long. reset
+			/if (${Spawn[${Target}].Distance} > ${MobAgro}) {
+				/delay 2s ${Spawn[${Target}].Distance} < ${MobAgro}
+				/if (${Spawn[${Target}].Distance} > ${MobAgro}) {
+					/call clear_combat
+					/return
+				}
+			}			
+			
 			/doevents
 			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]} && ${Me.State.NotEqual[STAND]}) /stand
 			/if (${Me.Stunned}) /return
@@ -4724,7 +4732,7 @@ sub prep_combat()
 	/declare _gokillstuff		bool local TRUE
 	CHECKREZ
 	CLEARCURSOR
-	 	/if (${coreAuto} && !${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
+	/if (${coreAuto} && !${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
 		/call check1offBuffs
 		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
 			/call is_target_valid ${Target2Kill}
@@ -4751,9 +4759,7 @@ sub prep_combat()
 		}			
 
 	}
-
 	/if (${_gokillstuff} && (!${SafeZone} && !${switchOverrideSafezone})) /call set_base_target_timers ${Target2Kill}
-
 /return ${_gokillstuff}
 
 
@@ -4902,8 +4908,7 @@ sub check_buff_routines(bool _force)
 		}
 
 		| check main routines
-		/call check_engaged
-		/if (!${Bool[${Macro.Return}]}) {
+		/if (!${check_engaged[]})  {
 			/if (${switchBuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
 			/if (${switchBuffSelf} && !${timer_check_buffs_self}) /call check_buffs_self
 		  /if (${switchBuffRaid} && !${timer_check_buffs_raid}) /call check_buffs_raid
@@ -5900,7 +5905,6 @@ sub validate_class(bool _error, string _class)
 
 	/for _count 1 to ${_class.Count[|]}
 		AMIDEAD
-		DEBUG _count:${_count}, arg: ${_class.Arg[${_count},|]}
 		/if (${Me.Class.ShortName.Upper.Equal[${_class.Arg[${_count},|]}]}) {
 			/varset _pass TRUE
 			/break

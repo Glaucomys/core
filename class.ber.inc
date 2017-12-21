@@ -26,7 +26,7 @@ sub core_BER()
 	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call stick_to_target
-		/if (${Me.CombatAbilityReady[${DiscSlapintheFace}]} && ${Me.PctAggro} <= 0 && !${Me.Combat} && ${Me.CurrentEndurance} > ${Spell[${DiscSlapintheFace}].EnduranceCost}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
+		/if (${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
 		/call set_combat MELEE
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
@@ -38,7 +38,7 @@ sub core_BER()
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/call click_item
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/if (${Me.CombatAbilityReady[${DiscSlapintheFace}]} && ${Me.PctAggro} <= 0 && !${Me.Combat} && ${Me.CurrentEndurance} > ${Spell[${DiscSlapintheFace}].EnduranceCost}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
+		/if (${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
 		/call set_combat RANGE
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
@@ -114,6 +114,7 @@ sub disc_BER()
 	/call core_cast "${ThrowingAxe}" disc ${Target2Kill} FALSE
 
 	/if (!${Me.Song[${SharedBloodLustRecourse}].ID}) /call core_cast "${SharedBloodLust}" disc 0 FALSE
+	/call check_deBuffs ${Target2Kill}
 /return
 
 

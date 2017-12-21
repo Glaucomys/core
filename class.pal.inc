@@ -29,6 +29,7 @@ sub core_PAL()
 		/call set_combat MELEE
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
+		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/if (${switchHealGroup} || ${switchHealSelf}) /call check_splash_group_${Me.Class.ShortName}
@@ -43,6 +44,20 @@ sub core_PAL()
 		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
 		/if (${useMG} && !${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/call check_deBuffs ${Target2Kill}
+		/call disc_${Me.Class.ShortName}
+		/call click_BP
+		/if (${switchHealGroup} || ${switchHealSelf}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
+		/call use_skill_melee ${Target2Kill}
+		/call click_item
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${switchHarmonious}) /call check_harmonious
+		/if (${switchSteel} && !${timer_check_Steel}) /call check_steel	
+		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
+		/if (${useMG} && !${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 		/call set_combat HEAL

@@ -144,13 +144,13 @@ sub patch_heal_RNG()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > 81*.${tmpHealOverride}) /return
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0
+	/if (${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0 FALSE
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID} FALSE
-	/if (${Me.PctHPs} <= 70*.${tmpHealOverride}) /call core_cast "Small Manisi Branch" item 0
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0
+	/if (${Me.PctHPs} <= 70*.${tmpHealOverride}) /call core_cast "Small Manisi Branch" item 0 FALSE
+	/if (${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 	/if (${Me.PctHPs} <= 55*.${tmpHealOverride} && (${Bool[${NameList.Find[${Target.CleanName}]})]}	|| ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]} >= 3)) /call core_cast "Bulwark of the Brownies" alt 0 FALSE
-	/if (${Me.PctHPs} <= 40*.${tmpHealOverride}) /call core_cast "Protection of the Spirit Wolf" alt 0
-	/if (${Me.PctHPs} <= 30*.${tmpHealOverride}) /call core_cast "Outrider's Evasion" alt 0
+	/if (${Me.PctHPs} <= 40*.${tmpHealOverride}) /call core_cast "Protection of the Spirit Wolf" alt 0 FALSE
+	/if (${Me.PctHPs} <= 30*.${tmpHealOverride}) /call core_cast "Outrider's Evasion" alt 0 FALSE
 /return
 
 
@@ -266,18 +266,7 @@ sub synergy_RNG()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	
-	|** mele disc
-	/if (${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-		/call core_cast "Empowered Blades" alt 0 FALSE
-	} else /if (${Me.CombatAbilityReady[${DiscMele}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-		/call core_cast "${DiscMele}" disc 0 FALSE
-	} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]}) {
-		/call use_glyph
-	} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-		/call core_cast "${Epic}" item 0 FALSE
-	}
-	**|
+
 	
 	| MELEE
 	/if (${combat.Equal[MELEE]}) {
@@ -290,6 +279,7 @@ sub synergy_RNG()
 		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
 			/call core_cast "${Epic}" item 0 FALSE
 		}
+
 	| RANGE
 	} else /if (${combat.Equal[RANGE]}) {
 		/if (${Me.CombatAbilityReady[${DiscRange}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
@@ -328,8 +318,7 @@ sub synergy_RNG()
 	
 	| ae regen 
 	/if (!${Bool[${DiscHeal}]} && !${Bool[${Me.Song[Bladespur Reflection]}]} && ${Me.CombatAbilityReady[${DiscHeal}]}) /call core_cast "${DiscHeal}" disc ${Target2Kill} FALSE
-	
-		
+			
 	/call synergy_click_Circle
 	/call click_item_burn
  /return
@@ -366,7 +355,7 @@ sub Bind_setRNG(string _classType, string _verbage)
 	| enable/disable summer line of spells
 	/if (${Bool[${_classType.Find[summer]}]}) {
 		/call writeINI switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
-		/call echos switch "Summer ${sep} ${csp}${switchNukeSummer}\ax" switchNukeSummer
+		VOUT /${_bind} summer ${sep} ${If[${switchNukeSummer},${oenabled},${odisabled}]}
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {

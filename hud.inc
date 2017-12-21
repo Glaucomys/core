@@ -133,7 +133,6 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "pettarget5" "19,86,98,25,25,25,${If[!${switchOverrideEngageat} && !${switchPcSwarm},##,]}"
 	/noparse /ini HUDPATH "pettarget6" "19,88,98,255,0,0,${If[${switchOverrideEngageat},X,]}"
 
-
 	| target effect notice
 	/noparse /ini HUDPATH "tarnotice1" "3,60,109,100,149,237,[                                                                                                 ][       ]"
 	/noparse /ini HUDPATH "tarnotice2" "19,64,110,255,255,255,${hudTarNotice}"
