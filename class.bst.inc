@@ -17,7 +17,6 @@ sub core_BST()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
 
 	/if (${coreAuto} && !${Me.Invis}) {
@@ -93,21 +92,21 @@ sub core_BST()
 sub disc_BST()
 	DEBUGCLASS ${cbug}disc_BST()\ax
 	/if (${Me.PctEndurance} < 3) /return
+	AMIDEAD
 	CHECKEXIT
 	/doevents
 
-	/call is_target_dead
-	/if (${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 			
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	/if (!${Me.Song[${GrowlSpell}].ID} && ${Me.Pet.ID} && !${Me.PetBuff[Savage Rage]} && !${Me.Song[${DiscSavage}].ID}) /call core_cast "${GrowlSpell}" 0 0 FALSE
-	/if (${Me.AltAbilityReady[Chameleon Strike]} && ${Target.Distance} < ${Spell[Chameleon Strike].MyRange}) /call core_cast "Chameleon Strike" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Feral Swipe]} && ${Target.Distance} < ${Spell[Feral Swipe].MyRange}) /call core_cast "Feral Swipe" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Bite of the Asp]} && ${Target.Distance} < ${Spell[Bite of the Asp].MyRange}) /call core_cast "Bite of the Asp" alt ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Target.Distance} < ${Spell[${DiscForay}].MyRange} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc ${Target2Kill} FALSE
+	/call core_cast "Chameleon Strike" alt ${Target2Kill} FALSE
+	/call core_cast "Feral Swipe" alt ${Target2Kill} FALSE
+	| /if (${Me.AltAbilityReady[Bite of the Asp]}) /call core_cast "Bite of the Asp" alt ${Target2Kill} FALSE
+	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc ${Target2Kill} FALSE
 	/call core_cast "${DiscFocusClaws}" disc ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Roar of thunder]}) /call core_cast "Roar of Thunder" alt ${Target2Kill} FALSE
+	/call core_cast "Roar of Thunder" alt ${Target2Kill} FALSE
 	/if (!${Bool[${Target.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill} FALSE
 	/if (${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill} FALSE
 /return
@@ -123,9 +122,10 @@ sub disc_BST()
 sub cast_AA_focused_paragon()
 	DEBUGCLASS ${cbug}cast_AA_focused_paragon()\ax
 	/if (!${coreAuto}) /return
+	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/declare _cout 							int 	local 0
+	/declare _count 							int 	local 0
 	/declare _tmpID 						int 	local 0
 	/declare _tmpTarget2Kill		int		local 0
 	
@@ -144,11 +144,11 @@ sub cast_AA_focused_paragon()
 
 	| check the group
 	/if (${Group} && ${Me.AltAbilityReady[Focused Paragon of Spirits]}) {
-		 /for _cout 1 to ${Group}
-		 		/if (${Group.Member[${_cout}].ID} && ${Group.Member[${_cout}].Distance} <= ${Spell[Focused Paragon of Spirits].MyRange}  && (${Group.Member[${_cout}].CurrentMana} < ${groupParagon}*.${tmpHealOverride}) && ${CanCast.Find[${Group.Member[${_cout}].Class}]}) {
+		 /for _count 1 to ${Group}
+		 		/if (${Group.Member[${_count}].ID} && ${Group.Member[${_count}].Distance} <= ${Spell[Focused Paragon of Spirits].MyRange}  && (${Group.Member[${_count}].CurrentMana} < ${groupParagon}*.${tmpHealOverride}) && ${CanCast.Find[${Group.Member[${_count}].Class}]}) {
 				/varset _tmpID ${Group.Member[${i}].ID}	 		
 		 	}
-		/next _cout
+		/next _count
 		/if (${_tmpID}) /call core_cast "Focused Paragon of Spirits" alt ${_tmpID} FALSE
 	}	
 
@@ -164,11 +164,13 @@ sub cast_AA_focused_paragon()
  ***|
 sub patch_heal_BST()
 	DEBUGCLASS ${cbug}patch_heal_BST()\ax
+	AMIDEAD
+	CHECKEXIT
 	/doevents	
  	/if (${Me.PctHPs} < 75*.${tmpHealOverride}  && ${Me.AltAbilityReady[Warder's Gift]}) /call core_cast "Warder's Gift" alt 0 FALSE
 	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride} && ${Me.SpellReady[${FastHeal}]}) {
 		/call core_cast "FastHeal" 0 ${Me.ID} FALSE
-		/if (${Me.AltAbilityReady[Focused Paragon of Spirits]}) /call core_cast "Focused Paragon of Spirits" alt ${Me.ID} FALSE
+		/call core_cast "Focused Paragon of Spirits" alt ${Me.ID} FALSE
 	}
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
@@ -184,6 +186,7 @@ sub patch_heal_BST()
  ***|
 sub pet_heal_BST()
 	DEBUGCLASS ${cbug}pet_heal_BST()\aw
+	AMIDEAD
 	CHECKEXIT
 	/doevents
 
@@ -218,6 +221,7 @@ sub Bind_cast_AA_paragon()
 
 sub cast_AA_paragon()
 	DEBUGCLASS ${cbug}cast_AA_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
+	AMIDEAD
 	CHECKEXIT
 	/doevents
 
@@ -240,8 +244,10 @@ sub cast_AA_paragon()
  ***|
 sub click_DPS_BST()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	AMIDEAD
 	CHECKEXIT
 	/doevents
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call click_horn_of_unity 	
 /return
 
@@ -255,8 +261,10 @@ sub click_DPS_BST()
  ***| 
 sub synergy_BST()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	AMIDEAD
 	CHECKEXIT
 	/doevents
+	/if (${is_target_dead[${Target2Kill}]}) /return
 
 	| /if (${Me.AltAbilityReady[Bloodlust]}) /call core_cast "Bloodlust" alt 0
 	/if (${Me.AltAbilityReady[Bestial Alignment]}) /call core_cast "Bestial Alignment" alt 0 FALSE
@@ -330,6 +338,8 @@ sub Bind_setBST(string _classType, string _classVerbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

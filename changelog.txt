@@ -15,8 +15,64 @@ Current Requests:
 - no melee buff list
 - add more checks to the buff combat routines. and rechecks. and then more checks.
 
- 
- 
+
+
+
+20171228
+- changes to how rezzes work.
+  -- in the past: Core would detect a death and lock you in to the rez routines.. this was by design to prevent the toon from doing stupid shit while waiting to get a rez
+     a couple patches back for MQ2, Core started generating a random complete client crash on deaths. no dumps. just a complete lock.
+  -- Now, it is set in to two sections. 1st, simply watches for a death. if one is found, you are tagged as a toon that has had its ass manhandled.
+  -- 2nd, once tagged, it will let you do stuff and keep an eye out for a rez box. if it finds one, it will click the correct %.
+  -- death markers/time markers are now shown in the warnings on the HUD, not in the mode.
+  -- manual mode will still watch for a rez box if /rez take is enabled but it will not prevent forced casting. e.g. /sb or /ib
+  -- shaman, druid, paladin should choose the 96% rez when out of combat.
+- check_exit() 
+  -- will break routines if you are at your bind zone with rez sickness buff.
+  -- will break routines if you are in a death state: Me.Dead or Hovering
+- more /squelch(s) added to moveutils commands. damn things are irritating.
+- /class command will echo the current spires now. eg /rng
+- class Unity AA buffs (NOT: WAR, MON, BRD, BER) [<-- hozed yet again]
+  -- BuffAAUnity1-7 is located in the class buff section. list out the buffs your Unity AA provides and they will be checked each self buff cycle.
+  -- Simple as that. If you only get 1 Unity Buff, only list 1. leave the rest FALSE.
+  -- all listed as FALSE will be ignored.
+- check_for_adds()
+  -- no longer validates KOS mobs. anything in the toons agro now qualifies.
+- do_rest()
+  -- clerics and paladins will not enter rest 'till yaulp fades.  
+- cast_yaulp()
+  -- no longer used out of combat state
+- /cc stopnuke [##]
+  -- sets % of mobs HP to stop nuking
+  -- default is nuke 'till its dead. aka 0
+  -- applys to: nuke cycle, dot cycke, servant nukes, knight challenges, rains, ranger summer spam
+  -- does not apply to: introventions, splash nukes,-
+- class.pal.inc
+  -- defensive added to normal disc usage. adjusted checks.
+  -- renamed def disks to DefensiveDisc1-3
+- class.shd.inc 
+  -- defensive added to normal disc usage. adjusted checks.
+  -- renamed def disks to DefensiveDisc1-3
+  -- commented Stream of Hatred from agro routine. it's not a friendly AA...
+- class.rng.inc
+  -- added in defensive AAs: Bulwark of the Brownie, Outrider's Evasion, Protection of the Spirit Wolf and Weapon Shield
+- class.brd.inc
+  -- added in AA Shauri's Sonorous Clouding to /invis command, and HUD display
+- class.bst.inc
+  -- more checks for loss of active target
+- class.clr.inc
+  -- added in dual mode. will check healing first then do normal DPS
+- class.shm.inc
+  -- group regen will  not try and overwrite cleric group regen.. (since it cant and all)
+  -- re-arranged the healing priorities
+- class.mag.inc
+  -- removed self targeting for rod casting  
+  
+
+
+
+
+
 
 20171221
 - rewrite of check_engaged() to be use as /if (${check_engaged[]})

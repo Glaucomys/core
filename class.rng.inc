@@ -19,7 +19,6 @@ sub core_RNG()
 	/doevents
 	AMIDEAD
 	CHECKTIE
-	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
 
 	:killtarget
 	/call prep_combat
@@ -72,9 +71,9 @@ sub core_RNG()
 		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} 
+	/if (${switchHealCure}) /call cast_cure
 	/if (${coreAuto}) {	
 		/call use_mod_rod
-		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
@@ -95,7 +94,16 @@ sub disc_RNG()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/call check_deBuffs ${Target2Kill}
+	
+	| defensive	
+	/if (${coreAuto} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} > 1 && !${Bool[${Me.ActiveDisc}]}) {
+		/if (${Me.PctHPs} < 60*.${tmpHealOverride}) /call core_cast "${AADefensive1}" disc 0 FALSE
+		/if (${Me.PctHPs} < 40*.${tmpHealOverride}) /call core_cast "${AADefensive2}" disc 0 FALSE
+		/if (${Me.PctHPs} < 20*.${tmpHealOverride}) /call core_cast "${AADefensive3}" disc 0 FALSE
+
+		| deflection
+		/if (${Me.PctHPs} < 10*.${tmpHealOverride}) /call core_cast "Weapon Shield Discipline" disc 0 FALSE
+	}
 
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
@@ -106,6 +114,7 @@ sub disc_RNG()
 	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${switchAgro}) /call core_cast "${DiscJolt}" disc ${Target2Kill} FALSE
 	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
 	/if (${Target.ID} && ${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill} FALSE
+	/call check_deBuffs ${Target2Kill}
 /return
 
 
@@ -124,8 +133,8 @@ sub cast_AA_auspice()
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[${RNGauspice}]} && !${Bool[${Me.Song[${RNGauspice}]}]}) {
 		/call core_cast "Mass Group Buff" alt 0 FALSE
 		/call core_cast "${RNGauspice}" alt 0 FALSE
-		| /if (${Bool[ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
-	 	| /if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
+		| /if (${Bool[${ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
+	 	/if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
 	} else /if (${Bool[${Me.Song[${RNGauspice}]}]}) {
 		VOUT ${cbad}QUIT\ax trying to cast ${csp}Auspice of the Hunter\ax while its running.	
 	}		
@@ -148,9 +157,6 @@ sub patch_heal_RNG()
 	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID} FALSE
 	/if (${Me.PctHPs} <= 70*.${tmpHealOverride}) /call core_cast "Small Manisi Branch" item 0 FALSE
 	/if (${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
-	/if (${Me.PctHPs} <= 55*.${tmpHealOverride} && (${Bool[${NameList.Find[${Target.CleanName}]})]}	|| ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius 50 playerstate 4 targetable]} >= 3)) /call core_cast "Bulwark of the Brownies" alt 0 FALSE
-	/if (${Me.PctHPs} <= 40*.${tmpHealOverride}) /call core_cast "Protection of the Spirit Wolf" alt 0 FALSE
-	/if (${Me.PctHPs} <= 30*.${tmpHealOverride}) /call core_cast "Outrider's Evasion" alt 0 FALSE
 /return
 
 
@@ -232,6 +238,9 @@ sub click_DPS_RNG()
 	/doevents
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
+	
+	/if (${Select[${combat},MELEE]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) /call core_cast "${Epic}" item 0 FALSE
+	
 /return
 
 
@@ -250,7 +259,7 @@ sub cast_nuke_summer(int _tmpID)
 	/doevents
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
 	/if (!${cast_condition[NukeSummerCondition]}) /return
-	/call core_cast "${NukeSummer}" 0 ${_tmpID} FALSE
+	/call core_cast "${NukeSummer}" 0 ${_tmpID} cast_break
 /return
 
 
@@ -347,7 +356,7 @@ sub Bind_setRNG(string _classType, string _verbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
@@ -378,6 +387,8 @@ sub Bind_setRNG(string _classType, string _verbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

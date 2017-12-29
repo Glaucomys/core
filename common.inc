@@ -193,172 +193,6 @@ sub check_engaged()
 
 
 |***
- *	DES: Wait for and accept resurection or call to corpse
- *	USE: go die and see if this works
- *	INI: 
- *  NOTE: 
- *  NOTE: 96 rez: - "HiImaCleric wants to cast Blessing of Resurrection (96 percent) upon you. Do you wish this?"
- *	NOTE: call - "you will still be able to get a resurrection later"
- *	NOTE: rez increments: 0, 10, 20, 35, 50, 60, 75, 90, 93, 96
- *	NOTE: lots of debug here. this is a problem child function.
- ***|
-sub wait_for_rez()
-	DEBUGREZ ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead})\ax
-	DEBUGREZ call Flag:${flagCallNeedRez}
-	DEBUGREZ events flushed
-	/doevents flush
-	DEBUGREZ into rez, all event markers cleared. delay 2s to let script catch up.
-	/delay 2s
-	/if (!${Me.State.Equal[HOVER]} && !${Me.Hovering} && !${Me.Dead} && !${markerDead} && !${flagCallNeedRez}) /return
-	DEBUGREZ update death count
-	/ini "${INICore}" "deathcount" "${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}" "${Int[${Math.Calc[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}+1]}]}"
-
-	DEBUGREZ stop movement
-	/varset SetTie FALSE
-	/if (${Stick.Active}) /squelch /stick off
-	/if (${tempsnapstuck}) /varset tempsnapstuck FALSE
-	/if (${AdvPath.Following}) /squelch /afollow off
-	/if (${Me.AutoFire}) /squelch /autofire
-	/if (${Me.Combat}) /squelch /attack off
-	/if (${Me.Casting.ID}) /stopcast
-	DEBUGREZ clear targets
-	/varset Target2Kill 0
-	/varset isValidTarget FALSE
-	/if (${Target.ID}) /squelch /target clear
-	
-	DEBUGREZ update HUD tmpMode variable
-	/varset tmpMode "DEAD: ${Time}"
-	/declare validRezFound 		bool 	local FALSE
-	/declare rezWindowPct 		int 	local 0
-	/delay 3s
-	VBC Needs a rez: "${Me.DisplayName}" 0 0 
-
-	:loopwaitforrezbox
-	DEBUGREZ start wait for rez
-		/delay 10s ${Window[ConfirmationDialogBox].Open}
-		/delay 1s
-		/if (!${Window[ConfirmationDialogBox].Open}) /goto :loopwaitforrezbox
-		DEBUGREZ we have a rez box\ax
-		
-		| is there a rez window?
-		/if (${Window[ConfirmationDialogBox].Open}) {
-			DEBUGREZ rezbox open. yay us.
-			| get rez window % to something we can use			
-			/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["percent)"]}]}) {
-				/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(10 percent)"]}]}) { 
-					/varset rezWindowPct 10
-				} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(20 percent)"]}]}) {
-					/varset rezWindowPct 20
-				} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(35 percent)"]}]}) { 
-					/varset rezWindowPct 35
-				} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(50 percent)"]}]}) { 
-					/varset rezWindowPct 50
-				} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(60 percent)"]}]}) { 
-					/varset rezWindowPct 60
-				} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(75 percent)"]}]}) { 
-					/varset rezWindowPct 75
-				} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(90 percent)"]}]}) { 
-					/varset rezWindowPct 90
-				} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(96 percent)"]}]}) { 
-					/varset rezWindowPct 96
-				}
-				DEBUGREZ rezWindowPct = ${rezWindowPct}
-			}
-			
-			
-			| we do not accept any 0% rezes
-			/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(0 percent)"]}]}) {
-				/varset validRezFound FALSE
-			| 10% rez and higher
-			} else /if (${minRezPct} == 10 && ${Select[${rezWindowPct},10,20,35,50,60,75,90,93,96]}) {
-				/varset validRezFound TRUE
-			| 20% rez and higher
-			} else /if (${minRezPct} == 20 && ${Select[${rezWindowPct},20,35,50,60,75,90,93,96]}) {
-				/varset validRezFound TRUE
-			| 45% rez and higher
-			} else /if (${minRezPct} == 35 && ${Select[${rezWindowPct},35,50,60,75,90,93,96]}) {
-				/varset validRezFound TRUE
-			| 50% rez and higher
-			} else /if (${minRezPct} == 50 && ${Select[${rezWindowPct},50,60,75,90,93,96]}) {
-				/varset validRezFound TRUE
-			| 60% rez and higher
-			} else /if (${minRezPct} == 60 && ${Select[${rezWindowPct},60,75,90,93,96]}) {
-				/varset validRezFound TRUE
-			| 75% rez and higher
-			} else /if (${minRezPct} == 75 && ${Select[${rezWindowPct},75,90,93,96]}) {
-				/varset validRezFound TRUE
-			| 90% rez and higher
-			} else /if (${minRezPct} == 90 && ${Select[${rezWindowPct},90,93,96]}) {
-				/varset validRezFound TRUE
-			| 93% rez
-			} else /if (${minRezPct} == 93 && ${Select[${rezWindowPct},93,96]}) {
-				/varset validRezFound TRUE
-			| 96% rez
-			} else /if (${minRezPct} == 96 && ${Select[${rezWindowPct},96]}) {
-				/varset validRezFound TRUE
-			| 100% rez.. we take these	
-			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(100 percent)"]}]}) {
-				/varset validRezFound TRUE
-			| we take call to corpse as well
-			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["you will still be able to get a resurrection later"]}]}) {
-				DEBUGREZ found call to corpse. setting flagCallNeedRez\ax
-				/varset flagCallNeedRez TRUE
-				/varset validRezFound TRUE
-			} 
-			
-			| more waiting
-			DEBUGREZ is valid or not?
-			/if (${validRezFound}) {
-				/goto :acceptresbox
-			} else /if (!${validRezFound}) {
-				/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
-				/delay 5
-				/goto :loopwaitforrezbox
-			} 
-		}
-		
-	DEBUGREZ not valid rez window. goto :loopwaitforrezbox
-	/goto :loopwaitforrezbox
-
-	:acceptresbox	
-	DEBUGREZ yes we want a rez
-	/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
-	/delay 5
-	DEBUGREZ sorting rez selection window
-	/if (${Window[RespawnWnd].Open}) {
-		/if (${Zone.ShortName.Equal[Powar]}) {
-			/nomodkey /notify RespawnWnd RW_OptionsList listselect 1
-		} else {
-			DEBUG option 2 in respawn window\ax
-			/nomodkey /notify RespawnWnd RW_OptionsList listselect 2 
-		}
-	}
-	/delay 1s
-	DEBUGREZ click RW_SelectButton
-	/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
-	:cleardeadmarkers
-		DEBUGREZ delays for rez status to clear
-		/call set_stop
-		/delay 2s !${Me.State.Equal[HOVER]}
-		/delay 2s !${Me.Hovering}
-		/delay 2s !${Me.Dead}
-		DEBUGREZ clear HUD tmpMode variable
-		/varset tmpMode FALSE
-		DEBUGREZ Exit rez, clear event marker
-		/varset markerDead FALSE
-		/if (${markerDead} || ${tmpMode}) {
-			| /call create_timer clear_dead_event_marker 1s
-			/delay 5
-			/goto :cleardeadmarkers
-		}
-
-	DEBUGREZ ${cgood}EXIT\ax ${cbug}wait_for_rez((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead})\ax
-	DEBUGREZ call flagCallNeedRez: ${flagCallNeedRez}
-/return 
-
-
-
-|***
  *	DES: give weapons to pet
  *	USE: /call give_to_pet
  *	INI: [Pet] - 
@@ -397,8 +231,7 @@ sub give_to_pet()
 sub cast_summon_pet()
 	DEBUGCAST ${cbug}cast_summon_pet()\ax
 	AMIDEAD
-	/call check_exit
-	/if (${Macro.Return}) /return
+	CHECKEXIT
 	/doevents
 	/if (${coreAuto} && ${switchPcPet} && ${Me.AltAbilityReady[Suspended Minion]}) {
 		/call core_cast "Suspended Minion" alt 0 FALSE
@@ -802,10 +635,35 @@ sub check_buffs_self()
 	DEBUG ${cbug}check_buffs_self(switch:${switchBuffSelf}, timer: ${timer_check_buffs_self})\ax
 	/if (${coreAuto} && !${timer_check_buffs_self}) /call create_timer timer_check_buffs_self ${tSelf_Buff}
 	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
+	/if (${coreAuto} && ${watch_for_death[]}) /return 
+| 	/if ((${watch_for_death[]} || ${flagCallNeedRez})) /return 
 	/declare _count int local 0
 
+	| check Unity AA buffs
+	/if (${Bool[${${Me.Class.ShortName}AAUnity}]}) {
+		DEBUG AA UNITY: ${${Me.Class.ShortName}AAUnity}
+		/for _count 1 to 6
+			/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
+			UPDATEHUD "BUFF: AA Unity"
+			AMIDEAD
+			CHECKEXIT
+			CHECKTIE
+
+			/if (!${Me.AltAbilityReady[${${Me.Class.ShortName}AAUnity}]}) /break
+			/if (${Me.CurrentMana} < ${Spell[${${Me.Class.ShortName}AAUnity}].Mana}) /break
+			/if (!${Bool[${BuffAAUnity${_count}}]}) /continue
+			/if (!${Spell[${BuffAAUnity${_count}}].Stacks}) /continue
+			DEBUG _count: ${_count} - ${BuffAAUnity${_count}} = ${Me.Buff[${BuffAAUnity${_count}}].Duration}
+			/if (${Bool[${BuffAAUnity${_count}}]} && !${Bool[${Me.Buff[${BuffAAUnity${_count}}].Duration}]}) {
+				/call core_cast "${${Me.Class.ShortName}AAUnity}" alt 0 FALSE
+				/break
+			}
+		/next _count
+	}
+		
+	| check buffs
 	/for _count 1 to ${BuffCount}
-		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /break
+		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
 		UPDATEHUD "BUFF: Self"
 		AMIDEAD
 		CHECKEXIT
@@ -852,6 +710,7 @@ sub check_pet_buffs()
 		CHECKEXIT
 		CHECKTIE
 		/if (${check_engaged[]}) /return
+		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
 		UPDATEHUD "BUFF: Pet"
 		/varset _spellType FALSE
 
@@ -1090,12 +949,16 @@ sub create_timer(string _my_timer, string _my_duration)
  ***|
 sub do_rest()
 	DEBUG ${cbug}do_Rest(\ax${cinfo}manna:${Me.PctMana}% endurance:${Me.PctEndurance}%\ax${cbug})\ax
-	/if (!${coreAuto}) /return
+	/if (!${coreAuto} || ${switchAmIDead}) /return
+	
+	| clerics and pallys wait till yaulp gone
+	/if (${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
+	
 	AMIDEAD
 
 	/if (${HomeSet} && !${SpawnCount[npc radius ${CombatDistance}*2 playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX}))) {
-		/if (${switchPull}) /makecamp unpause
-		/makecamp return
+		/if (${switchPull}) /squelch /makecamp unpause
+		/squelch /makecamp return
 		/delay 3s ((${Me.Y} == ${MakeCamp.AnchorY}) && (${Me.X} == ${MakeCamp.AnchorX}))
 	}
 
@@ -1525,8 +1388,10 @@ sub get_assist_target()
 	DEBUG ${cbug}get_assist_target()\ax
 	AMIDEAD
 	/if (!${coreAuto}) /return
+	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]}) /return
+	
 	| if no MA present. move along..	
-	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssist1}]} && !${Bool[${useSmartAssist2}]}&& !${Bool[${useSmartAssistG}]}) {
+	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssist1}]} && !${Bool[${useSmartAssist2}]} && !${Bool[${useSmartAssistG}]}) {
 		DEBUG ${cbad}NO MA\ax
 		/delay 1
 		/return
@@ -1543,6 +1408,9 @@ sub get_assist_target()
 	/if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call Bind_setCombatControl smartma X
 	/if (${Spawn[pc ${Raid.MainAssist}].ID} == ${Me.ID}) /call Bind_setCombatControl smartma X
 
+	| if in a group and no smartassist is set, skip to MA1/2
+	| /if (!${Raid.Members} && ${Bool[${Group.Members}]} && !${Bool[${Group.MainAssist}]}) :skippingtoMAtarget
+	
 	| tar acquisition when using smart assist. set XTarget positions.
 	/if (${Bool[${useSmartAssist1}]} || ${Bool[${useSmartAssist2}]} || ${Bool[${useSmartAssistG}]}) {
 		DEBUG Using SmartMA
@@ -1989,12 +1857,12 @@ sub cast_AA_snare(int _tmpID)
 	| ber Binding Axe disc .. ?? 
 	
 	/if (${Me.AltAbilityReady[${_debuffSnare}]} && ${Spawn[${_tmpID}].Distance} <= ${combatRadius} && !${Target.Snared.ID}) {
-		/if (!${Select[${Me.Class.ShortName},PAL]}) /call core_cast "${_debuffSnare}" alt ${_tmpID} FALSE
+		/if (!${validate_class[FALSE, |PAL]}) /call core_cast "${_debuffSnare}" alt ${_tmpID} FALSE
 		
 		| pally live or dead snare
-		/if (${Select[${Me.Class.ShortName},PAL]} && ${Target.Body.Name.Equal[Undead]}) {
+		/if (${validate_class[FALSE, |PAL]} && ${Target.Body.Name.Equal[Undead]}) {
 			/call core_cast "Halt the Dead" alt ${_tmpID} FALSE
-		} /if (${Select[${Me.Class.ShortName},PAL]} && !${Target.Body.Name.Equal[Undead]}){
+		} /if (${validate_class[FALSE, |PAL]} && !${Target.Body.Name.Equal[Undead]}){
 			/call core_cast "Shackles of Tunare" alt ${_tmpID} FALSE
 		}
 		
@@ -2320,9 +2188,14 @@ sub cast_break()
 	DEBUGCAST ${cbug}cast_break()\ax
 	AMIDEAD
 	/doevents 
-	/if (${Spell[${Me.Casting.ID}].Category.Equal[Transport]}) /return
-	/if (${Spell[${Me.Casting.ID}].Category.Equal[Heal]}) /return
+	/if (${Spell[${Me.Casting.ID}].Category.Equal[Transport]}) /return TRUE
+	/if (${Spell[${Me.Casting.ID}].Category.Equal[Heal]}) /return TRUE
 	
+	/if (${Target.PctHPs} <= ${Int[${stopnukeAt}]}) /stopcast
+	
+	/if (${switchAmIDead}) /stopcast
+	/if (${flagCallNeedRez}) /stopcast
+		
 	/if (${Target.Mezzed.ID} || !${Spawn[${Target2Kill}].ID} || !${Bool[${Target2Kill}]}) {
 		/stopcast
 	} else /if (${Bool[${Me.Song[Gift of Mana (${GoMLevel})]}]} && (${Bool[${GoMNuke}]} || ${Bool[${GoMNuke2}]})) {
@@ -2345,7 +2218,7 @@ sub cast_cure()
 	AMIDEAD
 	/doevents
 
-	/if (!${validate_plugin[TRUE, |mq2debuffs]}) /return
+	/if (!${validate_plugin[FALSE, |mq2debuffs]}) /return
 	
 	UPDATEHUD "CURE"
 
@@ -2357,7 +2230,7 @@ sub cast_cure()
 		
 		/if (${Select[${Me.Class.ShortName},MNK]}) {
 			/call core_cast "Purify Body" alt 0 FALSE
-		} else /if (${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
+		} else /if (${Select[${Me.Class.ShortName},PAL,CLR,SHM,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
 			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased}) /call core_cast "Radiant Cure" alt 0 FALSE
 		}
 		
@@ -2372,7 +2245,7 @@ sub cast_cure()
 		}
 	}
 
-	/if (!${validate_plugin[TRUE, |mq2netbots]}) /return
+	| /if (!${validate_plugin[FALSE, |mq2netbots]}) /return
 
 	/declare _count int local 0
 	/for _count 1 to ${Math.Calc[${NetBots.Client.Count[ ]}+1]}
@@ -2384,7 +2257,7 @@ sub cast_cure()
 
 		| AA Radient Cure 
 		| 100' 1 min
-		/if (${Select[${Me.Class.ShortName},PAL,SHM,CLR,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
+		/if (${validate_class[FALSE, |PAL|SHM|CLR|DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
 				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0 FALSE
 			}
@@ -2393,7 +2266,7 @@ sub cast_cure()
 
 		| AA Purify Soul
 		| 200' 5 min
-		/if (${Select[${Me.Class.ShortName},PAL,CLR,DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
+		/if (${validate_class[FALSE, |PAL|CLR|DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
 				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 			}
@@ -2402,7 +2275,7 @@ sub cast_cure()
 		
 		| AA Group Purify Soul . were in deep shit if we've gotten this far.
 		| 0/100' 15 min
-		/if (${Select[${Me.Class.ShortName},CLR,DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
+		/if (${validate_class[FALSE, |CLR|DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
 				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt 0 FALSE
 			}
@@ -2633,8 +2506,7 @@ sub cast_nuke_GoM(int _tmpID)
 	DEBUGCAST ${cbug}cast_nuke_GoM(ID: ${_tmpID})\ax
 	| clerics have their own GOM routine in group heals
 	/if (!${Select[${Me.Class.ShortName},CLR]}) {
-		/call check_exit
-		/if (${Macro.Return}) /return
+		CHECKEXIT
 		/if (${is_target_dead[${_tmpID}]}) /return
 	}
 
@@ -2665,10 +2537,8 @@ sub cast_nuke_GoM(int _tmpID)
  ***|
 sub check_buffs_raid()
 	DEBUG ${cbug}check_buffs_raid()\ax
-	/call check_exit
-	/if (${Macro.Return}) /return
-	/doevents
 	/if (${coreAuto}) /call create_timer timer_check_buffs_raid ${tRaid_Buff}
+	/if (${coreAuto} && ${watch_for_death[]}) /return 
 
 	| # people in raid
 	/declare _i int local
@@ -2684,6 +2554,7 @@ sub check_buffs_raid()
 			/for _x 1 to ${BuffCount}
 				/if (!${Bool[${RaidBuff${_x}Class}]} || !${Bool[${Buff${_x}}]}) /continue
 				AMIDEAD
+				CHECKEXIT
 				/doevents
 				CHECKTIE
 				CLEARCURSOR TRUE
@@ -2763,7 +2634,7 @@ sub set_tie()
 	| reasons to not tie to a toon
 	/if (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${Spawn[pc ${SetTieToon}].Dead}) /return
 	/if (${Spawn[pc ${SetTieToon}].Distance} <= ${SetTieDistance} || !${Spawn[pc ${SetTieToon}].ID}) {
-		/if (${Stick.Active}) /stick off
+		/if (${Stick.Active}) /squelch /stick off
 		/if (${Me.Moving}) {
 			/keypress forward
 			/keypress back
@@ -2773,7 +2644,7 @@ sub set_tie()
 	
 	| turn off camp
 	/if (${Bool[${MakeCamp}]}) {
-		/makecamp off
+		/squelch /makecamp off
 		/call writeINI HomeSet Movement FALSE 
 	}
 	
@@ -2793,14 +2664,14 @@ sub set_tie()
 	AMIDEAD
 	/doevents
 	/if (${Spawn[pc ${SetTieToon}].Distance} <= ${SetTieDistance}) {
-		/stick off
+		/squelch /stick off
 		/return
 	}
 	
 	/if (!${Stick.Stopped} && ${Spawn[pc ${SetTieToon}].ID}) {
 		/goto :okweremoving
 	} else {
-		/if (${Stick.Active}) /stick off
+		/if (${Stick.Active}) /squelch /stick off
 		/if (${Me.Moving}) {
 			/keypress forward
 			/keypress back
@@ -2900,8 +2771,7 @@ sub check_free_ingame_cash()
 ***|
 sub odds_and_ends()
 	DEBUGCAST ${cbug}odds_and_ends()\ax
-	/call check_exit
-	/if (${Macro.Return}) /return
+	CHECKEXIT
 	/call create_timer timer_check_odds_and_ends ${tOdds_and_Ends}
 	/declare _count int local
 	/for _count 1 to 4
@@ -2924,11 +2794,19 @@ sub odds_and_ends()
  ***|
 sub check_exit()
 	DEBUG ${cbug}check_exit()\ax
-	| AMIDEAD
-	/doevents
 
 	| invis 
 	/if (${Me.Invis}) /return TRUE
+	
+	| am i dead on the floor?
+	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) /return TRUE
+	
+	| did I just die and get sent to bind ?
+	/if (${coreAuto} && ${Me.Buff[Resurrection Sickness].ID} && ${Zone.ID} == ${Me.ZoneBound.ID}) /return TRUE
+	
+	| /if (${coreAuto} && ${watch_for_death[]}) /return 
+	
+	/doevents
 
 	| movement
 	/if ((${Me.Moving} || ${Stick.Active}) && !${Select[${Me.Class.ShortName},BRD]}) /return TRUE
@@ -3006,7 +2884,7 @@ sub update_HUD_notices(string _mode)
 	
 		/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Perfected Invisibility
 		/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Shauri's Sonorous Clouding|Gather Umbra|Invisibility Cloak
-		/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility
+		/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility|Shauri's Sonorous Clouding
 
 		/for _count 1 to ${_IV.Size}
 			/for _index 1 to ${_IV[${_count}].Count[|]}
@@ -3018,7 +2896,7 @@ sub update_HUD_notices(string _mode)
 		/next _count
 
 		| check for invis vs undead
-		/varset _IVU[1] |Group Perfected Invisibility to Undead|Perfected Invisibility to Undead|Invisibility to Undead|Invisibility versus Undead
+		/varset _IVU[1] |Group Perfected Invisibility to Undead|Perfected Invisibility to Undead|Invisibility to Undead|Invisibility versus Undead|Shauri's Sonorous Clouding
 
 		/for _count 1 to ${_IVU.Size}
 			/for _index 1 to ${_IVU[${_count}].Count[|]}
@@ -3070,14 +2948,6 @@ sub update_HUD_notices(string _mode)
 			/varset _sep TRUE
 		}	
 	}
-	|***
-	/if (${Select[${Me.Class.ShortName},PAL]}) {
-		/if (${Bool[${useMG}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} MG[${useMGPct}]
-			/varset _sep TRUE
-		}		
-	}	
-	***|
 
 	| Mode Notice
 	DEBUG HUD: Mode Notice
@@ -3123,13 +2993,10 @@ sub update_HUD_notices(string _mode)
 
 	| WARNINGS FOR TOP OF HUD.. USE THIS SPARINGLY
 	DEBUG HUD: WARNING
-	/if (${Bool[${flagCallNeedRez}]}) {
-		/varset hudWarning ${hudWarning} * STILL NEED A REZ * 
-		/goto :exitWARNING
-	}
-	
+	/if (${switchAmIDead} || ${flagCallNeedRez}) {
+		/varset hudWarning NEED REZ
+	}	
 
-	:exitWARNING
 
 	| ** target debuffs notices
 	/varset _sep FALSE
@@ -3232,17 +3099,22 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
  *  NOTE: if doYaulp is TRUE, will use at 98% manna or less.
  ***|
 sub cast_yaulp()
-	DEBUGCAST ${cbug}cast_AA_yaulp()\ax
-	/if (${Me.Sitting}) /return
+	DEBUGCAST ${cbug}cast_yaulp()\ax
+	/if (${Me.Sitting} || !${Select[${Me.CombatState},COMBAT]}) /return
 	AMIDEAD
 	CHECKEXIT
 	
+	| use spell Yaulp
 	/if (${Bool[${spellYaulp}]} && ${Me.SpellReady[${spellYaulp}]} && ${Spell[${spellYaulp}].Stacks}) {
 		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride} || (${Me.Combat} && ${Select[${Me.Class.ShortName},PAL]})) /call core_cast "${spellYaulp}" 0 0 FALSE
+	
+	| use Donals Helm Yaulp
 	} else /if (${Select[${Me.Class.ShortName},CLR]} && ${Me.ItemReady[Darkened Donal's Helm of Mourning]}) {
 		/if (!${Spell[Yaulp XIV Rk. II].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
 		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride}) /call core_cast "Darkened Donal's Helm of Mourning" item 0 FALSE
-	} else /if (!${Me.ItemReady[Darkened Donal's Helm of Mourning]} && ${Me.AltAbilityReady[Yaulp (Lesser)]}) {
+	
+	| use AA yaulp
+	} else /if (!${FindItem[Darkened Donal's Helm of Mourning].ID} && ${Me.AltAbilityReady[Yaulp (Lesser)]}) {
 		/if (!${Spell[Yaulp (Lesser)].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
 		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride} || (${Me.Combat} && ${Select[${Me.Class.ShortName},PAL]})) /call core_cast "Yaulp (Lesser)" alt 0 FALSE
 	}
@@ -3258,7 +3130,7 @@ sub cast_yaulp()
  ***|
 sub cast_disc_breather()
  	DEBUGCAST ${cbug}cast_disc_breather(ready: ${Me.CombatAbilityReady[${DiscRest}]})\ax
- 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.CombatAbilityReady[${DiscRest}]}) /return
+ 	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.CombatAbilityReady[${DiscRest}]} || ${switchAmIDead}) /return
 	/if (${Me.PctEndurance} > 33) /return
 	AMIDEAD
 	/doevents
@@ -3407,27 +3279,35 @@ sub check_for_corpse()
 	AMIDEAD
 	
 	| fuck your corpse
-	/if (!${switchRezGive}) /return	
+	/if (!${switchRezGive}) /return	FALSE
 	| no one dead
-	/if (!${SpawnCount[pccorpse radius ${maxRezRange}]}) /return
+	/if (!${SpawnCount[pccorpse radius ${maxRezRange}]}) /return FALSE
 	| no combat rez
-	/if (!${switchRezCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4]}) /return
+	/if (!${switchRezCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4]}) /return FALSE
 	| no safe zone ressing
-	/if (${SafeZone} && !${switchOverrideSafezone}) /return
+	/if (${SafeZone} && !${switchOverrideSafezone}) /return FALSE
 	| not enough manna for AA rez
-	/if (${Me.PctMana} < 8 && !${switchRezEmergency}) /return
+	/if (${Me.PctMana} < 8 && !${switchRezEmergency}) /return FALSE
 	| no emergency tokens AND dont use them when a cleric is around
-	/if (${switchRezEmergency} && (!${Me.ItemReady[Token of Resurrection]} || ${Spawn[pc CLR radius ${maxRezRange}].ID})) /return
+	/if (${switchRezEmergency} && (!${Me.ItemReady[Token of Resurrection]} || ${Spawn[pc CLR radius ${maxRezRange}].ID})) /return FALSE
 	| no necro rez gems
-	/if (${Select[${Me.Class.ShortName},NEC]} && !${Me.ItemReady[Essence Emerald]}) /return
+	/if (${Select[${Me.Class.ShortName},NEC]} && !${FindItem[Essence Emerald].ID}) /return FALSE
 		
 	/declare _count 						int 		local 0
 	/declare _tmpID 						int 		local 0
 	/declare _divinerezCLR			string	local "Divine Resurrection"
 	/declare _rezCLR						string	local "Blessing of Resurrection"
-	/declare _rezDRU						string	local "Call of the Wild"
-	/declare _rezSHM						string	local "Call of the Wild"
-	/declare _rezPAL						string	local "Restore Life"
+	
+	/if (${Select[${Me.CombatState},COMBAT]}) {
+		/declare _rezDRU						string	local "Call of the Wild"
+		/declare _rezSHM						string	local "Call of the Wild"
+		/declare _rezPAL						string	local "Restore Life"
+	} else {
+		/declare _rezDRU						string	local "Rejuvenation of Spirit"
+		/declare _rezSHM						string	local "Rejuvenation of Spirit"
+		/declare _rezPAL						string	local "Restore Life"
+	}
+		
 	/declare _rezNEC						string	local "Convergence"
 	/declare _rezEmergency			string	local "Token of Resurrection"
 	
@@ -3440,7 +3320,6 @@ sub check_for_corpse()
 			/if (!${Defined[timer_corpse_${_tmpID}]}) /declare timer_corpse_${_tmpID} timer outer 7200
 			/continue
 		}	
-		
 		
 		/if (!${Defined[timer_corpse_${_tmpID}]}) /declare timer_corpse_${_tmpID} timer outer 1
 	/next _count
@@ -3568,10 +3447,11 @@ sub check_for_corpse()
 sub cast_rez(int _tmpID, string _rezAA)
 	DEBUGCAST ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
 	DEBUGREZ ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
+	/if (${Me.Dead}) /return
+	/if (${timer_corpse_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
 		
-	/if (${timer_corpse_${_tmpID}}) /return
 
 	| delay res a sec if they are not on the safe list.
 	/if (!${safelist.Find[${Spawn[${_tmpID}].DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM]}) /delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
@@ -3583,7 +3463,7 @@ sub cast_rez(int _tmpID, string _rezAA)
 	}
 		
 	| get the corpse close to us
-	/if (${Spawn[${_tmpID}].Distance} > 25 && ${Spawn[${_tmpID}].Distance} <= ${maxRezRange}) {
+	/if (${Spawn[${_tmpID}].Distance} > 15 && ${Spawn[${_tmpID}].Distance} <= ${maxRezRange}) {
 		/squelch /target ID ${_tmpID}
 		/squelch /corpse
 	}
@@ -3604,12 +3484,12 @@ sub cast_rez(int _tmpID, string _rezAA)
 		} else  /if (${Select[${castReturn},CAST_CANCELLED,CAST_INTERRUPTED]}) {
 			/call create_timer timer_corpse_${_tmpID} 7s
 		} else {
-			/if (${Select[${Me.Class.ShortName},CLR,PAL]}) {
+			/if (${Select[${Me.Class.ShortName},CLR]}) {
 				/call create_timer timer_corpse_${_tmpID} 30s
-			} else /if (${Select[${Me.Class.ShortName},DRU,SHM]}) {
+			} else /if (${Select[${Me.Class.ShortName},DRU,SHM,PAL]}) {
 				/call create_timer timer_corpse_${_tmpID} 45s
 			} else {
-				/call create_timer timer_corpse_${_tmpID} 45s
+				/call create_timer timer_corpse_${_tmpID} 1m
 			}
 		}
 	}
@@ -3625,6 +3505,7 @@ sub cast_rez(int _tmpID, string _rezAA)
  ***|
 sub set_combat_here()
  	DEBUG ${cbug}set_combat_here()\ax
+ 	AMIDEAD
 	/if (!${Bool[${Group.Members}]}) /return
 	UPDATEHUD "HERE"
 
@@ -3652,10 +3533,8 @@ sub set_combat_here()
 		/call create_timer timer_heal_ward ${tHealWard}
 	}
 
-	/if (${Me.Casting.ID}) {
-		/if (${validate_plugin[FALSE, |mq2cast]}) /call Interrupt
-		/stopcast
-	}
+	/if (${Me.Casting.ID}) /stopcast
+
 	
 	| stop 'all' the movement options
 	AMIDEAD
@@ -3811,7 +3690,8 @@ sub check_for_adds()
 	/declare _numMobs			int			local 1
 
 	:loopnextmob
-	/if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los playerstate 4].ID}) {
+	/if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los].ID}) {
+	| /if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los playerstate 4].ID}) {
 		/varset _tmpID ${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable ${If[${switchOverrideLos},,los]} playerstate 4].ID}
 			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
 			/if (${switchdeBuffTash} && !${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
@@ -3907,6 +3787,7 @@ sub queue_buff_delete(int _buffee, int _buffnumber)
 sub check_buffs_tell()
 	DEBUG ${cbug}check_buffs_tell()\ax
 	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
+	/if (${coreAuto} && ${watch_for_death[]}) /return 
 
 	UPDATEHUD "BUFF: Tell"
 	/doevents
@@ -4405,7 +4286,7 @@ sub get_target()
 	UPDATEHUD "PULL"
 
 	DEBUG Disable /camp for pull
-	/if (${switchPull} && ${HomeSet}) /makecamp pause
+	/if (${switchPull} && ${HomeSet}) /squelch /makecamp pause
 
 	:looppull
 	CLEARCURSOR TRUE
@@ -5118,8 +4999,7 @@ sub echo_bitch(string _out)
  ***|
 sub cast_AA_fade()
 	DEBUG ${cbug}cast_AA_fade()\ax
-	/call check_exit
-	/if (${Macro.Return}) /return
+	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
 
@@ -5139,8 +5019,7 @@ sub cast_AA_fade()
  ***|
 sub check_stance()
 	DEBUGCAST ${cbug}check_steel()\ax
-	/call check_exit
-	/if (${Macro.Return}) /return
+	CHECKEXIT
 	/doevents
 	/if (!${switchStance}) /return
 	
@@ -5692,182 +5571,7 @@ sub set_base_install()
  ***|
 sub fix_INI_declares()
 
-	/ini "${INIClass}" "Common" "SetModeInvis" NULL
-	/ini "${INIClass}" "Common" "SetScorchedEarthMode" NULL
-	/ini "${INIClass}" "Common" "SetSkillsMode" NULL
-	/ini "${INIClass}" "Common" "SetFishMode" NULL
-	/ini "${INIClass}" "Common" "SetForageMode" NULL
-	/ini "${INIClass}" "Common" "SetDragMode" NULL
-	/ini "${INIClass}" "Common" "Looter" NULL
-	/ini "${INIClass}" "Common" "ForageFishInvis" NULL
-	/ini "${INIClass}" "Common" "SetHunterMode" NULL
-	/ini "${INIClass}" "Common" "SetHunterAgro" NULL
-	/ini "${INIClass}" "Common" "SetPetFarmMode" NULL
-	/ini "${INIClass}" "Movement" "SetIgnoreLOS" NULL
 
-	/ini "${INICore}" "General" "QPath" NULL
-	
-	| timer	
-	/ini "${INICore}" "Timer" "tPetFarm_delay" NULL
-	
-	| wizard
-	/ini "${INIClass}" "Spells" "HuntNuke" NULL
-
-	| set rename to switch
-	/ini "${INIClass}" "Common" "setRaidInvite" NULL
-	/ini "${INIClass}" "Common" "setAgroMode" NULL
-	/ini "${INIClass}" "Common" "setPullMode" NULL
-	/ini "${INIClass}" "Common" "setToastMode" NULL
-	
-	| debuffs change
-	/ini "${INIClass}" "Common" "switchdeBuffMezz" NULL
-	/ini "${INIClass}" "Common" "switchdeBuffMalo" NULL
-	/ini "${INIClass}" "Common" "switchdeBuffTash" NULL
-	/ini "${INIClass}" "Common" "switchdeBuffSlow" NULL
-	/ini "${INIClass}" "Common" "switchdeBuffEradicate" NULL
-	/ini "${INIClass}" "Common" "switchdeBuffSnare" NULL
-	/ini "${INIClass}" "Common" "switchdeBuffCripple" NULL
-	/ini "${INIClass}" "Common" "setToastMode" NULL
-
-	| buff changes
-	/ini "${INIClass}" "Common" "BuffCombat" NULL
-	/ini "${INIClass}" "Common" "BuffSelf" NULL
-	/ini "${INIClass}" "Common" "BuffBC" NULL
-	/ini "${INIClass}" "Common" "BuffRaid" NULL
-	/ini "${INIClass}" "Common" "BuffTell" NULL
-	/ini "${INIClass}" "Common" "BuffPet" NULL
-	/ini "${INIClass}" "Common" "BuffItem" NULL
-	/ini "${INIClass}" "Common" "BuffAuto" NULL	
-	
-	/ini "${INIClass}" "Buffs" "BuffCombat" NULL
-	/ini "${INIClass}" "Buffs" "BuffSelf" NULL
-	/ini "${INIClass}" "Buffs" "BuffBC" NULL
-	/ini "${INIClass}" "Buffs" "BuffRaid" NULL
-	/ini "${INIClass}" "Buffs" "BuffTell" NULL
-	/ini "${INIClass}" "Buffs" "BuffPet" NULL
-	/ini "${INIClass}" "Buffs" "BuffItem" NULL	
-	/ini "${INIClass}" "Buffs" "BuffAuto" NULL	
-	
-	/ini "${INIClass}" "Spells" "useBuffKill" NULL
-	/ini "${INIClass}" "Buffs" "BuffCount" NULL
-	/ini "${INIClass}" "Spells" "SpellSet" NULL
-	/ini "${INIClass}" "Common" "autoCursor" NULL	
-	/ini "${INIClass}" "Common" "switchPullMode" NULL	
-	/ini "${INIClass}" "Common" "switchAgroMode" NULL	
-	
-	| rez changes
-	/ini "${INIClass}" "Heal" "rezAuto" NULL	
-	/ini "${INIClass}" "Heal" "rezEmergency" NULL	
-	/ini "${INIClass}" "Heal" "rezEveryone" NULL	
-	/ini "${INIClass}" "Heal" "rezCombat" NULL	
-	/ini "${INIClass}" "Heal" "rezEnable" NULL	
-	/ini "${INIClass}" "Heal" "switchRezAtuo" NULL	
-	/ini "${INIClass}" "Heal" "switchRezEnable" NULL	
-	/ini "${INIClass}" "Buffs" "switchRezEmergency" NULL	
-	/ini "${INIClass}" "Buffs" "switchRezAuto" NULL	
-	/ini "${INIClass}" "Buffs" "switchRezCombat" NULL	
-	/ini "${INIClass}" "Buffs" "switchRezEveryone" NULL	
-	/ini "${INICore}" "General" "RezTokenList" NULL	
-
-	| pets
-	/ini "${INIClass}" "Pet" "PetTank" NULL
-	/ini "${INIClass}" "Pet" "sendPetPerc" NULL
-	/ini "${INIClass}" "Pet" "usePet" NULL
-	/ini "${INIClass}" "Pet" "sendPetSwarmPerc" NULL
-	/ini "${INIClass}" "Pet" "usePetSwarm" NULL
-	/ini "${INIClass}" "Movement" "SetTie" NULL
-
-
-	| old ini entries
-	/ini "${INIClass}" "Common" "UseBanestrike" NULL
-	/ini "${INIClass}" "Common" "ModeNuke" NULL
-	/ini "${INIClass}" "Common" "AutoDeleteItem" NULL
-	/ini "${INIClass}" "Common" "CombatBuff" NULL
-	/ini "${INIClass}" "Common" "BalanceHP" NULL
-	/ini "${INIClass}" "Common" "DoDebuff" NULL
-	/ini "${INIClass}" "Common" "HealOverride" NULL
-	/ini "${INIClass}" "Spells" "RuneSpell" NULL
-	/ini "${INIClass}" "Spells" "RuneType" NULL
-	/ini "${INIClass}" "Spells" "CauldronDestroy" NULL
-	/ini "${INIClass}" "Common" "AutoSit" NULL
-	/ini "${INIClass}" "Common" "AutoBuff" NULL
-	/ini "${INIClass}" "Common" "UseCharm" NULL
-	/ini "${INIClass}" "Common" "SetTankMode" NULL
-	/ini "${INIClass}" "Common" "AutoBot" NULL
-	/ini "${INIClass}" "Common" "forcesafelist" NULL
-	/ini "${INIClass}" "SelfBuff" NULL NULL
-	/ini "${INIClass}" "Transport" NULL NULL
-	/ini "${INICore}" "bitch" NULL NULL
-	/ini "${INICore}" "Synergy" NULL NULL
-	/ini "${INICore}" "Output" NULL NULL
-	/ini "${INIClass}" "Common" "setAutoShrink" NULL
-	/ini "${INIClass}" "Common" "HornofUnity" NULL
-	/ini "${INIClass}" "Heal" "MercWarPoint" NULL
-	/ini "${INIClass}" "Heal" "MercCLRPoint" NULL
-	/ini "${INIClass}" "Heal" "MercDPSpoint" NULL
-	/ini "${INIClass}" "Heal" "healTouch" NULL
-	| old toast stuff
-	/ini "${INIClass}" "Common" "ToastMobCount" NULL
-	/ini "${INIClass}" "Common" "WhentoToast" NULL
-	/ini "${INIClass}" "Common" "AutoToast" NULL
-
-	/ini "${INIClass}" "Common" "MyDeathCount" NULL
-	/ini "${INIClass}" "Common" "BCMA" NULL
-	/ini "${INIClass}" "Timer" "AutoInvTime" NULL
-	/ini "${INIClass}" "Common" "BuffAuto" NULL
-	/ini "${INIClass}" "Common" "BuffCombat" NULL
-	/ini "${INIClass}" "Common" "BuffSelf" NULL
-	/ini "${INIClass}" "Timer" "SummerTime" NULL
-	/ini "${INIClass}" "Timer" "CheckAmmo" NULL
-	/ini "${INIClass}" "Timer" "CheckTieTime" NULL
-	/ini "${INIClass}" "Timer" "CheckFamiliar" NULL
-	/ini "${INIClass}" "Common" "EQBCServer" NULL
-	/ini "${INIClass}" "Common" "EQBCPort" NULL
-	/ini "${INIClass}" "Common" "EQBCChannel" NULL
-	/ini "${INIClass}" "Pet" "PetTypeSpell" NULL
-	
-	/ini "${INIClass}" "Timer" "ClearCursorTime" NULL
-	/ini "${INIClass}" "Timer" "tCheckTieTime" NULL
-
-	/ini "${INIClass}" "Timer" "SelfBuffTime" NULL
-	/ini "${INIClass}" "Timer" "ItemBuffTime" NULL
-	/ini "${INIClass}" "Timer" "CheckEXPTime" NULL
-
-	/ini "${INIClass}" "Timer" "TellBuffTime" NULL
-	/ini "${INIClass}" "Timer" "BCBuffTime" NULL
-	/ini "${INIClass}" "Timer" "RaidBuffTime" NULL
-	/ini "${INIClass}" "Timer" "CheckEQCBTime" NULL
-	/ini "${INIClass}" "Timer" "AuraTime" NULL
-	/ini "${INIClass}" "Timer" "PetBuffTime" NULL
-	/ini "${INIClass}" "Timer" "RezRetryTime" NULL
-	/ini "${INIClass}" "Timer" "BitchTime" NULL
-	/ini "${INIClass}" "Timer" "BuffKillTime" NULL
-	/ini "${INIClass}" "Timer" "XHealTime" NULL
-	/ini "${INIClass}" "Common" "setPetFarmMode" NULL
-	/ini "${INIClass}" "Common" "autoRez" NULL
-	/ini "${INIClass}" "Heal" "CombatCall" NULL
-
-	| remove cleric QM from 20 sep 2017 patch
-	/ini "${INIClass}" "Buffs" "useQM" NULL
-	/ini "${INIClass}" "Buffs" "useQMPct" NULL
-	/ini "${INIClass}" "Timer" "tcheck_QM" NULL
-	
-	/ini "${INIClass}" "Spells" "TwincastType" NULL
-	
-
-	/ini "${INIClass}" "Spells" "HpTapSpell" NULL
-	/ini "${INIClass}" "Spells" "HpTapSpellRecourse" NULL
-	/ini "${INIClass}" "Spells" "ManaTapSpell1" NULL
-	/ini "${INIClass}" "Spells" "ManaTapSpell2" NULL
-	/ini "${INIClass}" "Spells" "AASlow" NULL
-	/ini "${INIClass}" "Spells" "usePathosis" NULL
-	/ini "${INIClass}" "Pet" "switchHealPet" NULL
-
-	/ini "${INICore}" "hide" "hideLisdted" NULL
-	/ini "${INICore}" "General" "combatRadius" NULL
-
-	/ini "${INICore}" "Echo" NULL NULL
-	
 	/ini "${INIClass}" "Common" "echoChannel" NULL
 	/ini "${INIClass}" "Common" "relayTells" NULL
 	/ini "${INIClass}" "Common" "verbose" NULL
@@ -5875,6 +5579,12 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Items" "doclickItem" NULL
 	/ini "${INIClass}" "Items" "doclickItemBurn" NULL
 	/ini "${INIClass}" "Odds" "doclickOdds" NULL
+
+	/ini "${INIClass}" "Discs" "DefensiveDisc" NULL
+
+	/ini "${INIClass}" "Discs" "DiscArmor" NULL
+	/ini "${INIClass}" "Discs" "DiscGuard" NULL
+	/ini "${INIClass}" "Discs" "DiscHoly" NULL
 
 
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
@@ -6372,6 +6082,196 @@ sub validate_debuff(bool _error, string _deBuffType)
 		}
 	}
 /return TRUE
+
+
+
+| #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
+
+| switchIwasCalled
+
+
+
+|***
+ *	DES: watches to see if you are deaded. if so.. theres a couple things we need to do.
+ *	USE: /if (${watch_for_death[]}) /do a thing
+ *	INI: 
+ *  NOTE: returns switchAmIDead TRUE if you died
+ ***|
+sub watch_for_death()
+DEBUGREZ ${cbug}watch_for_death()\ax
+
+	| check for current flags. watch for rez box if I have them
+	/if (${switchAmIDead}) /return TRUE
+	/if (${flagCallNeedRez}) /return TRUE
+
+	| check death states
+	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) {
+		/if (${Me.Casting.ID}) /stopcast
+		/varset switchAmIDead TRUE
+	}
+	
+	| did I just die and get sent to bind ?
+	/if (${Me.Buff[Resurrection Sickness].ID} && ${Zone.ID} == ${Me.ZoneBound.ID}) /varset switchAmIDead TRUE
+
+	| if we died, shut shit down
+	/if (${switchAmIDead}) {
+		DEBUGREZ into rez, all event markers cleared. delay 2s to let script catch up.
+		/doevents flush
+		/delay 2s
+		DEBUGREZ update death count
+		/ini "${INICore}" "deathcount" "${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}" "${Int[${Math.Calc[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}+1]}]}"
+
+		DEBUGREZ stop all the things(s)
+		/call set_stop TRUE
+		/call clear_combat
+		/if (${Me.Casting.ID}) /stopcast
+		/varset Target2Kill 0
+		| /varset tmpMode "DEAD: ${Time}"
+		VBC Needs a rez: "${Me.DisplayName}" 0 0 
+	}
+	DEBUGREZ ${cbug}watch_for_death[${switchAmIDead}]\ax
+/return ${switchAmIDead}	
+	
+
+
+|***
+ *	DES: watches for the rez box if we have bben marked as dead or called.
+ *	USE: /call  watch_for_rezbox()
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub watch_for_rezbox()
+DEBUGREZ ${cbug}watch_for_rezbox()\ax
+	
+	| not dead? GO AWAY
+	/if (!${switchAmIDead} && !${flagCallNeedRez}) /return
+		
+	| bail if no rez box to check
+	/if (!${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["Do you wish this?"]}]}) /return
+
+	| is there a rez window?
+	/if (${Window[ConfirmationDialogBox].Open}) {
+
+	| /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["Do you wish this?"]}]}) {
+		DEBUGREZ rezbox open. yay us.
+
+		| /varset validRezFound FALSE
+		| /varset rezWindowPct 0
+		
+		| get rez window % to something we can use			
+		/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["percent)"]}]}) {
+			/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(10 percent)"]}]}) { 
+				/varset rezWindowPct 10
+			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(20 percent)"]}]}) {
+				/varset rezWindowPct 20
+			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(35 percent)"]}]}) { 
+				/varset rezWindowPct 35
+			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(50 percent)"]}]}) { 
+				/varset rezWindowPct 50
+			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(60 percent)"]}]}) { 
+				/varset rezWindowPct 60
+			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(75 percent)"]}]}) { 
+				/varset rezWindowPct 75
+			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(90 percent)"]}]}) { 
+				/varset rezWindowPct 90
+			} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(96 percent)"]}]}) { 
+				/varset rezWindowPct 96
+			}
+			DEBUGREZ rezWindowPct = ${rezWindowPct}
+		}
+			
+		| we do not accept any 0% rezes
+		/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(0 percent)"]}]}) {
+			/varset validRezFound FALSE
+		| 10% rez and higher
+		} else /if (${minRezPct} == 10 && ${Select[${rezWindowPct},10,20,35,50,60,75,90,93,96]}) {
+			/varset validRezFound TRUE
+		| 20% rez and higher
+		} else /if (${minRezPct} == 20 && ${Select[${rezWindowPct},20,35,50,60,75,90,93,96]}) {
+			/varset validRezFound TRUE
+		| 45% rez and higher
+		} else /if (${minRezPct} == 35 && ${Select[${rezWindowPct},35,50,60,75,90,93,96]}) {
+			/varset validRezFound TRUE
+		| 50% rez and higher
+		} else /if (${minRezPct} == 50 && ${Select[${rezWindowPct},50,60,75,90,93,96]}) {
+			/varset validRezFound TRUE
+		| 60% rez and higher
+		} else /if (${minRezPct} == 60 && ${Select[${rezWindowPct},60,75,90,93,96]}) {
+			/varset validRezFound TRUE
+		| 75% rez and higher
+		} else /if (${minRezPct} == 75 && ${Select[${rezWindowPct},75,90,93,96]}) {
+			/varset validRezFound TRUE
+		| 90% rez and higher
+		} else /if (${minRezPct} == 90 && ${Select[${rezWindowPct},90,93,96]}) {
+			/varset validRezFound TRUE
+		| 93% rez
+		} else /if (${minRezPct} == 93 && ${Select[${rezWindowPct},93,96]}) {
+			/varset validRezFound TRUE
+		| 96% rez
+		} else /if (${minRezPct} == 96 && ${Select[${rezWindowPct},96]}) {
+			/varset validRezFound TRUE
+		| 100% rez.. we take these	
+		} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(100 percent)"]}]}) {
+			/varset validRezFound TRUE
+		| we take call to corpse as well
+		} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["you will still be able to get a resurrection later"]}]}) {
+			DEBUGREZ found call to corpse. setting flagCallNeedRez\ax
+			/varset flagCallNeedRez TRUE
+			/varset validRezFound TRUE
+		} 
+			
+		| more waiting
+		DEBUGREZ is valid or not?
+		/if (${validRezFound}) {
+			DEBUGREZ yes we want a rez
+			/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
+			/delay 5
+			DEBUGREZ sorting rez selection window
+			/if (${Window[RespawnWnd].Open}) {
+				/if (${Zone.ShortName.Equal[Powar]}) {
+					DEBUGREZ option 1 in respawn window\ax
+					/nomodkey /notify RespawnWnd RW_OptionsList listselect 1
+				} else {
+					DEBUGREZ option 2 in respawn window\ax
+					/nomodkey /notify RespawnWnd RW_OptionsList listselect 2 
+				}
+				/delay 1s
+				DEBUGREZ click RW_SelectButton
+				/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
+			}
+
+			:cleardeadmarkers
+				DEBUGREZ delays for rez status to clear
+				/delay 2s !${Me.State.Equal[HOVER]}
+				/delay 2s !${Me.Hovering}
+				/delay 2s !${Me.Dead}
+				| DEBUGREZ clear HUD tmpMode variable
+				DEBUGREZ Exit rez, clear event marker
+				| /if (${switchAmIDead} || ${tmpMode}) {
+					/call set_stop TRUE
+					| /varset tmpMode FALSE
+					/varset switchAmIDead FALSE
+					/varset validRezFound FALSE
+					/varset rezWindowPct 0
+					| /call create_timer clear_dead_event_marker 1s
+					| /delay 5
+					| /goto :cleardeadmarkers
+				| }
+			/return TRUE			
+		} else /if (!${validRezFound}) {
+			DEBUGREZ This rez sucks. and not in a good way...
+			/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
+			/delay 5
+			/return FALSE
+		} 
+	}
+
+	DEBUGREZ ${cgood}EXIT\ax ${cbug}watch_for_rezbox((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${switchAmIDead})\ax
+	DEBUGREZ call flagCallNeedRez: ${flagCallNeedRez}
+/return
+
+
+
 
 
 

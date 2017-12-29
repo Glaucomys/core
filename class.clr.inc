@@ -31,7 +31,7 @@ sub core_CLR()
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
-		/if (${Me.PctMana} < ${useVPPct}*.${tmpHealOverride}  && ${Me.AltAbilityReady[Veturika's Perseverance]} && !${flagCallNeedRez} && !${SafeZone}) /call core_cast "Veturika's Perseverance" alt 0 FALSE
+		/if (!${check_exit[]} && ${Me.PctMana} < ${useVPPct}*.${tmpHealOverride} && !${flagCallNeedRez} && !${SafeZone}) /call core_cast "Veturika's Perseverance" alt 0 FALSE
 	}	
 
 	:killtarget
@@ -39,15 +39,18 @@ sub core_CLR()
 	/if (!${Macro.Return}) /return
 
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
+		CHECKREZ
 		/call set_combat MELEE
 		/call stick_to_target
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		CHECKREZ
 		/call set_combat RANGE
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
+		CHECKREZ
 		/call set_combat NUKE
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
@@ -65,10 +68,25 @@ sub core_CLR()
 		/call disc_${Me.Class.ShortName}
 		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
 	} else /if (${Select[${combat},DUAL]}) {
+		CHECKREZ
+		/call set_combat HEAL
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+		/if (${is_target_valid[${Target2Kill}]}) {
+			CHECKREZ
+			/call set_combat NUKE
+			/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+			/call disc_${Me.Class.ShortName}
+			/if (${DoDoT}) /call cast_DOT
+			/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+			/if (${DoNuke}) /call cast_nuke
+			/call disc_${Me.Class.ShortName}			
+			/call click_DPS_${Me.Class.ShortName}
+			/call click_item
+		}
 	}
+	/if (${switchHealCure}) /call cast_cure
 	/if (${coreAuto}) {	
 		/call use_mod_rod
-		/if (${switchHealCure}) /call cast_cure
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
 	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
@@ -121,10 +139,10 @@ sub disc_CLR()
  ***|
 sub cast_sum_weapon()
 	DEBUGCLASS ${cbug}cast_sum_weapon()\ax
-	/doevents
 	/if (${Me.Primary}) /return
-
 	AMIDEAD
+	CHECKEXIT
+	/doevents
 	/if (!${Bool[${FindItem[${sumWeaponItem}]}]}) {
 		/call core_cast "${sumWeaponSpell}" ${buffGem} ${Me.ID} FALSE
 	}
@@ -952,6 +970,8 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

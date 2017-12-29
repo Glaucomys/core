@@ -40,41 +40,47 @@ sub Bind_mode(string _modeType, string _verbage)
 	/if (${Bool[${_modeType.Find[agro]}]}) {
 		/if (${Range.Between[1,999999:${Int[${_verbage}]}]}) {
 			/call writeINI setModeAgro Common ${_verbage}  
-			VOUT /mode agro ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /mode agro [${cinfo}${setModeAgro}\ax] allowable range is ${cinfo}1 - 99999\ax
+			/return
 		}	
 		
 	| set harvest counts	
 	} else /if (${Bool[${_modeType.Find[harvestcount]}]}) {
 		/if (${Range.Between[1,999999:${Int[${_verbage}]}]}) {
 			/call writeINI modeHarvestCount Common ${_verbage}  
-			VOUT /mode harvestcount ${sep} ${cinfo}${_verbage}\ax
 		} else {
-			VOUT /mode harvestcount [${cinfo}${modeHarvestCount}\ax] allowable range is ${cinfo}1 - 999999\ax
+			VOUT /${_bind} harvestcount [${cinfo}${modeHarvestCount}\ax] allowable range is ${cinfo}1 - 999999\ax
+			/return
 		}	
+
 	| all switches except stop
 	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.NotEqual[stop]}) {
 		/varset setModeType ${_modeType.Left[1].Upper}${_modeType.Right[-1].Lower}
 		/if (${Defined[switchMode${setModeType}]}) {
 			/varset switchMode${setModeType} ${If[${switchMode${setModeType}},FALSE,TRUE]}
-			/call echos mode "${setModeType}" switchMode${setModeType} 0 0
 			/if ((${_modeType.Equal[hunt]} || ${_modeType.Equal[scorch]}) && ${Bool[${setModeType}]}) {
 				/call set_stop TRUE
 				/call clear_combat
 			}
-		} else {
-			/goto :namefail
-		}
+		} 
+		
 	| clear all modes
 	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.Equal[stop]} && ${Bool[${setModeType}]}) {
 		/call switch_clear_mode
 		/call set_stop TRUE
 		/call clear_combat
-	} else {
-		/call echos listtype mode mode 0 0
-	} 
-	
+	}
+		
+	| output
+	/for _count 1 to ${modeType.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[ ${switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}} ,${cgood},${cinfo}]}${modeType.Arg[${_count},|]}\ax
+		/if (${modeType.Arg[${_count},|].Equal[agro]}) /varset _listout ${_listout}[${cgood}${setModeAgro}\ax]
+		/if (${modeType.Arg[${_count},|].Equal[harvestcount]}) /varset _listout ${_listout}[${cgood}${modeHarvestCount}\ax]
+		/varset _sep TRUE
+	/next _count
+	VOUT /${_bind} [${_listout}]				
+
 	/varset switchOverrideLos ${Ini[${INIClass},"Override","switchOverrideLos"]}
 	/varset switchOverrideEngageat ${Ini[${INIClass},"Override","switchOverrideEngageat"]}
 	/varset switchAutoCursor ${Ini[${INIClass},"Common","switchAutoCursor"]}
@@ -96,9 +102,7 @@ sub switch_clear_mode()
 
 	/for _count 1 to ${modeType.Count[|]}
 		/if (${switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}}) {
-			
 			/varset switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower} FALSE  
-			/call echos mode "${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}" switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower} 0 0
 		}
 	/next _count	
 	
@@ -201,6 +205,7 @@ sub mode_get_mob()
  ***|
 sub mode_skill_train()
 	DEBUGMODE ${cbug}mode_skill_train()\ax
+	AMIDAD
 	UPDATEHUD "TRAINING"
 	:looptrainingskills
 	/doevents
@@ -230,6 +235,7 @@ sub mode_skill_train()
  ***|
 sub mode_fish()
 	DEBUGMODE ${cbug}mode_fish()\ax
+	AMIDEAD
 	UPDATEHUD "Fish"
 	/if (!${Me.Standing}) /stand
 	/if (${Me.ItemReady[Fisherman's Companion]} && !${Me.ItemReady[Brell's Fishin' Pole]}) {
@@ -255,6 +261,7 @@ sub mode_fish()
  ***|
 sub mode_forage()
 	DEBUGMODE ${cbug}mode_forage()\ax
+	AMIDEAD
 	UPDATEHUD "Forage"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	/if (!${Me.Standing}) /stand
@@ -352,6 +359,7 @@ sub mode_hunt()
  ***|
 sub mode_petfarm()
 	DEBUGMODE ${cbug}mode_petfarm()\ax
+	AMIDEAD
 
 	/declare _tmpID					int local 0
 	/declare _spawnCount 		int local 0
@@ -458,6 +466,7 @@ sub mode_petfarm()
  ***|
 sub mode_scorched_earth()
 	DEBUGMODE ${cbug}mode_scorched_earth()\ax
+	AMIDEAD
 	/declare _spawnCount 		int local 0
 	/declare _resetCount		int local 0
 	/declare _nameloop			int local 1
@@ -561,6 +570,7 @@ sub mode_scorched_earth()
  ***|
 sub mode_harvest()
 	DEBUGMODE ${cbug}mode_harvest()\ax
+	AMIDEAD
 	/declare _count int local
 	UPDATEHUD "Harvest"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
@@ -671,13 +681,15 @@ sub mode_get_waisted()
 	/declare _box					string	local Fisherman's Companion
 
 	| no fishermans companion. end this mess
-	/if (!${Me.ItemReady[${_box}]}) {
+	/if (!${FindItem[=${_box}]}) {
 		VOUT ${onotice} ${sep} No ${_box}
+		VOUT This Mode uses Fisherman's Companion.
+		VOUT Go get one.
 		/varset switchModeLush FALSE
 		/return
 	}
 
-	UPDATEHUD "Booze"
+	UPDATEHUD "Fukn Alcoholic"
 
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 
@@ -687,15 +699,38 @@ sub mode_get_waisted()
 	
 	| need booze! keep a stock on hand
 	/if (${FindItemCount[${_ale}]} < ${_aleCount} && ${Me.ItemReady[${_pole}]} && !${Me.Drunk}) {
-		DEBUGCLASS click ${clickPoisonDispenser}
-		/call core_cast "${_pole}" item ${Me.ID}
+		DEBUGMODE click ${clickPoisonDispenser}
+		/call core_cast "${_pole}" item ${Me.ID} FALSE
 		CLEARCURSOR TRUE
 	}
 	
 	| lets get lit
-	/if (${FindItemCount[${_ale}]} && ${Me.Drunk} < 180) {
+	/if (${FindItemCount[${_ale}]} && ${Me.Drunk} < ${Skill[Alcohol Tolerance].SkillCap}) {
 		VOUT Drinking ${sep} ${cinfo}${_ale}\ax
 		/useitem ${_ale}
 	}
-	UPDATEHUD
+	UPDATEHUD FALSE
 /return
+
+
+
+|**
+
+sub main()
+/declare DrinkOfChoice string outer Elven Wine
+	/while (${Me.Skill[Alcohol Tolerance]} < ${Skill[Alcohol Tolerance].SkillCap}) {
+		/if (!${Me.ItemReady[${DrinkOfChoice}]}) /break
+		/if (${Me.Drunk} < 200) /useitem ${DrinkOfChoice}
+		/delay 2
+		/delay 2s ${Me.Drunk} < 200
+	}
+/return
+/end
+
+**|
+
+
+
+
+
+

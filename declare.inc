@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171221
+	/declare coreBuild	 														int			outer 20171228
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -271,7 +271,6 @@ sub set_declares()
 	/declare noFeigning 														bool 		outer TRUE
 	/declare Target2Kill														int			outer 0
 	/declare currentLootCount												int			outer	0
-	/declare markerDead															bool		outer FALSE
 
 	/call DeclareCoreIniVar plist										string	Plugin |MQ2Cast|MQ2EQBC|MQ2Exchange|MQ2MoveUtils|MQ2Netbots|MQ2Debuffs
 	/call DeclareCoreIniVar EQBCServer							string	General 127.0.0.1
@@ -369,7 +368,6 @@ sub set_declares()
 	/call DeclareCoreIniVar invitelist							string	No FALSE
 	/call DeclareCoreIniVar rezlist									string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
-
 	/call DeclareIniVar toonControl			 						string	Common FALSE
 	/call DeclareIniVar autoRest 										int 		Common 90
 	/call DeclareIniVar AutoExpAdjust 							bool 		Common TRUE
@@ -391,8 +389,6 @@ sub set_declares()
 	/declare queueBuffID[8] 												int  		outer
 	/declare queueList[${queueCountMax},2] 				 	int  		outer
 		
-	| /declare status_check_string						string	outer NULL
-
 	
 	| set /crew stuffs
 	/call DeclareCoreIniVar main													string	Group |FALSE|FALSE
@@ -429,36 +425,36 @@ sub set_declares()
 	
 	| please take a number and have a seat.
 	/declare bitchcount															int			outer	29	
-	/declare bitch1																	string	outer	"Seriously... Again..."
-	/declare bitch2																	string	outer	"Did your parents ever ask you to run away from home?"
-	/declare bitch3																	string	outer	"Aha, I see the Fuck-Up Fairy has visited us again!"
-	/declare bitch4																	string	outer	"Will trade a Halfling for a rez, or three Gn0mes."
-	/declare bitch5																	string	outer	"I'm sorry I bit you... pulled your hair... and punched you in the face..."
-	/declare bitch6																	string	outer	"Go ahead, tell them everything you know. It'll only take 10 seconds."
-	/declare bitch7																	string	outer	"Sometimes the first step to forgiveness, is realising the other person was born an idiot."
-	/declare bitch8																	string	outer	"I'm getting Disc lag . . . again."
-	/declare bitch9																	string	outer	"oh man....i figured out why i was lagging the other day...i look in my case and my kids knocked off my cpu fan"
-	/declare bitch10																string	outer	"I'm jealous of all the people that haven't met you!"
-	/declare bitch11																string	outer	"You're slower than a herd of turtles stampeding through peanut butter."
-	/declare bitch12																string	outer	"Oh good, my dog found a chainsaw."
-	/declare bitch13																string	outer	"You are not as bad as people say, you are much, much worse."
-	/declare bitch14																string	outer	"Stupidity is not a crime so you are free to go."
-	/declare bitch15																string	outer "AFK, playing Pokemon. More productive then this shit."
-	/declare bitch16																string	outer	"All I did was move the mouse over it."
-	/declare bitch17																string	outer	"You sound reasonable. It must be time to up my medication!"
-	/declare bitch18																string	outer	"I'll never forget the first time we met. Although, I'll keep trying."
-	/declare bitch19																string	outer	"Roses are red. Violets are blue. You're an idiot."
-	/declare bitch20																string	outer	"Sometimes, when I close my eyes, I... can't see you."
-	/declare bitch21																string 	outer "Shock me. Say something intelligent."
-	/declare bitch22																string 	outer "I'm typing this with my middle finger."
-	/declare bitch23																string 	outer "It takes courage just to be you. To get out of bed every single day, knowing full well, you gotta be you."
-	/declare bitch24																string 	outer "For someone with such a smart mouth you sure do have a lot of teeth."
-	/declare bitch25																string 	outer "Do you want a piece of gum?"
-	/declare bitch26																string 	outer "Good thing you're pretty."
-	/declare bitch27																string 	outer "You breathe through your mouth a lot don't you?"
-	/declare bitch28																string 	outer "Your mother was a hamster and your father smelt of elderberries!"
-	/declare bitch29																string 	outer "Don't worry about it too much. I did the same thing when I was eleven."
-	/declare bitch30																string 	outer ""
+	/declare bitch1																	string	outer	Seriously... Again...
+	/declare bitch2																	string	outer	Did your parents ever ask you to run away from home?
+	/declare bitch3																	string	outer	Aha, I see the Fuck-Up Fairy has visited us again!
+	/declare bitch4																	string	outer	Will trade a Halfling for a rez, or three Gn0mes.
+	/declare bitch5																	string	outer	I'm sorry I bit you... pulled your hair... and punched you in the face...
+	/declare bitch6																	string	outer	Go ahead, tell them everything you know. It'll only take 10 seconds.
+	/declare bitch7																	string	outer	Sometimes the first step to forgiveness, is realising the other person was born an idiot.
+	/declare bitch8																	string	outer	I'm getting Disc lag . . . again.
+	/declare bitch9																	string	outer	oh man....i figured out why i was lagging the other day...i look in my case and my kids knocked off my cpu fan
+	/declare bitch10																string	outer	I'm jealous of all the people that haven't met you!
+	/declare bitch11																string	outer	You're slower than a herd of turtles stampeding through peanut butter.
+	/declare bitch12																string	outer	Oh good, my dog found a chainsaw.
+	/declare bitch13																string	outer	You are not as bad as people say, you are much, much worse.
+	/declare bitch14																string	outer	Stupidity is not a crime so you are free to go.
+	/declare bitch15																string	outer AFK, playing Pokemon. More productive then this shit.
+	/declare bitch16																string	outer	All I did was move the mouse over it.
+	/declare bitch17																string	outer	You sound reasonable. It must be time to up my medication!
+	/declare bitch18																string	outer	I'll never forget the first time we met. Although, I'll keep trying.
+	/declare bitch19																string	outer	Roses are red. Violets are blue. You're an idiot.
+	/declare bitch20																string	outer	Sometimes, when I close my eyes, I... can't see you.
+	/declare bitch21																string 	outer Shock me. Say something intelligent.
+	/declare bitch22																string 	outer I'm typing this with my middle finger.
+	/declare bitch23																string 	outer It takes courage just to be you. To get out of bed every single day, knowing full well, you gotta be you.
+	/declare bitch24																string 	outer For someone with such a smart mouth you sure do have a lot of teeth.
+	/declare bitch25																string 	outer Do you want a piece of gum?
+	/declare bitch26																string 	outer Good thing you're pretty.
+	/declare bitch27																string 	outer You breathe through your mouth a lot don't you?
+	/declare bitch28																string 	outer Your mother was a hamster and your father smelt of elderberries!
+	/declare bitch29																string 	outer Don't worry about it too much. I did the same thing when I was eleven.
+	/declare bitch30																string 	outer 
 
 
 	| expansions
@@ -486,7 +482,6 @@ sub set_declares()
 	/declare expansion22														string 	outer "The Broken Mirror"
 	/declare expansion23														string 	outer "Empires of Kunark"
 	/declare expansion24														string 	outer "Ring of Scale"
-
 
 
 	| hide switches for /hidecorpse command
@@ -598,6 +593,7 @@ sub set_declares()
 	/declare CLREpic15															string	outer 
 	/declare CLREpic2																string	outer 
 	/declare CLRAlliance														string	outer
+	/declare CLRAAUnity															string	outer Saint's Unity
 
 	| Druid
 	/declare DRUspire1															string	outer Fundament: First Spire of Nature
@@ -608,7 +604,8 @@ sub set_declares()
 	/declare DRUEpic15															string	outer 
 	/declare DRUEpic2																string	outer 
 	/declare DRUAlliance														string	outer
-
+	/declare DRUAAUnity															string	outer Wildtender's Unity
+	
 	| Shaman
 	/declare SHMspire1															string	outer Fundament: First Spire of Ancestors
 	/declare SHMspire2															string	outer Fundament: Second Spire of Ancestors
@@ -618,7 +615,8 @@ sub set_declares()
 	/declare SHMEpic15															string	outer 
 	/declare SHMEpic2																string	outer 
 	/declare SHMAlliance														string	outer
-
+	/declare SHMAAUnity															string	outer Visionary's Unity
+	
 	| Warrior
 	/declare WARspire1															string	outer Fundament: First Spire of the Warlord
 	/declare WARspire2															string	outer Fundament: Second Spire of the Warlord
@@ -628,6 +626,8 @@ sub set_declares()
 	/declare WAREpic15															string	outer 
 	/declare WAREpic2																string	outer 
 	/declare WARAlliance														string	outer
+	/declare WARAAUnity															string	outer FALSE
+
 
 	| Shadow Knight
 	/declare SHDspire1															string	outer Fundament: First Spire of the Reavers
@@ -638,6 +638,7 @@ sub set_declares()
 	/declare SHDEpic15															string	outer 
 	/declare SHDEpic2																string	outer 
 	/declare SHDAlliance														string	outer
+	/declare SHDAAUnity															string	outer Dark Lord's Unity (Beza)
 
 	| Paladin
 	/declare PALspire1															string	outer Fundament: First Spire of Holiness
@@ -648,6 +649,7 @@ sub set_declares()
 	/declare PALEpic15															string	outer 
 	/declare PALEpic2																string	outer Nightbane, Sword of the Valiant
 	/declare PALAlliance														string	outer
+	/declare PALAAUnity															string	outer Divine Protector's Unity
 
 	| Magician
 	/declare MAGspire1															string	outer Fundament: First Spire of the Elements
@@ -658,6 +660,7 @@ sub set_declares()
 	/declare MAGEpic15															string	outer 
 	/declare MAGEpic2																string	outer 
 	/declare MAGAlliance														string	outer
+	/declare MAGAAUnity															string	outer Thaumaturge's Unity
 
 	| Enchanter	
 	/declare ENCspire1															string	outer Fundament: First Spire of Enchantment
@@ -670,6 +673,7 @@ sub set_declares()
 	/declare ENCEpic15															string	outer 
 	/declare ENCEpic2																string	outer 
 	/declare ENCAlliance														string	outer
+	/declare ENCAAUnity															string	outer Orator's Unity
 		
 	| Wizard 
 	/declare WIZspire1															string	outer Fundament: First Spire of Arcanum
@@ -681,6 +685,7 @@ sub set_declares()
 	/declare WIZEpic15															string	outer 
 	/declare WIZEpic2																string	outer 
 	/declare WIZAlliance														string	outer
+	/declare WIZAAUnity															string	outer Etherealist's Unity
 
 	| Necromancer
 	/declare NECspire1															string	outer Fundament: First Spire of Necromancy
@@ -691,6 +696,7 @@ sub set_declares()
 	/declare NECEpic15															string	outer 
 	/declare NECEpic2																string	outer 
 	/declare NECAlliance														string	outer
+	/declare NECAAUnity															string	outer 
 
 	| Ranger
 	/declare RNGspire1															string	outer Fundament: First Spire of the Pathfinders
@@ -704,6 +710,7 @@ sub set_declares()
 	/declare RNGEpic15															string	outer 
 	/declare RNGEpic2																string	outer Aurora, the Heartwood Blade
 	/declare RNGAlliance														string	outer
+	/declare RNGAAUnity															string	outer Wildstalker's Unity (Azia)
 
 	| Bard
 	/declare BRDspire1															string	outer Fundament: First Spire of the Minstrel
@@ -713,7 +720,9 @@ sub set_declares()
 	/declare BRDEpic1																string	outer 
 	/declare BRDEpic15															string	outer 
 	/declare BRDEpic2																string	outer 
-	/declare BDDAlliance														string	outer
+	/declare BRDAlliance														string	outer
+	/declare BRDAAUnity															string	outer FALSE
+
 
 	| Monk
 	/declare MONspire1															string	outer Fundament: First Spire of the Sensei
@@ -724,6 +733,8 @@ sub set_declares()
 	/declare MONEpic15															string	outer 
 	/declare MONEpic2																string	outer 
 	/declare MONAlliance														string	outer
+	/declare MONAAUnity															string	outer FALSE
+	
 
 	| Beastlord
 	/declare BSTspire1															string	outer Fundament: First Spire of the Savage Lord
@@ -734,6 +745,8 @@ sub set_declares()
 	/declare BSTEpic15															string	outer 
 	/declare BSTEpic2																string	outer 
 	/declare BSTAlliance														string	outer
+	/declare BSTAAUnity															string	outer Feralist's Unity
+
 
 	| Berzerker
 	/declare BERspire1															string	outer Fundament: First Spire of Savagery
@@ -743,7 +756,9 @@ sub set_declares()
 	/declare BEREpic1																string	outer 
 	/declare BEREpic15															string	outer 
 	/declare BEREpic2																string	outer 
-	/declare BERAlliance														string	outer
+	/declare BERAlliance														string	outer 
+	/declare BERAAUnity															string	outer FALSE
+
 
 	| Rogue
 	/declare ROGspire1															string	outer Fundament: First Spire of the Rake
@@ -754,10 +769,18 @@ sub set_declares()
 	/declare ROGEpic15															string	outer 
 	/declare ROGEpic2																string	outer Nightshade, Bane of Entropy
 	/declare ROGAlliance														string	outer
+	/declare ROGAAUnity															string	outer FALSE
+
+	| set AA Unity Buffs
+	/if (${Bool[${${Me.Class.ShortName}AAUnity}]}) {
+		/for _count 1 to 7
+			/call DeclareIniVar BuffAAUnity${_count}		string	Buffs FALSE
+			/next _count
+	}
 
 
 	| combat controls
-	/declare ccType																	string	outer |agro|bandolier|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|zradius
+	/declare ccType																	string	outer |agro|bandolier|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|stopnuke|zradius
 	/call DeclareIniVar combat					 						string	Common MELEE
 	/call DeclareIniVar MA1			 										string 	Common FALSE
 	/call DeclareIniVar MA2			 										string 	Common FALSE
@@ -773,13 +796,18 @@ sub set_declares()
 	/call DeclareIniVar combatRadius								string	Common 30
 	/call DeclareIniVar zradius											int			Common 60	
 	/call DeclareIniVar switchBandolier							bool		meleedisc FALSE
-
+	/call DeclareIniVar stopnukeAt 									int 		Common 0
 		
 			
 	| rez	control
   /declare rezType																string	outer |stop|combat|emergency|everyone|give|pct|range|take
   /declare rezPct																	string	outer |10|20|35|50|60|75|90|93|96
 	/declare flagCallNeedRez												bool		outer FALSE
+	/declare switchAmIDead													bool		outer FALSE
+	/declare validRezFound 													bool 		outer FALSE
+	/declare rezWindowPct 													int 		outer 0
+
+	
 	/declare switchRez															bool		outer FALSE
 	/declare switchRezStop													bool		outer FALSE
 	/call DeclareIniVar switchRezTake 							bool 		Heal TRUE 
@@ -804,8 +832,6 @@ sub set_declares()
 	/declare SetTie       													bool 		outer FALSE
 	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
 	/call DeclareIniVar SetTieLock	 								bool 		Movement FALSE
-
-	
 	| follow
 	| /declare SetFollow															bool 		outer FALSE
    
@@ -879,7 +905,7 @@ sub set_declares()
 
 
 	| overrides
-  /declare overrideType														string	outer |stop|safezone|los|exclude|name|engageat|loot|safelist
+  /declare overrideType														string	outer |stop|engageat|exclude|loot|los|name|safelist|safezone
 	/declare switchOverride													bool		outer FALSE
 	/declare switchOverrideStop											bool		outer FALSE
   /call DeclareIniVar switchOverrideLos						bool		Override FALSE
@@ -934,7 +960,6 @@ sub set_declares()
 
 
 	/if (${Me.Class.PetClass} || ${Select[${Me.Class.ShortName},ENC,DRU,SHM,SHD]}) {
-
 		/call DeclareIniVar PetTank 									bool 		Pet FALSE
 		/call DeclareIniVar useSummonWeps 						bool 		Pet TRUE
 		/call DeclareIniVar EpicClick 								string 	Pet FALSE
@@ -977,7 +1002,6 @@ sub set_declares()
 
 	| buffs
 	/call DeclareIniVar BuffRemove									string	Buffs "|Illusion: Gnoll Reaver|Illusion: Darkfell Gnoll Reaver|Illusion: Blackburrow Gnoll Reaver|Illusion: Mucktail Gnoll Reaver|Illusion: Direwind Gnoll Reaver|Illusion: Human Pirate|Illusion: Ogre Pirate"
-
   /declare buffType																string	outer |stop|self|item|combat|bc|raid|tell|pet
 	/declare switchBuff															bool		outer FALSE
 	/declare switchBuffStop													bool		outer FALSE
@@ -1019,7 +1043,6 @@ sub set_declares()
 
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
 		/declare callID												int 		outer 0
-
 		/call DeclareIniVar PetPoint 									int			Heal 80	
 		/call DeclareIniVar CLRPoint		 							int 		Heal 80
 		/call DeclareIniVar DRUPoint 									int 		Heal 70
@@ -1038,7 +1061,6 @@ sub set_declares()
 		/call DeclareIniVar BERPoint 									int 		Heal 70
 		/call DeclareIniVar PALPoint 									int 		Heal 90
 		/call DeclareIniVar GoMpoint 									int 		Heal 80	
-		
 		/call DeclareIniVar XHealClass								string	Heal |WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM
 		/call setTimer tXHeal													string	Timer 3m timer_set_xtarget
 		/call DeclareIniVar toonControlXTslot					int			Heal 13
@@ -1072,7 +1094,7 @@ sub set_declares()
 	/call DeclareIniVar switchDebugCasting					bool		debug FALSE 
 	/call DeclareIniVar switchDebugRez							bool		debug FALSE 
 	/call DeclareIniVar switchDebugArray						bool		debug FALSE 
-	/call DeclareIniVar switchDebugMode							bool		debug FALSE 
+	/call DeclareIniVar switchDebugMode					`		bool		debug FALSE 
 	| SET THIS TO TRUE TO ENABLE DEBUGING. ALTERNATIVE USE /varset debug TRUE
 	| on a funny note: prepare your ass
 	/declare debug																	bool		outer FALSE
@@ -1100,10 +1122,10 @@ sub set_declares()
   /declare magType																string	outer |fade|forcetwincast|gather|mana|rods|spiregroup|spireraid
   /declare mnkType																string	outer |spiregroup|spireraid
   /declare necType																string	outer |spiregroup|spireraid
-  /declare palType																string	outer |groupheal|harmonions|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
+  /declare palType																string	outer |defcount|groupheal|harmonions|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp|defcount
   /declare rogType																string	outer |ae|autosos|poison|spiregroup|spireraid
   /declare rngType																string	outer |spice|spiregroup|spireraid|summer
-  /declare shdType																string	outer |harmoniouns|skin|spiregroup|spireraid|stance
+  /declare shdType																string	outer |defcount|harmoniouns|skin|spiregroup|spireraid|stance
   /declare shmType																string	outer |groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
   /declare warType																string	outer |spiregroup|spireraid
   /declare wizType																string	outer |forcetwincast|gather|manaburn|spiregroup|spireraid
@@ -1488,13 +1510,15 @@ sub declare_SHD()
 	/call DeclareIniVar Withstand 									string 	Discs "Repel"
 	/call DeclareIniVar BladeStrike 								string 	Discs "Lacerating Blade"
 	/call DeclareIniVar CrimsonBlade 								string 	Discs "Carmine Blade"
-	/call DeclareIniVar DefensiveDisc 							string 	Discs "Doomscale Mantle"
-	/call DeclareIniVar DefensiveDisc2 							string 	Discs "Grelleth's Carapace"
-	/call DeclareIniVar DefensiveDisc3 							string 	Discs "Unholy Guardian Discipline"
 	/call DeclareIniVar DiscRest			 							string	Discs "Breather"
 	/call DeclareIniVar DiscFakeHate								string	Discs	"Unflinching Acrimony"
 	/call DeclareIniVar DiscLeech										string	Discs	"Leechcurse Discipline"
 	/call DeclareIniVar DiscRancor									string	Discs	"Reflexive Revulsion"
+
+	/call DeclareIniVar DefensiveDisc1							string 	Discs "Krellnakor Mantle "
+	/call DeclareIniVar DefensiveDisc2 							string 	Discs "Tylix's Carapace"
+	/call DeclareIniVar DefensiveDisc3 							string 	Discs "Cursed Guardian Discipline"
+
 
 
 	/call DeclareIniVar ChallengeSpell							string 	Spells "Impose for Power"
@@ -1538,7 +1562,7 @@ sub declare_SHD()
 
 /return	
 
-
+ 
 
 |***
  *	DES: Paladin base variables
@@ -1574,9 +1598,17 @@ sub declare_PAL()
 	/call DeclareIniVar useYaulpPct									string	Buffs 98
 	/call DeclareIniVar DiscRest			 							string	Discs "Breather"
 	/call DeclareIniVar DiscFastRune	 							string	Discs "Repel"
-	/call DeclareIniVar DiscArmor			 							string	Discs "Armor of Ardency"
-	/call DeclareIniVar DiscGuard			 							string	Discs "Skalber Mantle"
-	/call DeclareIniVar DiscHoly			 							string	Discs "Holy Guardian Discipline"
+	
+	| /call DeclareIniVar DiscArmor			 							string	Discs "Armor of Mercy"
+	| /call DeclareIniVar DiscGuard			 							string	Discs "Skalber Mantle"
+	| /call DeclareIniVar DiscHoly			 							string	Discs "Blessed Guardian Discipline"
+	
+	/call DeclareIniVar DefensiveDisc1			 				string	Discs "Armor of Mercy"
+	/call DeclareIniVar DefensiveDisc2			 				string	Discs "Kar`Zok Mantle"
+	/call DeclareIniVar DefensiveDisc3			 				string	Discs "Blessed Guardian Discipline"
+	
+	
+	
 	
 	/call DeclareIniVar DiscUnflinching							string	Discs "Unflinching Affirmation"
 	/call DeclareIniVar DiscJudgement								string	Discs "Inquisitors Judgement"
@@ -1799,13 +1831,13 @@ sub declare_RNG()
 	/call DeclareIniVar FastHeal			 							string	Spells "Desperate Dousing" 
 	/call DeclareIniVar FastHealPCT		 							int			Spells 25
 
-	/call DeclareIniVar DiscMele			 							string	Spells "Copsestalker's Discipline"
+	/call DeclareIniVar DiscMele			 							string	Spells "Windstalkers's Discipline"
 	/call DeclareIniVar DiscRange			 							string	Spells "Pureshot Discipline"
 	/call DeclareIniVar DiscRest			 							string	Spells "Breather"
-	/call DeclareIniVar DiscJolt			 							string	Spells "Jolting Cut Kicks"
-	/call DeclareIniVar DiscEnrage		 							string	Spells "Enraging Cut Kicks"
+	/call DeclareIniVar DiscJolt			 							string	Spells "Jolting Wheel Kicks"
+	/call DeclareIniVar DiscEnrage		 							string	Spells "Enraging Wheel Kicks"
 	/call DeclareIniVar DiscHeal			 							string	Spells "Reflexive Bladespurs"
-	/call DeclareIniVar BladeStorm									string	Spells "Focused Storm of Blades"
+	/call DeclareIniVar BladeStorm									string	Spells "Focused Squall of Blades"
 	/call DeclareIniVar ElementalArrow							string	Spells "Elemental Arrow"
 	/call DeclareIniVar GlacialArow									string	Spells "Glacial Arrow"
 	/call DeclareIniVar VolatileArrow								string	Spells "Volatile Arrow"
@@ -1814,6 +1846,11 @@ sub declare_RNG()
 	/call DeclareIniVar ArrowIce				 						string	Spells "Frost Arrows"	
 	/call DeclareIniVar AuspiceTXT									string	Spells "AUSPICE (critSpell 33%, accuracy 230%, critHeal 33%, critMelee 225%, critDoT 33%, attack +165)"
 	/call DeclareIniVar DiscSqual			 							string	Spells "Focused Squall of Blades"
+	
+	/call DeclareIniVar AADefensive1 								string	Spells "Outrider's Evasion"
+	/call DeclareIniVar AADefensive2 								string	Spells "Protection of the Spirit Wolf"
+	/call DeclareIniVar AADefensive3 								string	Spells "Bulwark of the Brownies"
+	
 /return	
 
 
@@ -1982,7 +2019,7 @@ sub declare_SHM()
 
   /call DeclareIniVar healSurge										string 	Heal "Spiritual Surge"
   /call DeclareIniVar healMain										string 	Heal "Krasir's Mending"
-  /call DeclareIniVar healIntervention						string 	Heal "Historian's Intervention"
+  /call DeclareIniVar healIntervention1						string 	Heal "Historian's Intervention"
   /call DeclareIniVar healReckless								string 	Heal "Reckless Regeneration"
   /call DeclareIniVar healWholeGroup							string 	Heal "Krasir's Recourse"
   /call DeclareIniVar healWholeGroupHoT						string 	Heal "Shear of Renewal"
@@ -1993,7 +2030,7 @@ sub declare_SHM()
 	/call DeclareIniVar XTHealRadius								int			Heal 300
 	/call DeclareIniVar RampageTank									string	Heal FALSE
 
-	/declare HealList 															string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention}|${healReckless}
+	/declare HealList 															string 	outer |${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention1}|${healReckless}
 /return	
 
 
@@ -2194,8 +2231,8 @@ sub declare_CLR()
 	/declare pWorstClass														string	outer FALSE
 	/declare pMajorHurt															int			outer 0
 	
-	/declare WorstManaID														int			outer
-	/declare WorstManaPct														int			outer
+	| /declare WorstManaID														int			outer
+	| /declare WorstManaPct														int			outer
 	
 	/call DeclareIniVar DivineRezCleric							bool 		Heal TRUE
 	/call DeclareIniVar RandRezDelay								int 		Heal 5
@@ -2839,6 +2876,7 @@ sub Event_NullSlot
 	VOUT ${owarning} ${sep} Opening all bags to correct null slot
 	/keypress OPEN_INV_BAGS
 	/timed 10 /keypress CLOSE_INV_BAGS
+	
 /return
 
 
@@ -2852,12 +2890,14 @@ sub Event_NullSlot
 #event Zone "You have entered #*#" 
 #event Zone "LOADING, PLEASE WAIT..."
 sub Event_Zone(string _line)
-	/delay 1s
 	DEBUG ${cbug}Event_Zone(line: ${_line})\ax
+	/while (${Me.Zoning}) {
+		/delay 2
+	}
 	/call echos zone 0 0 0 0 
 	/call check_zone_INI FALSE
 	/if (${burnForce}) /varset burnForce FALSE
-	/makecamp off
+	/squelch /makecamp off
 	/if (${HomeSet}) /call writeINI HomeSet Movement FALSE
 	/call switch_clear_mode
 	/if (${coreAuto} && ${switchShrink}) /call check_shrink
@@ -2923,22 +2963,24 @@ sub Event_clean()
 
 
 
-
+|***
+ *	DES: rez emote
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***| 	
 #event resurrection_exp_gain "You regain some experience from resurrection."
 sub Event_resurrection_exp_gain()
-	:cleardeadmarkers
-		DEBUGREZ delays for rez status to clear
-		/delay 2s !${Me.State.Equal[HOVER]}
-		/delay 2s !${Me.Hovering}
-		/delay 2s !${Me.Dead}
-		DEBUGREZ clear HUD tmpMode variable
-		/varset tmpMode FALSE
-		DEBUGREZ Exit rez, clear event marker
-		/varset markerDead FALSE
-		/if (${markerDead} || ${tmpMode}) {
-			/delay 5
-			/goto :cleardeadmarkers
-		}
+	DEBUGREZ delays for rez status to clear
+	/delay 2s !${Me.State.Equal[HOVER]}
+	/delay 2s !${Me.Hovering}
+	/delay 2s !${Me.Dead}
+	DEBUGREZ clear HUD tmpMode variable
+	/varset tmpMode FALSE
+	DEBUGREZ Exit rez, clear event marker
+	/call set_stop TRUE
+	/call clear_combat
+	/varset switchAmIDead FALSE
 /return
 
 
@@ -2991,7 +3033,7 @@ sub Bind_setstop()
 
 
 |***
- *	DES: Adjusts the smart assist through Raid 1 then Raid 2 then Group then off
+ *	DES: simple shortcut to the  /cc smartma command
  *	USE: /smartma [1|2|X|G|NULL]
  *	INI: 
  *  NOTE: this is a four way toggle
@@ -3012,19 +3054,28 @@ sub Bind_smartMA(string _verbage)
  ***| 
 #bind cast_AA_invis /invis
 sub Bind_cast_AA_invis()
+	/if (${Me.AltAbilityReady[Shauri's Sonorous Clouding]} && ${Select[${Me.Class.ShortName},BRD]}) {
+		/call pulse_stop
+		/call MQ2Cast "Shauri's Sonorous Clouding" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Shauri's Sonorous Clouding
+		/return
+	}
 	/if (${Me.AltAbilityReady[Group Perfected Invisibility]} && ${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
 		/call MQ2Cast "Group Perfected Invisibility" alt -targetid|${Me.ID}
 		ECHOCHANNEL AA: Group Perfected Invisibility
+		/return
 	}  
 	/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},CLR,SHD,NEC]}) {
 		/delay 3
 		/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
 		ECHOCHANNEL AA: Group Perfected Invisibility to Undead
+		/return
 	}
 	/if (${Me.AltAbilityReady[Group Silent Presence]} && ${Select[${Me.Class.ShortName},SHM]}) {
 		/delay 5
 		/call MQ2Cast "Group Silent Presence" alt -targetid|${Me.ID}
 		ECHOCHANNEL AA: Group Silent Presence
+		/return
 	}	
 /return		
 
@@ -3193,7 +3244,7 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
 	| clear stickbehind. it will force bad targeting fot the mezzer.
 	/if (${SetStickBehind} && ${switchdeBuffMezz}) {
 		/call writeINI SetStickBehind Movement FALSE  
-		VOUT /movement behind ${sep} ${SetStickBehind}
+		VOUT /${_bind} behind ${sep} ${SetStickBehind}
 	}
 /return
 
@@ -4260,6 +4311,16 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/call writeINI switchBandolier meleedisc ${If[${switchBandolier},FALSE,TRUE]}
 		VOUT /${_bind} bandolier ${sep} ${cinfo}${combat}\ax
 
+	| set stop nuke %
+	} else /if (${Bool[${_ccType.Equal[stopnuke]}]}) {
+		/if (${Range.Between[0,99:${Int[${_verbage}]}]}) {
+			/call writeINI stopnukeAt Common ${_verbage} 
+			VOUT /${_bind} stopnuke ${sep} ${cinfo}${_verbage}%\ax
+		} else {
+			VOUT /${_bind} stopnuke [${cinfo}${stopnukeAt}\ax] allowable range is ${cinfo}0 - 99\ax
+		} 			
+		
+
 	| set automated combat
 	} else /if (${Bool[${_ccType.Equal[melee]}]} || ${Bool[${_ccType.Equal[range]}]} || ${Bool[${_ccType.Equal[nuke]}]} || ${Bool[${_ccType.Equal[heal]}]} || ${Bool[${_ccType.Equal[dual]}]}) {
 		/if (${combat.NotEqual[${_ccType}]}) /call writeINI combat Common ${_ccType.Upper}
@@ -4375,28 +4436,28 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 		| Raid Assist 1
 		/if ((${_verbage.Equal[1]} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
 	 		/if (!${useSmartAssist1}) /call writeINI useSmartAssist1 Common TRUE
 			/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 			/xtarget set 1 Raidassist1target
 		| Raid Assist 2
 		} else /if ((${_verbage.Equal[2]} || (!${Bool[${_verbage}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && ${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
 	 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
 			/if (!${useSmartAssist2}) /call writeINI useSmartAssist2 Common TRUE
 			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 			/xtarget set 1 Raidassist1target
 		| NO Assist
 		} else /if ((${_verbage.Equal[x]} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && !${useSmartAssist2} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
 	 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
 			/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 			/xtarget set 1 Autohater
 		| Goup Main Assist
 		} else /if ((${_verbage.Equal[g]} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_assist}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssist1} && ${useSmartAssist2} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
 	 		/if (${useSmartAssist1}) /call writeINI useSmartAssist1 Common FALSE
 			/if (${useSmartAssist2}) /call writeINI useSmartAssist2 Common FALSE
 			/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
@@ -4832,4 +4893,50 @@ sub Bind_echos(string _echoType, string _verbage)
 		/next _count
 		VOUT /${_bind}s [${_listout}]
 	} 
+/return
+
+
+
+|***
+ *	DES: random insult
+ *	USE: /oof
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind oof /oof
+sub Bind_oof(string _echoType, string _verbage)
+ 	DEBUG ${cbug}Bind_oof(type ${_echoType}, verbage ${_verbage})\ax
+ 	
+ 	/declare _pronoun string local FALSE
+ 	/declare _bitch					string local 
+	/declare _rnd						int local
+ 	
+ 	/if (${Select[${Me.Gender},male]}) {
+ 		/varset _pronoun his
+ 	} else /if (${Select[${Me.Gender},female]}) {
+ 		/varset _pronoun her
+ 	}
+ 	
+ 	
+	
+	:loopgetrandom
+	/varset _rnd ${Math.Rand[${bitchcount}]}
+	/if (!${Range.Between[1,${bitchcount}:${_rnd}]}) /goto :loopgetrandom
+
+
+
+
+ 	
+ 	/delay 1
+ 	
+ 	/em  looks around for the biggest fucking rock to hit ${_pronoun} head against.
+	/say ${bitch${_rnd}}
+ 	
+ 	
+
+ 	
+ 	
+ 	
+ 	
+ 	
 /return

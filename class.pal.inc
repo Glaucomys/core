@@ -84,8 +84,21 @@ sub disc_PAL()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	
+	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
+	CHECKTIE
+
+	| defensive	
+	/if (${coreAuto} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} > 2) {
+		/declare _count int local 0
+		/for _count 1 to 3
+			/if (${Bool[${Me.ActiveDisc}]}) /break
+			/if (${Me.CombatAbilityReady[${DefensiveDisc${_count}}]}) {
+				/call core_cast "${DefensiveDisc${_count}}" disc 0 FALSE
+				/break
+			}			
+		/next _count
+	}
 	
 	| check challenge
 	/call cast_challenge ${Target2Kill}
@@ -122,22 +135,6 @@ sub disc_PAL()
 
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0 FALSE
 	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
-	
-	| defensive	
-	/if (${coreAuto} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} > 1) {
-		/if (!${Bool[${Me.ActiveDisc}]}) {
-			/call core_cast "${DiscArmor}" disc 0 FALSE
-		} else /if (!${Me.CombatAbilityReady[${DiscArmor}]} && !${Bool[${Me.ActiveDisc}]}) {
-			/call core_cast "${DiscGuard}" disc 0 FALSE
-		} else /if (!${Me.CombatAbilityReady[${DiscArmor}]} && !${Me.CombatAbilityReady[${DiscGuard}]} && !${Bool[${Me.ActiveDisc}]}) {
-					/echo here DISC..................
-
-			/call core_cast "${DiscHoly}" disc 0 FALSE
-		}
-
-		| deflection
-		/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]}) /call core_cast "Deflection Discipline" disc 0 FALSE
-	}
 	
 /return
 
@@ -326,14 +323,24 @@ sub synergy_PAL()
 	CHECKEXIT
 
 	| defensive	
-	/if (${Me.CombatAbilityReady[${DiscArmor}]} && ${Me.CurrentEndurance} > ${Spell[${DiscArmor}].EnduranceCost}) {
-		/call core_cast "${DiscArmor}" disc 0 FALSE
-	} else /if (!${Me.CombatAbilityReady[${DiscGuard}]} && ${Me.CurrentEndurance} > ${Spell[${DiscGuard}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
-		/call core_cast "${DiscGuard}" disc 0 FALSE
-	} else /if (!${Me.CombatAbilityReady[${DiscHoly}]} && ${Me.CurrentEndurance} > ${Spell[${DiscHoly}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
-		/call core_cast "${DiscHoly}" disc 0 FALSE
+	/declare _count int local 0
+	/for _count 1 to 3
+		/if (${Bool[${Me.ActiveDisc}]}) /break
+		/if (${Me.CombatAbilityReady[${DefensiveDisc${_count}}]}) {
+			/call core_cast "${DefensiveDisc${_count}}" disc 0 FALSE
+			/break
+		}			
+	/next _count
+
+	| deflection
+	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride}) {
+		/if (${Me.CombatAbilityReady[Deflection Discipline]}) {
+			/call core_cast "Deflection Discipline" disc 0 FALSE
+		} else {
+			/call core_cast "Shield Flash" alt 0 FALSE
+		}
 	}
-	
+
 	/call cast_AA_spire	
 
 	/if (${Me.AltAbilityReady[${AAJudgement}]}) /call core_cast "${AAJudgement}" alt 0 FALSE
@@ -471,7 +478,6 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 
 	| Stun Control
 	} else /if (${Bool[${_classType.Equal[stun]}]}) {
-		
 		/if (${Bool[${_classVerbage}]}) {
 			/if (${Bool[${_classVerbage.Equal[stop]}]}) {
 					/call writeINI chainStun Discs FALSE
@@ -496,6 +502,8 @@ sub Bind_setPAL(string _classType, string _classVerbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

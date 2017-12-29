@@ -141,11 +141,12 @@ sub click_DPS_MAG()
  *	INI: 
  *  NOTE: 
  ***|
-#event CoH 			"#1# tells the group, 'coh'"
+#event CoH "#1# tells the group, 'coh'"
 sub Event_CoH(string line, string _sender)
+	/if (${Me.DisplayName.Equal[${_sender}]}) /return
 	/if (${Select[${Me.Class.ShortName},MAG]}) {
-		CHECKTIE
 		CHECKSAFELIST
+		/call set_stop
 	  /delay 10s ${Me.AltAbilityReady[Call of the Hero]}
 	  /if (${Me.Invis}) /makemevisible
 	  /target ID ${Spawn[pc ${_sender}].ID}
@@ -334,12 +335,12 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 		| group mod rod
 		/if (${Bool[${ModRodName}]} && !${FindItem[${ModRodName}].ID} && !${Cursor.Name.Equal[${ModRodName}]}) {
 			| /target ID ${Me.ID}
-			/call core_cast "${ModRodSpell}" alt ${Me.ID} FALSE
+			/call core_cast "${ModRodSpell}" alt 0 FALSE
 			/call sort_cursor TRUE
 		}
 		| paradox rod	
 		/if (${Bool[${ParadoxRodName}]} && !${Bool[${FindItem[${ParadoxRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ParadoxSpell}].Mana}) {
-			/call core_cast  "${ParadoxSpell}" ${buffGem} ${Me.ID} FALSE
+			/call core_cast "${ParadoxSpell}" ${buffGem} 0 FALSE
 			/call sort_cursor TRUE
 		}
 		| elemental orb
@@ -383,6 +384,8 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

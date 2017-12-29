@@ -77,8 +77,21 @@ sub disc_SHD()
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	CHECKTIE
+
+	| defensive	
+	/if (${coreAuto} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} > 2) {
+		/declare _count int local 0
+		/for _count 1 to 3
+			/if (${Bool[${Me.ActiveDisc}]}) /break
+			/if (${Me.CombatAbilityReady[${DefensiveDisc${_count}}]}) {
+				/call core_cast "${DefensiveDisc${_count}}" disc 0 FALSE
+				/break
+			}			
+		/next _count
+	}
+	
+
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
-	/call check_deBuffs ${Target2Kill}
 	
 	| check challenge
 	/call cast_challenge ${Target2Kill}
@@ -102,6 +115,7 @@ sub disc_SHD()
 	/if (${switchHealSelf} && ${Me.PctHPs} < 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Leech Touch]}) /call core_cast "Leech Touch" alt ${Target2Kill} FALSE
 	/if (${switchHealSelf} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0 FALSE
 	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]}) /call core_cast "Deflection Discipline" disc 0 FALSE
+	/call check_deBuffs ${Target2Kill}
 
 /return
 
@@ -124,7 +138,7 @@ sub get_agro_SHD()
 	/if (${switchPcPet}) /call send_pet
 
 	| single hate
-	/if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${Me.AltAbilityReady[Stream of Hatred]}) /call core_cast "Stream of Hatred" alt ${Target2Kill} FALSE
+	| /if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "Stream of Hatred" alt ${Target2Kill} FALSE
 	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.SpellReady[${Hate1}]} && ${Target.Distance} <= ${Spell[${Hate1}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate1}" 0 ${Target2Kill} FALSE
 	/if ((${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.SpellReady[${Hate2}]} && ${Target.Distance} <= ${Spell[${Hate2}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate2}" 0 ${Target2Kill} FALSE
 
@@ -203,16 +217,17 @@ sub synergy_SHD()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return		
-
-	| defensive	
-	/if (${Me.CombatAbilityReady[${DefensiveDisc}]} && ${Me.CurrentEndurance} > ${Spell[${DefensiveDisc}].EnduranceCost}) {
-		/call core_cast "${DefensiveDisc}" disc 0 FALSE
-	} else /if (!${Me.CombatAbilityReady[${DefensiveDisc}]} && ${Me.CurrentEndurance} > ${Spell[${DefensiveDisc2}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
-		/call core_cast "${DefensiveDisc2}" disc 0 FALSE
-	} else /if (!${Me.CombatAbilityReady[${DefensiveDisc2}]} && ${Me.CurrentEndurance} > ${Spell[${DefensiveDisc3}].EnduranceCost} && !${Bool[${Me.ActiveDisc}]}) {
-		/call core_cast "${DefensiveDisc3}" disc 0 FALSE
-	}
 	
+	| defensive	
+	/declare _count int local 0
+	/for _count 1 to 3
+		/if (${Bool[${Me.ActiveDisc}]}) /break
+		/if (${Me.CombatAbilityReady[${DefensiveDisc${_count}}]}) {
+			/call core_cast "${DefensiveDisc${_count}}" disc 0 FALSE
+			/break
+		}			
+	/next _count	
+
 	/if (${Me.AltAbilityReady[T`Vyl's Resolve]} && ${Target.Distance} <= ${Spell[T`Vyl's Resolve].MyRange}) /call core_cast "T`Vyl's Resolve" alt ${Target2Kill} FALSE
 	/if (${Me.CombatAbilityReady[${CrimsonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimesonBlade}].EnduranceCost}) /call core_cast "${CrimsonBlade}" disc 0 FALSE
 	/call cast_AA_spire
@@ -298,6 +313,8 @@ sub Bind_setSHD(string _classType, string _classVerbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]
