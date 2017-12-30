@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20171228
+	/declare coreBuild	 														int			outer 20171230
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 
@@ -1985,7 +1985,7 @@ sub declare_SHM()
 	/call DeclareIniVar spellMalo 									string 	Spells FALSE
 	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 	/call DeclareIniVar spellSlow										string 	Spells FALSE
-	| /call DeclareIniVar spellAESlow 								string 	Spells "Srasku's Drowse"
+	/call DeclareIniVar spellAESlow 								string 	Spells "Srasku's Drowse"
 	
 	/call DeclareIniVar TC1									 				string	Spells "Glacial Gift"	
 	/call DeclareIniVar TC2									 				string	Spells "Frigid Gift"
@@ -2408,7 +2408,7 @@ sub set_alias()
 	/if (!${Bool[${Alias[/oneoff]}]}) 				/noparse /squelch /alias /oneoff   					/bc oneoff
 
 	/if (!${Bool[${Alias[/gtfo]}]}) 					/noparse /squelch /alias /gtfo    			 		/bc gtfo
-	/if (!${Bool[${Alias[/lesson]}]}) 				/noparse /squelch /alias /lesson   			 		/bc lesson
+	| /if (!${Bool[${Alias[/lesson]}]}) 				/noparse /squelch /alias /lesson   			 		/bc lesson
 /return
 
 
@@ -2452,8 +2452,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
   /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0 FALSE
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
 
-  /if (${_cmd.Equal[lesson]} && ${Me.AltAbilityReady[Lesson of the Devoted]}) /call core_cast "Lesson of the Devoted" alt 0 FALSE
-  
+ 
 	| commands to control all assist targets.  
   /if (${_cmd.Equal[sma1]} && !${switchPull}) {
 		/call Bind_setCombatControl smartma 1
@@ -4917,26 +4916,26 @@ sub Bind_oof(string _echoType, string _verbage)
  		/varset _pronoun her
  	}
  	
- 	
-	
 	:loopgetrandom
 	/varset _rnd ${Math.Rand[${bitchcount}]}
 	/if (!${Range.Between[1,${bitchcount}:${_rnd}]}) /goto :loopgetrandom
-
-
-
-
- 	
  	/delay 1
- 	
  	/em  looks around for the biggest fucking rock to hit ${_pronoun} head against.
 	/say ${bitch${_rnd}}
- 	
- 	
+/return
 
- 	
- 	
- 	
- 	
- 	
+
+
+
+
+|***
+ *	DES: lesson of the devoted
+ *	USE: /lesson
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind lesson /lesson
+sub Bind_lesson()
+  /if (!${Me.AltAbilityReady[Lesson of the Devoted]}) /return
+  /call core_cast "Lesson of the Devoted" alt 0 FALSE
 /return

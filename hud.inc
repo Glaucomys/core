@@ -119,7 +119,7 @@ sub HUDUpdate()
 	| smartma
 	/noparse /ini HUDPATH "engage2" "19,44,98,255,255,255,${If[!${switchOverrideEngageat} && ${coreAuto} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}),${smartengageAt},]}"
 	| manual	
-	/noparse /ini HUDPATH "engage3" "19,44,98,25,25,25,${If[!${switchOverrideEngageat} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && (!${Bool[${MA1}]} || !${Bool[${Spawn[${MA1}].ID}]}) && (!${Bool[${MA2}]}|| !${Bool[${Spawn[${MA2}].ID}]}),##,]}"
+	/noparse /ini HUDPATH "engage3" "19,44,98,25,25,25,${If[!${coreAuto},##,]}"
 	| override
 	/noparse /ini HUDPATH "engage4" "19,46,98,255,0,0,${If[(${switchOverrideEngageat},X,]}"
 

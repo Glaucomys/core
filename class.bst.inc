@@ -1,4 +1,4 @@
-|***
+6656|***
  *	class.bst.inc
  *	Core Beastlord Include
  *
@@ -71,8 +71,8 @@ sub core_BST()
 	} else /if (${Select[${combat},HEAL]}) {
 	}	else /if (${Select[${combat},DUAL]}) {
 	}
+	/if (${switchHealCure}) /call cast_cure
 	/if (${coreAuto}) {	
-		/if (${switchHealCure}) /call cast_cure
 		/call use_mod_rod
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
@@ -102,7 +102,7 @@ sub disc_BST()
 
 	/if (!${Me.Song[${GrowlSpell}].ID} && ${Me.Pet.ID} && !${Me.PetBuff[Savage Rage]} && !${Me.Song[${DiscSavage}].ID}) /call core_cast "${GrowlSpell}" 0 0 FALSE
 	/call core_cast "Chameleon Strike" alt ${Target2Kill} FALSE
-	/call core_cast "Feral Swipe" alt ${Target2Kill} FALSE
+	| /call core_cast "Feral Swipe" alt ${Target2Kill} FALSE
 	| /if (${Me.AltAbilityReady[Bite of the Asp]}) /call core_cast "Bite of the Asp" alt ${Target2Kill} FALSE
 	/if (${Me.CombatAbilityReady[${DiscForay}]} && ${Me.PctEndurance} > 5 ) /call core_cast "${DiscForay}" disc ${Target2Kill} FALSE
 	/call core_cast "${DiscFocusClaws}" disc ${Target2Kill} FALSE
@@ -269,7 +269,7 @@ sub synergy_BST()
 	| /if (${Me.AltAbilityReady[Bloodlust]}) /call core_cast "Bloodlust" alt 0
 	/if (${Me.AltAbilityReady[Bestial Alignment]}) /call core_cast "Bestial Alignment" alt 0 FALSE
 	/if (${Me.AltAbilityReady[Frenzied Swipes]}) /call core_cast "Frenzied Swipes" alt 0 FALSE
-	/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Bestial BloodRage]}) /call core_cast "Bestial BloodRage" alt 0 FALSE
+	/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Companions Furry]}) /call core_cast "Companions Furry" alt 0 FALSE
 	/call use_glyph
 	/if (${usePet}) /call core_cast "Attack of the Warders" alt ${Target2Kill} FALSE
 	/if (${Me.CombatAbilityReady[${DiscRuaabri}]} && !${Me.Song[Frenzy of Spirit].ID} && !${Me.Buff[Dichotomic Fury].ID}) {

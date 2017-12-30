@@ -340,7 +340,7 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 		}
 		| paradox rod	
 		/if (${Bool[${ParadoxRodName}]} && !${Bool[${FindItem[${ParadoxRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ParadoxSpell}].Mana}) {
-			/call core_cast "${ParadoxSpell}" ${buffGem} 0 FALSE
+			/call core_cast "${ParadoxSpell}" ${buffGem} ${Me.ID} FALSE
 			/call sort_cursor TRUE
 		}
 		| elemental orb

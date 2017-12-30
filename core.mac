@@ -97,7 +97,7 @@
 | #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
 | #define AMIDEAD "/if ((${Me.Dead}) && ${switchRezTake}) /call wait_for_rez"
 #define AMIDEAD "/if (${watch_for_death[]}) /call watch_for_rezbox"
-#define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]}) /return"
+#define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]} || ${switchAmIDead} || ${flagCallNeedRez}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
 #define CHECKTIE "/if (${SetTie} && !${Bool[${timer_check_Tie}]}) /call set_tie"
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"

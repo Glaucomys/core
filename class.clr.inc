@@ -31,7 +31,9 @@ sub core_CLR()
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
-		/if (!${check_exit[]} && ${Me.PctMana} < ${useVPPct}*.${tmpHealOverride} && !${flagCallNeedRez} && !${SafeZone}) /call core_cast "Veturika's Perseverance" alt 0 FALSE
+		/if (!${check_exit[]} && !${SafeZone} && !${Me.Buff[Revival Sickness].ID}) {
+		 	/if (${Me.PctMana} < ${useVPPct}*.${tmpHealOverride} && !${flagCallNeedRez} && !${switchAmIDead}) /call core_cast "Veturika's Perseverance" alt 0 FALSE
+		}
 	}	
 
 	:killtarget

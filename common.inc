@@ -436,6 +436,7 @@ sub auto_adjust_EXP()
 sub check_aura()
 	DEBUG ${cbug}check_aura()\ax 
 	/call create_timer timer_check_aura ${tCheck_Aura}
+	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
 	AMIDEAD
 	CHECKEXIT
 	
@@ -477,8 +478,10 @@ sub check_aura()
 	/declare _found bool false
 
 	/for _aura 1 to 2
+		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /continue
 		/if (${Bool[${Aura${_aura}Spell}]}) {
 			/for _count 1 to 2	
+				/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /continue
 				/if (${Bool[${Aura${_aura}Buff}]}) {
 					/if (${Bool[${Me.Aura[${_count}].Name.Equal[${Aura${_aura}Buff}]}]}) /varset _found TRUE
 					/if (${Bool[${Me.Aura[${_count}].Name.Equal[${Aura${_aura}Spell}]}]}) /varset _found TRUE
@@ -1625,7 +1628,7 @@ sub clear_combat()
 	/if (${coreAuto} && ${Target.ID}) /squelch /target clear
 	/if (!${coreAuto} && !${Spawn[${Target.ID}].Type.Equal[CORPSE]}) /squelch /target clear
 	UPDATEHUD FALSE
-/return
+/return TRUE
 
 
 
@@ -2802,7 +2805,7 @@ sub check_exit()
 	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) /return TRUE
 	
 	| did I just die and get sent to bind ?
-	/if (${coreAuto} && ${Me.Buff[Resurrection Sickness].ID} && ${Zone.ID} == ${Me.ZoneBound.ID}) /return TRUE
+	/if (${coreAuto} && ${Me.Buff[Revival Sickness].ID} && ${Zone.ID} == ${Me.ZoneBound.ID}) /return TRUE
 	
 	| /if (${coreAuto} && ${watch_for_death[]}) /return 
 	
@@ -5885,7 +5888,15 @@ sub check_deBuffs(int _tmpID)
 	| slow. spell if spellSlow defined otherwise AA
 	/if (${switchdeBuffSlow}) {
 		/if (!${Bool[${timer_slow_${_tmpID}}]} && !${validate_class[FALSE, |BRD]}) {
-			/call cast_slow ${_tmpID}
+			/if (${validate_class[FALSE, |SHM]}) {
+				/if (${SpawnCount[npc radius ${MobAgro} playerstate 4]} > 2) {
+					/call core_cast "${spellAESlow}" 0 ${_tmpID} FALSE
+				} else {
+					/call cast_slow ${_tmpID}
+				}
+			} else {			
+				/call cast_slow ${_tmpID}
+			}
 			/if (${validate_class[FALSE, |ENC]}) { 
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return

@@ -14,8 +14,26 @@ Current Requests:
 - fix chanter charm mob code
 - no melee buff list
 - add more checks to the buff combat routines. and rechecks. and then more checks.
+- SIMPLEEXIT
+  -- will watch for death/call flags now
 
 
+
+20171230
+HUDUPDATE
+- fixed a visual error in the HUD with smartengage % not showing
+- added in shaman ae slow for mob counts > 2 in their agro range
+- /lesson will activate AA Lesson of the Devoted on the toon
+- check_aura()
+  -- will check for the /buff combat switch now.
+- class.clr.inc
+  -- more death checks. they are still doing stupid shit.
+- class.bst.inc
+  -- fixed the bst hanging. was still trying to used some of the aas that were changed to passive. (I missed the changes in the patch)
+- class.mag.inc
+  -- added back in the self targeting for 1 of the rods. it has to be there.
+  
+  
 
 
 20171228
@@ -46,7 +64,7 @@ Current Requests:
   -- sets % of mobs HP to stop nuking
   -- default is nuke 'till its dead. aka 0
   -- applys to: nuke cycle, dot cycke, servant nukes, knight challenges, rains, ranger summer spam
-  -- does not apply to: introventions, splash nukes,-
+  -- does not apply to: introventions, splash nukes,
 - class.pal.inc
   -- defensive added to normal disc usage. adjusted checks.
   -- renamed def disks to DefensiveDisc1-3
@@ -68,12 +86,7 @@ Current Requests:
 - class.mag.inc
   -- removed self targeting for rod casting  
   
-
-
-
-
-
-
+  
 20171221
 - rewrite of check_engaged() to be use as /if (${check_engaged[]})
 - corrected BST validation for using new monk skills. it should work this time. honestly.
