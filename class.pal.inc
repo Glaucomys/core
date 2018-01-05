@@ -25,6 +25,7 @@ sub core_PAL()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call stick_to_target
@@ -155,9 +156,9 @@ sub get_agro_PAL()
 	| AE Stuns
 	/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 60 playerstate 4 targetable]}
 	/if  (${mobAECount} > 1) {
-		/if (!${Bool[${Raid.Members}]} && ${validate_cast[alt, ${AAAELodestar}, ${Target2Kill}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill} cast_break
-	} else /if (${mobAECount} > 3) {
-		/if (!${Bool[${Raid.Members}]} && ${validate_cast[alt, ${AAAELodestar}, ${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill} cast_break
+		/if ((!${Bool[${Raid.Members}]} || ${Bool[${Raid.Members}]} && ${Raid.MainAssist.Name.Equal[${Me.DisplayName}]}) && ${validate_cast[alt, ${AAAELodestar}, ${Target2Kill}]}) /call core_cast "${AAAELodestar}" alt ${Target2Kill} cast_break
+	} else /if (${mobAECount} > 5) {
+		/if ((!${Bool[${Raid.Members}]} || ${Bool[${Raid.Members}]} && ${Raid.MainAssist.Name.Equal[${Me.DisplayName}]} && ${validate_cast[alt, ${AAAELodestar}, ${AAAEBeacon}]}) /call core_cast "${AAAEBeacon}" alt ${Target2Kill} cast_break
 	}
 
 	| chain stun
@@ -348,7 +349,7 @@ sub synergy_PAL()
 	/if (${Me.AltAbilityReady[${AAShield}]}) /call core_cast "${AAShield}" alt 0 FALSE
 	
 	| epic 2.0
-	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0 FALSE
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	
 	
 | aa Thunder of Karna | spell damage	

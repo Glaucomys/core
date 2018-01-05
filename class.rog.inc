@@ -27,6 +27,7 @@ sub core_ROG()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/if (${Me.Invis}) /call sneak_attack
@@ -68,8 +69,10 @@ sub core_ROG()
 sub sneak_attack()
 	DEBUG ${cbug}sneak_attack\ax
 	/if (${Bool[${DiscSneakAttack}]} && !${Me.CombatAbilityReady[${DiscSneakAttack}]}) /return
+	CHECKEXIT
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	
-	/if (${Target.ID} && ${Me.Invis}) {
+	/if (${Target.ID} && ${Me.Invis} && ${Me.Sneaking}) {
 		/call core_cast "${DiscSneakAttack}" disc ${Target2Kill} FALSE
 		/doability backstab
 	}
@@ -146,8 +149,8 @@ sub click_DPS_ROG()
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 
-	| epic item
-	/if (${Me.ItemReady[${Epic}]}) /call core_cast "${Epic}" item 0 FALSE	
+	| epic 2.0
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	
 /return
 
@@ -261,7 +264,14 @@ sub synergy_ROG()
 		/if (${Me.ActiveDisc.Name.Equal[${DiscPlay}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :loopmakestop
 	}
 
-	/if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]}) /call core_cast "Dirty Fighting" alt ${Target2Kill} FALSE
+	| envenomed blades / dirty fighting stack issue
+	/if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]} && !${Me.Buff[Envenomed Blades].ID}) {
+		/call core_cast "Dirty Fighting" alt ${Target2Kill} FALSE
+	} else /if (${Me.AltAbilityReady[Envenomed Blades]} && !${Me.Buff[Dirty Fighting].ID}) {
+		/call core_cast "Envenomed Blades" alt 0 FALSE
+	}
+
+
 	/call core_cast "Dichotomic Weapons" disc 0 FALSE
 	/call use_skill_melee ${Target2Kill}
 	
@@ -272,7 +282,6 @@ sub synergy_ROG()
 	}
 
 	/call core_cast "${DiscPinPoint}" disc ${Target2Kill} FALSE
-	/call core_cast "Envenomed Blades" alt 0 FALSE
 	/if (${Bool[${Target2Kill}]} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
 	/call core_cast "Rogue's Fury" alt 0 FALSE
 	/if ( ${Me.PctEndurance} > 15) /call core_cast "${DiscMark}" disc ${Target2Kill} FALSE

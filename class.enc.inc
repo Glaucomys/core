@@ -30,6 +30,7 @@ sub core_ENC()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 	
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
@@ -63,17 +64,12 @@ sub core_ENC()
 		/call set_combat HEAL
 		/call send_pet
 	} else /if (${Select[${combat},DUAL]}) {
-		| /echo TARGET 2 KILL:   ${Target2Kill}
-		/doevents
-		AMIDEAD
-		CHECKTIE
 		/call get_target_ENC
 		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
 		| /if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
 		/if (${Bool[${mobList}]}) /call list_delete mobList ${Target2Kill}
 		/return
 		:loop
-		/doevents
 		AMIDEAD
 		CHECKTIE
 		/if (${Spawn[${Target2Kill}].Type.Equal[Corpse]}  || !${Target2Kill} || !${Target.ID} || ${Target.Type.Equal[corpse]} || !${Spawn[${Target2Kill}].ID}) /call get_target_ENC
@@ -536,6 +532,10 @@ sub synergy_ENC()
 	/call cast_AA_spire
 	/if (${Me.AltAbilityReady[Dimensional Shield]} && ${Spell[Dimensional Shield].Stacks}) /call core_cast "Dimensional Shield" alt 0
 	/if (${Me.AltAbilityReady[Calculated Insanity]} && ${Spell[Calculated Insanity].Stacks}) /call core_cast "Calculated Insanity" alt 0
+
+	| epic 2.0
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+
 	
 	/call use_glyph
 	/call synergy_click_Circle

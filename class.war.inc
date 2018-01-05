@@ -23,6 +23,7 @@ sub core_WAR()
 	/call prep_combat
 	/if (!${Bool[${Macro.Return}]}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call stick_to_target

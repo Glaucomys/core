@@ -40,26 +40,23 @@ sub core_CLR()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		CHECKREZ
 		/call set_combat MELEE
 		/call stick_to_target
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		CHECKREZ
 		/call set_combat RANGE
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		CHECKREZ
 		/call set_combat NUKE
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},HEAL]}) {
 		| /if (${switchLockMA}) /call lock_ma
-		CHECKREZ
 		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
@@ -70,11 +67,9 @@ sub core_CLR()
 		/call disc_${Me.Class.ShortName}
 		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
 	} else /if (${Select[${combat},DUAL]}) {
-		CHECKREZ
 		/call set_combat HEAL
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${is_target_valid[${Target2Kill}]}) {
-			CHECKREZ
 			/call set_combat NUKE
 			/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 			/call disc_${Me.Class.ShortName}
@@ -715,13 +710,13 @@ sub auto_control_swap()
 	/doevents
 
 
-	/if (${Bool[${useSmartAssist1}]}) {
+	/if (${Bool[${useSmartAssistR}]}) {
 		/target ID ${Me.XTarget[1].ID}
 		/delay 1
 |		/delay 1s ${Target.ID} == ${Me.XTarget[1].ID}
-	} else /if (${Bool[${useSmartAssist2}]}) {
-		/target ID ${Me.XTarget[2].ID}
-		/delay 1s ${Target.ID} == ${Me.XTarget[2].ID}
+	| } else /if (${Bool[${useSmartAssist2}]}) {
+	| 	/target ID ${Me.XTarget[2].ID}
+	| 	/delay 1s ${Target.ID} == ${Me.XTarget[2].ID}
 	}
 	
 	/target ${Me.TargetOfTarget}

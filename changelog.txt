@@ -13,12 +13,42 @@ Current Requests:
 - pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
 - fix chanter charm mob code
 - no melee buff list
-- add more checks to the buff combat routines. and rechecks. and then more checks.
+
+
+
+20180104
+- Smart Assists
+  -- smart assist Raid 1 and Raid 2 are not just Smart assist R (for Raid)
+  -- /smartma 1/2 are gone
+  -- /smartma r will set assist to raid
+  -- /smartma g will set assist to group
+  -- /smartma x will disable smart assist (raid or group)
+  -- /smartma will toggle the three settings.
+- rezzing
+  -- caught a display bug for a toon trying to rez whle dead
+  -- all classes will check for rezzing more often
+- /grab NAME
+  -- picks up name spawns. will use partial names. must match names on /mapfilter ground spawn names
+- add more checks to the buff combat routines. and rechecks. and then some more checks.
 - SIMPLEEXIT
   -- will watch for death/call flags now
+- adjustment to the /movement controls
+- class.rog.inc
+  -- fixed a stacking issue between dirty fighting and envenomed blades
+- class.mag.inc
+  -- redesign of /g coh command 
+- class.shm.inc
+  -- seperated the talisman buff line. (requested)
+  -- /shm talisman will enable/disable using the buff
+  -- INI->spellTalisman=talisman buff you want to use
+  -- only used duting combat routines
+  -- fixed a bad variable name for the intervention heal
+- class.dru.inc
+  -- /cc dual will let them heal, nuke, dot, play poker.. so on. pref will always be to heal.
+ 
 
-
-
+  
+  
 20171230
 HUDUPDATE
 - fixed a visual error in the HUD with smartengage % not showing
@@ -33,8 +63,6 @@ HUDUPDATE
 - class.mag.inc
   -- added back in the self targeting for 1 of the rods. it has to be there.
   
-  
-
 
 20171228
 - changes to how rezzes work.

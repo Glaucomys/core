@@ -24,6 +24,7 @@ sub core_BER()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 	
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call stick_to_target
 		/if (${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
@@ -160,8 +161,8 @@ sub click_DPS_BER()
 	/doevents
 	/call click_horn_of_unity 	
 
-	| epic item
-	/call core_cast "${Epic}" item 0 FALSE
+	| epic 2.0
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	
 /return
 

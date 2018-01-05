@@ -115,9 +115,9 @@ sub HUDUpdate()
 	
 	| engage ##
 	| MA
-	/noparse /ini HUDPATH "engage1" "19,44,98,255,255,255,${If[(!${switchOverrideEngageat} && ${coreAuto} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && (${Bool[${MA1}]} || ${Bool[${MA2}]}),${engageAt},]}"
+	/noparse /ini HUDPATH "engage1" "19,44,98,255,255,255,${If[(!${switchOverrideEngageat} && ${coreAuto} && !${useSmartAssistR} && !${useSmartAssistG} && (${Bool[${MA1}]} || ${Bool[${MA2}]}),${engageAt},]}"
 	| smartma
-	/noparse /ini HUDPATH "engage2" "19,44,98,255,255,255,${If[!${switchOverrideEngageat} && ${coreAuto} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}),${smartengageAt},]}"
+	/noparse /ini HUDPATH "engage2" "19,44,98,255,255,255,${If[!${switchOverrideEngageat} && ${coreAuto} && (${useSmartAssistR} || ${useSmartAssistG}),${smartengageAt},]}"
 	| manual	
 	/noparse /ini HUDPATH "engage3" "19,44,98,25,25,25,${If[!${coreAuto},##,]}"
 	| override
@@ -237,8 +237,8 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "ma24" "19,305,38,25,25,25,${If[${Bool[${MA2}]},,NONE]}"
 	/noparse /ini HUDPATH "sma1" "3,280,50,100,149,237,Smart MA"
 	/noparse /ini HUDPATH "sma2" "3,329,49,100,149,237,[    ]"
-	/noparse /ini HUDPATH "sma3" "19,334,50,255,255,255,${If[${useSmartAssist1},1,]}${If[${useSmartAssist2},2,]}${If[${useSmartAssistG},G,]}"
-	/noparse /ini HUDPATH "sma4" "19,334,50,25,25,25,${If[!${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG},X,]}"
+	/noparse /ini HUDPATH "sma3" "19,334,50,255,255,255,${If[${useSmartAssistR},R,]}${If[${useSmartAssistG},G,]}"
+	/noparse /ini HUDPATH "sma4" "19,334,50,25,25,25,${If[!${useSmartAssistR} && !${useSmartAssistG},X,]}"
 
 	| buff switches
 	/noparse /ini HUDPATH "buff1" "3,280,62,100,149,237,Buff"

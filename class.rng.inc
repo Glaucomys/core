@@ -24,6 +24,7 @@ sub core_RNG()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
@@ -239,7 +240,10 @@ sub click_DPS_RNG()
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 	
-	/if (${Select[${combat},MELEE]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) /call core_cast "${Epic}" item 0 FALSE
+	/if (${Select[${combat},MELEE]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+		| epic 2.0
+		/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	}
 	
 /return
 

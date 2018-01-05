@@ -1266,6 +1266,9 @@ sub set_xtarget()
 		/for _x 1 to ${ProtectOutsideGroup.Count[|]}
 			DEBUG x:${_x} b:${_b} count:${ProtectOutsideGroup.Count[|]} spawn:${ProtectOutsideGroup.Arg[${_x},|]}
 			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /continue
+			
+			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Distance} > ${XTHealRadius}) /continue
+
 			/if (${_b} > 13 || !${Bool[${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}]}]} || ${Group.Member[${ProtectOutsideGroup.Arg[${_x},|]}].ID}) /continue
 			/if (${Bool[${Me.XTarget[${ProtectOutsideGroup.Arg[${_x},|]}]}]}) {
 				/varcalc _b ${_b}+1
@@ -1394,7 +1397,7 @@ sub get_assist_target()
 	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]}) /return
 	
 	| if no MA present. move along..	
-	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssist1}]} && !${Bool[${useSmartAssist2}]} && !${Bool[${useSmartAssistG}]}) {
+	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssistR}]} && !${Bool[${useSmartAssistG}]}) {
 		DEBUG ${cbad}NO MA\ax
 		/delay 1
 		/return
@@ -1415,37 +1418,24 @@ sub get_assist_target()
 	| /if (!${Raid.Members} && ${Bool[${Group.Members}]} && !${Bool[${Group.MainAssist}]}) :skippingtoMAtarget
 	
 	| tar acquisition when using smart assist. set XTarget positions.
-	/if (${Bool[${useSmartAssist1}]} || ${Bool[${useSmartAssist2}]} || ${Bool[${useSmartAssistG}]}) {
+	/if (${Bool[${useSmartAssistR}]} || ${Bool[${useSmartAssistG}]}) {
 		DEBUG Using SmartMA
 
 		| if the raid/group roles are not set, move on tho MA1/2	
 		/if (${Bool[${useSmartAssistG}]} && (!${Bool[${Group.MainAssist}]} || ${Bool[${Spawn[${Group.MainAssist}].Dead}]})) /goto :skippingtoMAtarget
 	
-		/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 1 Target]} && ${Raid.Members} && ${Bool[${useSmartAssist1}]}) {
+		/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 1 Target]} && ${Raid.Members} && ${Bool[${useSmartAssistR}]}) {
 			/xtarget set 1 raidassist1target
-			/xtarget set 2 Autohater
-		} else /if (${Me.XTarget[2].TargetType.NotEqual[Raid Assist 2 Target]} && ${Raid.Members} && ${Bool[${useSmartAssist2}]}) {
-			/xtarget set 1 raidassist2target
 			/xtarget set 2 Autohater
 		} else /if (${Me.XTarget[1].TargetType.NotEqual[Group Assist Target]} && ${Bool[${Group.Members}]} && ${Bool[${useSmartAssistG}]}) {
 			/xtarget set 1 groupassisttarget
 		}
 		
 		| smart assist raid 1
-		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssist1}]}) {
+		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssistR}]}) {
 			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
 				DEBUG Setting SMA1
 				/varset Target2Kill ${Me.XTarget[1].ID}
-				/delay 1
-				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
-				/return
-			}	
-		}
-		| smart assist raid 2
-		/if (${Bool[${Spawn[${Me.XTarget[2].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssist2}]}) {
-			/if (${Me.XTarget[2].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
-				DEBUG Setting SMA2
-				/varset Target2Kill ${Me.XTarget[2].ID}
 				/delay 1
 				/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
 				/return
@@ -1531,20 +1521,18 @@ sub is_target_valid(int _tmpID)
 
 	| check smart assists
 	/if (${Target.ID} && ${coreAuto}) {
-		/if (${useSmartAssist1} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
-			/call clear_combat
-		} else /if (${useSmartAssist2} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[2].ID}) {
+		/if (${useSmartAssistR} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 			/call clear_combat
 		} else /if (${useSmartAssistG} && ${Bool[${Group.MainAssist}]} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 			/call clear_combat
 		}
 	}
 	
-	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${switchPull} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG} && !${switchOverrideEngageat}) {
+	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${switchPull} && !${useSmartAssistR} && !${useSmartAssistG} && !${switchOverrideEngageat}) {
 		/delay 1
 		/varset isValidTarget FALSE
 		/return FALSE
-	} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && !${switchPull} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssistG}) && !${switchOverrideEngageat} ) {
+	} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && !${switchPull} && (${useSmartAssistR} || ${useSmartAssistG}) && !${switchOverrideEngageat} ) {
 		/delay 1
 		/varset isValidTarget FALSE
 		/return FALSE
@@ -1611,7 +1599,7 @@ sub is_target_dead(int _tmpID)
  ***|
 sub clear_combat()
 	DEBUG ${cbug}clear_combat()\ax
-	AMIDEAD
+	| AMIDEAD
 	/if (${validate_class[FALSE, |BRD]}) {
 		/call pulse_stop
 		/if (${validate_plugin[FALSE, |mq2twist]}) /squelch /twist clear
@@ -2816,7 +2804,7 @@ sub check_exit()
 
 	| clear ToTD if it procs.
 	/if (${coreAuto} && ${Select[${Me.Class.ShortName},CLR,SHM,BER]}) {
-		/if (${Me.Song[Touch of the Divine].ID}) {
+		/while (${Me.Song[Touch of the Divine].ID}) {
 			/delay 3s
 			/docommand /removebuff Touch of the Divine
 			ECHOCHANNEL REMOVING .. Touch of the Divine
@@ -2987,8 +2975,8 @@ sub update_HUD_notices(string _mode)
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Skill Trainer
 		/varset _sep TRUE
 	}		
-	/if (${Bool[${switchModeLush}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Lush[${Me.Drunk}]
+	/if (${Bool[${switchModeLush}]} || ${Me.Drunk}) {
+		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Drunk[${Me.Drunk}]
 		/varset _sep TRUE
 	}		
 		
@@ -3280,6 +3268,7 @@ sub tell_resident_mage(string _request)
 sub check_for_corpse()
 	DEBUGREZ ${cbug}check_for_corpse()\ax
 	AMIDEAD
+	/if (${watch_for_death[]}) /return
 	
 	| fuck your corpse
 	/if (!${switchRezGive}) /return	FALSE
@@ -3293,27 +3282,39 @@ sub check_for_corpse()
 	/if (${Me.PctMana} < 8 && !${switchRezEmergency}) /return FALSE
 	| no emergency tokens AND dont use them when a cleric is around
 	/if (${switchRezEmergency} && (!${Me.ItemReady[Token of Resurrection]} || ${Spawn[pc CLR radius ${maxRezRange}].ID})) /return FALSE
-	| no necro rez gems
-	/if (${Select[${Me.Class.ShortName},NEC]} && !${FindItem[Essence Emerald].ID}) /return FALSE
-		
+	
+	| necro stuff
+	/if (${Select[${Me.Class.ShortName},NEC]}) {
+		/if (!${FindItem[Essence Emerald].ID}) /return FALSE
+		/declare _rezNEC						string	local "Convergence"
+	}
+
+	| cleric stuff
+	/if (${Select[${Me.Class.ShortName},CLR]}) {
+		/declare _divinerezCLR			string	local "Divine Resurrection"
+		/declare _rezCLR						string	local "Blessing of Resurrection"
+	}
+	
+	| pally, shaman, druid stuff
+	/if (${Select[${Me.Class.ShortName},PAL,SHM,DRU]}) {
+		/if (${Select[${Me.CombatState},COMBAT]}) {
+			/declare _rezDRU						string	local "Call of the Wild"
+			/declare _rezSHM						string	local "Call of the Wild"
+			/declare _rezPAL						string	local "Gift of Resurrection"
+		} else {
+			/declare _rezDRU						string	local "Rejuvenation of Spirit"
+			/declare _rezSHM						string	local "Rejuvenation of Spirit"
+			/declare _rezPAL						string	local "Restore Life"
+		}
+	}
+
+	/if (${switchRezEmergency}) {		
+		/declare _rezEmergency			string	local "Token of Resurrection"
+	}
+
 	/declare _count 						int 		local 0
 	/declare _tmpID 						int 		local 0
-	/declare _divinerezCLR			string	local "Divine Resurrection"
-	/declare _rezCLR						string	local "Blessing of Resurrection"
-	
-	/if (${Select[${Me.CombatState},COMBAT]}) {
-		/declare _rezDRU						string	local "Call of the Wild"
-		/declare _rezSHM						string	local "Call of the Wild"
-		/declare _rezPAL						string	local "Restore Life"
-	} else {
-		/declare _rezDRU						string	local "Rejuvenation of Spirit"
-		/declare _rezSHM						string	local "Rejuvenation of Spirit"
-		/declare _rezPAL						string	local "Restore Life"
-	}
-		
-	/declare _rezNEC						string	local "Convergence"
-	/declare _rezEmergency			string	local "Token of Resurrection"
-	
+
 	| make the damn variables.
 	/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange}]}
 		/varset _tmpID ${NearestSpawn[${_count},pccorpse radius ${maxRezRange}].ID}
@@ -3334,8 +3335,8 @@ sub check_for_corpse()
 		AMIDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse cleric raid radius ${maxRezRange}].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count},pccorpse cleric raid radius ${maxRezRange}].ID}
-			/if (${DivineRezCleric} && ${Me.AltAbilityReady[${_divinerezCLR}]}) {
-				/call cast_rez ${_tmpID} ${_divinerezCLR}		
+			/if (${DivineRezCleric}) {
+				/if (${Me.AltAbilityReady[${_divinerezCLR}]}) /call cast_rez ${_tmpID} ${_divinerezCLR}		
 			} else /if (${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
 			} else /if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
@@ -3427,7 +3428,7 @@ sub check_for_corpse()
 		AMIDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse radius ${maxRezRange}].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count}, pccorpse radius ${maxRezRange}].ID}
-			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]} && !${corpse_rez[${_tmpID}]}) {
+			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
 			} else {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
@@ -3591,9 +3592,9 @@ sub set_combat_here()
 	| set assists
 	/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull} && !${useSmartAssistG}) {
 		/smartma G
- 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPull} && !${useSmartAssist1}) {
-		/smartma 1
-	}	else /if ((${Select[${Me.Class.ShortName},CLR]} && (${useSmartAssistG} || ${useSmartAssist1} || ${useSmartAssist2})) || ${switchPull}) {
+ 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPull} && !${useSmartAssistR}) {
+		/smartma R
+	}	else /if (${Select[${Me.Class.ShortName},CLR]} && (${useSmartAssistG} || ${useSmartAssistR}) || ${switchPull}) {
 		/smartma X
 	}
 	
@@ -5589,6 +5590,8 @@ sub fix_INI_declares()
 	/ini "${INIClass}" "Discs" "DiscGuard" NULL
 	/ini "${INIClass}" "Discs" "DiscHoly" NULL
 
+	/ini "${INIClass}" "Common" "useSmartAssist1" NULL
+	/ini "${INIClass}" "Common" "useSmartAssist2" NULL
 
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
@@ -6166,9 +6169,6 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
 	| /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["Do you wish this?"]}]}) {
 		DEBUGREZ rezbox open. yay us.
 
-		| /varset validRezFound FALSE
-		| /varset rezWindowPct 0
-		
 		| get rez window % to something we can use			
 		/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["percent)"]}]}) {
 			/if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["(10 percent)"]}]}) { 
@@ -6283,6 +6283,51 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
 
 
 
+|***
+ *	DES: this is for waisting AAs. it does nothing more. if you expect it to do more, go away.
+ *	USE: /call cast_AA_fireworks()
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_AA_fireworks()
+	SDEBUG ${cbug}cast_AA_fireworks(AA:${Me.AAPoints} Max:${Int[${Math.Calc[${Me.Level}*2]}]})\ax
+	/if (!${switchAAFireworks}) /return
+	/call create_timer timer_Waste_Fireworks ${tWaste_Fireworks}
+	/if (${Me.AAPoints} < ${Int[${Math.Calc[${Me.Level}*2-15]}]}) /return
+
+	| show me the money
+	/if (${Me.AAPoints} >= ${Int[${Math.Calc[${Me.Level}*2]}]}) {
+		SDEBUG we have the AA
+		/if (!${Me.AltAbilityReady[Glyph of Fireworks II]}) {
+			/alternateadv buy ${AltAbility[Glyph of Fireworks II].ID}
+			/call create_timer timer_Waste_Fireworks 1m
+			/return
+		}
+		/if (${Me.AltAbilityReady[Glyph of Fireworks II]}) /call core_cast "Glyph of Fireworks II" alt 0 FALSE
+	}
+/return
 
 
+
+   /nomodkey /notify AAWindow AAW_Subwindows tabselect ${ListNum.Right[1]}
+   /nomodkey /notify AAWindow ${ListNum} listselect ${Window[AAWindow].Child[${ListNum}].List[=${AAName}]}
+   /nomodkey /notify AAWindow ${ListNum} leftmouse ${Window[AAWindow].Child[${ListNum}].List[=${AAName}]}
+
+
+
+/notify AAWindow ${ListNum} listselect ${Window[AAW_SpecialList].List[=Glyph of Fireworks II]}
+
+
+/notify AAWindow AAW_SpecialList leftmouse Glyph of Fireworks II
+/notify
+/notify
+/notify
+/notify
+/notify
+
+
+
+   /nomodkey /notify AAWindow tabselect 4
+   /nomodkey /notify AAWindow AAW_SpecialList listselect Glyph of Fireworks II
+   /nomodkey /notify AAWindow AAW_SpecialList leftmouse Glyph of Fireworks II
 

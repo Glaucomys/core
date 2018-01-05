@@ -31,6 +31,7 @@ sub core_NEC()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {

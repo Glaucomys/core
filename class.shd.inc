@@ -3,7 +3,7 @@
  *	Core Shadow Knight Include
  *
  * 
- * Frosty Gem of Enhanced Protection
+ * 
  ***|
 
 
@@ -29,6 +29,7 @@ sub core_SHD()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
@@ -246,7 +247,7 @@ sub synergy_SHD()
 	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Chattering Bones]}) /call core_cast "Chattering Bones" alt ${Target2Kill} FALSE
 	
 	| epic 2.0
-	/if (${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID}) /call core_cast "${Epic}" item 0 FALSE
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 
 	/call use_glyph	
 	/call synergy_click_Circle

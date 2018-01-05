@@ -35,51 +35,47 @@ sub core_SHM()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		CHECKREZ
 		/call set_combat MELEE
 		/call send_pet
 		/call stick_to_target
 		/call check_deBuffs ${Target2Kill}
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		CHECKREZ
 		/call set_combat RANGE
 		/call send_pet
 		/call stick_to_target
 		/call check_deBuffs ${Target2Kill}
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke			
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		CHECKREZ
 		/call set_combat NUKE
 		/call send_pet
 		/call check_deBuffs ${Target2Kill}
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
 	} else /if (${Select[${combat},HEAL]}) {
-		CHECKREZ
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${is_target_valid[${Target2Kill}]}) {
-			CHECKREZ
 			/call check_deBuffs ${Target2Kill}
 			/if (${DoDoT}) /call cast_DOT
 			/if (${DoNuke}) /call cast_nuke
@@ -95,6 +91,7 @@ sub core_SHM()
 		/if (${switchHealCure}) /call cast_cure
 		/call check_cani
 		/call use_mod_rod
+		/if (${switchTalisman} && !${timer_cast_talisman}) /call cast_talisman
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
 	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
@@ -128,7 +125,6 @@ sub click_DPS_SHM()
 	CHECKEXIT
 	/doevents
 	/call click_horn_of_unity 	
-	/if (${Me.ItemReady[${Epic}]} && !${Me.Song[Prophet's Gift of the Ruchu].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 3)  /call core_cast "${Epic}" item 0 FALSE
 /return
 	
 
@@ -275,24 +271,39 @@ sub check_heal_group_SHM()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_SHM()
-	DEBUGCLASS ${cbug}check_heal_XTarget_SHM()\ax
-	AMIDEAD
-	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
+
+	DEBUGCLASS ${cbug}check_heal_XTarget_${Me.Class.ShortName}()\ax
+	/if (!${validate_expansion[FALSE, |16]}) /return
   /declare _count int local 0
+
   /for _count 1 to 13
-  	AMIDEAD
-    /if (${Spawn[${Me.XTarget[${_count}].ID}].ID} && (${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} || ${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].CleanName}]}) && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
-			/if (${Spawn[${Me.XTarget[${_count}].ID}].Distance} <= ${Spell[${healMain}].MyRange} && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healMain}]} || ${Me.SpellReady[${healIntervention}]} && || ${Me.SpellReady[${healReckless}]})) {
-        /if (${Me.SpellReady[${healMain}]}) {
-          /call core_cast "${healMain}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
-        } else /if (${Me.SpellReady[${healIntervention}]}) {
-          /call core_cast "${healIntervention}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
-        } else /if (${Me.SpellReady[${healReckless}]}) {
-          /call core_cast "${healReckless}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
-        }
-      }
-    }
-  /next _count
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
+  	| /if (${Me.XTarget[${_count}].DisplayName.Equal[NULL]}) /continue
+  	|  /echo ${Me.XTarget[${_count}].DisplayName}
+  	/if (!${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
+  	
+  	UPDATEHUD "HEAL XTARGET"
+		/call check_no_cast_buffs
+		AMIDEAD
+		SIMPLEEXIT
+		/doevents
+
+		/if (!${Spawn[${Me.XTarget[${_count}].ID}].ID} || ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} > ${${Spawn[pc ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
+
+		/if (${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
+			SDEBUG NAME: ${Me.XTarget[${_count}].DisplayName} -- ID: ${Me.XTarget[${_count}].ID}
+			SDEBUG CHECK:${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}
+			/if (${Me.SpellReady[${healMain}]}) {
+				/call core_cast "${healMain}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+			} else /if (${Me.SpellReady[${healIntervention1}]}) {
+				/call core_cast "${healIntervention1}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+			} else /if (${Me.SpellReady[${healReckless}]}) {
+				/call core_cast "${healReckless}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+			}
+		}
+		
+	/next _count
+	UPDATEHUD FALSE  
 /return
 
 
@@ -304,54 +315,50 @@ sub check_heal_XTarget_SHM()
  *  NOTE: this will try and get a twinheal proc first.
  ***|
 sub cast_surge_heal()
-	DEBUGCLASS ${cbug}cast_surge_heal(nuke1:${TC1}, nuke2:${TC2})\ax
-	/if ((!${Bool[${TC1}]} && !${Bool[${TC1}]})) /return
-	/if (${Bool[${Me.Song[Touch of the Divine]}]} || (!${Bool[${TC1}]} && !${Bool[${TC1}]})) /return
-
+	DEBUGCLASS ${cbug}cast_surge_heal(TC1:${Me.SpellReady[${TC1}]}, TC2:${Me.SpellReady[${TC2}]})\ax
+	/if (!${Bool[${TC1}]} && !${Bool[${TC1}]}) /return
+	/if (${Bool[${Me.Song[Touch of the Divine]}]}) /return
+	
+	CHECKEXIT
 	AMIDEAD
 	/doevents
-	/declare _tmpTarget int local
 	
 	| nuke to engage twin heal proc
 	/if (${Target.ID} == ${Me.ID}) /squelch /target clear
 	/if (!${Me.SpellReady[${TC1}]} && !${Me.SpellReady[${TC2}]}) /return
-	
-	| /call get_assist_target
-	| /call is_target_valid ${Target2Kill}
-	| /if (!${Bool[${Macro.Return}]}) /return
-	
-	| target the main assist to trigger.
-	/if (${useSmartAssistG}) {
-		/varset _tmpTarget ${Spawn[pc ${Group.MainAssist}].ID}
-		/goto :nuke
-	} else /if (${useSmartAssist1}) {
-		/varset _tmpTarget ${Spawn[pc ${Raid.MainAssist}].ID}
-		/goto :nuke
-	} else /if (${useSmartAssist2}) {
-	| /call get_assist_target
-	| /call is_target_valid ${Target2Kill}
-	| /if (!${Bool[${Macro.Return}]}) /return
 
-	} else /if (${Bool[${MA1}]} && ${Bool[${Spawn[pc ${MA1}].ID}]} && !${Bool[${Spawn[pc ${MA1}].Dead}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG}) {
-		/varset _tmpTarget ${Spawn[pc ${MA1}].ID}
-		/goto :nuke
-	} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[pc ${MA2}].ID}]} && !${Bool[${Spawn[pc ${MA2}].Dead}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssistG}) {
-		/varset _tmpTarget ${Spawn[pc ${MA2}].ID}
-		/goto :nuke
-	}
+	/declare _tmpID int local
 	
-	:nuke
-	/if (!${Target.LineOfSight} || ${Target.Distance} > ${Spell[${TC1}].MyRange}) /return
+	/if (${useSmartAssistG}) {
+		/varset _tmpID ${Spawn[pc ${Group.MainAssist}].ID}
+	} else /if (${useSmartAssistR}) {
+		/varset _tmpID ${Spawn[pc ${Raid.MainAssist}].ID}
+	} else /if (${Bool[${MA1}]} && ${Bool[${Spawn[pc ${MA1}].ID}]} && !${Bool[${Spawn[pc ${MA1}].Dead}]}) {
+		DEBUG MA1: ${Spawn[pc ${MA1}].ID}
+		/varset _tmpID ${Spawn[pc ${MA1}].ID}
+	} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[pc ${MA2}].ID}]} && !${Bool[${Spawn[pc ${MA2}].Dead}]}) {
+		/varset _tmpID ${Spawn[pc ${MA2}].ID}
+	}
+	DEBUG _tmpID[${_tmpID}] is: ${Spawn[${_tmpID}]} -- ${Spawn[${_tmpID}].DisplayName}
+
+ 	/target ID ${Spawn[${_tmpID}].ID}
+ 	/delay 1s ${Target.ID} == ${Spawn[${_tmpID}].ID}
+
+	
+	/if (!${Spawn[${_tmpID}].LineOfSight} || ${Spawn[${_tmpID}].Distance} > ${Spell[${TC1}].MyRange}) /return
+	
   /if (${Me.SpellReady[${TC1}]} && !${Me.Song[Healing Twincast].ID}) {
-		/call core_cast "${TC1}" 0 ${_tmpTarget} 
+  	/delay 1s ${Target.ID} == ${_tmpID}
+		/call core_cast "${TC1}" 0 ${_tmpID} FALSE
 	} else /if (${Me.SpellReady[${TC2}]} && !${Me.Song[Healing Twincast].ID}) {
-		/call core_cast "${TC2}" 0 ${_tmpTarget} 
+  	/delay 1s ${Target.ID} == ${_tmpID}
+		/call core_cast "${TC2}" 0 ${_tmpID} FALSE
 	}
 
 	| spalsh surge heal	
 	/if (${Me.SpellReady[${healSurge}]} && ${Me.Song[Healing Twincast].ID}) {
 		/delay 2.25s ${Me.SpellReady[${healSurge}]}
-		/call core_cast "${healSurge}" 0 ${Me.ID}
+		/call core_cast "${healSurge}" 0 ${_tmpID} FALSE
 	}
 /return
 
@@ -410,11 +417,34 @@ sub synergy_SHM()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/doevents
+
+	| epic 2.0
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+
 	/call cast_AA_spire
 
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn
+/return
+
+
+
+|***
+ *	DES: Control for Talisman Buff
+ *	USE: /call cast_talisman
+ *	INI: 
+ *  NOTE: keeps talisman buff line up
+ ***|
+sub cast_talisman()
+	DEBUGCLASS ${cbug}cast_talisman()\ax 
+	/if (!${switchTalisman}) /return	
+	/if (${Me.Buff[${spellTalisman}].ID}) /return
+	AMIDEAD
+	CHECKEXIT
+	/doevents
+	/call create_timer timer_cast_Talisman ${tTalisman}
+	/call core_cast "${spellTalisman}" 0 ${Me.ID} FALSE
 /return
 
 
@@ -445,6 +475,13 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
+
+	| enable/disable talisman line of spells
+	/if (${Bool[${_classType.Find[talisman]}]}) {
+		/call writeINI switchTalisman Spells ${If[${switchTalisman},FALSE,TRUE]}
+		VOUT /${_bind} talisman ${sep} ${If[${switchTalisman},${oenabled},${odisabled}]}
+
+
 	| use group Heals
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
 		/call Event_SetVar NA useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	

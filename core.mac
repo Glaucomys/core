@@ -187,7 +187,7 @@ sub main()
 
 		| non class specific automated thingies.
 		/if (${coreAuto}) {
-			/if (${HomeSet}) /squelch /makecamp off
+			/if (${HomeSet}) /squelch /makecamp mpause
 			
 			| keep an eye out for real rezes
 			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
@@ -225,6 +225,9 @@ sub main()
 		/if (!${coreAuto} && ${Me.PctEndurance} < 32) {
 			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MON|BST]}) /call cast_disc_breather
 		}
+
+		| use those AA.. hoarding bastard
+		/if (${switchAAFireworks} && !${timer_Waste_Fireworks}) /call cast_AA_fireworks
 
 		| watch for spawn
 		/if (${Bool[${watchSpawn}]} && !${timer_check_watch_spawn}) /call check_watch_spawn
@@ -294,8 +297,7 @@ sub base_preperation()
 
 	| disable smart assists for TLP w/o underfoot
 	/if (!${validate_expansion[TRUE, |16]}) {
-		/if (${useSmartAssist1}) /call writeIni useSmartAssist1 FALSE
-		/if (${useSmartAssist2}) /call writeIni useSmartAssist2 FALSE
+		/if (${useSmartAssistR}) /call writeIni useSmartAssistR FALSE
 		/if (${useSmartAssistG}) /call writeIni useSmartAssistG FALSE
 	}
 	

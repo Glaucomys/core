@@ -29,6 +29,7 @@ sub core_BST()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
@@ -283,6 +284,9 @@ sub synergy_BST()
 		/if (!${Me.Song[${DiscSavage}].ID} && ${Me.AltAbilityReady[Ferociousness]}) /call core_cast "Ferociousness" alt 0 FALSE
 		/if (${Me.AltAbilityReady[Group Bestial Alignment]} && !${Me.Buff[Ferociousness].ID}) /call core_cast "Group Bestial Alignment" alt 0 FALSE
 	}
+	
+	| epic 2.0
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
 
 	/call use_glyph
 	/call synergy_click_Circle

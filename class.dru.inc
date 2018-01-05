@@ -37,10 +37,10 @@ sub core_DRU()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		CHECKREZ
 		/call set_combat NUKE
 		/call send_pet
 		/call check_deBuffs ${Target2Kill}
@@ -51,7 +51,6 @@ sub core_DRU()
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
 	} else /if (${combat.Equal[HEAL]}) {
-		CHECKREZ
 		/call set_combat HEAL
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
@@ -410,6 +409,11 @@ sub synergy_DRU()
 	
 	| AA AE heal
 	/if (${useGroupHeal} && ${Me.AltAbilityReady[Nature's Boon]}) /call core_cast "Nature's Boon" alt 0 FALSE
+
+	| epic 2.0
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+
+
 
 	/call synergy_click_Circle
 	/call click_item_burn

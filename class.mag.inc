@@ -33,6 +33,7 @@ sub core_MAG()
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -136,29 +137,6 @@ sub click_DPS_MAG()
 
 
 |***
- *	DES: call of hero requesting toon in group.
- *	USE: /g coh
- *	INI: 
- *  NOTE: 
- ***|
-#event CoH "#1# tells the group, 'coh'"
-sub Event_CoH(string line, string _sender)
-	/if (${Me.DisplayName.Equal[${_sender}]}) /return
-	/if (${Select[${Me.Class.ShortName},MAG]}) {
-		CHECKSAFELIST
-		/call set_stop
-	  /delay 10s ${Me.AltAbilityReady[Call of the Hero]}
-	  /if (${Me.Invis}) /makemevisible
-	  /target ID ${Spawn[pc ${_sender}].ID}
-	  /delay 3s ${Target.ID} == ${Spawn[pc ${_sender}].ID}
-	  ECHOCHANNEL Calling ... ${_sender}
-	 	/call core_cast "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
-	}
-/return
-
-
-
-|***
  *	DES: Pet nuke
  *	USE: auto when 3+ pets in range
  *	INI: 
@@ -251,6 +229,11 @@ sub synergy_MAG()
 	}
 	/if (${switchPcSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill} FALSE
 
+	| epic 2.0
+	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
+
+
+
 	/call synergy_click_Circle
 	/call click_item_burn
 /return
@@ -277,6 +260,39 @@ sub force_twincast_MAG()
 		/call core_cast "${NukeTwincast}" 0 ${Target2Kill} FALSE
 		/call create_timer timer_force_twincast ${tForce_Twincast}
 	}
+/return
+	
+	
+|***
+ *	DES: call of hero requesting toon in group.
+ *	USE: /g coh
+ *	INI: 
+ *  NOTE: 
+ ***|
+#event CoH "#1# tells the group, 'coh'"
+sub Event_CoH(string line, string _sender)
+	/call cast_AA_CoH ${_sender}
+/return
+
+
+	
+|***
+ *	DES: cast call of the hero
+ *	USE: /call cast_AA_coh NAME
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_AA_CoH(string _sender)
+	/if (${Me.DisplayName.Equal[${_sender}]}) /return
+	/if (!${Select[${Me.Class.ShortName},MAG]}) /return
+	CHECKSAFELIST
+	| /call set_stop
+  /delay 15s ${Me.AltAbilityReady[Call of the Hero]}
+  /if (${Me.Invis}) /makemevisible
+  | /target ID ${Spawn[pc ${_sender}].ID}
+  | /delay 3s ${Target.ID} == ${Spawn[pc ${_sender}].ID}
+  ECHOCHANNEL Calling ... ${_sender}
+ 	/call core_cast "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
 /return
 	
 	
