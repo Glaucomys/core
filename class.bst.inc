@@ -158,23 +158,22 @@ sub cast_AA_focused_paragon()
 
  
 |***
- *	DES: 
- *	USE: 
+ *	DES: emergency healing
+ *	USE: /call patch_heal_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: 
  ***|
 sub patch_heal_BST()
-	DEBUGCLASS ${cbug}patch_heal_BST()\ax
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents	
- 	/if (${Me.PctHPs} < 75*.${tmpHealOverride}  && ${Me.AltAbilityReady[Warder's Gift]}) /call core_cast "Warder's Gift" alt 0 FALSE
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+ 	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}  && ${Me.AltAbilityReady[Warder's Gift]}) /call core_cast "Warder's Gift" alt 0 FALSE
 	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride} && ${Me.SpellReady[${FastHeal}]}) {
 		/call core_cast "FastHeal" 0 ${Me.ID} FALSE
 		/call core_cast "Focused Paragon of Spirits" alt ${Me.ID} FALSE
 	}
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
+	/call click_item_heal
 /return
 
 
@@ -302,8 +301,8 @@ sub synergy_BST()
  *  NOTE:
  ***|
 #bind setBST /bst
-sub Bind_setBST(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setBST(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setBST(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setBST(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |BST]}) /return
 
 	/declare _sep bool local
@@ -317,7 +316,7 @@ sub Bind_setBST(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -328,8 +327,8 @@ sub Bind_setBST(string _classType, string _classVerbage)
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/declare _listout 	string 	local
 		/declare _sep 			bool 		local FALSE
@@ -339,11 +338,31 @@ sub Bind_setBST(string _classType, string _classVerbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
+	| healpoint
+	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
+			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}
+
+	| fast heall pct
+	} else /if (${Bool[${_classType.Find[fastheal]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI FastHealPCT Spells ${_verbage}
+			VOUT /${_bind} fastheal ${sep} ${cinfo}${_verbage}\ax
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fastheal [${cinfo}${${FastHealPCT}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}
+
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

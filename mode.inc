@@ -73,10 +73,10 @@ sub Bind_mode(string _modeType, string _verbage)
 	}
 		
 	| output
-	/for _count 1 to ${modeType.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[ ${switchMode${modeType.Arg[${_count},|].Left[1].Upper}${modeType.Arg[${_count},|].Right[-1].Lower}} ,${cgood},${cinfo}]}${modeType.Arg[${_count},|]}\ax
-		/if (${modeType.Arg[${_count},|].Equal[agro]}) /varset _listout ${_listout}[${cgood}${setModeAgro}\ax]
-		/if (${modeType.Arg[${_count},|].Equal[harvestcount]}) /varset _listout ${_listout}[${cgood}${modeHarvestCount}\ax]
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[ ${switchMode${${_bind}Type.Arg[${_count},|].Left[1].Upper}${${_bind}Type.Arg[${_count},|].Right[-1].Lower}} ,${cgood},${cinfo}]}${${_bind}Type.Arg[${_count},|]}\ax
+		/if (${${_bind}Type.Arg[${_count},|].Equal[agro]}) /varset _listout ${_listout}(${cnum}${setModeAgro}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[harvestcount]}) /varset _listout ${_listout}(${cnum}${modeHarvestCount}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]				

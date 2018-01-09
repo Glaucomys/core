@@ -456,8 +456,8 @@ sub cast_talisman()
  *  NOTE:
  ***|
 #bind setSHM /shm
-sub Bind_setSHM(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setSHM(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setSHM(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setSHM(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |SHM]}) /return
 
 	/declare _sep bool local
@@ -471,7 +471,7 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
@@ -494,40 +494,40 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 	 	
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
-		/if (${Bool[${_classVerbage}]}) /declare _num int local ${_classVerbage}
+		/if (${Bool[${_verbage}]}) /declare _num int local ${_verbage}
 		/if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.NotEqual[Pet]}) {
 			/call writeINI ${Target.Class.ShortName}Point Heal ${_num}
-			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
+			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
 		} else /if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
 			/call writeINI PetPoint Heal ${_num}
-			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
+			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /${_bind} healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
 		}
 
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
-		/if (${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			/call writeINI XTHealRadius Heal ${_classVerbage}
+		/if (${Range.Between[1,300:${Int[${_verbage}]}]}) {
+			/call writeINI XTHealRadius Heal ${_verbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
-		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
+		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,300:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
-		/if (${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
-			/call writeINI tXHeal Timer ${_classVerbage}
+		/if (${Range.Between[1,5:${Int[${_verbage}]}]}) {
+			/call writeINI tXHeal Timer ${_verbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
-		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
+		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,5:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
@@ -539,8 +539,8 @@ sub Bind_setSHM(string _classType, string _classVerbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

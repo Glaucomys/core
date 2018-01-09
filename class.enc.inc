@@ -1,4 +1,3 @@
-
 |***
  *	class.enc.inc
  *	Core Enchanter Include
@@ -98,11 +97,11 @@ sub core_ENC()
 		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 	/if (${coreAuto}) {	
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/call use_mod_rod
 		/if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
 		/if (${switchBuffItem}) /call check_crystals
 		/if (${switchHealCure}) /call cast_cure
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
 	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
@@ -260,6 +259,7 @@ sub click_DPS_ENC()
  ***|
 sub patch_heal_ENC()
 	DEBUGCLASS ${cbug}patch_heal_ENC_${Me.Class.ShortName}()\ax
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	/declare _count int local
 	/declare _tmpID int local
 	/if (${SpawnCount[npc radius 15]}) {
@@ -593,8 +593,8 @@ sub find_mob_to_charm()
  *  NOTE:
  ***|
 #bind setENC /enc
-sub Bind_setENC(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setENC(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |ENC]}) /return
 
 	/declare _sep bool local
@@ -608,7 +608,7 @@ sub Bind_setENC(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -620,12 +620,12 @@ sub Bind_setENC(string _classType, string _classVerbage)
 
 	| gather enable/disable /pct
 	} else /if (${Bool[${_classType.Find[gather]}]}) {
-		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/call writeINI GatherPercent Spells ${_classVerbage} 
-			/call echos number "Gather Mana %" ${_classVerbage} 0 0
-		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI GatherPercent Spells ${_verbage} 
+			/call echos number "Gather Mana %" ${_verbage} 0 0
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
-		}	else /if (!${Bool[${_classVerbage}]}) {
+		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
 			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
 		}			
@@ -633,8 +633,8 @@ sub Bind_setENC(string _classType, string _classVerbage)
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
@@ -642,12 +642,21 @@ sub Bind_setENC(string _classType, string _classVerbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
+	| healpoint
+	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
+			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}
 
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

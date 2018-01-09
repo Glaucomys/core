@@ -52,6 +52,7 @@ sub core_NEC()
 	CHECKREZ
 	/if (${coreAuto}) {	
 		/call use_mod_rod
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
 	}
@@ -67,7 +68,12 @@ sub core_NEC()
  *	INI: 
  *  NOTE: 
  ***|
-sub pet_heal_NEC()
+sub patch_heal_NEC()
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	AMIDEAD
+	CHECKEXIT
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+	/call click_item_heal
 /return
 
 
@@ -185,8 +191,8 @@ sub synergy_NEC()
  *  NOTE:
  ***|
 #bind setNEC /nec
-sub Bind_setNEC(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setNEC(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setNEC(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setNEC(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |NEC]}) /return
 
 	/declare _sep bool local
@@ -200,7 +206,7 @@ sub Bind_setNEC(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -210,8 +216,8 @@ sub Bind_setNEC(string _classType, string _classVerbage)
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
@@ -219,12 +225,21 @@ sub Bind_setNEC(string _classType, string _classVerbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 
+	| healpoint
+	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
+			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}
 
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

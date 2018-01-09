@@ -810,8 +810,8 @@ ${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
  *  NOTE:
  ***|
 #bind setCLR /clr
-sub Bind_setCLR(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setCLR(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |CLR]}) /return
 
 	/declare _sep bool local
@@ -825,7 +825,7 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -848,8 +848,8 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
@@ -861,30 +861,30 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
 		/if (!${validate_expansion[TRUE, |16]}) /return
-		/if (${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
-			/call writeINI XTHealRadius Heal ${_classVerbage}
+		/if (${Range.Between[1,300:${Int[${_verbage}]}]}) {
+			/call writeINI XTHealRadius Heal ${_verbage}
 			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
-		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,300:${Int[${_classVerbage}]}]}) {
+		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,300:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 		}	
 		
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
 		/if (!${validate_expansion[TRUE, |16]}) /return
-		/if (${Range.Between:${Int[${_classVerbage}]}]}) {
-			/call writeINI tXHeal Timer ${_classVerbage}
+		/if (${Range.Between:${Int[${_verbage}]}]}) {
+			/call writeINI tXHeal Timer ${_verbage}
 			/call echos number "XTarget refresh time" ${tXHeal} 0 0
-		} else /if (!${Bool[${_classVerbage}]} || !${Range.Between[1,5:${Int[${_classVerbage}]}]}) {
+		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,5:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
 		
 	| to Yaulp or not		
 	 } else /if (${Bool[${_classType.Equal[yaulp]}]}) {
-		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/declare _num int local ${_classVerbage}
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/declare _num int local ${_verbage}
 			/call writeINI useYaulpPct Buffs ${_num}
 			VOUT /${_bind} Yaulp Ptc ${sep} ${cinfo}${_num}\ax
-		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		} else {
 		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
@@ -893,12 +893,12 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 
 	| Veturika's Perseverance	Control	
 	} else /if (${Bool[${_classType.Equal[vp]}]}) {
-		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/call writeINI useVPPct Buffs ${_classVerbage} 
-			/call echos number "Veturika's Perseverance" ${_classVerbage} 0 0
-		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useVPPct Buffs ${_verbage} 
+			/call echos number "Veturika's Perseverance" ${_verbage} 0 0
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} vp [${cinfo}${useVPPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
-		}	else /if (!${Bool[${_classVerbage}]}) {
+		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI useVP Buffs ${If[${useVP},FALSE,TRUE]}  
 			/call echos switch "Veturika's Perseverance ${sep} ${useVPPct}%" useVP 0 0
 		}	
@@ -915,33 +915,33 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 
 	| set rampage tank toon
 	} else /if (${Bool[${_classType.Equal[rampage]}]}) {
-		/if (${Bool[${_classVerbage}]}) {
-			/call writeINI RampageTank Heal ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
-		} else /if (!${Bool[${_classVerbage}]}) {
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI RampageTank Heal ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI RampageTank Heal FALSE
 		}
 		VOUT Rampage Tank ${sep} ${If[${Bool[${RampageTank}]},${cgood}${RampageTank}\ax,${odisabled}]}
 				
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
-		/if (${Bool[${_classVerbage}]}) /declare _num int local ${_classVerbage}
+		/if (${Bool[${_verbage}]}) /declare _num int local ${_verbage}
 		/if (${Target.ID} && ${_num}) {
 			/call writeINI ${Target.Class.ShortName}Point Heal ${_num}
-			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
+			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
 		} else /if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
 			/call writeINI PetPoint Heal ${_num}
-			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_classVerbage}\ax
+			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /${_bind} healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
 		}
 
 	| set AA fade use %	
 	} else /if (${Bool[${_classType.Equal[fade]}]}) {
-		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/declare _num int local ${_classVerbage}
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/declare _num int local ${_verbage}
 			/call writeINI useAAFade Buffs ${_num}
 			VOUT Fade Combat ${sep} ${cinfo}${_num}\ax
-		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} fade [${cinfo}${useAAFade}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		} else {
 			VOUT /${_bind} fade [${cinfo}${useAAFade}\ax]
@@ -954,12 +954,12 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 
 	| Complete Heal
 	} else /if (${Bool[${_classType.Equal[ch]}]}) {
-		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/call writeINI CompleteHealpct Heal ${_classVerbage} 
-			/call echos number "Complete Heal Pct" ${_classVerbage} 0 0
-		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI CompleteHealpct Heal ${_verbage} 
+			/call echos number "Complete Heal Pct" ${_verbage} 0 0
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} ch [${cinfo}${CompleteHealpct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
-		}	else /if (!${Bool[${_classVerbage}]}) {
+		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchCompleteHeal Heal ${If[${switchCompleteHeal},FALSE,TRUE]}  
 			/call echos switch "Complete Heal ${sep} ${CompleteHealpct}%" switchCompleteHeal 0 0
 		}
@@ -967,8 +967,8 @@ sub Bind_setCLR(string _classType, string _classVerbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

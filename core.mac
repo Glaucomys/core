@@ -74,7 +74,7 @@
 
 
 
-#turbo 55
+#turbo 60
 | #warning
 #define DEBUG "/if (${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGCAST "/if (${switchDebugCasting} || ${switchDebugCore}) /echo [\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax]"
@@ -82,7 +82,7 @@
 #define DEBUGREZ "/if (${switchDebugRez} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGMODE "/if (${switchDebugMode} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-#define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
+#define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax(\a-t${Macro.RunTime}\ax)"
 #define OUT "/echo ${c-}-\ax"
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
 #define VMELEE "/if (${switchEchoMelee}) /echo ${c-}-\ax"
@@ -94,8 +94,6 @@
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 #define HUDPATH ".\..\MQ2HUD.ini core"
 #define LOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
-| #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
-| #define AMIDEAD "/if ((${Me.Dead}) && ${switchRezTake}) /call wait_for_rez"
 #define AMIDEAD "/if (${watch_for_death[]}) /call watch_for_rezbox"
 #define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]} || ${switchAmIDead} || ${flagCallNeedRez}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"

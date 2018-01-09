@@ -72,10 +72,10 @@ sub core_RNG()
 		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} 
-	/if (${switchHealCure}) /call cast_cure
 	/if (${coreAuto}) {	
 		/call use_mod_rod
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
 	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
@@ -153,11 +153,11 @@ sub patch_heal_RNG()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/if (${Me.PctHPs} > 81*.${tmpHealOverride}) /return
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0 FALSE
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID} FALSE
-	/if (${Me.PctHPs} <= 70*.${tmpHealOverride}) /call core_cast "Small Manisi Branch" item 0 FALSE
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride}) /call core_cast "${FastHeal}" 0 ${Me.ID} cast_break
+	/call click_item_heal
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID} FALSE
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast "${SlowHeal}" 0 ${Me.ID} cast_break
 /return
 
 
@@ -387,12 +387,32 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/stopcast
 		/delay 2s !${Me.Casting.ID}
 		/call cast_AA_auspice
+		
+	| healpoint
+	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
+			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}
+
+	| fast heall pct
+	} else /if (${Bool[${_classType.Find[fastheal]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI FastHealPCT Spells ${_verbage}
+			VOUT /${_bind} fastheal ${sep} ${cinfo}${_verbage}\ax
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fastheal [${cinfo}${${FastHealPCT}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}
 
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

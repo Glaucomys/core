@@ -55,8 +55,8 @@ sub core_MAG()
 	} else /if (${Select[${combat},DUAL]}) {
 	}
 	/if (${coreAuto}) {	
-		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
@@ -180,8 +180,8 @@ sub patch_heal_MAG()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKTIE
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+	/call click_item_heal
 /return
 
 
@@ -292,7 +292,8 @@ sub cast_AA_CoH(string _sender)
   | /target ID ${Spawn[pc ${_sender}].ID}
   | /delay 3s ${Target.ID} == ${Spawn[pc ${_sender}].ID}
   ECHOCHANNEL Calling ... ${_sender}
- 	/call core_cast "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
+  /call mq2cast "Call of the Hero" alt -targetid|${Spawn[pc ${_sender}].ID}
+ 	| /call core_cast "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
 /return
 	
 	
@@ -304,8 +305,8 @@ sub cast_AA_CoH(string _sender)
  *  NOTE:
  ***|
 #bind setMAG /mag
-sub Bind_setMAG(string _classType, string _classVerbage)
-	DEBUG ${cbug}Bind_setMAG(type:${_classType}, verbage:${_classVerbage})\ax
+sub Bind_setMAG(string _classType, string _verbage)
+	DEBUG ${cbug}Bind_setMAG(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |MAG]}) /return
 
 	/declare _sep bool local
@@ -319,17 +320,17 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_classVerbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
 	
 	| gather enable/disable /pct
 	/if (${Bool[${_classType.Find[gather]}]}) {
-		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
-			/call writeINI GatherPercent Spells ${_classVerbage} 
-			/call echos number "Gather Mana %" ${_classVerbage} 0 0
-		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_classVerbage}]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI GatherPercent Spells ${_verbage} 
+			/call echos number "Gather Mana %" ${_verbage} 0 0
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
@@ -373,8 +374,8 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
-		/if (${Range.Between[0,3:${Int[${_classVerbage}]}]}) {
-			/call writeINI ${_spiretype} Buffs ${_classVerbage}
+		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
+			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
@@ -397,11 +398,21 @@ sub Bind_setMAG(string _classType, string _classVerbage)
 			/goto :checkgather
 		}
 
+	| healpoint
+	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
+			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		}
+
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

@@ -59,6 +59,7 @@ sub core_WIZ()
 	}
 	/if (${coreAuto}) {	
 		/call use_mod_rod
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
@@ -160,6 +161,21 @@ sub Event_gtfo(string line, string _sender)
 	  ECHOCHANNEL Fuck this place in particular..
 	 	/call core_cast "Exodus" alt 0 FALSE
 	}
+/return
+
+
+|***
+ *	DES: emergency healing
+ *	USE: /call patch_heal_${Me.Class.ShortName}
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub patch_heal_WIZ()
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	AMIDEAD
+	CHECKEXIT
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+	/call click_item_heal
 /return
 
 
@@ -347,62 +363,11 @@ sub Bind_setWIZ(string _classType, string _verbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}[${cgood}${spireGroup}\ax]
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}[${cgood}${spireRaid}\ax]
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]
 	} 
 /return
-
-
-
-
-
-
-
-| hold for wiz burn adjustmetns... someday
-
-	
-
-frostbound alliance - XXXX
-- dichotomic fire
-- ethereal fuse
-- cloudburst stormstrike
-- ethereal skyblaze
-- claw of the flameweaver
-ethereal rimblast
-- twincast
-chaos scintillation
-ethereal hoarfrost XXXXX
-shield of consequence
-- quintescent harvest/gambit
-
-
-
-1211 - Focus of Arcanum
-759 - Fury of Kerafyrm
-840 - Arcane Fury
-1351 - second spire
-515 - Improved Twincast
-
-500 - Silent Casting
-
-759 - Fury of Kerafyrm  -- still on cooldown
-1152 - Fury of Ro
-7019- Glyph of Destruction II
-
-
-1265 - Arcane Distruction
-308 - Frenzied Devastation
-1152 - Fury of Ro
-
-1152 - Fury of Ro
-7019 - Glyph of Destruction II
-
-
-1154 - Force of Will
-1266 - Force of Flame
-1267 - Force of Ice
-577 - concussive intuition
-15073 - banestrike

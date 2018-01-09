@@ -1108,7 +1108,6 @@ sub set_stop(bool _noecho)
 	/if (${Defined[combat]}) /varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}
 	/if (!${Bool[${_noecho}]}) VOUT I was told to ${cbad}STOP\ax !! 
 	/if (${Me.Casting.ID}) /stopcast
-	AMIDEAD
 	| stop sticking to stuff
 	/if (${Stick.Active}) /squelch /stick off
 	/if (${Bool[${tempsnapstuck}]}) /varset tempsnapstuck FALSE
@@ -1266,9 +1265,7 @@ sub set_xtarget()
 		/for _x 1 to ${ProtectOutsideGroup.Count[|]}
 			DEBUG x:${_x} b:${_b} count:${ProtectOutsideGroup.Count[|]} spawn:${ProtectOutsideGroup.Arg[${_x},|]}
 			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /continue
-			
 			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Distance} > ${XTHealRadius}) /continue
-
 			/if (${_b} > 13 || !${Bool[${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}]}]} || ${Group.Member[${ProtectOutsideGroup.Arg[${_x},|]}].ID}) /continue
 			/if (${Bool[${Me.XTarget[${ProtectOutsideGroup.Arg[${_x},|]}]}]}) {
 				/varcalc _b ${_b}+1
@@ -1285,7 +1282,8 @@ sub set_xtarget()
 		/if (${Bool[${ProtectInsideRaid}]}) {
 			DEBUG Setting Raid Protected Players ${cinfo}${ProtectInsideRaid}\ax
 			/for _x 1 to ${ProtectInsideRaid.Count[|]}
-				/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /continue
+				/if (${Spawn[${ProtectInsideRaid.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /continue
+				/if (${Spawn[${ProtectInsideRaid.Arg[${_x},|]}].Distance} > ${XTHealRadius}) /continue
 				/if (${_b} > 13 || !${Bool[${Spawn[${ProtectInsideRaid.Arg[${_x},|]}]}]}) {
 				} else /if (${Bool[${Me.XTarget[${ProtectInsideRaid.Arg[${_x},|]}]}]}) {
 					/varcalc _b ${_b}+1
@@ -2375,7 +2373,7 @@ sub use_skill_melee(int _tmpID)
 					| /bandolier Activate ${bandolierNormal}
 					/call bandolier_swap Normal
 				}
-			} else if (!${Bool[${switchBandolier}]}) {
+			} else /if (!${Bool[${switchBandolier}]}) {
 				/if (${Target.ID}) /doability Bash
 			}
 		}
@@ -4957,7 +4955,7 @@ sub core_reset()
 	/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
 		/smartma G
  	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPull}) {
-		/smartma 1
+		/smartma R
 	}	else /if (${Select[${Me.Class.ShortName},CLR]} || ${switchPull}) {
 		/smartma X
 	}	
@@ -5051,17 +5049,15 @@ sub synergy_click_Circle()
 		/if (${Bool[${Me.Song[Circle of Power]}]} || ${Bool[${Me.Song[${RNGauspice}]}]}) /return
 		/call core_cast "${CircleofPower}" item 0 FALSE
 		/return
-	}
 
 	| circle of life
-	/if (${Me.ItemReady[${CircleofLife}]} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) {
+	} else /if (${Me.ItemReady[${CircleofLife}]} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) {
 		/if (${Bool[${Me.Song[Circle of Life]}]}) /return
 		/call core_cast "${CircleofLife}" item 0 FALSE
 		/return
-	}	
 	
 	| circle of Mana
-	/if (${Me.ItemReady[${CircleofMana}]} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) {
+	} else /if (${Me.ItemReady[${CircleofMana}]} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) {
 		/if (${Bool[${Me.Song[Circle of Mana]}]}) /return
 		/call core_cast "${CircleofMana}" item 0 FALSE
 		/return
@@ -5108,7 +5104,6 @@ sub cast_AA_spire()
 		/if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireGroup}}]} && !${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].Stacks}) {
 			/call core_cast "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
 		}
-		| /if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireGroup}}]}) /call core_cast "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
 	}
 /return
 	
@@ -5242,7 +5237,7 @@ sub validate_buff(string _type, string _inisub, string _spell)
 	/if (${_type.Equal[spell]}) {
 		/if (!${Bool[${${_spell}}]}) /return FALSE
 		/if (!${Bool[${Me.Book[${${_spell}}]}]}) /return FALSE
-		/if (${Me.PctMana} < ${Spell[${_spell}].Mana}) /varreturn FALSEt
+		/if (${Me.PctMana} < ${Spell[${_spell}].Mana}) /return FALSE
 		| check for non gold subs
 		/if (${Select[${Me.Subscription},SILVER]}) {
 			/varset _spell ${Ini[${INIClass},${_inisub},${_spell}]}
@@ -5574,8 +5569,6 @@ sub set_base_install()
  *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
  ***|
 sub fix_INI_declares()
-
-
 	/ini "${INIClass}" "Common" "echoChannel" NULL
 	/ini "${INIClass}" "Common" "relayTells" NULL
 	/ini "${INIClass}" "Common" "verbose" NULL
@@ -6099,12 +6092,6 @@ sub validate_debuff(bool _error, string _deBuffType)
 
 
 
-| #define AMIDEAD "/if ((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${markerDead}) /call wait_for_rez"
-
-| switchIwasCalled
-
-
-
 |***
  *	DES: watches to see if you are deaded. if so.. theres a couple things we need to do.
  *	USE: /if (${watch_for_death[]}) /do a thing
@@ -6288,11 +6275,12 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
  *	USE: /call cast_AA_fireworks()
  *	INI: 
  *  NOTE: 
- ***|
+
 sub cast_AA_fireworks()
 	SDEBUG ${cbug}cast_AA_fireworks(AA:${Me.AAPoints} Max:${Int[${Math.Calc[${Me.Level}*2]}]})\ax
 	/if (!${switchAAFireworks}) /return
 	/call create_timer timer_Waste_Fireworks ${tWaste_Fireworks}
+	/if (${Me.AAPoints} < 115) /return
 	/if (${Me.AAPoints} < ${Int[${Math.Calc[${Me.Level}*2-15]}]}) /return
 
 	| show me the money
@@ -6331,3 +6319,41 @@ sub cast_AA_fireworks()
    /nomodkey /notify AAWindow AAW_SpecialList listselect Glyph of Fireworks II
    /nomodkey /notify AAWindow AAW_SpecialList leftmouse Glyph of Fireworks II
 
+
+
+/notify AAWindow AAW_SpecialList leftmouse ${Window[AAWindow].Child[4].List[=Glyph of Fireworks II]}
+
+
+
+/notify AAWindow AAW_Subwindows tabselect 4 listselect Glyph of Fireworks II
+
+/notify AAW_Page4
+
+${Window[AAWindow].Child[AAW_SpecialList].Text.Equal[Glyph of Fireworks II]}
+ ***|
+ 
+ 
+ 
+
+
+
+ |***
+ *	DES: click self healing items
+ *	USE: /call click_item_heal
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub click_item_heal()
+	DEBUG ${cbug}click_item_heal()\ax
+	CHECKEXIT
+	AMIDEAD
+	/declare _count int local 0
+	
+	/for _count 1 to ${clickHealItem.Count[|]}
+		/if (${Me.PctHPs} >= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /break
+		/if (!${FindItem[${clickHealItem.Arg[${_count},|]}].ID}) /continue
+		/if (!${Me.ItemReady[${clickHealItem.Arg[${_count},|]}]}) /continue
+		
+		/call core_cast "${clickHealItem.Arg[${_count},|]}" item 0 FALSE
+	/next _count		
+/return

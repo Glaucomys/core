@@ -16,6 +16,31 @@ Current Requests:
 
 
 
+
+
+20180109
+- error in xtarget healing. was not watching for max range to add people to list.
+- display error in the /cc combat modes.
+- typo in validate_buff()
+- synergy_click_Circle() logic change. cast the first you have listed and bail
+- / command echos
+	-- adjusting the remaining to match the same output standards.
+- HEAL POINTS
+  -- all clases now have a self heal point
+  -- /CLS healpoint ##  eg. /rng healpoint 70 would set the rangers self heal point to 70% HPs
+  -- self healing and click items that heal are based off this number now. they are no longer hardcoded (there are a couple exceptions)
+  -- default healpoint is 80 (60 for zerkers. we like to watch them die)
+- class.rng.inc
+  -- /rng fastheal ## - what % to use rangers fast heal at
+- class.bst.inc
+  -- /rng fastheal ## - what % to use beast lords fast heal at
+- class.war.inc
+  --  /war panicheal ## - what % to use wars DiscNoTime at
+- /buff pet logic error was illogical..
+- double echo in /burn auto command. i figure one is enough.
+- logic error in the bash band routine
+
+
 20180104
 - Smart Assists
   -- smart assist Raid 1 and Raid 2 are not just Smart assist R (for Raid)
@@ -45,7 +70,6 @@ Current Requests:
   -- fixed a bad variable name for the intervention heal
 - class.dru.inc
   -- /cc dual will let them heal, nuke, dot, play poker.. so on. pref will always be to heal.
- 
 
   
   
