@@ -134,8 +134,8 @@ sub do_mode()
 	/if (${switchModeHarvest} && !${timer_Harvest_delay}) /call mode_harvest
 	/if (${switchModeTradeskill}) /call mode_tradeskill
 	/if (${switchModeLush} && !${Me.Drunk}) /call mode_get_waisted
-	
-	:exit
+	/if (${switchModeDrink} && !${Me.Drunk}) /call mode_get_drunk
+
 /return
 
 
@@ -610,13 +610,13 @@ sub get_ground_harvest(string _tmpItem)
 			/face nolook loc ${Ground.Y}, ${Ground.X}
 			/delay 1 
 			/keypress forward hold 
-			/if (${Ground.Distance3D} > 15) /goto :loopMove
+			/if (${Ground.Distance3D} > 19) /goto :loopMove
 			/keypress forward
 			/click left item
 			/delay 5s (${Cursor.ID})
 			/delay ${Math.Rand[10]}
 			| VOUT Keep ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax] 
-			| /autoinv
+			/autoinventory
 			CLEARCURSOR TRUE
 			/delay 5s (!${Cursor.ID})
 			/delay ${Math.Rand[10]}
@@ -714,20 +714,40 @@ sub mode_get_waisted()
 
 
 
-|**
+|***
+ *	DES: 
+ *	USE: /call mode_get_drunk 
+ *	INI: NA
+ *  NOTE: 
+ ***|
+sub mode_get_drunk()
+	DEBUGMODE ${cbug}mode_get_drunk()\ax
+	/if (!${FindItem[${modeDrinkofChoice}].ID} || !${Bool[${modeDrinkofChoice}]}) {
+		/varset switchModeDrink FALSE
+		/return
+	}
+	UPDATEHUD "Fukn Alcoholic"
 
-sub main()
-/declare DrinkOfChoice string outer Elven Wine
+	| start drinking.
 	/while (${Me.Skill[Alcohol Tolerance]} < ${Skill[Alcohol Tolerance].SkillCap}) {
-		/if (!${Me.ItemReady[${DrinkOfChoice}]}) /break
-		/if (${Me.Drunk} < 200) /useitem ${DrinkOfChoice}
+		/if (!${Me.ItemReady[${modeDrinkofChoice}]}) /break
+		/if (${Me.Drunk} < 200) /useitem ${modeDrinkofChoice}
 		/delay 2
 		/delay 2s ${Me.Drunk} < 200
 	}
-/return
-/end
 
-**|
+	| maxed skill turn this off
+	/if (${Me.Skill[Alcohol Tolerance]} == ${Skill[Alcohol Tolerance].SkillCap}) {	
+		VOUT Alcohol Tolerance Maxed ${sep} (${cnum}${Me.Skill[Alcohol Tolerance]}\ax)
+		/varset switchModeDrink FALSE
+		/return
+	}
+	
+	UPDATEHUD FALSE
+/return
+
+
+
 
 
 

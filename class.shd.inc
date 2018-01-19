@@ -51,6 +51,18 @@ sub core_SHD()
 		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
 		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/call check_deBuffs ${Target2Kill}
+		/call disc_${Me.Class.ShortName}
+		/call click_BP
+		/if (${DoDoT}) /call cast_DOT
+		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
+		/call use_skill_melee ${Target2Kill}
+		/call click_item
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${switchHarmonious}) /call check_harmonious
+		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
+		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
@@ -80,7 +92,7 @@ sub disc_SHD()
 	CHECKTIE
 
 	| defensive	
-	/if (${coreAuto} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} > 2) {
+	/if (${coreAuto} && ${switchAgro} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} >= ${defCount}) {
 		/declare _count int local 0
 		/for _count 1 to 3
 			/if (${Bool[${Me.ActiveDisc}]}) /break
@@ -286,16 +298,19 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/if (${Bool[${_classType.Find[skin]}]}) {
 		/call writeINI switchSkin Buffs ${If[${switchSkin},FALSE,TRUE]}  
 		/call echos switch "Buff ${sep} ${Skin}" switchSkin 0 0
+		/reuturn
 	
 	| on/off switch for Harmonious
 	} else /if (${Bool[${_classType.Find[harmonious]}]}) {
 		/call writeINI switchHarmonious Buffs ${If[${switchHarmonious},FALSE,TRUE]}  
 		/call echos switch "Buff ${sep} ${Harmonious}" switchHarmonious 0 0
+		/return
 
 	| on/off switch for Stance
 	} else /if (${Bool[${_classType.Find[stance]}]}) {
 		/call writeINI switchStance Buffs ${If[${switchStance},FALSE,TRUE]}  
 		/call echos switch "Buff ${sep} ${Stance}" switchStance 0 0
+		/return
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -308,26 +323,36 @@ sub Bind_setSHD(string _classType, string _verbage)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
+		/return
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
-			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
 		}
 
+	| defensive mob agro count
+	} else /if (${Bool[${_classType.Equal[defcount]}]}) {
+		/if (${Range.Between[1,50:${Int[${_verbage}]}]}) {
+			/call writeINI defCount Discs ${_verbage}
+		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,50:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} defcount [${cinfo}${countMobAgro}\ax] allowable range ${sep} ${cinfo}1 - 50 min\ax
+			/return
+		}	
 
-	} else {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-			/varset _sep TRUE
-		/next _count
-		VOUT /${_bind} [${_listout}]
-	} 
+
+	}
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
+		/varset _sep TRUE
+	/next _count
+	VOUT /${_bind} [${_listout}]
 /return
 

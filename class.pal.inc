@@ -90,7 +90,7 @@ sub disc_PAL()
 	CHECKTIE
 
 	| defensive	
-	/if (${coreAuto} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} > 2) {
+	/if (${coreAuto} && ${switchAgro} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} >= ${defCount}) {
 		/declare _count int local 0
 		/for _count 1 to 3
 			/if (${Bool[${Me.ActiveDisc}]}) /break
@@ -388,17 +388,18 @@ sub Bind_setPAL(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
+
 	| to Yaulp or not		
 	/if (${Bool[${_classType.Equal[yaulp]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/declare _num int local ${_verbage}
-			/call writeINI useYaulpPct Buffs ${_num}
-			VOUT /${_bind} Yaulp Ptc ${sep} ${cinfo}${_num}\ax
+			/call writeINI useYaulpPct Buffs ${_verbage}
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} yaulp [${cinfo}${useYaulpPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
 		} else {
 		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
 		 	/call echos switch "Yaulp" doYaulp 0 0
+		 	/return
 		}
 		
 	| spire control
@@ -422,7 +423,8 @@ sub Bind_setPAL(string _classType, string _verbage)
 			VOUT /${_bind} mg [${cinfo}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI useMG Buffs ${If[${useMG},FALSE,TRUE]}  
-			/call echos switch "Marr's Gift ${sep} ${useMGPct}%" useMG
+			/call echos switch "Marr's Gift(${cnum}${useMGPct}\ax)" useMG
+			/return
 		}	
 		
 
@@ -430,49 +432,57 @@ sub Bind_setPAL(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal" useGroupHeal
+	 	/return
 
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
-		/if (${Bool[${_verbage}]}) /declare _num int local ${_verbage}
-		/if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.NotEqual[Pet]}) {
-			/call writeINI ${Target.Class.ShortName}Point Heal ${_num}
-			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
-		} else /if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
-			/call writeINI PetPoint Heal ${_num}
-			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
+		/if (${Target.ID} && ${Range.Between[1,99:${Int[${_verbage}]}]} && ${Spawn[${Target.ID}].Type.NotEqual[Pet]}) {
+			/call writeINI ${Target.Class.ShortName}Point Heal ${_verbage}
+		} else /if (${Target.ID} && ${Range.Between[1,99:${Int[${_verbage}]}]} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
+			/call writeINI PetPoint Heal ${_verbage}
 		} else {
 			VOUT /${_bind} healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
 		}
-
+		/for _count 1 to ${AllClassList.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${AllClassList.Arg[${_count},|].Upper}\ax(${cnum}${${AllClassList.Arg[${_count},|].Upper}Point}\ax)
+			/varset _sep TRUE
+		/next _count
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}PET\ax(${cnum}${PetPoint}\ax)
+		VOUT /${_bind} [${_listout}]
+		/return
+	
 	| on/off switch for Steel
 	} else /if (${Bool[${_classType.Equal[steel]}]}) {
 		/call writeINI switchSteel Buffs ${If[${switchSteel},FALSE,TRUE]}  
 		/call echos switch "Buff ${sep} ${Steel}" switchSteel
+		/return
 	
 	| on/off switch for Harmonious
 	} else /if (${Bool[${_classType.Equal[harmonious]}]}) {
 		/call writeINI switchHarmonious Buffs ${If[${switchHarmonious},FALSE,TRUE]}  
 		/call echos switch "Buff ${sep} ${Harmonious}" switchHarmonious
+		/return
 
 	| on/off switch for Stance
 	} else /if (${Bool[${_classType.Equal[stance]}]}) {
 		/call writeINI switchStance Buffs ${If[${switchStance},FALSE,TRUE]}  
 		/call echos switch "Buff ${sep} ${Stance}" switchStance
+		/return
 		
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
 		/if (${Range.Between[1,300:${Int[${_verbage}]}]}) {
 			/call writeINI XTHealRadius Heal ${_verbage}
-			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
 		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,300:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			/return
 		}	
 
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
 		/if (${Range.Between[1,5:${Int[${_verbage}]}]}) {
 			/call writeINI tXHeal Timer ${_verbage}
-			/call echos number "XTarget refresh time" ${tXHeal} 0 0
+			/call echos number "XTarget refresh time" ${_verbage} 0 0
 		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,5:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
 		}	
@@ -497,16 +507,32 @@ sub Bind_setPAL(string _classType, string _verbage)
 			/next _count
 			VOUT /${_bind} stun [${_listout}]
 		}
-		VOUT Chain Stun: ${cinfo}${chainStun}\ax		
+		VOUT Chain Stun: ${cinfo}${chainStun}\ax	
 		
+	| defensive mob agro count
+	} else /if (${Bool[${_classType.Equal[defcount]}]}) {
+		/if (${Range.Between[1,50:${Int[${_verbage}]}]}) {
+			/call writeINI defCount Discs ${_verbage}
+		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,50:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} defcount [${cinfo}${countMobAgro}\ax] allowable range ${sep} ${cinfo}1 - 50 min\ax
+			/return
+		}	
 
-	} else {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-			/varset _sep TRUE
-		/next _count
-		VOUT /${_bind} [${_listout}]
-	} 
+	}
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[mg]}) /varset _listout ${_listout}(${cnum}${useMGPct}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${cnum}${useYaulpPct}\ax)
+		/varset _sep TRUE
+	/next _count
+	VOUT /${_bind} [${_listout}]
+
 /return
+
+
+

@@ -109,7 +109,10 @@ sub disc_BRD()
 	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill} FALSE
 	/call core_cast "Cacophony" alt ${Target2Kill} FALSE
 	/call core_cast "Bladed Song" alt ${Target2Kill} FALSE
-	/call core_cast "Boastful Bellow" alt ${Target2Kill} FALSE
+	/call core_cast "Boastful Bellow" alt ${Target2Kill} FALSE	
+	
+	| trigger Frenzied kicks AA for bards if target is debuffed from intimidate
+	/if (${Bool[${intimidation}]} && ${switchIntimidKick} && ${Target.Buff[Harbinger's Intimidation].ID} && ${Spawn[${_tmpID}].Distance} <= 15) /call core_cast "Frenzied Kicks" alt 0 FALSE
 	
 /return
 
@@ -585,11 +588,10 @@ sub Bind_setBRD(string _classType, string _verbage)
 	| enable/disable rest song
 	/if (${Bool[${_classType.Equal[restsong]}]}) {
 		/call writeINI switchRestSong Song ${If[${switchRestSong},FALSE,TRUE]}
-		VOUT /${_bind} ${cinfo}Use Rest Song\ax ${sep} ${If[${switchRestSong},${oenabled},${odisabled}]}
+		VOUT /${_bind} restsong ${sep} ${If[${switchRestSong},${oenabled},${odisabled}]}
 
 	| enable/disable sets bard song line
 	} else /if (${Bool[${_classType.Equal[line]}]}) {
-
 		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
 			DEBUGCLASS ${lineType.Find[${_verbage.Lower}]}
 			/call writeINI lineCurrent Song ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
@@ -601,7 +603,12 @@ sub Bind_setBRD(string _classType, string _verbage)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} line [${_listout}]	
+		/return
 
+	| intimidation/frenzied kick control
+	/if (${Bool[${_classType.Equal[intimidkick]}]}) {
+		/call writeINI switchIntimidKick meleedisc ${If[${switchIntimidKick},FALSE,TRUE]}
+		VOUT /${_bind} intimidkick ${sep} ${If[${switchIntimidKick},${oenabled},${odisabled}]}
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -614,24 +621,24 @@ sub Bind_setBRD(string _classType, string _verbage)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
+		/return
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
-			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} healpoint(${cnum}${${Me.Class.ShortName}Point}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
 		}
 
-	} else {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-			/varset _sep TRUE
-		/next _count
-		VOUT /${_bind} [${_listout}]
-	} 
+	}
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/varset _sep TRUE
+	/next _count
+	VOUT /${_bind} [${_listout}]
 /return

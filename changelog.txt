@@ -15,9 +15,102 @@ Current Requests:
 - no melee buff list
 
 
+20180119
+- spell casting
+  -- more controls in place to prevent trying to nuke/dot with not enough manna. the red spam was irritating me
+- more adjustments to / commands to get them all the same looking
+- class.brd.inc
+  -- added combat ability Intimidation to melee cooldown routines
+  -- frenzied kicks is not tied to intimidation melee skill.
+    -- /rog intimidkick Enabled will trigger AA frenzied kicks when the mob has been debuffed by intimidation. 
+-- class.rog.inc
+  -- added combat ability Intimidation to melee cooldown routines
 
+- class.wiz.inc --- HUGE CHANGES !!!!!!
+  -- wizard will trigger AA Forceful Rejuvenation if it will get harvest spell up
+	-- casting..
+	-- wizard now supports lines of spells: Fire, Ice, Magic, Mix
+	-- each line will cast the appropriate AA element bost. fire line will keep AA Pyromancy up and so on
+	-- each line has an associated spam Claw Line spell that attempts to trigger Twincast 
+	-- each line has up to 8 conditions. 1 for each spell
+	-- wizard now uses its on nuking function. does not share well with other classes
+	-- wizard will mem the "claw" as the first spell then mem the remaining line in order of appearence
+	-- conditions match the order of spells you have set for that line
+	-- ur on your own to decide how the mix line will work
+	
+	the control is:
+	/wiz line [NAME] .. where NAME is fire, ice, magic or mix
+	
+	Example (spells section for the changes) INI for 110 wizard:
+	LineCurrent=Fire
+	LineFire=|Thricewoven Capacity|Ethereal Braid|Ethereal Skyfire|Dragoflux's Fire|Chaos Burn
+	LineIce=|Thricewoven Capacity|Ethereal Rimeblast|Icefloe Cascade|Ethereal Icefloe|Cortexfreeze
+	LineMagic=FALSE
+	LineMix=FALSE
+	SwitchForceTwincast=TRUE
+	NukeTwincastFire=Claw of Qunard
+	NukeTwincastIce=Claw of Travenro
+	NukeTwincastMagic=Claw of Ellar
+	NukeTwincastMix=FALSE
+	NukeTwincastCondition=!${Me.Song[Gift of Manna].ID} && !${Me.Song[Thricewoven Power].ID}
+	LineAAFire=Pyromancy
+	LineAAIce=Cryomancy
+	LineAAMagic=Arcomancy
+	LineAAMix=FALSE
+	LineFireCondition1=!${Me.Song[Gift of Manna].ID} && !${Me.Song[Thricewoven Power].ID}
+	LineFireCondition2=${Me.CurrentMana} > 5000
+	LineFireCondition3=FALSE
+	LineFireCondition4=FALSE
+	LineFireCondition5=FALSE
+	LineFireCondition6=FALSE
+	LineFireCondition7=FALSE
+	LineFireCondition8=FALSE
+	LineIceCondition1=!${Me.Song[Gift of Manna].ID} && !${Me.Song[Thricewoven Power].ID}
+	LineIceCondition2=FALSE
+	LineIceCondition3=FALSE
+	LineIceCondition4=FALSE
+	LineIceCondition5=${Target.Buff[Cortexfreeze Effect].ID}
+	LineIceCondition6=FALSE
+	LineIceCondition7=FALSE
+	LineIceCondition8=FALSE
+	LineMagicCondition1=FALSE
+	LineMagicCondition2=FALSE
+	LineMagicCondition3=FALSE
+	LineMagicCondition4=FALSE
+	LineMagicCondition5=FALSE
+	LineMagicCondition6=FALSE
+	LineMagicCondition7=FALSE
+	LineMagicCondition8=FALSE
+	LineMixCondition1=FALSE
+	LineMixCondition2=FALSE
+	LineMixCondition3=FALSE
+	LineMixCondition4=FALSE
+	LineMixCondition5=FALSE
+	LineMixCondition6=FALSE
+	LineMixCondition7=FALSE
+	LineMixCondition8=FALSE
+	
 
+20180116
+HUDUPDATE
+- reorganized the HUD. trying to get some more space out of it.
+- /core expadjust [enable/disable] to turn on/off the auto exp switching for core.
+- /movement
+  -- error controls added to leash and radius
+- class.pal.inc, class.shd.inc, class.war.inc
+  -- /cls defcount ## [1,50] will set the number of local mobs to the tanks to start using defensive discs. default is 2
+	-- def discs will only start to trigger when they are set to agro
+- rezing - rezers can no rez while waiting for a rez... rezception?
+- class.war.inc
+  -- small typo
+- class.clr.inc / class.pal.inc
+  -- rewrite of /rc command to use radiant cure. shouldn't crash the client anymore
+- class.mag.inc
+  -- rewrite of coh command. shouldn't crash the client anymore
+- /mode drink
+  -- set modeDrinkofChoice in core.ini to the alcohol you want to get waisted with. start the mode. come back in the morning.
 
+  
 20180109
 - error in xtarget healing. was not watching for max range to add people to list.
 - display error in the /cc combat modes.

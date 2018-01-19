@@ -263,40 +263,6 @@ sub force_twincast_MAG()
 /return
 	
 	
-|***
- *	DES: call of hero requesting toon in group.
- *	USE: /g coh
- *	INI: 
- *  NOTE: 
- ***|
-#event CoH "#1# tells the group, 'coh'"
-sub Event_CoH(string line, string _sender)
-	/call cast_AA_CoH ${_sender}
-/return
-
-
-	
-|***
- *	DES: cast call of the hero
- *	USE: /call cast_AA_coh NAME
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_AA_CoH(string _sender)
-	/if (${Me.DisplayName.Equal[${_sender}]}) /return
-	/if (!${Select[${Me.Class.ShortName},MAG]}) /return
-	CHECKSAFELIST
-	| /call set_stop
-  /delay 15s ${Me.AltAbilityReady[Call of the Hero]}
-  /if (${Me.Invis}) /makemevisible
-  | /target ID ${Spawn[pc ${_sender}].ID}
-  | /delay 3s ${Target.ID} == ${Spawn[pc ${_sender}].ID}
-  ECHOCHANNEL Calling ... ${_sender}
-  /call mq2cast "Call of the Hero" alt -targetid|${Spawn[pc ${_sender}].ID}
- 	| /call core_cast "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
-/return
-	
-	
 	
 |***
  *	DES: Class controls
@@ -341,6 +307,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
 		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
 		/call echos switch "Force Twincast" switchForceTwincast 0 0
+		/return
 
 	| get rods.. cause things and stuff
 	} else /if (${Bool[${_classType.Equal[rods]}]}) {
@@ -370,6 +337,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 			/call core_cast "${ElementRodSpell}" ${buffGem} 0 FALSE
 			/call sort_cursor TRUE
 		}
+		/return
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -382,6 +350,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		/return
 
 	| get mana
 	} else /if (${Bool[${_classType.Equal[mana]}]}) {
@@ -397,26 +366,26 @@ sub Bind_setMAG(string _classType, string _verbage)
 			/call core_cast "Forceful Rejuvenation" alt 0 FALSE
 			/goto :checkgather
 		}
+		/return
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
-			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
 		}
 
-	} else {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-			/varset _sep TRUE
-		/next _count
-		VOUT /${_bind} [${_listout}]
-	} 
+	}
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/varset _sep TRUE
+	/next _count
+	VOUT /${_bind} [${_listout}]
 /return
 
 

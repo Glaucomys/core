@@ -192,30 +192,27 @@ sub Bind_setMNK(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
-	/if (${Bool[${_classType.Equal[TEST]}]}) {
 
 	| spire control
-	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+	/if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
 		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_verbage}
 		} 
-		/declare _listout 	string 	local
-		/declare _sep 			bool 		local FALSE
 		/for _count 1 to ${typeSpire.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
-
+		/return
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
-			VOUT /${_bind} healpoint ${sep} ${cinfo}${_verbage}\ax
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
 		}
 
 	} else {

@@ -450,36 +450,43 @@ sub Bind_setDRU(string _classType, string _verbage)
 	/if (${Bool[${_classType.Equal[groupheal]}]}) {
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal" useGroupHeal 0 0
+	 	/return
 
 	| set Class Heal Point	
-	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
-		/if (${Bool[${_verbage}]}) /declare _num int local ${_verbage}
-		/if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.NotEqual[Pet]}) {
-			/call writeINI ${Target.Class.ShortName}Point Heal ${_num}
-			VOUT ${ctar}${Target.Class}\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
-		} else /if (${Target.ID} && ${_num} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
-			/call writeINI PetPoint Heal ${_num}
-			VOUT ${ctar}Pet\ax Heal Point ${sep} ${cinfo}${_verbage}\ax
+	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
+		/if (${Target.ID} && ${Range.Between[1,99:${Int[${_verbage}]}]} && ${Spawn[${Target.ID}].Type.NotEqual[Pet]}) {
+			/call writeINI ${Target.Class.ShortName}Point Heal ${_verbage}
+		} else /if (${Target.ID} && ${Range.Between[1,99:${Int[${_verbage}]}]} && ${Spawn[${Target.ID}].Type.Equal[Pet]}) {
+			/call writeINI PetPoint Heal ${_verbage}
 		} else {
-			VOUT /dru healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
+			VOUT /${_bind} healpoint [${cinfo}##\ax] [${cinfo}TARGET\ax]
 		}
+		/for _count 1 to ${AllClassList.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${AllClassList.Arg[${_count},|].Upper}\ax(${cnum}${${AllClassList.Arg[${_count},|].Upper}Point}\ax)
+			/varset _sep TRUE
+		/next _count
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}PET\ax(${cnum}${PetPoint}\ax)
+		VOUT /${_bind} [${_listout}]
+		/return
 
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
+		/if (!${validate_expansion[TRUE, |16]}) /return
 		/if (${Range.Between[1,300:${Int[${_verbage}]}]}) {
 			/call writeINI XTHealRadius Heal ${_verbage}
-			/call echos switch "XTarget Heal Radius ${sep}" XTHealRadius 0 0
-		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,300:${Int[${_verbage}]}]}) {
-			VOUT /${Me.Class.ShortName.Lower} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+		} else {
+			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
+			/return
 		}	
-
+		
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
-		/if (${Range.Between[1,5:${Int[${_verbage}]}]}) {
+		/if (!${validate_expansion[TRUE, |16]}) /return
+		/if (${Range.Between:${Int[${_verbage}]}]}) {
 			/call writeINI tXHeal Timer ${_verbage}
-			/call echos number "XTarget refresh time" ${tXHeal} 0 0
-		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,5:${Int[${_verbage}]}]}) {
-			VOUT /${Me.Class.ShortName.Lower} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+		} else {
+			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax
+			/return
 		}	
 
 
@@ -493,15 +500,17 @@ sub Bind_setDRU(string _classType, string _verbage)
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${${_spiretype}} == ${typeSpire.Arg[${_count},|]},${cgood},${cinfo}]}${typeSpire.Arg[${_count},|]}\ax   
 			/varset _sep TRUE
 		/next _count
-		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
+		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
+		/return
 
-	} else {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-			/varset _sep TRUE
-		/next _count
-		VOUT /${_bind} [${_listout}]
-	} 
+	}
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
+		/varset _sep TRUE
+	/next _count
+	VOUT /${_bind} [${_listout}]
 /return

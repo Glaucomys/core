@@ -683,6 +683,7 @@ sub check_buffs_self()
 			/if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID} FALSE
 		}
 	/next _count
+	/if (${Me.Class.ShortName.Equal[WIZ]}) /call sort_mancy_lineAA
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
 	/if (${coreAuto} && ${switchShrink}) /call check_shrink
 	/if (${Bool[${BuffRemove}]}) /call remove_unwanted_buffs	
@@ -954,7 +955,7 @@ sub do_rest()
 	DEBUG ${cbug}do_Rest(\ax${cinfo}manna:${Me.PctMana}% endurance:${Me.PctEndurance}%\ax${cbug})\ax
 	/if (!${coreAuto} || ${switchAmIDead}) /return
 	
-	| clerics and pallys wait till yaulp gone
+	| clerics and pallys wait 'till yaulp gone
 	/if (${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
 	
 	AMIDEAD
@@ -981,8 +982,8 @@ sub do_rest()
 	/doevents
 	| check self click buffs
 	/if (!${Me.Invis}) {
-		/if (!${check_engaged[]} && ${switchBuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
-		/if (${switchBuffTell} && ${Bool[${BuffCount}]} && !${timer_check_buffs_tell}) /call check_buffs_tell
+		/if (${switchBuffItem} && !${check_engaged[]} && !${timer_check_buffs_item}) /call check_buffs_item
+		/if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
 	}
 
 	/if (${coreAuto} && (${Bool[${Group.Members}]} && ${Group.MasterLooter.ID}==${Me.ID}) && ${Me.UseAdvancedLooting} && !${AdvLoot.LootInProgress} && !${Stick.Active}) /call do_loot
@@ -1020,7 +1021,7 @@ sub do_rest()
 			} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			} 
 
-		| Melee: WAR,MNK,ROG,BER=
+		| Melee: WAR,MNK,ROG,BER
 		} else /if (${MeleeList.Find[${Me.Class.ShortName}]} && !${CastList.Find[${Me.Class.ShortName}]}) {
 			DEBUG REST WAR,MNK,ROG,BER
 			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
@@ -1049,6 +1050,7 @@ sub do_rest()
 				/if (${Me.PctMana} < 60*.${tmpHealOverride} && !${flagCallNeedRez}) /call check_cani
 			} else /if (${Select[${Me.Class.ShortName},ENC]}) {
 			} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
+				/call sort_mancy_lineAA
 			} else /if (${Select[${Me.Class.ShortName},NEC]}) {
 				/if (${switchPcPet}) /call check_pet
 			} else /if (${Select[${Me.Class.ShortName},MAG]}) {
@@ -1193,7 +1195,7 @@ sub sort_cursor(bool _ignoreTimer)
 		/if (${Cursor.ID}) /varset _cursorChoice ${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"]}
 		/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]} || ${Select[${_cursorChoice},Keep,Sell,Announce]}) {
 			/if (${Select[${_cursorChoice},Announce]}) ECHOCHANNEL - Cursor .. ${Cursor.Name}
-			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax]
+			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} (${num}${FindItemCount[${Cursor.Name}]}\ax)
 			/if (${Cursor.ID}) /nomodkey /autoinventory
 		} else /if (${Select[${_cursorChoice},Destroy]}) {
 			/if (${Cursor.ID}) VOUT Cursor ${sep} ${odestroy} ${sep} ${cinfo}${Cursor.Name}\ax
@@ -1676,18 +1678,27 @@ sub cast_nuke()
 	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
 	/declare _count int local 0
+	
 	/for _count 1 to ${DoNuke}
+		/if (!${Range.Between[1,${DoNuke}:${Int[${_count}]}]}) /continue
+		DEBUG _count:${_count}, spell:${Nuke${_count}}, manna:${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana}
 		AMIDEAD
 		CHECKEXIT
+		
 		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana} || ${Me.CurrentMana} < 2) /continue 
 		/if (!${cast_condition[Nuke${_count}Condition]}) /continue 
+		
 		/call core_cast "${Nuke${_count}}" 0 ${Target2Kill} cast_break
 		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
+
+		| toons ini switch. maintain the loop of nuked till all are cycled.
 		/if (${forceNukeLoop}) {
 			/delay 10s !${Me.Casting.ID}
 			/delay 2.5s
 			/delay ${timer_Nuke_Delay}
 		}
+
 	/next _count
 /return
 
@@ -1704,11 +1715,14 @@ sub cast_DOT()
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoDoT}
+		/if (!${Range.Between[1,${DoDoT}:${Int[${_count}]}]}) /continue
 		AMIDEAD
 		CHECKEXIT
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
 		/if (!${cast_condition[DoT${_count}Condition]}) /continue 
+		/if (${Me.CurrentMana} < ${Spell[${DoT${_count}}].Mana} || ${Me.CurrentMana} < 2) /continue 
+
 		/if ((${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) || !${Target.Buff[${DoT${_count}chk}].ID}) {
 			/call core_cast "${DoT${_count}}" 0  ${Target2Kill} cast_break
 		}
@@ -2033,15 +2047,14 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub, bool _forcew
 	| spell ready?
 	/if (!${Select[${_type},alt,item,disc]} && !${Me.SpellReady[${_spell}]}) /varset _bail spell_not_ready
 	| enough mana?
-	/if (!${Select[${_type},item,disc]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
+	| /if (!${Select[${_type},item,disc]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
+	/if (${Select[${_type},alt,0,${buffGem}]} && ${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 	| check enough end for disc?
 	/if (${Select[${_type},disc]} && ${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
 	
-	| buff check cast self ant target
+	| buff check cast self and target
 	/if (${check_no_do_a_thing_buff[cast]}) /return FALSE
 	
-
-
 	| dead?
 	/if (${Target.Type.Equal[Corpse]} || ${Spawn[${_tmpID}].Type.Equal[corpse]}) /varset _bail target_dead
 	| no target
@@ -2350,15 +2363,6 @@ sub use_skill_melee(int _tmpID)
 		}
 	}
 	
-	|** | bash
-	/if (${Bool[${bash}]} && !${Skill[Bash].Auto}) {
-		/if (${Me.AbilityReady[Bash]} && ${Spawn[${_tmpID}].Distance} <= 15) {
-			VMELEE Melee ${sep} ${csp}Bash\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
-			/if (${Target.ID}) /doability Bash
-		}
-	}
-	**|
-	
 	| bash
 	/if (${Bool[${bash}]} && !${Skill[Bash].Auto}) {
 		/if (${Me.AbilityReady[Bash]} && ${Spawn[${_tmpID}].Distance} <= 15) {
@@ -2366,11 +2370,7 @@ sub use_skill_melee(int _tmpID)
 			/if (${Bool[${switchBandolier}]} && ${Bool[${bandolierBash}]} && ${Bool[${bandolierNormal}]}) {
 				/if (${Target.ID}) {
 					/call bandolier_swap Bash
-					| /bandolier Activate ${bandolierBash}
-					| /delay 1
 					/doability Bash
-					| /delay 1
-					| /bandolier Activate ${bandolierNormal}
 					/call bandolier_swap Normal
 				}
 			} else /if (!${Bool[${switchBandolier}]}) {
@@ -2379,8 +2379,16 @@ sub use_skill_melee(int _tmpID)
 		}
 	}	
 	
-	
-	
+	| Intimidation Bard/Rogue only skill
+	/if (${validate_class[FALSE, |BRD|ROG]}) {
+		/if (${Bool[${intimidation}]}) {
+			/if (${Me.AbilityReady[Intimidation]} && ${Spawn[${_tmpID}].Distance} <= 15) {
+				VMELEE Melee ${sep} ${csp}Intimidation\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
+				/if (${Target.ID}) /doability Intimidation		
+			}
+		}
+	}
+
 	| Zerker only skill
 	/if (${validate_class[FALSE, |BER]}) {
 		/if (${Bool[${frenzy}]} && && !${Skill[Frenzy].Auto}) {
@@ -2504,11 +2512,14 @@ sub cast_nuke_GoM(int _tmpID)
 	}
 	
 	/if (${Me.SpellReady[${GoMNuke}]}) {
+		/if (${Me.CurrentMana} < ${Spell[${GoMNuke}].Mana} || ${Me.CurrentMana} < 2) /return 
+
 		/target ID ${_tmpID}
 		/if (!${cast_condition[GoMNukeCondition]}) /return
 		VSPELL GoM ${sep} ${csp}${GoMNuke}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
 		/call MQ2Cast "${GoMNuke}" gem${Me.Gem[${GoMNuke}]} -targetid|${_tmpID}
 	} else /if (${Me.SpellReady[${GoMNuke2}]}) {
+		/if (${Me.CurrentMana} < ${Spell[${GoMNuke2}].Mana} || ${Me.CurrentMana} < 2) /return 
 		/target ID ${_tmpID}
 		/if (!${cast_condition[GoMNuke2Condition]}) /return
 		VSPELL GoM Backup ${sep} ${csp}${GoMNuke2}\ax ${sep} [${ctar}${Spawn[id ${_tmpID}].DisplayName}\ax]
@@ -3189,7 +3200,7 @@ sub mem_spell(bool _echo, string _spellname, string _spellgem, bool _wait)
 	/if (!${Me.Book[${_spellname}]}) {
 		/if (!${Me.Book[${_spellname}]} && !${timer_mem_spell_timer}) {
 			/call create_timer timer_mem_spell_timer 60s
-			VOUT ${onotice} ${sep} You don't have ${csp}${_spellname}\ax in your book.
+			VOUT ${onotice} ${sep} Bad Spell Name.
 		}
 		/return FALSE
 	}
@@ -3197,10 +3208,6 @@ sub mem_spell(bool _echo, string _spellname, string _spellgem, bool _wait)
 	| just the facts ma'am
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem int local ${Macro.Return}
-	
-
-	
-	| /if (${Me.Gem[${_gem}].Name.Equal[${Spell[${_spellname}].RankName}]}) /return TRUE
 	
 	/if (${_echo}) VOUT Mem ${sep} ${csp}${Spell[${_spellname}].RankName}\ax
 	DEBUGCAST ${_gem} "${Spell[${_spellname}].RankName}"
@@ -3265,8 +3272,10 @@ sub tell_resident_mage(string _request)
  ***|
 sub check_for_corpse()
 	DEBUGREZ ${cbug}check_for_corpse()\ax
-	AMIDEAD
-	/if (${watch_for_death[]}) /return
+	| AMIDEAD
+	| /if (${watch_for_death[]}) /return
+	
+	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) /return
 	
 	| fuck your corpse
 	/if (!${switchRezGive}) /return	FALSE
@@ -4038,7 +4047,7 @@ sub vendor_buy(string _itemtoBuy, int _buyAmount)
 	/varcalc _qty ${_buyAmount}-${FindItemCount[${_itemtoBuy}]}
 	/delay 3
 	/if (${FindItemCount[${_itemtoBuy}]} >= ${_buyAmount}) {
-		/echo I already have ${FindItemCount[${_itemtoBuy}]} ${_itemtoBuy}.
+		VOUT I already have ${_itemtoBuy} ${sep} (${cnum}${FindItemCount[${_itemtoBuy}]}\ax)
 		/return
 	}   
 
@@ -4103,7 +4112,7 @@ sub vendor_buy(string _itemtoBuy, int _buyAmount)
 
 
 |***
- *	DES: dell items to a vvendor
+ *	DES: finds the items to sell to a vendor
  *	USE: 
  *	INI: 
  *  NOTE: 
@@ -4151,17 +4160,20 @@ sub vendor_sell(string _itemtoSell)
 
 
 |***
- *	DES: 
+ *	DES: sells the actual item to the vendor
  *	USE: 
  *	INI: 
  *  NOTE: 
  ***|
 sub vendor_sell_item(string _itemtoSell)
 	DEBUG ${cbug}vendor_sell_item(item: ${_itemtoSell})\ax
-  /if (!${Window[MerchantWnd].Open}) /return
+  /if (!${Window[MerchantWnd].Open}) {
+  	VOUT Go and open a merchant window.
+  	/return
+  }
 
 	/while (${FindItemCount[=${_itemtoSell}]}) {
-		VOUT Selling ${sep} ${citem}${_itemtoSell}\ax
+		VOUT Selling ${sep} ${citem}${_itemtoSell}\ax ${sep} (${cnum}${FindItemCount[${_itemtoSell}]}\ax)
 		/if (${InvSlot[pack${Select[${FindItem[=${_itemtoSell}].ItemSlot},23,24,25,26,27,28,29,30,31,32]}].Item.Container}) {
 			/squelch /nomodkey /itemnotify in Pack${Math.Calc[${FindItem[=${_itemtoSell}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${_itemtoSell}].ItemSlot2}+1]} leftmouseup
 		} else /if (${FindItem[=${_itemtoSell}].InvSlot}) {
@@ -4243,7 +4255,6 @@ sub get_target()
 	/declare _count int local
 	/declare _mobHP int local 100
 	/declare _priorityMob bool local FALSE
-	
 
 	| time to step the agro range out so we get mobs closer first	
 	/while (${_tmpRange} <= ${MobAgro} && !${Target2Kill}) {
@@ -4326,7 +4337,6 @@ sub get_target()
 			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]} && ${Me.State.NotEqual[STAND]}) /stand
 			/if (${Me.Stunned}) /return
 			/if (!${switchPull} || !${coreAuto}) /return
-			| /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance} targetable playerstate 4]}) /return
 			
 			/if (${Select[${Me.Class.ShortName},SHD]}) {
 				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) /call core_cast "Hate's Attraction" alt ${Target2Kill} FALSE
@@ -4336,7 +4346,6 @@ sub get_target()
 				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) /call core_cast "Warlord's Grasp" alt ${Target2Kill} FALSE
 				/if (${Target.Distance} < 31 && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost}) /call core_cast "${DiscInsult}" disc ${Target2Kill} FALSE
 			}
-
 
 			| get mob to us
 			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && < ${MobAgro}) {
@@ -4360,16 +4369,11 @@ sub get_target()
 					}
 				}
 				
-				
-				
 			} else 	/if (${Spawn[ID ${Target2Kill}].Distance} <= 31) {
 				/if (${coreAuto}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 				/if (${Select[${combat},RANGE]}) /return
 				/squelch /stick ID ${Target2Kill} ${CombatDistance} 
 			}
-			
-			
-			
 		}
 
 	| if the mob is less the arrow range, move to the bastard
@@ -4455,7 +4459,7 @@ sub hand_in(string _sender, string _verbage)
 
 
 |***
- *	DES: will dump all worn or invnetory augmetns into an INI.
+ *	DES: will dump all worn or invnetory augments into an INI.
  *	USE: /echoaugments
  *	INI: core.augmentdump.ini
  *  NOTE: recursive of augments in items in bags.
@@ -4519,7 +4523,7 @@ sub echo_augments()
 sub check_watch_spawn()
 	DEBUG ${cbug}check_watch_spawn(spawn: ${watchSpawn})\ax
 	
-	/if (!${Defined[_correctWatchCount]}) /declare _correctWatchCount int local ${SpawnCount[npc ${watchSpawn}]}
+	/declare _correctWatchCount int local ${SpawnCount[npc ${watchSpawn}]}
 	/varset hudwatchspawn ${_correctWatchCount}
 	
 	| count mismatch
@@ -4543,9 +4547,9 @@ sub give_coin(int _ammount, int _stacks, string _coin)
 	DEBUG ${cbug}give_coin(${_ammount}, ${_stacks}, ${_coin})\ax
 	| VOUT /givecoin [ammount] [stacks] [plat|gold|copper|silver]
 
-	/if (!${Defined[_count]}) /declare _count 			int local 
-	/if (!${Defined[_countloop]}) /declare _countloop 	int local 1
-	/if (!${Defined[_coinID]}) /declare _coinID			int local 99
+	/declare _count 			int local 
+	/declare _countloop 	int local 1
+	/declare _coinID			int local 99
 
 	| check target
 	/if (!${Target.ID} || ${Taret.ID} == ${Me.ID} || ${Target.ID} == ${Pet.ID}) {
@@ -4668,7 +4672,7 @@ sub is_burn_time()
 	| if number of mobs in the local area reaches the /burn count ## threashold
 	/if (${coreAuto} && ${Bool[${burnCount}]} && ${SpawnCount[npc radius ${MobAgro} ${If[${switchOverrideLos},,los]} targetable playerstate 4]} >= ${burnCount}) /return TRUE
 
-	| healers mezers, and off combat routines simply check for a named in the local area to start a burn. no direct target of a named is required. simply be in the area.
+	| healers mezers, and off combat routines simply check for a named in the local area to start a burn. no direct target of a named is required. just be in the area.
 	/declare _mobcount			int 		local 0
 	/declare _count					int 		local 0
 	/declare _mobID 				int 		local 0
@@ -5037,7 +5041,7 @@ sub check_stance()
  *	DES: Circle of [Power|Life|Mana]
  *	USE: keep Circle of [Power|Life|Mana] going
  *	INI: TOON - [General] -> Circleof[Power|Life|Mana]=
- *	NOTE: 
+ *	NOTE: these are all on the same timer. so u just get one
  ***|  
 sub synergy_click_Circle()
 	DEBUG ${cbug}synergy_click_Circle()\ax
@@ -5099,7 +5103,6 @@ sub cast_AA_spire()
 		/if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireRaid}}]} && !${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireRaid}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireRaid}}].Stacks}) {
 			/call core_cast "${${Me.Class.ShortName}spire${spireRaid}}" alt 0 FALSE
 		}
-		| /if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireRaid}}]}) /call core_cast "${${Me.Class.ShortName}spire${spireRaid}}" alt 0 FALSE
 	} else /if (!${Bool[${Raid.Members}]} && ${Bool[${${Me.Class.ShortName}spire${spireGroup}}]}) {
 		/if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireGroup}}]} && !${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].Stacks}) {
 			/call core_cast "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
@@ -5204,7 +5207,7 @@ sub check_AA_agro()
 
 |***
  *	DES: Challenge Spells for paladin/shadowknight
- *	USE: /call cast_challenge_${Me.Class.ShortName}
+ *	USE: /call cast_challenge TARGET
  *	INI: 
  *  NOTE:
  ***|
@@ -5585,6 +5588,24 @@ sub fix_INI_declares()
 
 	/ini "${INIClass}" "Common" "useSmartAssist1" NULL
 	/ini "${INIClass}" "Common" "useSmartAssist2" NULL
+	
+	/if (${Me.Class.ShortName.Equal[BRD]}) /ini "${INIClass}" "meleedisc" "seloskick" NULL
+
+	/if (${Me.Class.ShortName.Equal[WIZ]}) {
+		/ini "${INIClass}" "Spells" "DoNuke" NULL
+		/ini "${INIClass}" "Spells" "Nuke1" NULL
+		/ini "${INIClass}" "Spells" "Nuke2" NULL
+		/ini "${INIClass}" "Spells" "Nuke3" NULL
+		/ini "${INIClass}" "Spells" "Nuke4" NULL
+		/ini "${INIClass}" "Spells" "Nuke5" NULL
+		/ini "${INIClass}" "Spells" "Nuke6" NULL
+		/ini "${INIClass}" "Spells" "Nuke7" NULL
+		/ini "${INIClass}" "Spells" "Nuke8" NULL
+	}
+
+
+
+
 
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
@@ -5609,6 +5630,7 @@ sub fix_INI_declares()
  ***|
 sub validate_class(bool _error, string _class)
 	DEBUG ${cbug}validate_class(error: ${_error}, class: ${_class})\ax
+	/if (${switchOverrideClasscheck}) /return TRUE
 	/declare _pass bool local FALSE
 	/declare _count int local 0
 
@@ -5627,12 +5649,13 @@ sub validate_class(bool _error, string _class)
 
 |***
  *	DES: is the plugin available ?
- *	USE: /if (${validate_class[BOOL, |plugin|plugin]) /dowhatever
+ *	USE: /if (${validate_plugin[BOOL, |plugin|plugin]) /dowhatever
  *	INI: 
  *	NOTE: cycle all plugins. return FALSE if any passed are not loaded
  ***|
 sub validate_plugin(bool _error, string _plugin)
-	DEBUG ${cbug}validate_class(error: ${_error}, plugin: ${_plugin})\ax
+	DEBUG ${cbug}validate_plugin(error: ${_error}, plugin: ${_plugin})\ax
+	
 	/if (!${Bool[${_plugin}]}) VOUT ${owarning} ${sep} validate_plugin failure.
 	/declare _plugcount int local 0	
 	/declare _count int local 0
@@ -5792,7 +5815,6 @@ sub cast_cripple(int _tmpID)
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
 		/return
 	}
-	UPDATEHUD "Cripple"
 
 	| get to business
 	/declare _spelltype string local FALSE
@@ -5801,20 +5823,27 @@ sub cast_cripple(int _tmpID)
 	/if (${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]} || !${Bool[${Me.Gem[${spellCripple}]}]}) {
 		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellCripple Dreary Deeds
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellCripple Crippling Spirit
+		/if (${Select[${Me.Class.ShortName},WIZ]}) /varset spellCripple Lower Element
 		/varset _spelltype alt
 	} else /if (${Bool[${Me.Gem[${spellCripple}]}]}) {
 		/varset _spelltype gem${Me.Gem[${spellCripple}]}
 	}	
 
+	| cripple spell already exists on
+	/if (${Target.BuffDuration[${spellCripple}].TotalSeconds}) {
+		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
+		/return		
+	}
 
 	| check the things normal things	
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellCripple}]}) /return
-	
+
+	UPDATEHUD "Cripple"	
+	DEBUG CRIPPLE CASTING
 	/delay 2.25s ${Me.SpellReady[${spellCripple}]}	
 	/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID} check_for_adds
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
-		| /call create_timer timer_cripple_${_tmpID} 5m
 	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
 		/call create_timer timer_cripple_${_tmpID} 15s
 	}
@@ -5831,7 +5860,6 @@ sub cast_cripple(int _tmpID)
  ***|
 sub set_base_target_timers(int _tmpID)
 	DEBUG ${cbug}set_base_target_timers(ID: ${_tmpID})\ax
-	| /if ((${DoDoT} || ${DoNuke} || ${doRainNuke}) && !${Defined[timer_Nuke_Delay]}) /call create_timer timer_Nuke_Delay 1
 	/if (${switchBanestrike} && !${Defined[timer_banestrike_${_tmpID}]}) /call create_timer timer_banestrike_${_tmpID} 1
 	/if (${SetStickBehind} && !${Defined[timer_snap_recheckID_${_tmpID}]}) /call create_timer timer_snap_recheckID_${_tmpID} 1
 	/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
@@ -5852,7 +5880,7 @@ sub set_base_target_timers(int _tmpID)
  *  NOTE: 
  ***|
 sub check_deBuffs(int _tmpID)
-	DEBUG ${cbug}check_deBuffs()\ax
+	DEBUG ${cbug}check_deBuffs(ID:${_tmpID})\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -5902,8 +5930,9 @@ sub check_deBuffs(int _tmpID)
 		
 	| cripple
 	/if (${switchdeBuffCripple}) {
+		DEBUG check_deBuffs(ID:${_tmpID}) CRIPPLE 
 		/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
-			/if (!${validate_class[FALSE, |DRU]}) { 
+			/if (!${validate_class[FALSE, |DRU|WIZ]}) { 
 				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
 				/if (${validate_class[FALSE, |ENC]}) {
 					/call check_for_adds
@@ -5911,6 +5940,9 @@ sub check_deBuffs(int _tmpID)
 				}
 			} else /if (${validate_class[FALSE, |DRU]}) {
 				/call cast_AA_ro ${_tmpID}
+			} else /if (${validate_class[FALSE, |WIZ]}) {
+				DEBUG Wizzy Cripple
+				/call cast_cripple ${_tmpID}
 			}
 		}
 	}
@@ -5938,7 +5970,7 @@ sub check_deBuffs(int _tmpID)
 
 
 |***
- *	DES: checks the build increments. if theres a farriance, will check INIs
+ *	DES: checks the build increments. if theres a varriance, will check INIs
  *	USE: check_deBuffs
  *	INI: 
  *  NOTE: 
@@ -6059,7 +6091,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	
 	| check cripple switch
 	/if (${Bool[${_deBuffType.Equal[cripple]}]} || ${switchdeBuffCripple}) {
-		/if (!${validate_class[${_error}, |ENC|SHM|DRU|MAG|NEC|SHD|BST]}) {
+		/if (!${validate_class[${_error}, |ENC|SHM|DRU|MAG|NEC|SHD|BST|WIZ]}) {
 			/call writeINI switchdeBuffCripple Buffs FALSE  
 			/return FALSE
 		}
@@ -6127,7 +6159,6 @@ DEBUGREZ ${cbug}watch_for_death()\ax
 		/call clear_combat
 		/if (${Me.Casting.ID}) /stopcast
 		/varset Target2Kill 0
-		| /varset tmpMode "DEAD: ${Time}"
 		VBC Needs a rez: "${Me.DisplayName}" 0 0 
 	}
 	DEBUGREZ ${cbug}watch_for_death[${switchAmIDead}]\ax
@@ -6323,7 +6354,7 @@ sub cast_AA_fireworks()
 
 /notify AAWindow AAW_SpecialList leftmouse ${Window[AAWindow].Child[4].List[=Glyph of Fireworks II]}
 
-
+/alternateadv buy ${AltAbility[Glyph of Fireworks I].ID}
 
 /notify AAWindow AAW_Subwindows tabselect 4 listselect Glyph of Fireworks II
 
@@ -6332,9 +6363,6 @@ sub cast_AA_fireworks()
 ${Window[AAWindow].Child[AAW_SpecialList].Text.Equal[Glyph of Fireworks II]}
  ***|
  
- 
- 
-
 
 
  |***
