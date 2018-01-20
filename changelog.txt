@@ -15,6 +15,14 @@ Current Requests:
 - no melee buff list
 
 
+20180120
+- /cc circle [power,life,mana] sets chich circle of ?? you want to use in a burn
+- class.shd.inc
+  -- typo in explosion of hatred.
+- class.enc.inc
+  -- rewrote the bc buff for auspice rune
+  
+
 20180119
 - spell casting
   -- more controls in place to prevent trying to nuke/dot with not enough manna. the red spam was irritating me

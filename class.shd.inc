@@ -162,7 +162,7 @@ sub get_agro_SHD()
 	} else /if (${mobAECount} > 2) {
 		/if (${Me.SpellReady[${AEHate2}]}) /call core_cast "${AEHate2}" 0 0 FALSE
 	} else /if (${mobAECount} > 4) {
-		/if (${Me.AltAbilityReady[Explosion of Hatred]}) /call core_cast  "Explosion of Hatred" alt 0 FALSE
+		/if (${Me.AltAbilityReady[Explosion of Hatred]}) /call core_cast "Explosion of Hatred" alt 0 FALSE
 	} else /if (${mobAECount} > 6) {
 		/if (${Me.AltAbilityReady[Explosion of Spite]}) /call core_cast "Explosion of Spite" alt 0 FALSE
 	}

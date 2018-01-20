@@ -5045,28 +5045,35 @@ sub check_stance()
  ***|  
 sub synergy_click_Circle()
 	DEBUG ${cbug}synergy_click_Circle()\ax
+	/if (!${Bool[${useCircle}]}) /return FALSE
 	AMIDEAD
 	CHECKEXIT	
 	
 	| circle of power
-	/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].Stacks}) {
-		/if (${Bool[${Me.Song[Circle of Power]}]} || ${Bool[${Me.Song[${RNGauspice}]}]}) /return
-		/call core_cast "${CircleofPower}" item 0 FALSE
-		/return
+	/if (${useCircle.Equal[Power]}) {
+		/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].Stacks}) {
+			/if (${Bool[${Me.Song[Circle of Power]}]} || ${Bool[${Me.Song[${RNGauspice}]}]}) /return
+			/call core_cast "${CircleofPower}" item 0 FALSE
+			/return
+		}
 
 	| circle of life
-	} else /if (${Me.ItemReady[${CircleofLife}]} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) {
-		/if (${Bool[${Me.Song[Circle of Life]}]}) /return
-		/call core_cast "${CircleofLife}" item 0 FALSE
-		/return
-	
+	} else /if (${useCircle.Equal[Life]}) {
+		/if (${Me.ItemReady[${CircleofLife}]} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) {
+			/if (${Bool[${Me.Song[Circle of Life]}]}) /return
+			/call core_cast "${CircleofLife}" item 0 FALSE
+			/return
+		}		
+
 	| circle of Mana
-	} else /if (${Me.ItemReady[${CircleofMana}]} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) {
-		/if (${Bool[${Me.Song[Circle of Mana]}]}) /return
-		/call core_cast "${CircleofMana}" item 0 FALSE
-		/return
-	}	
-/return
+	} else /if (${useCircle.Equal[Mana]}) {
+		/if (${Me.ItemReady[${CircleofMana}]} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) {
+			/if (${Bool[${Me.Song[Circle of Mana]}]}) /return
+			/call core_cast "${CircleofMana}" item 0 FALSE
+			/return
+		}
+	}
+/return TRUE
 
  
   

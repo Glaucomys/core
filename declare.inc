@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180119
+	/declare coreBuild	 														int			outer 20180120
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -777,7 +777,7 @@ sub set_declares()
 
 
 	| combat controls
-	/declare ccType																	string	outer |agro|bandolier|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|stopnuke|zradius
+	/declare ccType																	string	outer |agro|bandolier|circle|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|stopnuke|zradius
 	/call DeclareIniVar combat					 						string	Common MELEE
 	/call DeclareIniVar MA1			 										string 	Common FALSE
 	/call DeclareIniVar MA2			 										string 	Common FALSE
@@ -880,6 +880,7 @@ sub set_declares()
 	/call DeclareIniVar Breastplate2		 						string	Items FALSE
 	/call DeclareIniVar Breastplate2effect					string	Items FALSE	
 	| /call DeclareIniVar Epic												string	Items FALSE	
+	/call DeclareIniVar useCircle										string	Items FALSE		
 	/call DeclareIniVar CircleofPower								string	Items FALSE	
 	/call DeclareIniVar CircleofLife								string	Items FALSE	
 	/call DeclareIniVar CircleofMana								string	Items FALSE	
@@ -4371,7 +4372,16 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			VOUT /${_bind} stopnuke(${cnum}${stopnukeAt}\ax) allowable range is ${cinfo}0 - 99\ax
 			/return
 		} 			
-		
+
+	| set circle of to be used
+	} else /if (${Bool[${_ccType.Equal[circle]}]}) {
+		/if (${Bool[${_verbage.Equal[power]}]} || ${Bool[${_verbage.Equal[life]}]} || ${Bool[${_verbage.Equal[mana]}]}) {
+			/call writeINI useCircle Items ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+			VOUT /${_bind} circle ${sep} ${cinfo}${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}\ax
+		} else /if (!${Bool[${_verbage}]}) {
+			VOUT /${_bind} circle allowable options [${cinfo}power, life, mana\ax] 
+			/return
+		} 
 
 	| set automated combat
 	} else /if (${Bool[${_ccType.Equal[melee]}]} || ${Bool[${_ccType.Equal[range]}]} || ${Bool[${_ccType.Equal[nuke]}]} || ${Bool[${_ccType.Equal[heal]}]} || ${Bool[${_ccType.Equal[dual]}]}) {
@@ -4532,6 +4542,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			/if (${${_bind}Type.Arg[${_count},|].Equal[combatdistance]}) /varset _listout ${_listout}(${cnum}${CombatDistance}\ax)
 			/if (${${_bind}Type.Arg[${_count},|].Equal[saferadius]}) /varset _listout ${_listout}(${cnum}${combatRadius}\ax)
 			/if (${${_bind}Type.Arg[${_count},|].Equal[stopnuke]}) /varset _listout ${_listout}(${cnum}${stopnukeAt}\ax)
+			/if (${${_bind}Type.Arg[${_count},|].Equal[circle]}) /varset _listout ${_listout}(${cnum}${useCircle}\ax)
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} [${_listout}]

@@ -140,38 +140,41 @@ sub check_rune_ENC()
 
 
 |***
- *	DES: EQBC Buff Rune Ward spell
+ *	DES: EQBC Buff RuneAuspice spell
  *	USE: have the spell memed and the toon identified in the INI.
  *	INI: 
  *  NOTE: 
  ***|
 sub check_rune_auspice()
-	DEBUGCLASS ${cbug}check_rune_auspice()\ax
+	DEBUGCLASS ${cbug}check_rune_auspice(toons: ${runeAuspiceToon})\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
 	CHECKTIE
 	/call check1offBuffs
 	
-	/declare _runeAuspiceID int local ${Spell[${runeAuspice}].ID}
-	/declare _AuspiceToon string local
+	/declare _AuspiceToon string local FALSE
 	/declare _count int local 0
-	/declare _toon string local ${runeAuspiceToon}
 
-	/for _count 1 to ${_toon.Count[|]}
-		/if (!${Spawn[${_AuspiceToon}]}) /continue
+	/for _count 1 to ${runeAuspiceToon.Count[|]}
+		/if (!${Me.SpellReady[${runeAuspice}]}) /break
+		/if (!${Spawn[${runeAuspiceToon.Arg[${_count},|]}].ID}) /continue
+		/if (${NetBots[${runeAuspiceToon.Arg[${_count},|]}].Buff.Find[${Spell[${runeAuspice}].ID}]}) /continue
 		CHECKEXIT
 		/doevents
-		/if (${Bool[${Spawn[id ${NetBots[${_toon.Arg[${_count},|]}].ID}]}]} && ${Spawn[id ${NetBots[${_AuspiceToon}].ID}].Distance} < ${Spell[${runeWard}].MyRange} && ${Me.SpellReady[${runeWard}]}) {
-			/varset _AuspiceToon ${_toon.Arg[${_count},|]}
-			DEBUGCLASS  ${_count}: ${_toon.Count[|]}, ${_toon.Arg[${_count},|]}, ${Bool[${Spawn[id ${NetBots[${_toon.Arg[${_count},|]}].ID}]}]}, found: ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]}
+		/if (${Bool[${Spawn[pc ${runeAuspiceToon.Arg[${_count},|]}]}]} && ${Spawn[pc ${runeAuspiceToon.Arg[${_count},|]}].Distance} < ${Spell[${runeAuspice}].MyRange}) {
+			/varset _AuspiceToon ${runeAuspiceToon.Arg[${_count},|]}
 			/break
 		}
 	/next _count	
+
+	| more reasons to bail..
+	/if (!${Bool[${_AuspiceToon}]}) /return
+	/if (!${Bool[${Spawn[${_AuspiceToon}]}]}) /return
+	/if (${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /return
 	
-	/if (!${Bool[${Spawn[${_AuspiceToon}]}]} || !${Me.SpellReady[${runeAuspice}]}  || ${Bool[${NetBots[${_AuspiceToon}].ShortBuff.Find[${_runeAuspiceID}]}]} || ${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /return
-	UPDATEHUD "BUFF: BC Ward"
-  DEBUGCLASS BC Buffing: ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
+	UPDATEHUD "BUFF: BC Auspice"
+	DEBUGCLASS BC Buffing ${sep} ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
 
 	/call core_cast "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
 	UPDATEHUD FALSE
