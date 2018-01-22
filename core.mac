@@ -71,9 +71,6 @@
 
 ***|
 
-
-
-
 #turbo 60
 | #warning
 #define DEBUG "/if (${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
@@ -102,10 +99,10 @@
 #define CHECKSAFELIST "/if (!${safelist.Find[${_sender}]} && !${switchOverrideSafelist}) /return"
 #define UPDATEHUD "/call update_HUD_notices"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
+#define TESTFUNCTION "/call test_function"
 
 
 #include tc\declare.inc
-/delay 1
 #include tc\common.inc
 #include tc\MQ2Cast_Spell_Routines.inc
 #include tc\mode.inc
@@ -155,6 +152,7 @@ sub main()
 	/call verify_build
 	/call Event_Zone
 	/call base_preperation
+	/varset currentZone ${Zone.ShortName}
 
 	AMIDEAD
 
@@ -170,6 +168,7 @@ sub main()
 	  /doevents
   
 		/if (!${timer_check_EQBC}) /call check_one_mind
+		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
 		
 		| what is this for??
 		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}
@@ -234,8 +233,8 @@ sub main()
 			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MON|BST]}) /call cast_disc_breather
 		}
 
-		| use those AA.. hoarding bastard (broken atm)
-		| /if (${switchAAFireworks} && !${timer_Waste_Fireworks}) /call cast_AA_fireworks
+		| use those AA.. hoarding bastard
+		/if (${switchAAFireworks} && !${timer_Waste_Fireworks}) /call cast_AA_fireworks
 
 		| watch for spawn
 		/if (${Bool[${watchSpawn}]} && !${timer_check_watch_spawn}) /call check_watch_spawn

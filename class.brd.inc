@@ -112,7 +112,7 @@ sub disc_BRD()
 	/call core_cast "Boastful Bellow" alt ${Target2Kill} FALSE	
 	
 	| trigger Frenzied kicks AA for bards if target is debuffed from intimidate
-	/if (${Bool[${intimidation}]} && ${switchIntimidKick} && ${Target.Buff[Harbinger's Intimidation].ID} && ${Spawn[${_tmpID}].Distance} <= 15) /call core_cast "Frenzied Kicks" alt 0 FALSE
+	/if (${Bool[${intimidation}]} && ${switchIntimidKick} && ${Target.Buff[Harbinger's Intimidation].ID} && ${Spawn[${Target2Kill}].Distance} <= 15) /call core_cast "Frenzied Kicks" alt 0 FALSE
 	
 /return
 

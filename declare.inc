@@ -76,7 +76,7 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
 	} 
 
 	/call create_timer ${_my_timer} 1
-	/return
+/return
 
 
 
@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180120
+	/declare coreBuild	 														int			outer 20180122
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -530,8 +530,9 @@ sub set_declares()
 	/call DeclareIniVar burnCount										int			common 10
 	
 
-	| core.zone.ini lists
+	| zone 
 	/declare ZoneFileList														string 	outer |NameList|ExcludeList|NoMezzList|RangeList|NoCastList|NoMeleeList|HuntMobList|CharmMobList|NoFireList|NoPoisonList|NoMagicList|NoCorruptionList|NoColdList|NoDiseaseList|HarvestList
+	/declare currentZone														string	outer	FALSE
 	/declare RangeList		   												string 	outer FALSE
 	/declare ExcludeList    												string 	outer FALSE
 	/declare NameList       												string 	outer FALSE
@@ -562,8 +563,8 @@ sub set_declares()
 	/call DeclareIniVar IllusionBuff								string	Common FALSE
 	/call DeclareIniVar GTFO												string	Common FALSE
 	/call DeclareIniVar switchAApicker							bool 		Common FALSE
-	/call DeclareIniVar RangeItem										string	Common FALSE		
-	/call DeclareIniVar RangeItemSummon							string	Common FALSE
+	/call DeclareIniVar RangeItem										string	Common |FALSE|FALSE	
+	/call DeclareIniVar RangeItemSummon							string	Common |FALSE|FALSE
 	/call DeclareIniVar RangeSpell									string	Common FALSE
 	/call DeclareIniVar RangeClickItem							string	Common FALSE
 	/call DeclareIniVar RangeDisc										string	Common FALSE
@@ -802,9 +803,10 @@ sub set_declares()
 	/declare switchAmIDead													bool		outer FALSE
 	/declare validRezFound 													bool 		outer FALSE
 	/declare rezWindowPct 													int 		outer 0
-
 	
 	/declare switchRez															bool		outer FALSE
+	/declare switchRezPct														bool		outer FALSE
+	/declare switchRezRange													bool		outer FALSE
 	/declare switchRezStop													bool		outer FALSE
 	/call DeclareIniVar switchRezTake 							bool 		Heal TRUE 
 	/call DeclareIniVar switchRezEmergency					bool		Heal FALSE
@@ -1204,6 +1206,7 @@ sub declare_timers()
 	/call setTimer tHUD_Death_Check									string	Timer	10s		timer_HUD_death_check
 	/call setTimer tNuke_Delay											string	Timer	1			timer_Nuke_Delay
 	/call setTimer tWaste_Fireworks									string	Timer 15m		timer_Waste_Fireworks
+	/call setTimer tValidate_Zone										string	Timer 10s		timer_validate_zone
 
 
 	| mod rod/pet weapon recovered addicts
@@ -2932,6 +2935,12 @@ sub Event_NullSlot
 #event Zone "LOADING, PLEASE WAIT..."
 sub Event_Zone(string _line)
 	DEBUG ${cbug}Event_Zone(line: ${_line})\ax
+	/call validate_zone FALSE TRUE
+
+|***
+	| /while (${Me.Zoning}) {
+	| 	/delay 1s
+	| }
 	/call echos zone 0 0 0 0 
 	/call check_zone_INI FALSE
 	/if (${burnForce}) /varset burnForce FALSE
@@ -2942,6 +2951,9 @@ sub Event_Zone(string _line)
 	
 	/call create_timer timer_zone_pause ${tZone_Pause}
 	/doevents flush
+
+***|
+
 /return 
 
 

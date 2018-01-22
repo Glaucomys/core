@@ -899,7 +899,27 @@ sub check_ammo()
 		/call sort_cursor TRUE
 		/return
 	}	
-	/if (!${Bool[${RangeItem}]} || !${Bool[${RangeItemSummon}]} || ${Me.Invis}) /return
+	
+	/declare _count int local 0
+	
+	/for _count 1 to ${RangeItem.Count[|]}
+		/if (!${Bool[${RangeItem.Arg[${_count},|]}]} || !${Bool[${RangeItemSummon.Arg[${_count},|]}]}) /continue
+
+		/if (!${Bool[${FindItemCount[${RangeItemSummon.Arg[${_count},|]}]}]}) {
+			/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
+			/if (${Me.Book[${RangeItem.Arg[${_count},|]}]}) /call core_cast "${RangeItem.Arg[${_count},|]}" ${buffGem} ${Me.ID} FALSE
+			/if (${Me.ItemReady[${RangeItem.Arg[${_count},|]}]}) /call core_cast "${RangeItem.Arg[${_count},|]}" item ${Me.ID} FALSE
+			/if (${Me.AltAbilityReady[${RangeItem.Arg[${_count},|]}]}) /call core_cast "${RangeItem.Arg[${_count},|]}" alt ${Me.ID} FALSE
+			/if (${Me.CombatAbilityReady[${RangeItem.Arg[${_count},|]}]} || ${Select[${Me.Class.ShortName},BER]}) /call core_cast "${RangeItem.Arg[${_count},|]}" disc ${Me.ID} FALSE
+			/delay 10s !${Me.Casting.ID}
+			/call sort_cursor TRUE
+		}
+	/next _count
+/return
+
+
+
+	/if (!${Bool[${RangeItem}]} || !${Bool[${RangeItemSummon}]}) /return
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (${Me.Book[${RangeItem}]}) /call core_cast "${RangeItem}" ${buffGem} ${Me.ID} FALSE
@@ -909,7 +929,7 @@ sub check_ammo()
 		/delay 10s !${Me.Casting.ID}
 		/call sort_cursor TRUE
 	}
-/return
+
 
 
 
@@ -1195,7 +1215,7 @@ sub sort_cursor(bool _ignoreTimer)
 		/if (${Cursor.ID}) /varset _cursorChoice ${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"]}
 		/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]} || ${Select[${_cursorChoice},Keep,Sell,Announce]}) {
 			/if (${Select[${_cursorChoice},Announce]}) ECHOCHANNEL - Cursor .. ${Cursor.Name}
-			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} (${num}${FindItemCount[${Cursor.Name}]}\ax)
+			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} (${cnum}${FindItemCount[${Cursor.Name}]}\ax)
 			/if (${Cursor.ID}) /nomodkey /autoinventory
 		} else /if (${Select[${_cursorChoice},Destroy]}) {
 			/if (${Cursor.ID}) VOUT Cursor ${sep} ${odestroy} ${sep} ${cinfo}${Cursor.Name}\ax
@@ -5611,11 +5631,31 @@ sub fix_INI_declares()
 	}
 
 
-
+	| fix the range summon INI entries
+	/if (!${RangeItem.Count[|]}) /call writeINI RangeItem Common |"${RangeItem}"
+	/if (!${RangeItemSummon.Count[|]}) /call writeINI RangeItemSummon Common |"${RangeItemSummon}"		
 
 
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6313,63 +6353,24 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
  *	USE: /call cast_AA_fireworks()
  *	INI: 
  *  NOTE: 
-
+ ***|
 sub cast_AA_fireworks()
-	SDEBUG ${cbug}cast_AA_fireworks(AA:${Me.AAPoints} Max:${Int[${Math.Calc[${Me.Level}*2]}]})\ax
+	DEBUG ${cbug}cast_AA_fireworks(AA:${Me.AAPoints} Max:${Int[${Math.Calc[${Me.Level}*2]}]})\ax
 	/if (!${switchAAFireworks}) /return
 	/call create_timer timer_Waste_Fireworks ${tWaste_Fireworks}
-	/if (${Me.AAPoints} < 115) /return
-	/if (${Me.AAPoints} < ${Int[${Math.Calc[${Me.Level}*2-15]}]}) /return
+	/if (${Me.AAPoints} < 20) /return
 
 	| show me the money
-	/if (${Me.AAPoints} >= ${Int[${Math.Calc[${Me.Level}*2]}]}) {
-		SDEBUG we have the AA
-		/if (!${Me.AltAbilityReady[Glyph of Fireworks II]}) {
-			/alternateadv buy ${AltAbility[Glyph of Fireworks II].ID}
-			/call create_timer timer_Waste_Fireworks 1m
-			/return
-		}
-		/if (${Me.AltAbilityReady[Glyph of Fireworks II]}) /call core_cast "Glyph of Fireworks II" alt 0 FALSE
+	/if (${Me.AAPoints} >= 120 && !${Me.AltAbilityReady[Glyph of Fireworks II]}) {
+		/call buy_AA "Glyph of Fireworks II"
+		/call create_timer timer_Waste_Fireworks 1m
+		/return
+	} else /if (${Me.AltAbilityReady[Glyph of Fireworks II]}) {
+		VOUT 'yo .. hold my beer ..
+		/call core_cast "Glyph of Fireworks II" alt 0 FALSE
 	}
 /return
 
-
-
-   /nomodkey /notify AAWindow AAW_Subwindows tabselect ${ListNum.Right[1]}
-   /nomodkey /notify AAWindow ${ListNum} listselect ${Window[AAWindow].Child[${ListNum}].List[=${AAName}]}
-   /nomodkey /notify AAWindow ${ListNum} leftmouse ${Window[AAWindow].Child[${ListNum}].List[=${AAName}]}
-
-
-
-/notify AAWindow ${ListNum} listselect ${Window[AAW_SpecialList].List[=Glyph of Fireworks II]}
-
-
-/notify AAWindow AAW_SpecialList leftmouse Glyph of Fireworks II
-/notify
-/notify
-/notify
-/notify
-/notify
-
-
-
-   /nomodkey /notify AAWindow tabselect 4
-   /nomodkey /notify AAWindow AAW_SpecialList listselect Glyph of Fireworks II
-   /nomodkey /notify AAWindow AAW_SpecialList leftmouse Glyph of Fireworks II
-
-
-
-/notify AAWindow AAW_SpecialList leftmouse ${Window[AAWindow].Child[4].List[=Glyph of Fireworks II]}
-
-/alternateadv buy ${AltAbility[Glyph of Fireworks I].ID}
-
-/notify AAWindow AAW_Subwindows tabselect 4 listselect Glyph of Fireworks II
-
-/notify AAW_Page4
-
-${Window[AAWindow].Child[AAW_SpecialList].Text.Equal[Glyph of Fireworks II]}
- ***|
- 
 
 
  |***
@@ -6391,4 +6392,64 @@ sub click_item_heal()
 		
 		/call core_cast "${clickHealItem.Arg[${_count},|]}" item 0 FALSE
 	/next _count		
+/return
+
+
+
+ |***
+ *	DES: make sure you have the correct zone INI info loaded
+ *	USE: /call click_item_heal
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub validate_zone(bool _error, bool _force)
+	DEBUG ${cbug}validate_zone(error: ${_error}, force: ${_force})\ax
+	/if (${timer_validate_zone}) /return
+	/call create_timer timer_validate_zone ${tValidate_Zone}
+	/declare _zoned bool local FALSE
+
+	| zone matches. nothing to see here. move on
+	/if (${Zone.ShortName.Equal[${currentZone}]}) {
+		| do nothing at all
+
+	| zone does not match. wtf..
+	} else 	/if (${Zone.ShortName.NotEqual[${currentZone}]} || ${_force}) {
+		/varset currentZone ${Zone.ShortName}
+		/call echos zone 0 0 0 0 
+		/call check_zone_INI FALSE
+		/varset _zoned TRUE
+		/call create_timer timer_zone_pause ${tZone_Pause}
+		/doevents flush
+	}
+
+	| yah. we zoned and stuff
+	/if (${_zoned}) {
+		/if (${burnForce}) /varset burnForce FALSE
+		/squelch /makecamp off
+		/if (${HomeSet}) /call writeINI HomeSet Movement FALSE
+		/call switch_clear_mode
+		/if (${coreAuto} && ${switchShrink}) /call check_shrink
+	}
+/return
+
+
+
+ |***
+ *	DES: Buys an AA
+ *	USE: /call cbuy_AA "AA NAME"
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub buy_AA(String _name)
+	DEBUG ${cbug}buy_AA(AA: ${_name})\ax
+	/if (!${Bool[${_name}]}) /return
+
+	/if (${AltAbility[${_name}].CanTrain}) {
+		| Me.AltAbility will return NULL if at rank 0, which requires purchase via .Index
+		/if (${Me.AltAbility[${_name}].CanTrain}) {
+			/alt buy ${AltAbility[${_name}].NextIndex}
+		} else {
+			/alt buy ${AltAbility[${_name}].Index}
+		}
+	}
 /return

@@ -15,13 +15,21 @@ Current Requests:
 - no melee buff list
 
 
-20180120
+20180122
+- validate_zone()
+  -- correct zone loads are now validated every 10 seconds. if for some reason you're being laggy when you zone, Core will correct the load
+- /core [fireworks]
+  -- if enabled will waste your AAs. in blocks of 100 on the AA Glyph of fireworks II
+  -- it will not let you go below 20 banked AA for other glyphs.
+  -- this server no other purpose  
 - /cc circle [power,life,mana] sets chich circle of ?? you want to use in a burn
 - class.shd.inc
   -- typo in explosion of hatred.
 - class.enc.inc
   -- rewrote the bc buff for auspice rune
-  
+- class.brd.inc
+  -- small adjustment to frenzied kicks with intimidation
+ 
 
 20180119
 - spell casting

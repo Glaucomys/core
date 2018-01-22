@@ -5,5 +5,6 @@
  *
  ***|
  
- 
- 
+
+sub test_function()
+/return

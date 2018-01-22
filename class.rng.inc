@@ -21,9 +21,11 @@ sub core_RNG()
 	CHECKTIE
 
 	:killtarget
+	| TESTFUNCTION
 	/call prep_combat
 	/if (!${Macro.Return}) /return
 
+	
 	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
