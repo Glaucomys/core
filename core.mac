@@ -148,7 +148,7 @@ sub main()
 	/call intialize_item_buffs
 	/call set_alias
 	/call declare_timers
-	/call echos startup 0 0 0 0
+	/if (${switchDispBuild}) /call echos startup 0 0 0 0
 	/call verify_build
 	/call Event_Zone
 	/call base_preperation
@@ -159,7 +159,7 @@ sub main()
 	LOG .. Starting Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
   /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
 
-	VOUT Commands ${sep} ${cinfo}/info\ax
+	/if (${switchDispInfo}) VOUT Commands ${sep} ${cinfo}/info\ax
 	OUT ${cgood}Ready\ax
   
 	:loopmain

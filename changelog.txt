@@ -10,9 +10,26 @@
  ***|
 
 Current Requests:
-- pull with a spell vice ranged summoned weapon. sit back and watch people get summoned ;)
 - fix chanter charm mob code
 - no melee buff list
+
+
+
+20180131
+- disabled /core [fireworks] in raids. was kinda funny... kinda..
+- remove buffs now using /invoke
+- loot | loot file | /cursor
+  -- ok so there was a request to be able to pass loot to a person.
+  -- this requires changes to the core.loot.ini file to be able to accommodate more the one choice.
+  -- items will be stored like the following
+  -- Blue Diamond=|Keep
+  -- to pass an item to a person use the following example
+  -- Blue Diamond=|Keep|Fred
+  -- this will pass the item to Fred if he is in your group. otherwise you still keep it. or whatever you have it set too
+  -- the /cursor commands still operate
+  -- manual editing of the file is required to add a person to pass the item too. (I'll work on a way to automate it)
+  -- Core will adjust the entries to the new format as each item is looted, so.. it may take a time to get through them all. can always do a mass change on your own if you like
+  -- changing the /cursor [keep|loot|ignore..so on] status of an item will not change the the second value of a name to pass it to, if there is one.
 
 
 20180122

@@ -33,7 +33,8 @@ sub core_PAL()
 		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
-		/if (${switchHealGroup} || ${switchHealSelf}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
 		/call use_skill_melee ${Target2Kill}
@@ -49,7 +50,8 @@ sub core_PAL()
 		/call check_deBuffs ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
-		/if (${switchHealGroup} || ${switchHealSelf}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
 		/call use_skill_melee ${Target2Kill}
@@ -62,7 +64,8 @@ sub core_PAL()
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 		/call set_combat HEAL
-		/if (${switchHealGroup} || ${switchHealSelf}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	} else /if (${Select[${combat},DUAL]}) {
 	} 
 	/if (${coreAuto}) {	
@@ -108,11 +111,6 @@ sub disc_PAL()
 	
 	/if (${validate_buff[disc, discs, DiscFastRune]}) /call core_cast "${DiscFastRune}" disc 0 FALSE
 	
-	| Hand of Piety AA Group heal	
-	/if (${switchHealSelf} && ${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 2 ) /call core_cast "Hand of Piety" alt 0 FALSE
-	| dpsheal
-	/if (${switchHealSelf} && ${Me.CombatAbilityReady[${DiscReflexive}]} && ${Me.PctHPs} < 40*.${tmpHealOverride}) /call core_cast "${DiscReflexive}" disc ${Target2Kill} FALSE
-
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	| AA inquisitors armor stacking control
@@ -133,11 +131,46 @@ sub disc_PAL()
 	
 	| Yaulp.. all the time!!
 	/if (!${Me.Sitting} && ${doYaulp}) /call cast_yaulp
-
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride}) /call core_cast "Prayers of Life" item 0 FALSE
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 	
 /return
+
+
+
+|***
+ *	DES: emergency healing
+ *	USE: /call patch_heal_${Me.Class.ShortName}
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub patch_heal_PAL()
+	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	AMIDEAD
+	CHECKEXIT
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+
+	| Panic Heal 1
+  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} ${Me.SpellReady[${healPanic1}]}) /call core_cast "${splashPanic}" 0 FALSE
+
+	| Panic Heal 2
+  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.20*.${tmpHealOverride} ${Me.SpellReady[${healPanic2}]}) /call core_cast "${splashPanic}" 0 FALSE
+
+	| dpsheal
+	/if (${Me.CombatAbilityReady[${DiscReflexive}]} && ${Me.PctHPs} < 40*.${tmpHealOverride}) /call core_cast "${DiscReflexive}" disc ${Target2Kill} FALSE
+
+	| Hand of Piety AA Group heal	
+	/if (${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 1 ) /call core_cast "Hand of Piety" alt 0 FALSE
+
+	/call click_item_heal
+
+
+/return
+
+
+
+
+
+
+
 
 
 

@@ -621,7 +621,7 @@ sub remove_unwanted_buffs()
 		AMIDEAD
 		/if (${Bool[${Me.Buff[${_remove.Arg[${_count},|]}]}]})  {
 			VOUT Buff ${sep} ${info}${_remove.Arg[${_count},|]}\ax ${sep} ${oremove}
-			/squelch /removebuff ${_remove.Arg[${_count},|]}
+			/invoke ${Me.Buff[${_remove.Arg[${_count},|]}].Remove}
 		}
 	/next _count		
 /return
@@ -919,19 +919,6 @@ sub check_ammo()
 
 
 
-	/if (!${Bool[${RangeItem}]} || !${Bool[${RangeItemSummon}]}) /return
-	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]}) {
-		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-		/if (${Me.Book[${RangeItem}]}) /call core_cast "${RangeItem}" ${buffGem} ${Me.ID} FALSE
-		/if (${Me.ItemReady[${RangeItem}]}) /call core_cast "${RangeItem}" item ${Me.ID} FALSE
-		/if (${Me.AltAbilityReady[${RangeItem}]}) /call core_cast "${RangeItem}" alt ${Me.ID} FALSE
-		/if (${Me.CombatAbilityReady[${RangeItem}]} || ${Select[${Me.Class.ShortName},BER]}) /call core_cast "${RangeItem}" disc ${Me.ID} FALSE
-		/delay 10s !${Me.Casting.ID}
-		/call sort_cursor TRUE
-	}
-
-
-
 
 |***
  *	DES: Baby got back.
@@ -1165,7 +1152,7 @@ sub set_stop(bool _noecho)
  ***|
 sub click_item(bool _clickEpic)
 	DEBUGCAST ${cbug}click_item()\ax
-	/if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0 FALSE
+	| /if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0 FALSE
 
 	/declare _count int local 0
 	/for _count 1 to 6
@@ -3929,47 +3916,73 @@ sub do_loot()
 
 	UPDATEHUD "LOOT"
 
-	/delay 1s !${AdvLoot.LootInProgress}
+	/delay 2s !${AdvLoot.LootInProgress}
+	/if (${Me.UseAdvancedLooting} && ${Group.MasterLooter.Name.Equal[${Me.DisplayName}]} && !${switchAutoCursor}) /varset switchAutoCursor TRUE
+	
+	
 	/declare _scount int local 0
 	/declare _pcount int local 0
 	
 	| Item To Process Name (the thingie in the list of advloot)
-	/if (!${Defined[_advlItem]}) /declare _advlItem string local
+	/declare _advlItem string local
+	
 	| _advlChoice is what is listed to do with the items: Leave,Destroy,Keep,Sell,Announce
-	/if (!${Defined[_advlChoice]}) /declare _advlChoice string local
+	/declare _advlChoice string local
+	
+	| if we want to give it to someone else
+	/declare _advlPerson string local
+
 
 	/if (${Raid.Members} || ${Bool[${Group.Members}]}) {
 		| Shared List Sorting
 		/for _scount ${AdvLoot.SCount} downto 1
-			/varset currentLootCount ${AdvLoot.SCount}
 			/varset _advlItem ${AdvLoot.SList[${_scount}].Name}
-			/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
-			DEBUG ${_scount}/${AdvLoot.SCount} ${AdvLoot.SList[${_scount}].Name} = ${_advlChoice}
+			
+			| corect the INI entry if not set for the new form
+			/if (!${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"].Count[|]}) {
+				VOUT Fixing Loot: ${_advlItem}
+				/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" |${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
+			}
+			/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"].Arg[1,|]}
+			/varset _advlPerson ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"].Arg[2,|]}
+			DEBUG ${_scount}/${AdvLoot.SCount} ${AdvLoot.SList[${_scount}].Name} = ${_advlChoice}, ${_advlPerson}
+
 
 			| Does it exist in the loot.ini (check to see if there is a choice for it)
 			/if (${AdvLoot.SList[${_scount}].ID} && !${Select[${_advlChoice},Leave,Keep,Destroy,Sell,Announce,Ignore]}) {
+				/echo ${_advlChoice}
 				| Add item to ini if it not in there
 				/if (${AdvLoot.SList[${_scount}].NoDrop} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
 					VOUT ${oadd} ${sep} ${_advlItem} = ${oleave} [no drop/lore].
-					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Leave
+					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" |Leave
 				} else {
 					VOUT ${oadd} ${sep} ${_advlItem} = ${okeep} [default].
-					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Keep
+					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" |Keep
 				}
-				| if we make a new entry, update shits.
-				/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
+				| if we make a new entry, update.
+				/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"].Arg[1,|]}
 			}  
 			
 			| now we do something with the item.
 			
 			| if we are going to leave the item or if it is lore AND we have one already. Conversly, we loot if we intend to keep or destroy the item
-			/if (${Select[${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]},Leave,Announce]} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
-				DEBUG SharedList: ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]} is set to Leave.. 
+			| pass the item off if there is a person listed and in group
+			/if (${Bool[${_advlPerson}]} && ${Group.Member[${_advlPerson}].ID}) {
+				DEBUG SharedList: ${_scount} ${_advlPerson}
+					/delay 1s !${AdvLoot.LootInProgress}
+					/advloot shared ${_scount} giveto ${_advlPerson}
+					/delay 1
+			
+			| ditch the item if we need too
+			} else /if (${Select[${_advlChoice},Leave,Announce]} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
+				DEBUG SharedList: ${_advlChoice} is set to Leave/Announce.. 
 				/if (${Select[${_advlChoice},Announce]}) ECHOCHANNEL Loot: Leaving ${_advlItem}
 				/delay 1s !${AdvLoot.LootInProgress}
 				/advloot shared ${_scount} leave
 				/delay 1
 				/continue
+
+			| or we keep it.
 			} else /if (${AdvLoot.SList[${_scount}].ID}) {
 				DEBUG SharedList: ${_scount} ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]} = ${_advlChoice}
 				/if (${Select[${_advlChoice},Keep,Destroy,Sell]}) {
@@ -3984,7 +3997,7 @@ sub do_loot()
 	/if (${AdvLoot.PCount}) {
 		/for _pcount ${AdvLoot.PCount} downto 1
 			/varset _advlItem ${AdvLoot.PList[${_pcount}].Name}
-			/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
+			/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"].Arg[1,|]}
 			DEBUG ADVL: ${_advlItem} - ${ctar}${_advlChoice}\ax
 			
 			/if (${AdvLoot.PList[${_pcount}].ID} && !${Select[${_advlChoice},Leave,Keep,Destroy,Sell,Announce,Ignore]}) {
@@ -3994,11 +4007,11 @@ sub do_loot()
 					/advloot personal ${_pcount} leave
 				} else /if (${AdvLoot.PList[${_pcount}].NoDrop} || ${FindItem[${_advlItem}].Lore} || ${FindItemBank[${_advlItem}].Lore}) {
 					VOUT Cursor ${sep} ${cinfo}${_advlItem}\ax = ${oleave} loot file [no drop].
-					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Leave
+					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" |Leave
 					| /goto :looppersonalitem
 				} else {
 					VOUT Cursor ${sep} ${cinfo}${_advlItem}\ax = ${okeep} loot file [default].
-					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" Keep
+					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" |Keep
 				}
 				/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
 			} 
@@ -6222,6 +6235,9 @@ DEBUGREZ ${cbug}watch_for_death()\ax
 sub watch_for_rezbox()
 DEBUGREZ ${cbug}watch_for_rezbox()\ax
 	
+	| dont rezz me
+	/if (!${switchRezTake}) /return
+	
 	| not dead? GO AWAY
 	/if (!${switchAmIDead} && !${flagCallNeedRez}) /return
 		
@@ -6356,7 +6372,7 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
  ***|
 sub cast_AA_fireworks()
 	DEBUG ${cbug}cast_AA_fireworks(AA:${Me.AAPoints} Max:${Int[${Math.Calc[${Me.Level}*2]}]})\ax
-	/if (!${switchAAFireworks}) /return
+	/if (!${switchAAFireworks} || ${Raid.Members}) /return
 	/call create_timer timer_Waste_Fireworks ${tWaste_Fireworks}
 	/if (${Me.AAPoints} < 20) /return
 
@@ -6453,3 +6469,6 @@ sub buy_AA(String _name)
 		}
 	}
 /return
+
+
+

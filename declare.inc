@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180122
+	/declare coreBuild	 														int			outer 20180131
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -369,6 +369,10 @@ sub set_declares()
 	/call DeclareCoreIniVar invitelist							string	No FALSE
 	/call DeclareCoreIniVar rezlist									string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
+	/call DeclareCoreIniVar switchDispInfo					string	General TRUE
+	/call DeclareCoreIniVar switchDispBuild					string	General TRUE
+	
+	
 	/call DeclareIniVar toonControl			 						string	Common FALSE
 	/call DeclareIniVar autoRest 										int 		Common 90
 	/call DeclareIniVar AutoExpAdjust 							bool 		Common TRUE
@@ -1609,7 +1613,8 @@ sub declare_PAL()
   /call DeclareIniVar splashGroup									string 	Heal "Wave of Grief"
   /call DeclareIniVar healPanic										string 	Heal FALSE
   /call DeclareIniVar splashPanic									string 	Heal "Aurora of Dayspring"
-  /call DeclareIniVar healPanic										string 	Heal FALSE
+  /call DeclareIniVar healPanic1									string 	Heal FALSE
+  /call DeclareIniVar healPanic2									string 	Heal FALSE
   /call DeclareIniVar healTouch										string 	Heal "Ardent Touch"
 	/call DeclareIniVar useGroupHeal 								bool		Heal TRUE
 	/call DeclareIniVar XTHealRadius								int			Heal 300
@@ -2545,8 +2550,9 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 		/delay 1s !${Me.Invis}
 		/if (${Me.Casting.ID}) /stopcast
 		/delay 1s !${Me.Casting.ID}
-		/call core_cast  "Fellowship Registration Insignia" item 0 FALSE
-		/return TRUE
+		| /call core_cast  "Fellowship Registration Insignia" item 0 FALSE
+		/useitem Fellowship Registration Insignia
+		/return
 	}
 
 	|***
@@ -2568,10 +2574,8 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	/if (${_cmd.Equal[rc]}) {
 		/if (!${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) /return FALSE
 		/if (!${Me.AltAbilityReady[Radiant Cure]}) /return FALSE
-		/while (${Me.Casting.ID}) {
-			/stopcast
-			/delay 1s !${Me.Casting.ID}
-		}
+		/if (${Me.Casting.ID}) /stopcast
+		/delay 1s !${Me.Casting.ID}
 		/call core_cast "Radiant Cure" alt 0 FALSE
 		ECHOCHANNEL Radiant Cure
 		/return TRUE
@@ -3466,9 +3470,10 @@ sub Bind_buff(string _buffType, string _verbage)
 #bind cursor /cursor
 sub Bind_cursor(string _cursorType, string _verbage)
 	DEBUG ${cbug}Bind_cursor(type: ${_cursorType})\ax
-	/declare _properType string local
-	/declare _count int local 0
-	/declare _bind string local cursor
+	/declare _properType 	string 	local
+	/declare _count 			int 		local 0
+	/declare _bind 				string 	local cursor
+	/declare _passto 			string 	local NULL
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3491,8 +3496,19 @@ sub Bind_cursor(string _cursorType, string _verbage)
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.Equal[what]}) {
 		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.NotEqual[what]} && ${_cursorType.NotEqual[auto]}) {
+		
 		/varset _properType ${_cursorType.Left[1].Upper}${_cursorType.Right[-1].Lower}
-		/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" "${_properType}"
+		
+		/if (${Bool[${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]}]}) {
+			/varset _passto ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]}
+		}
+		
+		| ${If[${Bool[${_passto}]},|${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]},]}
+		
+		
+		/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" |${_properType}${If[${Bool[${_passto}]},|${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]},]}
+		
+		
 		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
 	| 	/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 		/if (${Cursor.ID} && ${_cursorType.Equal[Destroy]}) /destroy
@@ -3585,19 +3601,21 @@ sub Bind_rez(string _rezType, string _verbage)
  ***| 
 #bind listControl /lc
 sub Bind_listControl(string _list, string _verbage)
-	DEBUG ${cbug}Bind_listControl (control: ${_list})\ax
-	/declare _properType 			string local
-	/declare _count 					int local 0
-	/declare _listchanged 		bool local FALSE
-	/declare _validName				bool local FALSE
+	DEBUG ${cbug}Bind_listControl (control: ${_list}, verbage: ${_verbage})\ax
+	/declare _properType 			string 	local
+	/declare _count 					int 		local 0
+	/declare _listchanged 		bool 		local FALSE
+	/declare _validName				bool 		local FALSE
+	/declare _bind 						string 	local lc
+	
 
 	| get help
 	/if (${listType.Find[${_list}]} && ${_verbage.Equal[info]}) {
-		VOUT /lc ${cinfo}${_list.Lower}\ax ${sep} ${Ini[${INIWiki},lc,${_list.Lower}]}
+		VOUT /${_bind} ${cinfo}${_list.Lower}\ax ${sep} ${Ini[${INIWiki},lc,${_list.Lower}]}
 		/return
 	}	else /if (${_list.Equal[info]}) {
 		/for _count 1 to ${listType.Count[|]}
-			VOUT /lc ${cinfo}${listType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},lc,${listType.Arg[${_count},|]}]}
+			VOUT /${_bind} ${cinfo}${listType.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},lc,${listType.Arg[${_count},|]}]}
 		/next _count
 		/return
 	}
@@ -3610,7 +3628,7 @@ sub Bind_listControl(string _list, string _verbage)
 
 	| require a target. one that is not a PC
 	/if ((!${Target.ID} || ${Bool[${Spawn[pc ID ${Target.ID}]}]}) && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
-		DEBUG NO /lc Target
+		DEBUG NO /${_bind} Target
 		/call echos needtarget 0 0 0 0
 	} 
 
@@ -3648,16 +3666,17 @@ sub Bind_listControl(string _list, string _verbage)
 			/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" "TRUE"
 		}
 		/varset SafeZone ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
-		/call echos switch "Safe Zone ${sep} ${cinfo}${Zone.Name}\ax" SafeZone 0 0
+		VOUT /${_bind} ${_list} ${sep} ${If[${SafeZone},${oenabled},${odisabled}]}
 		/varset _listchanged TRUE
 	} else /if (${_list.Equal[reset]}) {
 		DEBUG Reset Zone
-		/call echos zone 0 0 0 0
-		/call check_zone_INI ${Me.DisplayName}
+		VOUT /${_bind} ${_list} ${sep} ${cinfo}${Zone.Name}\ax
+		/varset _listchanged TRUE
+		| /call check_zone_INI ${Me.DisplayName}
 	} else /if (${_list.Equal[remove]}) {
 		DEBUG remove from INI
 		/declare _mobName string local |${Target.DisplayName}
-		VOUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
+		VOUT /${_bind} ${_list} ${sep} ${ctar}${Target.DisplayName}\ax
 
 		/declare _listName 			string local	
 		/declare _INIlist				string local ${ZoneFileList}
@@ -3942,7 +3961,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 
 |***
  *	DES: enable/disable Tie
- *	USE: /tie [on|off]
+ *	USE: /tie [switch|on|off]
  *	INI: 
  *  NOTE:
  ***| 	
@@ -3965,7 +3984,7 @@ sub Bind_setTie(string _tieType)
 		/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie ${If[${SetTie},FALSE,TRUE]}  
 	}
 	
-	VOUT Tie to ${cpc}${SetTieToon}\ax ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
+	VOUT /tie ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
 /return
 
 
@@ -4108,8 +4127,12 @@ sub Bind_setCore(string _coreType, string _verbage)
 			/call writeINI autoRest Common ${_verbage}  
 			| /call echos setswitch /${_bind} autoRest ${_verbage} ${_${_bind}Type}
 			| /call echos number "Auto Rest" ${If[${_verbage},${_verbage},${autoRest}]} 0 0
+			VOUT /${_bind} rest ${sep} ${If[${AutoExpAdjust},${oenabled},${odisabled}]}
+			
 		} 
 		/call echos setswitch /${_bind} autoRest ${autoRest} ${_${_bind}Type}
+		VOUT /${_bind} rest ${sep} ${If[${AutoExpAdjust},${oenabled},${odisabled}]}
+
 
 	| set control toon
 	} else /if (${Bool[${_coreType.Equal[control]}]}) {
@@ -4118,11 +4141,11 @@ sub Bind_setCore(string _coreType, string _verbage)
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI toonControl Common FALSE
 		}
-		VOUT /${_bind} ${cinfo}control\ax ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
+		VOUT /${_bind} control ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
 
 	| reset all core INIs
 	} else /if (${Bool[${_coreType.Equal[reset]}]}) {
-		/call core_reset
+		| /call core_reset
 
 	| enable wasiting fireworks for those bastards with too much AA on their hands
 	} else /if (${Bool[${_coreType.Equal[fireworks]}]}) {
@@ -4149,7 +4172,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 	} else /if (${Bool[${_coreType.Equal[expmaintain]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI MaintExpLvl Common ${_verbage} 
-			/call echos number "Maintain % of EXP in level" ${_verbage} 0 0
+			VOUT /${_bind} expmaintain(${cnum}${MaintExpLvl}\ax)
 		} else {
 			VOUT /${_bind} expmaintain(${cnum}${MaintExpLvl}\ax) allowable range ${cinfo}1 - 99\ax
 		}	
@@ -4158,7 +4181,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 	} else /if (${Bool[${_coreType.Equal[explevel]}]}) {
 		/if (${Range.Between[1,110:${Int[${_verbage}]}]}) {
 			/call writeINI MaxLevel Common ${_verbage} 
-			/call echos number "Max EXP Level" ${_verbage} 0 0
+			VOUT /${_bind} explevel(${cnum}${MaxLevel}\ax)
 		} else {
 			VOUT /${_bind} explevel(${cnum}${MaxLevel}\ax) allowable range ${cinfo}1 - 110\ax
 		}	
@@ -4166,7 +4189,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 	| exp auto adjust
  	} else /if (${Bool[${_coreType.Equal[expadjust]}]}) {
 		/call writeINI AutoExpAdjust Common ${If[${AutoExpAdjust},FALSE,TRUE]} 
-		/call echos switch "Auto Adjust EXP/AA" AutoExpAdjust 0 0
+		VOUT /${_bind} expadjust ${sep} ${If[${AutoExpAdjust},${oenabled},${odisabled}]}
 
 	| delete old INI entries
  	} else /if (${Bool[${_coreType.Find[fixini]}]}) {
@@ -4234,9 +4257,9 @@ sub Bind_info()
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
 		/varset _sep TRUE
 	/next _count
-	/call echos wiki 0 0 0 0
+	/if (${switchDispInfo}) /call echos wiki 0 0 0 0
 	VOUT ${_listout}
-	VOUT /command ${cinfo}info\ax for details
+	/if (${switchDispInfo}) VOUT /command ${cinfo}info\ax for details
 /return  	
 
 
