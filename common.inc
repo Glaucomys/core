@@ -961,6 +961,7 @@ sub create_timer(string _my_timer, string _my_duration)
 sub do_rest()
 	DEBUG ${cbug}do_Rest(\ax${cinfo}manna:${Me.PctMana}% endurance:${Me.PctEndurance}%\ax${cbug})\ax
 	/if (!${coreAuto} || ${switchAmIDead}) /return
+	/if (${SetTieLock} && ${SetTie}) /return
 	
 	| clerics and pallys wait 'till yaulp gone
 	/if (${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
@@ -1404,7 +1405,7 @@ sub get_assist_target()
 	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]}) /return
 	
 	| if no MA present. move along..	
-	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssistR}]} && !${Bool[${useSmartAssistG}]}) {
+	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssistR}]} && !${Bool[${useSmartAssistG}]} && !${Bool[${useForceAssist}]}) {
 		DEBUG ${cbad}NO MA\ax
 		/delay 1
 		/return
@@ -1416,14 +1417,12 @@ sub get_assist_target()
 	
 	| if we dont have underfoot expansion, skip ALL smartassist go directly to jail. 
 	/if (!${validate_expansion[FALSE, |16]}) /goto :skippingtoMAtarget
+	/if (${Bool[${useForceAssist}]}) /goto :skippingtoMAtarget
 
 	| no, you still cannot assist yourself. get over it
 	/if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call Bind_setCombatControl smartma X
 	/if (${Spawn[pc ${Raid.MainAssist}].ID} == ${Me.ID}) /call Bind_setCombatControl smartma X
 
-	| if in a group and no smartassist is set, skip to MA1/2
-	| /if (!${Raid.Members} && ${Bool[${Group.Members}]} && !${Bool[${Group.MainAssist}]}) :skippingtoMAtarget
-	
 	| tar acquisition when using smart assist. set XTarget positions.
 	/if (${Bool[${useSmartAssistR}]} || ${Bool[${useSmartAssistG}]}) {
 		DEBUG Using SmartMA
@@ -1490,7 +1489,13 @@ sub get_assist_target()
 				/varset Target2Kill 0
 				/return
 			}	
+		} else /if (${Bool[${useForceAssist}]} && ${Target2Kill} && ${Spawn[${Target2Kill}].ID}) {
+			
+			
 		}
+		
+		
+		
 		/doevents
 		AMIDEAD
 		/if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
@@ -2541,10 +2546,11 @@ sub cast_nuke_GoM(int _tmpID)
  *	USE: /call check_buffs_raid
  *	INI: uses INI [Buffs] 
  *  NOTE: 
- ***|
+
 sub check_buffs_raid()
 	DEBUG ${cbug}check_buffs_raid()\ax
 	/if (${coreAuto}) /call create_timer timer_check_buffs_raid ${tRaid_Buff}
+	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
 	/if (${coreAuto} && ${watch_for_death[]}) /return 
 
 	| # people in raid
@@ -2586,6 +2592,97 @@ sub check_buffs_raid()
 					}
 					/call create_timer timer_Raid_Buffs${Spell[${Buff${_x}chk}].ID}${Raid.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
 				}
+			/next _x	
+		/next _i
+		UPDATEHUD FALSE
+	}
+/return
+ ***|
+
+
+|***
+ *	DES: buffs mercs in your group
+ *	USE: /call check_buffs_manual [mercenary|raid]
+ *	INI: uses INI [Buffs] 
+ *  NOTE: 
+ ***|
+sub check_buffs_manual(string _type)
+	DEBUG ${cbug}check_buffs_manual(type: ${_type})\ax
+	/if (${coreAuto}) /call create_timer timer_check_buffs_merc ${tMerc_Buff}
+	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
+	/if (${coreAuto} && ${watch_for_death[]}) /return 
+
+	| # people in group
+	/declare _i int local
+	| # of buffs to cast
+	/declare _x int local
+	| targets buff count
+	/declare _y int local
+	| declare type types
+	/declare _GroupRaid string local NULL
+	/declare _PCMercenary string local NULL
+	
+	| set type types..
+	/if (${_type.Equal[raid]}) {
+		/varset _GroupRaid Raid
+		/varset _PCMercenary pc
+	} else /if (${_type.Equal[mercenary]}) {
+		/varset _GroupRaid Group
+		/varset _PCMercenary mercenary
+	} else {
+		/return
+	}
+
+	
+	/if (${${_GroupRaid}.Members} && ${Me.PctMana} > 10 && !${Me.Casting.ID}) {
+		UPDATEHUD "BUFF: ${_type}"
+		/for _i 0 to ${${_GroupRaid}.Members}
+			DEBUG Checking Buffs on [${cinfo}${${_GroupRaid}.Member[${_i}].DisplayName}\ax]
+			| is the right type pf member
+			/if (!${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Type.Equal[${_PCMercenary}]}) /continue
+			
+			
+			/for _x 1 to ${BuffCount}
+				/if (!${Bool[${RaidBuff${_x}Class}]} || !${Bool[${Buff${_x}}]}) /continue
+				AMIDEAD
+				CHECKEXIT
+				/doevents
+				CHECKTIE
+				CLEARCURSOR TRUE
+				
+				/if (${RaidBuff${_x}Class.Find[${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Class.ShortName}]} && ${Spawn[${Group.Member[${_i}].ID}].Type.Equal[${_PCMercenary}]} && ${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Distance} < ${MobAgro} && ${Me.PctMana} >= 20) {
+	
+					| stop what you're doing and get the target
+					/if (${Stick.Active}) /squelch /stick off
+					/target ID ${${_GroupRaid}.Member[${_i}].ID}
+					/delay 1s ${Target.ID} == ${${_GroupRaid}.Member[${_i}].ID}
+					/delay 1s ${Target.BuffCount}
+					/delay 1s
+					DEBUG X=${_x} class:${RaidBuff${_x}Class.Find[${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Class.ShortName}]} .. spell:${Buff${_x}chk}
+
+					| check the buffs, if it doesnt stack mark it and dont come back
+					/for _y 1 to ${Target.BuffCount}	
+						AMIDEAD
+						
+						/if (!${Spell[${Target.Buff[${_y}]}].WillStack[${Spell[${Buff${_x}}]}]} && ${Target.Buff[${_y}].ID}) {
+							/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
+						} else {
+							/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} 1
+							/delay 2
+						}
+					/next _y
+
+					/if (${Bool[${timer_manual_buffs${Spell[${Buff${_x}}].ID}${Group.Member[${_i}].ID}}]}) /continue
+					
+					| if target doesnt have the buff, hook em up
+					/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
+						CLEARCURSOR TRUE
+						VSPELL Merc Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${${_GroupRaid}.Member[${_i}].DisplayName}\ax]
+						/call MQ2Cast "${Buff${_x}}" ${buffGem} -targetid|${${_GroupRaid}.Member[${_i}].ID} 
+					}
+					/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
+				}
+				
 			/next _x	
 		/next _i
 		UPDATEHUD FALSE
@@ -2633,6 +2730,22 @@ sub cast_buffs_queue(string _sender, string _verbage)
  ***|
 sub set_tie()
 	DEBUG ${cbug}set_tie()\ax
+
+	| FORCE EMULATE FOLLOW.. HATE DOING THIS
+	/if (${SetTieLock}) {
+		/if (${SetTie} && ${Spawn[pc ${SetTieToon}].ID}) {
+			/if (!${Stick.Active}) {
+				/squelch /face ID ${Spawn[pc ${SetTieToon}].ID} ${If[${SetFaceFast},fast,]}
+				/squelch /stick ID ${Spawn[pc ${SetTieToon}].ID} ${SetTieDistance} UW
+			}
+			AMIDEAD
+			/doevents
+			/delay 1
+		}
+		/return
+	}
+
+	
 	/if (${timer_check_Tie}) /return
 	/if (${coreAuto}) /call create_timer timer_check_Tie ${tCheck_Tie}
 
@@ -2658,14 +2771,6 @@ sub set_tie()
 	| all present and or accounted for SIR!
 	/squelch /face ID ${Spawn[pc ${SetTieToon}].ID} ${If[${SetFaceFast},fast,]}
 	/squelch /stick ID ${Spawn[pc ${SetTieToon}].ID} ${SetTieDistance} UW
-
-	| FORCE EMULATE FOLLOW.. HATE DOING THIS
-	| /while (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${SetTieLock}) {
-	| 	AMIDEAD
-	| 	/doevents
-	| 	/delay 1
-	| }
-
 
 	:okweremoving
 	AMIDEAD
@@ -3993,6 +4098,7 @@ sub do_loot()
 			}
 		/next _scount
 	}
+	
 	| Personal List sorting. ALSO for solo killing
 	/if (${AdvLoot.PCount}) {
 		/for _pcount ${AdvLoot.PCount} downto 1
@@ -4013,7 +4119,7 @@ sub do_loot()
 					VOUT Cursor ${sep} ${cinfo}${_advlItem}\ax = ${okeep} loot file [default].
 					/ini "${INILoot}" "${_advlItem.Left[1]}" "${_advlItem}" |Keep
 				}
-				/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"]}
+				/varset _advlChoice ${Ini[${INILoot},"${_advlItem.Left[1]}","${_advlItem}"].Arg[1,|]}
 			} 
 			
 			
@@ -4831,11 +4937,12 @@ sub check_buff_routines(bool _force)
 		/if (!${check_engaged[]})  {
 			/if (${switchBuffItem} && !${timer_check_buffs_item}) /call check_buffs_item
 			/if (${switchBuffSelf} && !${timer_check_buffs_self}) /call check_buffs_self
-		  /if (${switchBuffRaid} && !${timer_check_buffs_raid}) /call check_buffs_raid
+		  /if (${switchBuffRaid} && !${timer_check_buffs_raid}) /call check_buffs_manual raid
 			/if (${switchBuffBc}  && !${timer_check_buffs_BC}) /call check_buffs_BC
 			/if (${switchBuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
 			/if (${switchBuffSelf} && (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
 			/if (${switchBuffItem} && ${Select[${Me.Class.ShortName},ENC]}) /call check_crystals
+			/if (${switchBuffMerc}  && !${timer_check_buffs_merc}) /call check_buffs_manual mercenary
 		}
 	}
 /return
@@ -5293,7 +5400,7 @@ sub validate_buff(string _type, string _inisub, string _spell)
 			/if (!${Spell[${${_spell}}].Stacks}) /return FALSE
 		}
 		
-	| check alt abilitie
+	| check alt ability
 	} else /if (${_type.Equal[alt]}) {
 		/if (!${Me.AltAbilityReady[${${_spell}}]}) /return FALSE
 		/if (${Bool[${Me.Buff[${${_spell}}]}]}) /return FALSE

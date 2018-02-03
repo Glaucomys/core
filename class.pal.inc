@@ -161,15 +161,7 @@ sub patch_heal_PAL()
 	/if (${Me.AltAbilityReady[Hand of Piety]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 1 ) /call core_cast "Hand of Piety" alt 0 FALSE
 
 	/call click_item_heal
-
-
 /return
-
-
-
-
-
-
 
 
 

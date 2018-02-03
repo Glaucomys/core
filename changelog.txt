@@ -15,6 +15,17 @@ Current Requests:
 
 
 
+20180203
+HUDUPDATE
+- /cursor [pass] [NAME] will set the item on the cursor to be sent to that persons advl so they can have it
+  -- /cursor pass NAME . the item you want to pass must be on the cursor the first time
+  -- or just edit core.loot.ini for that item
+- /buff [merc]
+  -- buffs your mercs
+  -- feeds off the raid buff list for classes of the mercs
+
+
+
 20180131
 - disabled /core [fireworks] in raids. was kinda funny... kinda..
 - remove buffs now using /invoke

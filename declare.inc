@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180131
+	/declare coreBuild	 														int			outer 20180203
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -791,6 +791,7 @@ sub set_declares()
 	/call DeclareIniVar smartengageAt 							int 		Common 98
 	/call DeclareIniVar	useSmartAssistG							bool		Common FALSE
 	/call DeclareIniVar	useSmartAssistR							bool		Common FALSE
+	/call DeclareIniVar	useForceAssist							bool		Common FALSE
 	/call DeclareIniVar switchAgro									bool		Common FALSE 
 	/call DeclareIniVar switchPull									bool		Common FALSE
 	/call DeclareIniVar CombatDistance							int			Movement 15
@@ -829,7 +830,7 @@ sub set_declares()
 
 		
 	| tie control
-  /declare tcType																	string	outer |distance|name|time
+  /declare tcType																	string	outer |distance|lock|name|time
 	/call DeclareIniVar SetTieToon 									string 	Movement FALSE
 	/declare SetTie       													bool 		outer FALSE
 	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
@@ -1007,7 +1008,7 @@ sub set_declares()
 
 	| buffs
 	/call DeclareIniVar BuffRemove									string	Buffs "|Illusion: Gnoll Reaver|Illusion: Darkfell Gnoll Reaver|Illusion: Blackburrow Gnoll Reaver|Illusion: Mucktail Gnoll Reaver|Illusion: Direwind Gnoll Reaver|Illusion: Human Pirate|Illusion: Ogre Pirate"
-  /declare buffType																string	outer |stop|self|item|combat|bc|raid|tell|pet
+  /declare buffType																string	outer |stop|self|item|combat|bc|raid|tell|pet|merc
 	/declare switchBuff															bool		outer FALSE
 	/declare switchBuffStop													bool		outer FALSE
 	/call DeclareIniVar switchBuffItem	 						bool		Buffs FALSE 
@@ -1017,6 +1018,7 @@ sub set_declares()
 	/call DeclareIniVar switchBuffBc								bool		Buffs FALSE
 	/call DeclareIniVar switchBuffRaid							bool		Buffs FALSE
 	/call DeclareIniVar switchBuffTell							bool		Buffs FALSE
+	/call DeclareIniVar switchBuffMerc							bool		Buffs FALSE
 
 	
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
@@ -1136,7 +1138,7 @@ sub set_declares()
   /declare wizType																string	outer |forcetwincast|gather|healpoint|line|manaburn|spiregroup|spireraid
     
 	| cursor
-  /declare cursorType															string	outer |auto|what|sell|keep|destroy|leave|announce|ignore|pause
+  /declare cursorType															string	outer |announce|auto|destroy|ignore|keep|leave|pass|pause|sell|what
 	/call DeclareIniVar switchAutoCursor						bool		Common TRUE	
   
   | list control
@@ -1201,6 +1203,7 @@ sub declare_timers()
 	/call setTimer tItem_Buff												string	Timer 1m 		timer_check_buffs_item
 	/call setTimer tBC_Buff													string	Timer 20s 	timer_check_buffs_BC
 	/call setTimer tRaid_Buff												string	Timer 20s 	timer_check_buffs_raid
+	/call setTimer tMerc_Buff												string	Timer 20s 	timer_check_buffs_merc
 	/call setTimer tCheck_Aura											string	Timer 3m 		timer_check_aura
 	/call setTimer tTell_Buff												string	Timer	10s 	timer_check_buffs_tell
 	/call setTimer tCheck_Ammo											string	Timer	5s 		timer_Check_Ammo
@@ -3186,6 +3189,8 @@ sub Bind_watchspawn(string _spawn)
 		VOUT ${sep} NPC and CORPSE is also acceptable.
 		/if (!${Bool[${_spawn}]}) /call writeINI watchSpawn Common FALSE
 	}
+	
+	/if (${_spawn.Equal[FALSE]}) /mapshow reset
 /return
   
   
@@ -3441,6 +3446,9 @@ sub Bind_buff(string _buffType, string _verbage)
 	| raid
 	} else /if (${_buffType.Equal[raid]}) {
 		/call writeINI switchBuffRaid Buffs ${If[${switchBuffRaid},FALSE,TRUE]}
+	| mercenaries
+	} else /if (${_buffType.Equal[merc]}) {
+		/call writeINI switchBuffMerc Buffs ${If[${switchBuffMerc},FALSE,TRUE]}
 	| tell
 	} else /if (${_buffType.Equal[tell]}) {
 		/call writeINI switchBuffTell Buffs ${If[${switchBuffTell},FALSE,TRUE]}
@@ -3486,32 +3494,57 @@ sub Bind_cursor(string _cursorType, string _verbage)
 		/return
 	}
 		
+	| set cursot ro auto enable/disable
 	/if (${_cursorType.Equal[auto]}) {
 		/call writeINI switchAutoCursor Common ${If[${switchAutoCursor},FALSE,TRUE]}  
 		VOUT /cursor ${_cursorType.Lower} ${sep} ${If[${switchAutoCursor},${oenabled},${odisabled}]}
 		/if (${timer_auto_cursor_pause}) /varset timer_auto_cursor_pause 1
+
+	| pause cursor controlls
 	} else /if (${_cursorType.Equal[pause]}) {
 		/call create_timer timer_auto_cursor_pause ${If[${Bool[${_verbage}]},${_verbage},30s]}
 		VOUT /cursor ${_cursorType.Lower} ${sep} ${cinfo}${If[${Bool[${_verbage}]},${_verbage},30s]}\ax
+
+
+	| set item to be passed to another
+	} else /if (${Cursor.ID} && ${_cursorType.Equal[pass]}) {
+
+		/if (${Bool[${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[1,|]}]}) {
+			/varset _properType ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[1,|]}
+		} else {
+			/varset _properType Keep
+		}
+
+		| /varset _properType ${_cursorType.Left[1].Upper}${_cursorType.Right[-1].Lower}
+	
+		/if (${Bool[${_verbage}]}) {
+			/varset _passto ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		}
+
+		/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" |${_properType}|${_passto}
+
+		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
+		
+
+
+
+
+
+
+	| echo what the item is set too
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.Equal[what]}) {
 		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
+
+	| remainder of the commands
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.NotEqual[what]} && ${_cursorType.NotEqual[auto]}) {
-		
 		/varset _properType ${_cursorType.Left[1].Upper}${_cursorType.Right[-1].Lower}
-		
 		/if (${Bool[${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]}]}) {
 			/varset _passto ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]}
 		}
-		
-		| ${If[${Bool[${_passto}]},|${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]},]}
-		
-		
 		/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" |${_properType}${If[${Bool[${_passto}]},|${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Arg[2,|]},]}
-		
-		
 		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
-	| 	/call echos cursor "${Cursor.Name}" ${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]} 0 0
 		/if (${Cursor.ID} && ${_cursorType.Equal[Destroy]}) /destroy
+
 	} else {	
 		/call echos listtype cursor cursor 0 0 0
 	}
@@ -3923,10 +3956,8 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 
 	| forced tied
 	| we like it rough
-	| this is under construction
-	| } else /if (${Bool[${_tcType.Equal[lock]}]}) {
-	| 	/call writeINI SetTieLock Movement ${If[${SetTieLock},FALSE,TRUE]}
-	| 	VOUT /${_bind} lock ${sep} ${If[${SetTieLock},${oenabled},${odisabled}]}
+	} else /if (${Bool[${_tcType.Equal[lock]}]}) {
+		/call writeINI SetTieLock Movement ${If[${SetTieLock},FALSE,TRUE]}
 
 	| set tie time
 	} else /if (${Bool[${_tcType.Equal[time]}]}) {
@@ -3951,6 +3982,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[name]}) /varset _listout ${_listout}(${cnum}${SetTieToon}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[time]}) /varset _listout ${_listout}(${cnum}${tCheck_Tie}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[distance]}) /varset _listout ${_listout}(${cnum}${SetTieDistance}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[lock]}) /varset _listout ${_listout}(${If[${SetTieLock},${oenabled},${odisabled}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -3984,7 +4016,7 @@ sub Bind_setTie(string _tieType)
 		/if (${Bool[${Spawn[pc ${SetTieToon}].ID}]}) /varset SetTie ${If[${SetTie},FALSE,TRUE]}  
 	}
 	
-	VOUT /tie ${sep} ${If[${SetTie},${oenabled},${odisabled}]}
+	VOUT /tie ${sep} ${If[${SetTie},${oenabled},${odisabled}]} ${If[${SetTieLock},${sep} (${cgood}Locked\ax),]}
 /return
 
 
@@ -4380,6 +4412,17 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
 				}
+
+				| force assist for other eqbc toons
+				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
+					/if (!${validate_plugin[FALSE, |mq2eqbc]} || (!${EQBC.Connected} && ${Bool[${EQBCServer}]})) {
+						VOUT ${owarning} ${sep} EQBC Error
+						/return
+					}					
+					/bca //varset Target2Kill ${Target.ID}
+				}
+
+
 				VOUT /${_bind} force ${cinfo}${_verbage}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 			}
 			 
