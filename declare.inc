@@ -243,7 +243,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180203
+	/declare coreBuild	 														int			outer 20180205
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -782,7 +782,7 @@ sub set_declares()
 
 
 	| combat controls
-	/declare ccType																	string	outer |agro|bandolier|circle|combatdistance|dual|engage|force|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|stopnuke|zradius
+	/declare ccType																	string	outer |agro|bandolier|circle|combatdistance|dual|engage|force|forceassist|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|stopnuke|zradius
 	/call DeclareIniVar combat					 						string	Common MELEE
 	/call DeclareIniVar MA1			 										string 	Common FALSE
 	/call DeclareIniVar MA2			 										string 	Common FALSE
@@ -4390,8 +4390,19 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/return
 	}
 
+	| enable / disable forced assist
+	/if  (${Bool[${_ccType.Equal[forceassist]}]}) {
+		/call writeINI useForceAssist Common ${If[${useForceAssist},FALSE,TRUE]}
+		| clear other assists
+		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
+		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+
+		VOUT /${_bind} forceassist ${sep} ${If[${useForceAssist},${oenabled},${odisabled}]}
+	
 	| force manual combat routines
-	/if (${Bool[${_ccType.Equal[force]}]}) {
+	} else /if (${Bool[${_ccType.Equal[force]}]}) {
 		/if (${Bool[${_verbage}]}) {
 			/if (${Target.ID} && (${Target.ID} != ${Me.ID}) && (${Target.ID} != ${Me.Pet.ID})) {
 				| engage Melee combat
@@ -4411,14 +4422,14 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset isValidTarget TRUE
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
-				}
 
 				| force assist for other eqbc toons
 				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
 					/if (!${validate_plugin[FALSE, |mq2eqbc]} || (!${EQBC.Connected} && ${Bool[${EQBCServer}]})) {
 						VOUT ${owarning} ${sep} EQBC Error
 						/return
-					}					
+					}		
+					DEBUG passing targetID: ${Target.ID}			
 					/bca //varset Target2Kill ${Target.ID}
 				}
 
@@ -4476,8 +4487,8 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		VOUT /${_bind} pull ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
 		/if (${switchPull}) {
 			/if (${useSmartAssistR} || ${useSmartAssistG}) /call Bind_setCombatControl smartma X
-			/if (${switchPull} && ${Bool[${MA1}]}) /call Bind_setCombatControl MA1 FALSE
-			/if (${switchPull} && ${Bool[${MA2}]}) /call Bind_setCombatControl MA2 FALSE
+			/if (${Bool[${MA1}]}) /call Bind_setCombatControl MA1 FALSE
+			/if (${Bool[${MA2}]}) /call Bind_setCombatControl MA2 FALSE
 		}
 		
 	| delay in nuking	
@@ -4583,6 +4594,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
 	 		/if (!${useSmartAssistR}) /call writeINI useSmartAssistR Common TRUE
 			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
 			/xtarget set 1 Raidassist1target
 
 		| NO Assist
@@ -4597,6 +4609,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
 	 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
 			/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
+			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
 			/xtarget set 1 Groupassisttarget
 		}	
 		/declare _assistMode string local |R|G

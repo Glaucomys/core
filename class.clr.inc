@@ -583,10 +583,10 @@ sub cast_divine_arbitration()
 	AMIDEAD
 	SIMPLEEXIT
 	/if (${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]}) /return
-  /if (${Me.ItemReady[Aegis of Superior Divinity]}) {    
-    /call core_cast "Aegis of Superior Divinity" item 0 FALSE
-  } else /if (${Me.ItemReady[Harmony of the Soul]}) {
-    /call core_cast "Harmony of the Soul" item 0 FALSE
+  /if (${Me.ItemReady[${CLREpic2}]}) {    
+    /call core_cast "${CLREpic2}" item 0 FALSE
+  } else /if (${Me.ItemReady[${CLREpic15}]}) {
+    /call core_cast "${CLREpic15}" item 0 FALSE
   } else /if (${Me.AltAbilityReady[Divine Arbitration]}) {
     /call core_cast "Divine Arbitration" alt 0 FALSE
   }

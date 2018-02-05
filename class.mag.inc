@@ -295,18 +295,18 @@ sub Bind_setMAG(string _classType, string _verbage)
 	/if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI GatherPercent Spells ${_verbage} 
-			/call echos number "Gather Mana %" ${_verbage} 0 0
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
-			/call echos switch "Gather Mana ${sep} ${GatherPercent}%" switchGather 0 0
+			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) ${sep} ${If[${switchGather},${oenabled},${odisabled}]}
+			/return
 		}			
 	
 	| enable/disable force twincasting
 	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
 		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
-		/call echos switch "Force Twincast" switchForceTwincast 0 0
+		VOUT /${_bind} forcetwincast ${sep} ${If[${switchForceTwincast},${oenabled},${odisabled}]}
 		/return
 
 	| get rods.. cause things and stuff
@@ -373,7 +373,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} healpoint(${cnum}${${Me.Class.ShortName}Point}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}
 
@@ -383,6 +383,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

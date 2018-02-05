@@ -14,6 +14,27 @@ Current Requests:
 - no melee buff list
 
 
+20180205
+HUDUPDATE
+- Forced Assist (needs lots of testing)
+  -- this is a forced assist you will need to set up a hotkey like the following to use this
+    -- /cc force assist .. this command will send the targets ID to all your BC toons as the target to kill
+    -- you will need to have the mob targeted you want your group to kill
+  ** NOTES
+     you will want to turn on the override for engage at
+     might be best to turn on the override for LoS too depending on how you are pulling
+     remember, the toons will still comply with all the nomal combat physics, line of sight, mezed mobs, mobs HPs
+ 	-- /cc forceassist to enable or disable
+	-- turning on forceassit will disable the other assists (group/raid/ma1/ma2)
+	-- Mob engage HP settings still apply when not using an override
+
+- class.clr.inc
+  -- adjustments to the shield/DA routine
+- class.wiz.inc
+  -- corrected the class / commands
+- class.mag.inc
+  -- corrected the class / commands
+  
 
 20180203
 HUDUPDATE
@@ -23,7 +44,6 @@ HUDUPDATE
 - /buff [merc]
   -- buffs your mercs
   -- feeds off the raid buff list for classes of the mercs
-
 
 
 20180131

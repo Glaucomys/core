@@ -239,10 +239,13 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "ma22" "19,305,38,0,255,0,${If[${Bool[${MA2}]},${If[${Bool[${Spawn[${MA2}]}]},${MA2},]},]}"
 	/noparse /ini HUDPATH "ma23" "19,305,38,255,0,0,${If[${Bool[${MA2}]},${If[!${Bool[${Spawn[${MA2}]}]},${If[${Bool[${MA2}]},${MA2},]},]},]}"
 	/noparse /ini HUDPATH "ma24" "19,305,38,25,25,25,${If[${Bool[${MA2}]},,NONE]}"
-	/noparse /ini HUDPATH "sma1" "3,280,50,100,149,237,Smart MA"
-	/noparse /ini HUDPATH "sma2" "3,329,49,100,149,237,[    ]"
-	/noparse /ini HUDPATH "sma3" "19,334,50,255,255,255,${If[${useSmartAssistR},R,]}${If[${useSmartAssistG},G,]}"
-	/noparse /ini HUDPATH "sma4" "19,334,50,25,25,25,${If[!${useSmartAssistR} && !${useSmartAssistG},X,]}"
+	
+	/noparse /ini HUDPATH "ass1" "3,280,50,100,149,237,Assist"
+	/noparse /ini HUDPATH "ass2" "3,315,49,100,149,237,[      ]"
+	/noparse /ini HUDPATH "ass3" "19,320,50,0,255,0,${If[${useSmartAssistR},R,]}${If[${useSmartAssistG},G,]}"
+	/noparse /ini HUDPATH "ass4" "19,320,50,25,25,25,${If[!${useSmartAssistR} && !${useSmartAssistG},X,]}"
+	/noparse /ini HUDPATH "ass5" "19,329,50,0,255,0,${If[${useForceAssist},F,]}"
+	/noparse /ini HUDPATH "fass4" "19,329,50,25,25,25,${If[${useForceAssist},,X]}"
 
 	| buff switches
 	/noparse /ini HUDPATH "buff1" "3,280,62,100,149,237,Buff"

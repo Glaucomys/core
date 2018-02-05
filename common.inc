@@ -1399,17 +1399,20 @@ sub stick_to_target()
  *  NOTE: 
  ***|
 sub get_assist_target()
-	DEBUG ${cbug}get_assist_target()\ax
+	DEBUG ${cbug}get_assist_target(${If[${useForceAssist},${Target2Kill},NA]})\ax
 	AMIDEAD
 	/if (!${coreAuto}) /return
-	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]}) /return
+	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]} && !${useForceAssist}) /return
+	/if (${useForceAssist} && &${Target2Kill} == ${Me.ID}) /return
 	
 	| if no MA present. move along..	
 	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssistR}]} && !${Bool[${useSmartAssistG}]} && !${Bool[${useForceAssist}]}) {
-		DEBUG ${cbad}NO MA\ax
+		DEBUG ${cbad}NO Assist Set\ax
 		/delay 1
 		/return
 	} 	
+	
+	DEBUG forced targetID: ${If[${useForceAssist},${Target2Kill},NA]}
 	
 	| cannnot assist yourself
 	/if (${Spawn[pc ${MA1}].ID} == ${Me.ID}) /call Bind_setCombatControl MA1 FALSE
@@ -1417,7 +1420,7 @@ sub get_assist_target()
 	
 	| if we dont have underfoot expansion, skip ALL smartassist go directly to jail. 
 	/if (!${validate_expansion[FALSE, |16]}) /goto :skippingtoMAtarget
-	/if (${Bool[${useForceAssist}]}) /goto :skippingtoMAtarget
+	/if (${Bool[${useForceAssist}]}) /goto :skippingtoMAforcedtarget
 
 	| no, you still cannot assist yourself. get over it
 	/if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call Bind_setCombatControl smartma X
@@ -1460,7 +1463,7 @@ sub get_assist_target()
 		/return
 	} 
 
-	| target acquisition when not using smart assist.
+	| target acquisition when not using manual assist.
 	:skippingtoMAtarget
 	/if (${SpawnCount[npc radius ${MobAgro}]} && (${Bool[${MA1}]} || ${Bool[${MA2}]})) {
 		| MA1
@@ -1489,13 +1492,8 @@ sub get_assist_target()
 				/varset Target2Kill 0
 				/return
 			}	
-		} else /if (${Bool[${useForceAssist}]} && ${Target2Kill} && ${Spawn[${Target2Kill}].ID}) {
 			
-			
-		}
-		
-		
-		
+		} 		
 		/doevents
 		AMIDEAD
 		/if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
@@ -1508,6 +1506,36 @@ sub get_assist_target()
 			/return
 		}
 	}
+	
+	| target acquisition when not using manual Forced assist.
+	:skippingtoMAforcedtarget	
+	/if (${Bool[${useForceAssist}]} && ${Target2Kill} != 0) {
+		
+		/if (${Spawn[${Target2Kill}].ID}) {
+			DEBUG Forcing your Assist ID: ${Target2Kill}
+			/if (${Target.ID} != ${Target2Kill} && ${Spawn[${Target2Kill}].ID}) {
+				/target ID ${Target2Kill}
+			}
+ 		} else /if (!${Spawn[${Target2Kill}].ID}) {
+ 		
+ 		}
+		
+		
+		/doevents
+		AMIDEAD
+		/if (${Target2Kill} && ${Spawn[${Target}].Type.Equal[npc]}) {
+			/if (${Spawn[${Target2Kill}].PctHPs} > ${engageAt} && !${switchOverrideEngageat}) {
+				/delay 3
+				/goto :skippingtoMAforcedtarget
+			} 
+		} else {
+			/if (${Target.ID}) /squelch /target clear
+			/return
+		}
+	}
+
+
+	
 /return
 
 
@@ -1529,26 +1557,31 @@ sub is_target_valid(int _tmpID)
 	}
 	/varset isValidTarget TRUE
 
-	| /if (!${validate_expansion[FALSE, |16]}) /goto :skippingtoMAtarget
-
 	| check smart assists
-	/if (${Target.ID} && ${coreAuto}) {
-		/if (${useSmartAssistR} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
-			/call clear_combat
-		} else /if (${useSmartAssistG} && ${Bool[${Group.MainAssist}]} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
-			/call clear_combat
+	
+	/if (!${useForceAssist}) {
+		/if (${Target.ID} && ${coreAuto}) {
+			/if (${useSmartAssistR} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
+				/call clear_combat
+			} else /if (${useSmartAssistG} && ${Bool[${Group.MainAssist}]} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
+				/call clear_combat
+			}
+		}
+	
+		/if (!${switchOverrideEngageat} && !${switchPull}) {
+			/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${useSmartAssistR} && !${useSmartAssistG}) {
+				/delay 1
+				/varset isValidTarget FALSE
+				/return FALSE
+			} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && (${useSmartAssistR} || ${useSmartAssistG})) {
+				/delay 1
+				/varset isValidTarget FALSE
+				/return FALSE
+			}
 		}
 	}
 	
-	/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${switchPull} && !${useSmartAssistR} && !${useSmartAssistG} && !${switchOverrideEngageat}) {
-		/delay 1
-		/varset isValidTarget FALSE
-		/return FALSE
-	} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && !${switchPull} && (${useSmartAssistR} || ${useSmartAssistG}) && !${switchOverrideEngageat} ) {
-		/delay 1
-		/varset isValidTarget FALSE
-		/return FALSE
-	}
+	
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /varset isValidTarget FALSE
 	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /varset isValidTarget FALSE
 	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro} ) /varset isValidTarget FALSE
@@ -1556,7 +1589,7 @@ sub is_target_valid(int _tmpID)
 	/if (${Spawn[${Target.ID}].Type.Equal[PC]}) /varset isValidTarget FALSE
 	/if (${_tmpID} == ${Me.ID} || ${_tmpID} == ${Me.Pet.ID}) /varset isValidTarget FALSE
 
-	| /if (${coreAuto} && ${isValidTarget} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
+	/if (${coreAuto} && ${isValidTarget} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
 		
 	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
 /return ${isValidTarget}
@@ -6579,3 +6612,62 @@ sub buy_AA(String _name)
 
 
 
+
+ |***
+ *	DES: make sure the correct assist mode is being set
+ *	USE: /call cbuy_AA "AA NAME"
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub validate_assist(bool _error, _assist)
+	DEBUG ${cbug}validate_assist(ass: ${_assist})\ax
+	/if (!${Bool[${_assist}]}) /return
+	/declare _pass bool local TRUE
+
+	| disable all assists
+	/if (${_assist.Equal[x]}) {
+		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+ 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
+		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
+		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+	
+	| set assist to group
+	} else /if (${_assist.Equal[group]}) {
+		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+ 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
+		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common TRUE
+		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+		
+	| set assist to raid
+	} else /if (${_assist.Equal[raid]}) {
+		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+ 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common TRUE
+		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
+		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+		
+	| set assist to forced from driver
+	} else /if (${_assist.Equal[force]}) {
+		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+ 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
+		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
+		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common TRUE
+
+		
+	| set assist to MA1
+	} else /if (${_assist.Equal[ma1]}) {
+		
+	| set assist to MA2
+	} else /if (${_assist.Equal[ma2]}) {
+
+
+	} else {
+		/varset _pass FALSE
+	}
+	
+	/if (!${_pass} && ${_error}) /call echos failboat 0 0 0 0
+
+/return
