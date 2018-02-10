@@ -295,7 +295,7 @@ sub force_twincast_WIZ()
 	/if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
 		/call core_cast "${TwincastSpell}" 0 0 FALSE
 		/return
-	} else /if (!${Me.SpellReady[${TwincastSpell${lineCurrent}}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
+	} else /if (!${Me.SpellReady[${NukeTwincast${lineCurrent}}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
 		/call core_cast "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
 	}
 /return
@@ -340,6 +340,7 @@ sub mem_spell_line(string _line)
  ***|
 sub cast_nuke_WIZ()
 	DEBUGCAST ${cbug}cast_nuke_wiz()\ax
+	/if (${lineCurrent.Equal[off]}) /return
 	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
 	/declare _count 				int 		local 0
@@ -413,14 +414,6 @@ sub sort_mancy_lineAA()
 
 
 
-
-
-
-
-
-
-
-
 |***
  *	DES: Class controls
  *	USE: /wiz []
@@ -467,6 +460,10 @@ sub Bind_setWIZ(string _classType, string _verbage)
 		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
 			DEBUG ${lineType.Find[${_verbage.Lower}]}
 			/call writeINI lineCurrent Spells ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+			/if (${_verbage.Equal[off]}) {
+			VOUT Casting line ${sep} ${odisabled}
+				/return
+			}
 			/call sort_mancy_lineAA
 			/delay 2
 			

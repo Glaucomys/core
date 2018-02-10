@@ -1199,8 +1199,20 @@ sub sort_cursor(bool _ignoreTimer)
 	
 	/while (${Cursor.ID}) {
 		DEBUG /while item on cursor
-		/if (!${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Length}) /ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" "Keep"
-		/if (${Cursor.ID}) /varset _cursorChoice ${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"]}
+
+		| corect the INI entry if not set for the new form
+		/if (!${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}].Length}) {
+			/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" "|Keep"
+		} else /if (!${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"].Count[|]}) {
+			VOUT Fixing Loot: ${Cursor.Name}
+			/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" |${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"]}
+		}		
+		
+
+		| /if (${Cursor.ID}) /varset _cursorChoice ${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"]}
+	
+		/if (${Cursor.ID}) /varset _cursorChoice ${Ini[${INILoot},"${Cursor.Name.Left[1]}","${Cursor.Name}"].Arg[1,|]}
+
 		/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]} || ${Select[${_cursorChoice},Keep,Sell,Announce]}) {
 			/if (${Select[${_cursorChoice},Announce]}) ECHOCHANNEL - Cursor .. ${Cursor.Name}
 			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} (${cnum}${FindItemCount[${Cursor.Name}]}\ax)
@@ -3682,6 +3694,7 @@ sub set_combat_here()
 	/if (${switchBuffRaid}) /call create_timer timer_check_buffs_raid ${defaultTimerDelay}
 	/if (${switchBuffBc}) /call create_timer timer_check_buffs_BC ${defaultTimerDelay}
 	/if (${switchBuffPet}) /call create_timer timer_check_pet_buffs ${defaultTimerDelay}
+	/if (${switchBuffMerc}) /call create_timer timer_check_merc_buffs ${defaultTimerDelay}
 	/if (${Bool[${Aura1Buff}]} || ${Bool[${Aura2Buff}]}) /call create_timer timer_check_aura ${defaultTimerDelay}
 	/if (${switchBuffTell}) /call create_timer timer_check_buffs_tell ${defaultTimerDelay}
 	
@@ -3737,17 +3750,19 @@ sub set_combat_here()
 			/if (${baseAgroRange} && ${MobAgro} > ${baseAgroRange}) /agro ${baseAgroRange}
 		}	
 		/if (!${switchAgro}) /call writeINI switchAgro Common TRUE 
-		/if (!${switchPull}) /call writeINI switchPull Common TRUE 
+		/if (!${switchPull} && !${useForceAssist}) /call writeINI switchPull Common TRUE 
 		/if (${zradius} != ${hereZRadius}) /cc zradius ${hereZRadius}	
 	} 
 	
 	| set assists
-	/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull} && !${useSmartAssistG}) {
-		/smartma G
- 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPull} && !${useSmartAssistR}) {
-		/smartma R
-	}	else /if (${Select[${Me.Class.ShortName},CLR]} && (${useSmartAssistG} || ${useSmartAssistR}) || ${switchPull}) {
-		/smartma X
+	/if (!${useForceAssist}) {
+		/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull} && !${useSmartAssistG}) {
+			/smartma G
+	 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPull} && !${useSmartAssistR}) {
+			/smartma R
+		}	else /if (${Select[${Me.Class.ShortName},CLR]} && (${useSmartAssistG} || ${useSmartAssistR}) || ${switchPull}) {
+			/smartma X
+		}
 	}
 	
 	| set class specific stuff
@@ -5197,7 +5212,7 @@ sub cast_AA_fade()
  *  NOTE: 
  ***|
 sub check_stance()
-	DEBUGCAST ${cbug}check_steel()\ax
+	DEBUGCAST ${cbug}check_stance()\ax
 	CHECKEXIT
 	/doevents
 	/if (!${switchStance}) /return
@@ -6131,20 +6146,20 @@ sub check_deBuffs(int _tmpID)
 	| cripple
 	/if (${switchdeBuffCripple}) {
 		DEBUG check_deBuffs(ID:${_tmpID}) CRIPPLE 
-		/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
-			/if (!${validate_class[FALSE, |DRU|WIZ]}) { 
+		
+		/if (${validate_class[FALSE, |DRU]}) {
+			DEBUG Druid cripple
+			/call cast_AA_ro ${_tmpID}	
+		}	else /if (${validate_class[FALSE, |ENC]}) { 
+			/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
 				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
-				/if (${validate_class[FALSE, |ENC]}) {
-					/call check_for_adds
-					/if (${addList.Count[|]}) /return
-				}
-			} else /if (${validate_class[FALSE, |DRU]}) {
-				/call cast_AA_ro ${_tmpID}
-			} else /if (${validate_class[FALSE, |WIZ]}) {
-				DEBUG Wizzy Cripple
-				/call cast_cripple ${_tmpID}
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
 			}
-		}
+		} else {
+			/if (!${Bool[${timer_cripple_${_tmpID}}]}) /call cast_cripple ${_tmpID}
+		}1
+		
 	}
 	
 	| eradicate magic AA line
@@ -6164,7 +6179,6 @@ sub check_deBuffs(int _tmpID)
 			/call cast_AA_snare ${_tmpID}
 		}
 	}
-
 /return
 
 
@@ -6554,7 +6568,7 @@ sub click_item_heal()
 
  |***
  *	DES: make sure you have the correct zone INI info loaded
- *	USE: /call click_item_heal
+ *	USE: /call validate_zone True|False True|False
  *	INI: 
  *  NOTE: 
  ***|
@@ -6567,6 +6581,7 @@ sub validate_zone(bool _error, bool _force)
 	| zone matches. nothing to see here. move on
 	/if (${Zone.ShortName.Equal[${currentZone}]}) {
 		| do nothing at all
+		/return
 
 	| zone does not match. wtf..
 	} else 	/if (${Zone.ShortName.NotEqual[${currentZone}]} || ${_force}) {
@@ -6619,34 +6634,40 @@ sub buy_AA(String _name)
  *	INI: 
  *  NOTE: 
  ***|
-sub validate_assist(bool _error, _assist)
-	DEBUG ${cbug}validate_assist(ass: ${_assist})\ax
+sub validate_assist(bool _error, string _assist)
+	SDEBUG ${cbug}validate_assist(ass: ${_assist})\ax
 	/if (!${Bool[${_assist}]}) /return
 	/declare _pass bool local TRUE
 
 	| disable all assists
 	/if (${_assist.Equal[x]}) {
-		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
+		| /if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
+		| /if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
  		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
 		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
 		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+		/xtarget set 1 Autohater
 	
 	| set assist to group
 	} else /if (${_assist.Equal[group]}) {
-		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
- 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
-		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common TRUE
-		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+		/if (${Group.Members}) {
+	 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
+			/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common TRUE
+			/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+		} else {
+			/varset _pass FALSE
+		}
 		
 	| set assist to raid
 	} else /if (${_assist.Equal[raid]}) {
-		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
- 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common TRUE
-		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
-		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+		/if (${Raid.Members}) {
+	 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common TRUE
+			/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
+			/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+			/xtarget set 1 Raidassist1target
+		} else {
+			/varset _pass FALSE
+		}
 		
 	| set assist to forced from driver
 	} else /if (${_assist.Equal[force]}) {

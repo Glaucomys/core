@@ -24,7 +24,6 @@
 	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias, binds'.
 	- test.inc									empty. testing purposes.
 	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
-	- misc stuff.txt						Just helpful info. old code. A forgotten attic of old stuff.
 	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
 	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell
 	- blurb.inc									Expansion specific raid announcements. A lazy way to send raid instructions to all in RS.
@@ -62,7 +61,7 @@
 	Tab spaces set to 2 if you care.
 	
 	Credits/Inspiration
-		- cast pre-condition added for nukes, dots and a few other things. inspired by raiddruid mac.
+		- cast pre-condition added for nukes, dots and a few other things. inspired by raiddruid.mac
 		- ultraedit v24 wordfile - http://www.macroquest2.com/phpBB3/viewtopic.php?f=46&t=19321&hilit=ultraedit (adapted and updated to current MQ2)
 		- NinjaADVLoot - 	is the core of the do_loot loot function used with VERY heavy mods/butchering. http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=19707
 		- whoHas.mac [/whohas] - http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=20212 (this is a genius idea)

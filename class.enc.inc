@@ -126,14 +126,14 @@ sub check_rune_ENC()
 	/if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0 FALSE TRUE
 	/if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0 FALSE TRUE
 	/if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0 FALSE TRUE
-	/if (${validate_buff[spell, rune, runeAuspice]}) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE TRUE
-	/if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
+	| /if (${validate_buff[spell, rune, runeAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE TRUE
+	/if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]}) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
 	/if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0 FALSE TRUE
 	/if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID} FALSE TRUE
 	/if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE TRUE
 	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE TRUE
-	/if (${validate_buff[spell, rune, runeLegion]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID} FALSE TRUE
-	/if (${Me.SpellReady[${runeAuspice}]}) /call check_rune_auspice
+	/if (${validate_buff[spell, rune, runeLegion]} && ${FindItemCount[Peridot]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID} FALSE TRUE
+	/call check_rune_auspice
 	UPDATEHUD FALSE
 /return
 
@@ -147,6 +147,7 @@ sub check_rune_ENC()
  ***|
 sub check_rune_auspice()
 	DEBUGCLASS ${cbug}check_rune_auspice(toons: ${runeAuspiceToon})\ax
+	/if (!${FindItemCount[Peridot]}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents

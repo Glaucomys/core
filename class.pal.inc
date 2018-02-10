@@ -320,11 +320,12 @@ sub cast_AA_marrs_gift()
  ***|
 sub check_steel()
 	DEBUGCAST ${cbug}check_steel()\ax
-	/if (!${Me.SpellReady[${Steel}]}) {
-		/call create_timer timer_check_Steel ${tcheck_Steel}
-		/return	
-	}
 	/if (${SafeZone} && !${switchOverrideSafezone} || !${switchSteel}) /return
+
+	| /if (!${Me.SpellReady[${Steel}]}) {
+	| 	/call create_timer timer_check_Steel ${tcheck_Steel}
+	| 	/return	
+	| }
 	
 	AMIDEAD
 	CHECKEXIT

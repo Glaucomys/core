@@ -60,7 +60,6 @@ sub Event_SetaliasVar(string line, string _varName, string _section, string _val
  *  NOTE: 
  ***|
 sub setTimer(string _name, string _type, string _section, string _value, string _my_timer)
-	| DEBUG setTimer(name:${_name}, type:${_type}, INIsection:${_section}, value:${_value}, Timer_Name:${_my_timer})
 	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]} || !${Bool[${_my_timer}]}) {
 		/if (!${Bool[${_name}]}) VOUT ${ocaution} ${sep} BAD variable Name. 
 		/if (!${Bool[${_type}]}) VOUT ${ocaution} ${sep} BAD variable Type. 
@@ -243,7 +242,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180205
+	/declare coreBuild	 														int			outer 20180210
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -1304,7 +1303,7 @@ sub declare_WIZ()
 	/call DeclareIniVar switchManaBurn		 					bool		Spells TRUE
 	/call DeclareIniVar spellCripple 								string 	Spells FALSE
 
-	/declare lineType																string	outer |fire|ice|magic|mix
+	/declare lineType																string	outer |off|fire|ice|magic|mix
 	/call DeclareIniVar lineCurrent									string 	Spells Fire
 	/call DeclareIniVar lineFire										string	Spells "|Ethereal Braid|Ethereal Skyfire|Dragoflux's Fire|Chaos Burn"
 	/call DeclareIniVar lineIce											string	Spells "|Icefloe Cascade|Ethereal Icefloe|Rimeblast Cascade|Lure of Travenro"
@@ -1330,7 +1329,6 @@ sub declare_WIZ()
 	/call DeclareIniVar NukeTwincastMagic						string	Spells "Claw of Ellar"
 	/call DeclareIniVar NukeTwincastMix							string	Spells "Claw of Qunard"
 	/call DeclareIniVar NukeTwincastCondition 			string	Spells FALSE
-	
 	
 	/declare fay 																		string	outer "Translocate: Fay"
 	/declare dragonscale 														string	outer "Translocate: Dragonscale Hills"
@@ -3090,20 +3088,6 @@ sub Bind_setstop()
 
 
 |***
- *	DES: simple shortcut to the  /cc smartma command
- *	USE: /smartma [R|X|G|NULL]
- *	INI: 
- *  NOTE: this is a four way toggle
- ***| 	
-#bind smartMA /smartma
-sub Bind_smartMA(string _verbage)
-	DEBUG ${cbug}Bind_smartMA(assist: ${_verbage})\ax
-	/call Bind_setCombatControl smartma ${_verbage}
-/return
-
-
-
-|***
  *	DES: stack invis
  *	USE: /invis
  *	INI: 
@@ -3652,6 +3636,9 @@ sub Bind_listControl(string _list, string _verbage)
 		/next _count
 		/return
 	}
+
+	| make sure we are using the correct zone file
+	/call validate_zone FALSE TRUE
 	
 	| disable all commands but safezone while in a safezone
 	/if (${SafeZone} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
@@ -3663,6 +3650,7 @@ sub Bind_listControl(string _list, string _verbage)
 	/if ((!${Target.ID} || ${Bool[${Spawn[pc ID ${Target.ID}]}]}) && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
 		DEBUG NO /${_bind} Target
 		/call echos needtarget 0 0 0 0
+		/return
 	} 
 
 	| validate _list and correct the case
@@ -4364,6 +4352,20 @@ sub Bind_ts(string _tsType)
 
 
 |***
+ *	DES: simple shortcut to the  /cc smartma command
+ *	USE: /smartma [R|X|G|NULL]
+ *	INI: 
+ *  NOTE: this is a four way toggle
+ ***| 	
+#bind smartMA /smartma
+sub Bind_smartMA(string _verbage)
+	DEBUG ${cbug}Bind_smartMA(assist: ${_verbage})\ax
+	/call Bind_setCombatControl smartma ${_verbage}
+/return
+
+
+
+|***
  *	DES: core controls
  *	USE: /cc []
  *	INI: 
@@ -4393,12 +4395,8 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	| enable / disable forced assist
 	/if  (${Bool[${_ccType.Equal[forceassist]}]}) {
 		/call writeINI useForceAssist Common ${If[${useForceAssist},FALSE,TRUE]}
-		| clear other assists
-		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
+ 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
 		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
-		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
-
 		VOUT /${_bind} forceassist ${sep} ${If[${useForceAssist},${oenabled},${odisabled}]}
 	
 	| force manual combat routines
@@ -4432,8 +4430,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					DEBUG passing targetID: ${Target.ID}			
 					/bca //varset Target2Kill ${Target.ID}
 				}
-
-
 				VOUT /${_bind} force ${cinfo}${_verbage}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 			}
 			 
@@ -4485,11 +4481,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
 		VOUT /${_bind} pull ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
-		/if (${switchPull}) {
-			/if (${useSmartAssistR} || ${useSmartAssistG}) /call Bind_setCombatControl smartma X
-			/if (${Bool[${MA1}]}) /call Bind_setCombatControl MA1 FALSE
-			/if (${Bool[${MA2}]}) /call Bind_setCombatControl MA2 FALSE
-		}
+		/if (${switchPull}) /call validate_assist FALSE x
 		
 	| delay in nuking	
 	} else /if (${Bool[${_ccType.Equal[nukedelay]}]}) {
@@ -4515,7 +4507,8 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		}
 		/call check_AA_agro		
 
-	| set out of group Main assist 1 or 2
+
+	| set out of group Manual Assist 1 or 2
 	} else /if (${Bool[${_ccType.Equal[ma1]}]}) {
 		/if (${Bool[${_verbage}]}) {
 			/call writeINI MA1 Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
@@ -4530,6 +4523,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			/call writeINI MA2 Common FALSE
 		} 				
 		VOUT /${_bind} ma2 ${sep} ${If[${Bool[${MA2}]},${cinfo}${MA2}\ax,${odisabled}]}	
+
 
 	| MA1/2 engage at %
 	} else /if (${Bool[${_ccType.Equal[engage]}]}) {
@@ -4592,6 +4586,8 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		| Raid Assist 1
 		/if ((${_verbage.Equal[r]} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
 			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
+			| /call validate_assist FALSE raid
+			
 	 		/if (!${useSmartAssistR}) /call writeINI useSmartAssistR Common TRUE
 			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
@@ -4600,13 +4596,16 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		| NO Assist
 		} else /if ((${_verbage.Equal[x]} || (!${Bool[${_verbage}]} && (${useSmartAssistR} || ${useSmartAssistG})) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
 			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
+			| /call validate_assist FALSE x
 	 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
 			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
 			/xtarget set 1 Autohater
 
 		| Goup Main Assist
 		} else /if ((${_verbage.Equal[g]} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
 			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
+			| /call validate_assist FALSE group
 	 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
 			/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
 			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
@@ -4614,6 +4613,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		}	
 		/declare _assistMode string local |R|G
 		/declare _assM string local
+		
 		/for _count 1 to ${_assistMode.Count[|]}
 			/varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
 			DEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}

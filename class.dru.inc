@@ -77,7 +77,6 @@ sub core_DRU()
 	/if (${coreAuto}) {	
 		/call use_mod_rod
 		/if (${switchHealCure}) /call cast_cure
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 	}
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
 		/call is_target_dead
@@ -99,25 +98,8 @@ sub disc_DRU()
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${Me.AltAbilityReady[Storm Strike]}) /call core_cast "Storm Strike" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Season's Wrath]}) /call core_cast "Season's Wrath" alt ${Target2Kill} FALSE
-/return
-
-
-
-|***
- *	DES: emergency healing
- *	USE: auto
- *	INI: 
- *  NOTE: 
- ***|
-sub patch_heal_DRU()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
-	CHECKEXIT
-	/if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]}) /call core_cast "Convergence of Spirits" alt ${Me.ID} FALSE
-	/if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
-	/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 4 && ${Me.ItemReady[${CircleofLife}]} && !${Me.Song[${FindItem[${CircleofLife}].Spell}].ID} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) /call core_cast "${CircleofLife}" item 0 FALSE
+	/call core_cast "Storm Strike" alt ${Target2Kill} FALSE
+	/call core_cast "Season's Wrath" alt ${Target2Kill} FALSE
 /return
 
 
@@ -226,7 +208,7 @@ sub check_heal_group_DRU()
 		/call core_cast "Convergence of Spirits" alt ${WorstHurt} FALSE
 	}
 	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.5*.${tmpHealOverride} && ${Me.AltAbilityReady[Convergence of Spirits]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healPanic}].MyRange}) {
-		/call core_cast "peaceful Convergence of Spirits" alt ${WorstHurt} FALSE
+		/call core_cast "Peaceful Convergence of Spirits" alt ${WorstHurt} FALSE
 	}
 	/if (!${Me.SpellReady[${healRejuvilation}]} && ${Spawn[${WorstHurt}].PctHPs} < 35*.${tmpHealOverride} && ${Me.AltAbilityReady[Swarm of Fireflies]} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[Swarm of Fireflies].MyRange}) {
 		/call core_cast "Swarm of Fireflies" alt ${WorstHurt} FALSE

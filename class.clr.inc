@@ -44,11 +44,15 @@ sub core_CLR()
 		CHECKREZ
 		/call set_combat MELEE
 		/call stick_to_target
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+		/call disc_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		CHECKREZ
 		/call set_combat RANGE
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -396,11 +400,27 @@ sub check_heal_group_CLR()
   }  
   
 	| single target regen
- 	/if (${Bool[${healHoT}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
- 	 	/if (${Me.SpellReady[${healHoT}]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
+ 	|**
+ 	/if (${Bool[${healHoT}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && !${Raid.Members}) {
+ 	 	/if (${Me.SpellReady[${healHoT}]}) {
+ 	 		 	 	}
+ 	 	!${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
 	 		/call core_cast "${healHoT}"  0 ${WorstHurt} FALSE
 	  } 
 	}
+	**|
+	/if (${Bool[${healHoT}]}) {
+		/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+			/if (${NetBots[${Spawn[ID ${WorstHurt}].DisplayName}].Stacks[${healHoT}]} && !${Bool[${NetBots[${Spawn[ID ${WorstHurt}].DisplayName}].ShortBuff.Find[${Spell[${healHoT}].ID}]}]}) /call core_cast "${healHoT}" 0 ${WorstHurt} FALSE
+		}
+	}
+
+
+
+
+
+
+
 
   | check for group debuffs
 	/if (${switchHealCure} && ${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure

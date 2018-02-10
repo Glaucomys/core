@@ -14,6 +14,19 @@ Current Requests:
 - no melee buff list
 
 
+20180210
+- sort_cursor()
+  -- adapted to the new looting system control
+- check_deBuffs()
+  -- rewrite of the logic flow. it was causing the druid to CTD
+- class.wizz.inc
+  -- should now try and use the correct line twincast spell. oops
+  -- /wiz line [off] will disable casting the line of spells and leave the rest of the wiz alone
+- class.clr.inc
+  -- updates to the single HoT routine
+  -- /cc melee|range will heal and yaulp now  
+  
+
 20180205
 HUDUPDATE
 - Forced Assist (needs lots of testing)
@@ -21,13 +34,10 @@ HUDUPDATE
     -- /cc force assist .. this command will send the targets ID to all your BC toons as the target to kill
     -- you will need to have the mob targeted you want your group to kill
   ** NOTES
-     you will want to turn on the override for engage at
-     might be best to turn on the override for LoS too depending on how you are pulling
      remember, the toons will still comply with all the nomal combat physics, line of sight, mezed mobs, mobs HPs
  	-- /cc forceassist to enable or disable
-	-- turning on forceassit will disable the other assists (group/raid/ma1/ma2)
+	-- turning on forceassist will disable the other assists (group/raid/ma1/ma2)
 	-- Mob engage HP settings still apply when not using an override
-
 - class.clr.inc
   -- adjustments to the shield/DA routine
 - class.wiz.inc
