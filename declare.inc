@@ -242,7 +242,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180210
+	/declare coreBuild	 														int			outer 20180212
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -370,6 +370,7 @@ sub set_declares()
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
 	/call DeclareCoreIniVar switchDispInfo					string	General TRUE
 	/call DeclareCoreIniVar switchDispBuild					string	General TRUE
+	/call DeclareCoreIniVar switchDispEXP						string	General TRUE
 	
 	
 	/call DeclareIniVar toonControl			 						string	Common FALSE
@@ -3106,7 +3107,7 @@ sub Bind_cast_AA_invis()
 		ECHOCHANNEL AA: Group Perfected Invisibility
 		/return
 	}  
-	/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},CLR,SHD,NEC]}) {
+	/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},CLR,SHD,NEC,PAL]}) {
 		/delay 3
 		/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
 		ECHOCHANNEL AA: Group Perfected Invisibility to Undead

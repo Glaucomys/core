@@ -292,7 +292,7 @@ sub synergy_ROG()
 	/call cast_AA_spire
 	/if (${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
   /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscFrenzy}" disc 0 FALSE
-  /delay 1
+  /delay 2
   /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscTwistedChance}" disc 0 FALSE
   /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscEradicator}" disc 0 FALSE
   /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRazor}" disc 0 FALSE

@@ -413,7 +413,7 @@ sub auto_adjust_EXP()
 	
 	| set EXP cause we deaded too much
 	/if (${Me.Level} <= ${MaxLevel} && ${Me.PctExp} <= ${MaintExpLvl}) {
-		VOUT ${ocaution} ${sep} ${cinfo}${Me.PctExp}%\ax below Maintain EXP [${cinfo}${MaxLevel}\ax] ${sep} ${cinfo}${MaintExpLvl}%\ax
+		/if (${switchDispEXP}) VOUT ${ocaution} ${sep} ${cinfo}${Me.PctExp}%\ax below Maintain EXP [${cinfo}${MaxLevel}\ax] ${sep} ${cinfo}${MaintExpLvl}%\ax
 		/alternateadv off
 	| set to AA cause the group healer is awesom	
 	} else /if (${Me.Level} == ${MaxLevel} && ${Me.PctExp} >= ${MaintExpLvl} && ${Me.AAPoints} < ${Float[${Math.Calc[${Me.Level}*2]}].Int}) {
@@ -3631,10 +3631,10 @@ sub cast_rez(int _tmpID, string _rezAA)
 	}
 		
 	| get the corpse close to us
-	/if (${Spawn[${_tmpID}].Distance} > 15 && ${Spawn[${_tmpID}].Distance} <= ${maxRezRange}) {
-		/squelch /target ID ${_tmpID}
-		/squelch /corpse
-	}
+	| /if (${Spawn[${_tmpID}].Distance} > 15 && ${Spawn[${_tmpID}].Distance} <= ${maxRezRange}) {
+	| 	/squelch /target ID ${_tmpID}
+	| 	/squelch /corpse
+	| }
 	
 	| can we AA res or token?
 	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[${_rezAA}]} && ${switchRezEmergency})) {	
@@ -6017,6 +6017,8 @@ sub cast_malo(int _tmpID)
 sub cast_cripple(int _tmpID)
 	DEBUG ${cbug}cast_cripple(ID: ${_tmpID})\ax 
 	/if (${timer_cripple_${_tmpID}}) /return
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
+
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -6034,15 +6036,17 @@ sub cast_cripple(int _tmpID)
 	| get to business
 	/declare _spelltype string local FALSE
 
-	| spell not identified, using AA.
-	/if (${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]} || !${Bool[${Me.Gem[${spellCripple}]}]}) {
+	| spwhat cripple to use?
+	
+	/if (${Bool[${Me.Gem[${spellCripple}]}]}) {
+		/varset _spelltype gem${Me.Gem[${spellCripple}]}
+	} else /if (${Select[${Me.Class.ShortName},ENC,WIZ,SHM]} && (!${Bool[${Me.Gem[${spellCripple}]}]}|| ${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]})) {
+		/varset _spelltype alt
 		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellCripple Dreary Deeds
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellCripple Crippling Spirit
 		/if (${Select[${Me.Class.ShortName},WIZ]}) /varset spellCripple Lower Element
-		/varset _spelltype alt
-	} else /if (${Bool[${Me.Gem[${spellCripple}]}]}) {
-		/varset _spelltype gem${Me.Gem[${spellCripple}]}
-	}	
+	}
+	
 
 	| cripple spell already exists on
 	/if (${Target.BuffDuration[${spellCripple}].TotalSeconds}) {
@@ -6050,13 +6054,16 @@ sub cast_cripple(int _tmpID)
 		/return		
 	}
 
-	| check the things normal things	
-	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellCripple}]}) /return
-
 	UPDATEHUD "Cripple"	
 	DEBUG CRIPPLE CASTING
-	/delay 2.25s ${Me.SpellReady[${spellCripple}]}	
-	/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID} check_for_adds
+	/if (${_spelltype.NotEqual[alt]}) /delay 2.25s ${Me.SpellReady[${spellCripple}]}	
+	
+	/if (${Select[${Me.Class.ShortName},ENC]}) {
+		/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID} check_for_adds
+	} else {
+		/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID}
+	}
+	
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
 	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
@@ -6108,7 +6115,7 @@ sub check_deBuffs(int _tmpID)
 	| tash
 	/if (${switchdeBuffTash}) {
 	 	/if (!${Bool[${timer_tash_${_tmpID}}]}) {
-			/if (${validate_class[FALSE, |ENC]}) { 
+			/if (${Select[${Me.Class.ShortName},ENC]}) { 
 				/call cast_tash ${_tmpID}
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return
@@ -6127,7 +6134,7 @@ sub check_deBuffs(int _tmpID)
 	| slow. spell if spellSlow defined otherwise AA
 	/if (${switchdeBuffSlow}) {
 		/if (!${Bool[${timer_slow_${_tmpID}}]} && !${validate_class[FALSE, |BRD]}) {
-			/if (${validate_class[FALSE, |SHM]}) {
+			/if (${Select[${Me.Class.ShortName},SHM]}) {
 				/if (${SpawnCount[npc radius ${MobAgro} playerstate 4]} > 2) {
 					/call core_cast "${spellAESlow}" 0 ${_tmpID} FALSE
 				} else {
@@ -6136,7 +6143,7 @@ sub check_deBuffs(int _tmpID)
 			} else {			
 				/call cast_slow ${_tmpID}
 			}
-			/if (${validate_class[FALSE, |ENC]}) { 
+			/if (${Select[${Me.Class.ShortName},ENC]}) { 
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return
 			}
@@ -6147,33 +6154,32 @@ sub check_deBuffs(int _tmpID)
 	/if (${switchdeBuffCripple}) {
 		DEBUG check_deBuffs(ID:${_tmpID}) CRIPPLE 
 		
-		/if (${validate_class[FALSE, |DRU]}) {
+		/if (${Select[${Me.Class.ShortName},DRU]}) {
 			DEBUG Druid cripple
 			/call cast_AA_ro ${_tmpID}	
-		}	else /if (${validate_class[FALSE, |ENC]}) { 
+		}	else /if (${Select[${Me.Class.ShortName},ENC]}) { 
 			/if (!${Bool[${timer_cripple_${_tmpID}}]}) {		
 				/if (${Spell[${spellCripple}].ID} != ${Spell[${spellSlow}].ID}) /call cast_cripple ${_tmpID}
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return
 			}
 		} else {
-			/if (!${Bool[${timer_cripple_${_tmpID}}]}) /call cast_cripple ${_tmpID}
-		}1
-		
+			/call cast_cripple ${_tmpID}
+		}
 	}
 	
 	| eradicate magic AA line
 	/if (${switchdeBuffEradicate} && ${validate_class[FALSE, ${AAEradicateList}]}) {
 		/if (!${Bool[${timer_eradicate_${_tmpID}}]}) {
 			/call cast_eradicate_magic ${_tmpID}
-			/if (${validate_class[FALSE, |ENC]}) { 
+			/if (${Select[${Me.Class.ShortName},ENC]}) { 
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return
 			}
 		}
 	}
 	
-	| aa snare check
+	| aa snare
 	/if (${switchdeBuffSnare} && ${validate_class[FALSE, ${AASnareList}]}) {
 		/if (!${Bool[${timer_snare_${_tmpID}}]}) {
 			/call cast_AA_snare ${_tmpID}
@@ -6491,19 +6497,12 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
 				/delay 2s !${Me.State.Equal[HOVER]}
 				/delay 2s !${Me.Hovering}
 				/delay 2s !${Me.Dead}
-				| DEBUGREZ clear HUD tmpMode variable
 				DEBUGREZ Exit rez, clear event marker
-				| /if (${switchAmIDead} || ${tmpMode}) {
-					/call set_stop TRUE
-					| /varset tmpMode FALSE
-					/varset switchAmIDead FALSE
-					/varset validRezFound FALSE
-					/varset rezWindowPct 0
-					| /call create_timer clear_dead_event_marker 1s
-					| /delay 5
-					| /goto :cleardeadmarkers
-				| }
-			/return TRUE			
+				/call set_stop TRUE
+				/varset switchAmIDead FALSE
+				/varset validRezFound FALSE
+				/varset rezWindowPct 0
+				/return TRUE			
 		} else /if (!${validRezFound}) {
 			DEBUGREZ This rez sucks. and not in a good way...
 			/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
@@ -6635,7 +6634,7 @@ sub buy_AA(String _name)
  *  NOTE: 
  ***|
 sub validate_assist(bool _error, string _assist)
-	SDEBUG ${cbug}validate_assist(ass: ${_assist})\ax
+	DEBUG ${cbug}validate_assist(ass: ${_assist})\ax
 	/if (!${Bool[${_assist}]}) /return
 	/declare _pass bool local TRUE
 

@@ -14,6 +14,15 @@ Current Requests:
 - no melee buff list
 
 
+
+
+20180212
+HUDUPDATE
+- check_deBuffs()
+  -- fixing the druid in build 0210 broke the beastlord. /sigh
+- small adjustments to the HUD output
+
+
 20180210
 - sort_cursor()
   -- adapted to the new looting system control

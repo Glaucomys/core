@@ -54,7 +54,7 @@ sub Bind_hud(string _hcType, string _hcVerbage)
 	} else /if (${Bool[${_${_bind}Type.Find[delete]}]}) {
 		VOUT Deleteing HUD ${sep}
 		/ini ".\..\MQ2HUD.ini" "core" NULL NULL
-
+		VOUT Done ${sep}
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
@@ -141,7 +141,7 @@ sub HUDUpdate()
 	| watchspawn counter
 	/noparse /ini HUDPATH "watchspawn1" "3,382,109,100,149,237,[       ]"
 	/noparse /ini HUDPATH "watchspawn2" "19,387,110,0,255,0,${If[${Bool[${watchSpawn}]},${hudwatchspawn},]}"
-	/noparse /ini HUDPATH "watchspawn3" "19,387,110,25,25,25,${If[${Bool[${watchSpawn}]},,###]}"
+	/noparse /ini HUDPATH "watchspawn3" "19,388,109,25,25,25,${If[${Bool[${watchSpawn}]},,----]}"
 
 	| combat modes
 	/noparse /ini HUDPATH "bot1" "3,140,13,100,149,237,[              ][    ][     ]"
@@ -240,12 +240,14 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "ma23" "19,305,38,255,0,0,${If[${Bool[${MA2}]},${If[!${Bool[${Spawn[${MA2}]}]},${If[${Bool[${MA2}]},${MA2},]},]},]}"
 	/noparse /ini HUDPATH "ma24" "19,305,38,25,25,25,${If[${Bool[${MA2}]},,NONE]}"
 	
+
+
+
+
 	/noparse /ini HUDPATH "ass1" "3,280,50,100,149,237,Assist"
-	/noparse /ini HUDPATH "ass2" "3,315,49,100,149,237,[       ]"
-	/noparse /ini HUDPATH "ass3" "19,320,50,0,255,0,${If[${useSmartAssistR},R,]}${If[${useSmartAssistG},G,]}"
-	/noparse /ini HUDPATH "ass4" "19,320,50,25,25,25,${If[!${useSmartAssistR} && !${useSmartAssistG},X,]}"
-	/noparse /ini HUDPATH "ass5" "19,330,50,0,255,0,${If[${useForceAssist},F,]}"
-	/noparse /ini HUDPATH "fass4" "19,330,50,25,25,25,${If[${useForceAssist},,X]}"
+	/noparse /ini HUDPATH "ass2" "3,315,49,100,149,237,[           ]"
+	/noparse /ini HUDPATH "ass3" "19,320,50,0,255,0,${If[${useSmartAssistR},Raid,]}${If[${useSmartAssistG},Group,]}${If[${useForceAssist},Force,]}"
+	/noparse /ini HUDPATH "ass4" "19,321,49,25,25,25,${If[!${useSmartAssistR} && !${useSmartAssistG} && !${useForceAssist},-------,]}"
 
 	| buff switches
 	/noparse /ini HUDPATH "buff1" "3,280,62,100,149,237,Buff"
