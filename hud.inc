@@ -81,10 +81,7 @@ sub HUDUpdate()
 	
 	| Build
 	/noparse /ini HUDPATH "core1" "3,5,26,255,255,255,Build"
-	| /noparse /ini HUDPATH "core2" "19,44,26,100,149,237,${coreBuild}"
-
-
-
+	/noparse /ini HUDPATH "core2" "19,44,26,100,149,237,${coreBuild}"
 
 	| last tell
 	/noparse /ini HUDPATH "tell1" "3,5,38,255,255,255,Tell"
@@ -92,7 +89,7 @@ sub HUDUpdate()
 
 	| control toon
 	/noparse /ini HUDPATH "control1" "19,5,50,255,255,255,${If[${Bool[${autoControl}]},,Control]}"
-/return
+
 	/noparse /ini HUDPATH "control2" "19,5,50,0,255,0,${If[${Bool[${autoControl}]},Control,]}"
 	/noparse /ini HUDPATH "control3" "19,44,50,100,149,237,${If[${Bool[${toonControl}]},${toonControl},]}"
 
