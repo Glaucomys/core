@@ -197,7 +197,8 @@ sub check_heal_group_CLR()
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
 			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
-			| /if (${Group.Member[${_count}].Dead}) /continue
+			| no heallist bitches
+			/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
 			AMIDEAD
 			CHECKEXIT
 		 	/doevents
@@ -398,29 +399,12 @@ sub check_heal_group_CLR()
        /call core_cast "${healRenewal3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
      }
   }  
-  
-	| single target regen
- 	|**
- 	/if (${Bool[${healHoT}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && !${Raid.Members}) {
- 	 	/if (${Me.SpellReady[${healHoT}]}) {
- 	 		 	 	}
- 	 	!${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
-	 		/call core_cast "${healHoT}"  0 ${WorstHurt} FALSE
-	  } 
-	}
-	**|
+
 	/if (${Bool[${healHoT}]}) {
 		/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
 			/if (${NetBots[${Spawn[ID ${WorstHurt}].DisplayName}].Stacks[${healHoT}]} && !${Bool[${NetBots[${Spawn[ID ${WorstHurt}].DisplayName}].ShortBuff.Find[${Spell[${healHoT}].ID}]}]}) /call core_cast "${healHoT}" 0 ${WorstHurt} FALSE
 		}
 	}
-
-
-
-
-
-
-
 
   | check for group debuffs
 	/if (${switchHealCure} && ${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure
@@ -445,6 +429,7 @@ sub check_heal_XTarget_CLR()
   /for _count 1 to 13
   	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	/if (!${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
+  	/if (${heallist.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	UPDATEHUD "HEAL XTARGET"
 		/call check_no_cast_buffs
 		AMIDEAD
@@ -515,6 +500,7 @@ sub check_HP_CLR()
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
 	  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+	  	/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
 			AMIDEAD
 			SIMPLEEXIT
 			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {

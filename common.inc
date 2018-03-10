@@ -81,6 +81,7 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 		} else {
 			VOUT Creating Zone ${sep} ${cinfo}${Zone.Name}\ax
 		}
+		
 
 	| ending macro
 	} else /if (${_type.Equal[ending]}) {
@@ -1119,12 +1120,19 @@ sub set_stop(bool _noecho)
 	/if (!${Bool[${_noecho}]}) VOUT I was told to ${cbad}STOP\ax !! 
 	/if (${Me.Casting.ID}) /stopcast
 	| stop sticking to stuff
-	/if (${Stick.Active}) /squelch /stick off
+	/if (${Bool[${Plugin[MQ2MoveUtils]}]}) {
+		/if (${Stick.Active}) /squelch /stick off
+	}
+	/if (${Bool[${Plugin[MQ2Nav]}]}) {
+		/if (${Navigation.Active}) /squelch /nav stop
+	}	
 	/if (${Bool[${tempsnapstuck}]}) /varset tempsnapstuck FALSE
 	/if (${Bool[${SetTie}]}) /varset SetTie FALSE
 	
 	| stop advanced path
-	/if (${AdvPath.Following}) /squelch /afollow off
+	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
+		/if (${AdvPath.Following}) /squelch /afollow off
+	}
 
 	| stop moving
 	/if (${Me.Moving}) {
@@ -2772,7 +2780,7 @@ sub cast_buffs_queue(string _sender, string _verbage)
  *	USE: /tie [on/off toggle] requires /tc name [NAME] and /tc distance ##
  *	INI: 
  *  NOTE: 
- ***|
+ **|
 sub set_tie()
 	DEBUG ${cbug}set_tie()\ax
 
@@ -2791,6 +2799,97 @@ sub set_tie()
 	}
 
 	
+	/if (${timer_check_Tie}) /return
+	/if (${coreAuto}) /call create_timer timer_check_Tie ${tCheck_Tie}
+
+	AMIDEAD
+	/doevents
+
+
+	| reasons to not tie to a toon
+	/if (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${Spawn[pc ${SetTieToon}].Dead}) /return
+	/if (${Spawn[pc ${SetTieToon}].Distance} <= ${SetTieDistance} || !${Spawn[pc ${SetTieToon}].ID}) {
+		
+		| no nav plugin
+		/if (${SetTieMode.Equal[nav]} && ${Bool[${Plugin[MQ2Nav]}]}) {
+		
+		
+		| no moveutils plugin
+		} else /if (${SetTieMode.Equal[stick]} && ${Bool[${Plugin[MQ2MoveUtils]}]}) {
+			/if (${Stick.Active}) /squelch /stick off
+			/if (${Me.Moving}) {
+				/keypress forward
+				/keypress back
+			}
+			/return
+		}
+	}
+	
+	
+	| turn off camp
+	/if (${Bool[${MakeCamp}]}) {
+		/squelch /makecamp off
+		/call writeINI HomeSet Movement FALSE 
+	}
+	
+	
+	| MQ2Nav mode for stick
+	/if (${Bool[${Plugin[MQ2Nav]}]} && ${SetTieMode.Equal[nav]}) {
+
+		/if (${Navigation.MeshLoaded}) {
+			/if (!${Navigation.Active} && ${Spawn[pc ${SetTieToon}].Distance} > ${SetTieDistance}) {
+				/squelch /face ID ${Spawn[pc ${SetTieToon}].ID} ${If[${SetFaceFast},fast,]}
+				/squelch /nav spawn pc ${SetTieToon}
+		
+				:navtime
+
+			} else /if (${Spawn[pc ${SetTieToon}].Distance} <= ${SetTieDistance}) {
+				/if (${Navigation.Active}) {
+					/squelch /nav stop
+				}
+			}
+
+		} else /if (!${Navigation.MeshLoaded}) {
+			VOUT NO Nav Mesh for this zone. Returning to Stick.
+			/call Bind_setTieControl mode stick
+		}
+		
+	| MQ2MoveUtils mode for stick
+	} else /if (${Bool[${Plugin[MQ2MoveUtils]}]} && ${SetTieMode.Equal[stick]}) {
+		| all present and or accounted for SIR!
+		/if (${Spawn[pc ${SetTieToon}].Distance} > ${SetTieDistance}) {
+			/squelch /face ID ${Spawn[pc ${SetTieToon}].ID} ${If[${SetFaceFast},fast,]}
+			/squelch /stick ID ${Spawn[pc ${SetTieToon}].ID} ${SetTieDistance} UW
+		}
+
+		:okweresticking
+		AMIDEAD
+		/doevents
+		/if (${Spawn[pc ${SetTieToon}].Distance} <= ${SetTieDistance}) {
+			/squelch /stick off
+			/return
+		}
+		
+		/if (!${Stick.Stopped} && ${Spawn[pc ${SetTieToon}].ID}) {
+			/goto :okweresticking
+		} else {
+			/if (${Stick.Active}) /squelch /stick off
+			/if (${Me.Moving}) {
+				/keypress forward
+				/keypress back
+			}
+		}
+	
+	}
+
+/return
+
+ 
+ 
+ 
+|** 
+sub set_tie()
+	DEBUG ${cbug}set_tie()\ax
 	/if (${timer_check_Tie}) /return
 	/if (${coreAuto}) /call create_timer timer_check_Tie ${tCheck_Tie}
 
@@ -2817,6 +2916,14 @@ sub set_tie()
 	/squelch /face ID ${Spawn[pc ${SetTieToon}].ID} ${If[${SetFaceFast},fast,]}
 	/squelch /stick ID ${Spawn[pc ${SetTieToon}].ID} ${SetTieDistance} UW
 
+	| FORCE EMULATE FOLLOW.. HATE DOING THIS
+	| /while (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${SetTieLock}) {
+	| 	AMIDEAD
+	| 	/doevents
+	| 	/delay 1
+	| }
+
+
 	:okweremoving
 	AMIDEAD
 	/doevents
@@ -2836,8 +2943,7 @@ sub set_tie()
 	}
 
 /return
-
-
+**|
 
  |***
  *	DES: Will sort out your familiar.
@@ -3479,7 +3585,7 @@ sub check_for_corpse()
 	/declare _count 						int 		local 0
 	/declare _tmpID 						int 		local 0
 
-	| make the damn variables.
+	| make the damn variables
 	/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange}]}
 		/varset _tmpID ${NearestSpawn[${_count},pccorpse radius ${maxRezRange}].ID}
 		
@@ -3631,19 +3737,25 @@ sub cast_rez(int _tmpID, string _rezAA)
 	}
 		
 	| get the corpse close to us
-	| /if (${Spawn[${_tmpID}].Distance} > 15 && ${Spawn[${_tmpID}].Distance} <= ${maxRezRange}) {
-	| 	/squelch /target ID ${_tmpID}
-	| 	/squelch /corpse
-	| }
+	/if (${Spawn[${_tmpID}].Distance} > ${combatRadius} && ${Spawn[${_tmpID}].Distance} <= ${maxRezRange}) {
+		/squelch /target ID ${_tmpID}
+		/squelch /corpse
+	}
 	
 	| can we AA res or token?
-	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[${_rezAA}]} && ${switchRezEmergency})) {	
+	/if (${Me.AltAbilityReady[${_rezAA}]} || (${Me.ItemReady[Token of Resurrection]} && ${switchRezEmergency})) {	
 
 		| res the damn person
 		/if (!${switchRezEmergency}) {
 			/call core_cast "${_rezAA}" alt ${_tmpID} FALSE
 		} else /if (${switchRezEmergency}) {
-			/call core_cast "${_rezAA}" item ${_tmpID} FALSE
+			/delay 5s !${Me.Casting.ID}
+			/target ID ${_tmpID}
+			/delay 1s ${Target.ID} == ${_tmpID}
+			| /useitem Token of Resurrection
+			| /call core_cast "Token of Resurrection" item ${_tmpID} FALSE
+			VOUT Wasting Token of Resurrection ${sep} ${cinfo}${Spawn[${_tmpID}].DisplayName}\ax
+			/call MQ2Cast "Token of Resurrection" item -targetid|${_tmpID} 
 		}
 	
 		/if (${Select[${castReturn},CAST_SUCCESS]}) { 
@@ -3757,11 +3869,11 @@ sub set_combat_here()
 	| set assists
 	/if (!${useForceAssist}) {
 		/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull} && !${useSmartAssistG}) {
-			/smartma G
+			/call validate_assist FALSE group
 	 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPull} && !${useSmartAssistR}) {
-			/smartma R
+			/call validate_assist FALSE raid
 		}	else /if (${Select[${Me.Class.ShortName},CLR]} && (${useSmartAssistG} || ${useSmartAssistR}) || ${switchPull}) {
-			/smartma X
+			/call validate_assist FALSE x
 		}
 	}
 	
@@ -6511,7 +6623,7 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
 		} 
 	}
 
-	DEBUGREZ ${cgood}EXIT\ax ${cbug}watch_for_rezbox((${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && ${switchRezTake} || ${switchAmIDead})\ax
+	DEBUGREZ ${cgood}EXIT\ax ${cbug}watch_for_rezbox(HOVER:(${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && SWITCHTAKEREZ:${switchRezTake} || SWITCHAMIDEAD:${switchAmIDead})\ax
 	DEBUGREZ call flagCallNeedRez: ${flagCallNeedRez}
 /return
 
@@ -6585,13 +6697,13 @@ sub validate_zone(bool _error, bool _force)
 	| zone does not match. wtf..
 	} else 	/if (${Zone.ShortName.NotEqual[${currentZone}]} || ${_force}) {
 		/varset currentZone ${Zone.ShortName}
-		/call echos zone 0 0 0 0 
+		/call echos zone 0 0 0 0
 		/call check_zone_INI FALSE
 		/varset _zoned TRUE
 		/call create_timer timer_zone_pause ${tZone_Pause}
 		/doevents flush
 	}
-
+	DEBUG HERE
 	| yah. we zoned and stuff
 	/if (${_zoned}) {
 		/if (${burnForce}) /varset burnForce FALSE
@@ -6606,7 +6718,7 @@ sub validate_zone(bool _error, bool _force)
 
  |***
  *	DES: Buys an AA
- *	USE: /call cbuy_AA "AA NAME"
+ *	USE: /call buy_AA "AA NAME"
  *	INI: 
  *  NOTE: 
  ***|
@@ -6615,7 +6727,6 @@ sub buy_AA(String _name)
 	/if (!${Bool[${_name}]}) /return
 
 	/if (${AltAbility[${_name}].CanTrain}) {
-		| Me.AltAbility will return NULL if at rank 0, which requires purchase via .Index
 		/if (${Me.AltAbility[${_name}].CanTrain}) {
 			/alt buy ${AltAbility[${_name}].NextIndex}
 		} else {
@@ -6628,61 +6739,83 @@ sub buy_AA(String _name)
 
 
  |***
- *	DES: make sure the correct assist mode is being set
- *	USE: /call cbuy_AA "AA NAME"
+ *	DES: asssit controlls
+ *	USE: /call validate_assist [error] [x|raid|force|force|ma1|ma2] [NAME]
  *	INI: 
  *  NOTE: 
  ***|
-sub validate_assist(bool _error, string _assist)
-	DEBUG ${cbug}validate_assist(ass: ${_assist})\ax
-	/if (!${Bool[${_assist}]}) /return
+sub validate_assist(bool _error, string _assist, string _name)
+	DEBUG ${cbug}validate_assist(ass:${_assist}, name:${_name})\ax
+
+	/if (!${Bool[${_assist}]} || ${_assist.Equal[info]}) {
+		/declare _assistMode string local |x|1 NAME|2 NAME|(g)roup|(r)aid|(f)orce
+		/declare _assM string local
+		/declare _count int local 0
+		/declare _listout string local
+		/declare _sep bool local FALSE
+		
+		/for _count 1 to ${_assistMode.Count[|]}
+			/varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
+			DEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${_assM},${cgood}${_assistMode.Arg[${_count},|]}\ax,${cinfo}${_assistMode.Arg[${_count},|]}\ax]}
+			/varset _sep TRUE
+		/next _count
+		VOUT /setassist [${_listout}]
+		/return
+	}
+
 	/declare _pass bool local TRUE
 
 	| disable all assists
 	/if (${_assist.Equal[x]}) {
-		| /if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		| /if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
- 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
-		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
-		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
+		/call writeINI MA1 Common FALSE
+		/call writeINI MA2 Common FALSE
+ 		/call writeINI useSmartAssistR Common FALSE
+		/call writeINI useSmartAssistG Common FALSE
+		/call writeINI useForceAssist Common FALSE
 		/xtarget set 1 Autohater
 	
 	| set assist to group
-	} else /if (${_assist.Equal[group]}) {
-		/if (${Group.Members}) {
-	 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
-			/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common TRUE
-			/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
-		} else {
-			/varset _pass FALSE
-		}
-		
+	} else /if (${_assist.Equal[group]} || ${_assist.Equal[g]}) {
+		SDEBUG set group assist
+		/call writeINI useSmartAssistR Common FALSE
+		/call writeINI useSmartAssistG Common TRUE
+		/call writeINI useForceAssist Common FALSE
+	
 	| set assist to raid
-	} else /if (${_assist.Equal[raid]}) {
-		/if (${Raid.Members}) {
-	 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common TRUE
-			/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
-			/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common FALSE
-			/xtarget set 1 Raidassist1target
-		} else {
-			/varset _pass FALSE
-		}
+	} else /if (${_assist.Equal[raid]} || ${_assist.Equal[r]}) {
+ 		/call writeINI useSmartAssistR Common TRUE
+		/call writeINI useSmartAssistG Common FALSE
+		/call writeINI useForceAssist Common FALSE
+		/xtarget set 1 Raidassist1target
 		
 	| set assist to forced from driver
-	} else /if (${_assist.Equal[force]}) {
-		/if (${Bool[${MA1}]}) /call writeINI MA1 Common FALSE
-		/if (${Bool[${MA2}]}) /call writeINI MA2 Common FALSE
- 		/if (${Bool[${useSmartAssistR}]}) /call writeINI useSmartAssistR Common FALSE
-		/if (${Bool[${useSmartAssistG}]}) /call writeINI useSmartAssistG Common FALSE
-		/if (${Bool[${useForceAssist}]}) /call writeINI useForceAssist Common TRUE
-
+	} else /if (${_assist.Equal[force]} || ${_assist.Equal[f]}) {
+		/call writeINI MA1 Common FALSE
+		/call writeINI MA2 Common FALSE
+ 		/call writeINI useSmartAssistR Common FALSE
+		/call writeINI useSmartAssistG Common FALSE
+		/call writeINI useForceAssist Common TRUE
+		/xtarget set 1 Autohater
 		
 	| set assist to MA1
-	} else /if (${_assist.Equal[ma1]}) {
+	} else /if (${_assist.Equal[ma1]} || ${_assist.Equal[1]}) {
+		/if (${Bool[${_name}]}) {
+			/call writeINI MA1 Common ${_name.Left[1].Upper}${_name.Right[-1].Lower}
+		} else /if (!${Bool[${_name}]})  {
+			/call writeINI MA1 Common FALSE
+		} 				
+		/xtarget set 1 Autohater
+		
 		
 	| set assist to MA2
-	} else /if (${_assist.Equal[ma2]}) {
-
+	} else /if (${_assist.Equal[ma2]} || ${_assist.Equal[2]}) {
+		/if (${Bool[${_name}]}) {
+			/call writeINI MA2 Common ${_name.Left[1].Upper}${_name.Right[-1].Lower}
+		} else /if (!${Bool[${_name}]})  {
+			/call writeINI MA2 Common FALSE
+		} 				
+		/xtarget set 1 Autohater
 
 	} else {
 		/varset _pass FALSE

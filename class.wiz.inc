@@ -87,7 +87,9 @@ sub disc_WIZ()
 	| ditch agro
 	/if (!${switchAgro} && ${Me.PctAggro} > 30) /call core_cast "Arcane Whisper" alt ${Target2Kill} FALSE
 	/if (!${switchAgro} && ${Me.PctAggro} > 80) /call core_cast "Concussive Intuition" alt ${Target2Kill} FALSE
-
+	/if (!${switchAgro} && ${Me.PctAggro} > ${spellConcussionPct}) /call core_cast "${spellConcussion}" 0 ${Target2Kill} FALSE
+	
+	
 	| filler DPS. used when inbetween/down spellgem casts
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	

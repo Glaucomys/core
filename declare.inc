@@ -242,7 +242,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180212
+	/declare coreBuild	 														int			outer 20180310
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -310,7 +310,9 @@ sub set_declares()
 	/declare sepO																		string	outer \at[\ax
 	/declare sepC																		string	outer \at]\ax
 	/declare oenabled																string	outer ${cgood}Enabled\ax
+	/declare oon																		string	outer ${cgood}on\ax
 	/declare odisabled															string	outer ${cbad}DISABLED\ax
+	/declare ooff																		string	outer ${cbad}off\ax
 	/declare owarning																string	outer ${cbad}WARNING\ax
 	/declare ofatal																	string	outer ${cbad}FATAL ERROR\ax ${sep} ${cbad}ENDING MACRO\ax
 	/declare ocaution																string	outer ${cbad}CAUTION\ax
@@ -367,11 +369,13 @@ sub set_declares()
 	/call DeclareCoreIniVar ${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}				int			DeathCount 0
 	/call DeclareCoreIniVar invitelist							string	No FALSE
 	/call DeclareCoreIniVar rezlist									string	No FALSE
+	/call DeclareCoreIniVar heallist								string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General |FALSE|FALSE
+
 	/call DeclareCoreIniVar switchDispInfo					string	General TRUE
 	/call DeclareCoreIniVar switchDispBuild					string	General TRUE
 	/call DeclareCoreIniVar switchDispEXP						string	General TRUE
-	
+	/call DeclareCoreIniVar switchAADiscnowManual		string	General FALSE
 	
 	/call DeclareIniVar toonControl			 						string	Common FALSE
 	/call DeclareIniVar autoRest 										int 		Common 90
@@ -808,7 +812,6 @@ sub set_declares()
 	/declare switchAmIDead													bool		outer FALSE
 	/declare validRezFound 													bool 		outer FALSE
 	/declare rezWindowPct 													int 		outer 0
-	
 	/declare switchRez															bool		outer FALSE
 	/declare switchRezPct														bool		outer FALSE
 	/declare switchRezRange													bool		outer FALSE
@@ -823,24 +826,14 @@ sub set_declares()
 	/call DeclareIniVar RezTokenList								string 	Heal |WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU	
 
 	
-	| watch spawn stuff
+	| watchspawn stuff
 	/declare hudwatchspawn													string	outer FALSE
 	/declare watchSpawnCount												int			outer	FALSE
 	/call DeclareIniVar watchSpawn									string	Common FALSE 
 
 		
-	| tie control
-  /declare tcType																	string	outer |distance|lock|name|time
-	/call DeclareIniVar SetTieToon 									string 	Movement FALSE
-	/declare SetTie       													bool 		outer FALSE
-	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
-	/call DeclareIniVar SetTieLock	 								bool 		Movement FALSE
-	| follow
-	| /declare SetFollow															bool 		outer FALSE
-   
-   
  	| Movement control
-  /declare movementType														string	outer |arc|behind|fast|home|leash|mount|radius
+  /declare movementType														string	outer |arc|behind|fast|gather|goto|home|leash|mount|radius
 	/call DeclareIniVar HomeSet											bool		Movement FALSE
 	/call DeclareIniVar HomeRadius									int 		Movement 5
 	/call DeclareIniVar HomeLeash										int 		Movement 40
@@ -852,7 +845,16 @@ sub set_declares()
 	/call DeclareIniVar mount												string	Common "Desert Kangon Saddle"
 	/declare tempHomeSet														bool		outer FALSE	
 	/declare tempsnapstuck													bool		outer	FALSE  
-	
+
+	| tie control
+  /declare tcType																	string	outer |distance|lock|mode|name|time
+	/call DeclareIniVar SetTieToon 									string 	Movement FALSE
+	/declare SetTie       													bool 		outer FALSE
+	/call DeclareIniVar SetTieDistance 							int 		Movement 15 
+	/call DeclareIniVar SetTieLock	 								bool 		Movement FALSE
+	/call DeclareIniVar SetTieMode	 								string	Movement Stick
+
+
 	
 	| debuff switches	
   /declare deBuffType															string	outer |stop|mezz|malo|tash|cripple|slow|eradicate|snare
@@ -886,7 +888,6 @@ sub set_declares()
 	/call DeclareIniVar Breastplate1effect					string	Items FALSE
 	/call DeclareIniVar Breastplate2		 						string	Items FALSE
 	/call DeclareIniVar Breastplate2effect					string	Items FALSE	
-	| /call DeclareIniVar Epic												string	Items FALSE	
 	/call DeclareIniVar useCircle										string	Items FALSE		
 	/call DeclareIniVar CircleofPower								string	Items FALSE	
 	/call DeclareIniVar CircleofLife								string	Items FALSE	
@@ -1049,7 +1050,7 @@ sub set_declares()
 	/call DeclareIniVar Aura2Buff 									string 	Aura FALSE
 
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
-		/declare callID												int 		outer 0
+		/declare callID																int 		outer 0
 		/call DeclareIniVar PetPoint 									int			Heal 80	
 		/call DeclareIniVar CLRPoint		 							int 		Heal 80
 		/call DeclareIniVar DRUPoint 									int 		Heal 70
@@ -1161,9 +1162,9 @@ sub set_declares()
 	/call DeclareIniVar curePoisonItem 							string 	Cure FALSE
 	/call DeclareIniVar cureDiseaseItem							string 	Cure FALSE
 	/call DeclareIniVar cureCorruptItem							string 	Cure FALSE
-	/call DeclareIniVar noCureList	 								string 	Cure "|Sunset's Shadow|FALSE"
+	/call DeclareIniVar noCureList	 								string 	Cure "|FALSE"
 	
-	/declare clickHealItem													string outer |Prayers of Life|Small Manisi Branch|Overflowing Urn of Life
+	/declare clickHealItem													string outer |Prayers of Life|Overflowing Urn of Life
 /return
 	
 
@@ -1303,6 +1304,8 @@ sub declare_WIZ()
 	/call DeclareIniVar tempPet						 					string	Pet "Yulin's Pyroblade"
 	/call DeclareIniVar switchManaBurn		 					bool		Spells TRUE
 	/call DeclareIniVar spellCripple 								string 	Spells FALSE
+	/call DeclareIniVar spellConcussion							string 	Spells FALSE
+	/call DeclareIniVar spellConcussionPct					int 	Spells 0
 
 	/declare lineType																string	outer |off|fire|ice|magic|mix
 	/call DeclareIniVar lineCurrent									string 	Spells Fire
@@ -3947,6 +3950,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 	| we like it rough
 	} else /if (${Bool[${_tcType.Equal[lock]}]}) {
 		/call writeINI SetTieLock Movement ${If[${SetTieLock},FALSE,TRUE]}
+		/if (${SetTieLock}) /call writeINI SetTieMode Movement Stick
 
 	| set tie time
 	} else /if (${Bool[${_tcType.Equal[time]}]}) {
@@ -3956,6 +3960,23 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 			VOUT /${_bind} time(${cnum}${tCheck_Tie}\ax) allowable range is ${cinfo}5 - 50\ax
 			/return
 		}
+		
+	| set tie mode
+	} else /if (${Bool[${_tcType.Equal[mode]}]}) {
+		/if (${_verbage.Equal[stick]}) {
+			/call writeINI SetTieMode Movement Stick
+		} else /if (${_verbage.Equal[nav]}) {
+			/call writeINI SetTieMode Movement Nav
+		} 
+		/declare _tcModeType string local |stick|nav
+		/for _count 1 to ${_tcModeType.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]}
+			/if (${_tcModeType.Arg[${_count},|].Equal[stick]}) /varset _listout ${_listout}${If[${SetTieMode.Equal[stick]},${cgood}stick\ax,${cinfo}stick\ax]}
+			/if (${_tcModeType.Arg[${_count},|].Equal[nav]}) /varset _listout ${_listout}${If[${SetTieMode.Equal[nav]},${cgood}nav\ax,${cinfo}nav\ax]}
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} mode [${_listout}]
+		/return
 		
 	| set tie distance		
 	} else /if (${Bool[${_tcType.Equal[distance]}]}) {
@@ -3968,10 +3989,11 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 	}
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
-		/if (${${_bind}Type.Arg[${_count},|].Equal[name]}) /varset _listout ${_listout}(${cnum}${SetTieToon}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[name]}) /varset _listout ${_listout}(${cnum}${If[${Bool[${SetTieToon}]},${SetTieToon},NA]}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[time]}) /varset _listout ${_listout}(${cnum}${tCheck_Tie}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[distance]}) /varset _listout ${_listout}(${cnum}${SetTieDistance}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[lock]}) /varset _listout ${_listout}(${If[${SetTieLock},${oenabled},${odisabled}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[lock]}) /varset _listout ${_listout}(${If[${SetTieLock},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[mode]}) /varset _listout ${_listout}(${cnum}${SetTieMode}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -4272,7 +4294,7 @@ sub Bind_info()
 	/declare _listout string local
 	/declare _sep bool local
 	/declare _count int local
-	/declare _controls string local |buff|burn|cc|core|cursor|debuff|echos|grab|hc|heal|lc|mode|movement|onoff|override|pc|port|rez|tc|tie|ts|${Me.Class.ShortName}
+	/declare _controls string local |buff|burn|cc|core|cursor|debuff|echos|grab|hc|heal|lc|mode|movement|onoff|override|pc|port|rez|setassist|tc|tie|ts|${Me.Class.ShortName}
 	
 	/for _count 1 to ${_controls.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
@@ -4354,20 +4376,22 @@ sub Bind_ts(string _tsType)
 
 |***
  *	DES: simple shortcut to the  /cc smartma command
- *	USE: /smartma [R|X|G|NULL]
+ *	USE: /setassist [X|R,Raid|G,Group|F,Force|1,MA1|2,MA2|NULL]
  *	INI: 
- *  NOTE: this is a four way toggle
+ *  NOTE: 
  ***| 	
-#bind smartMA /smartma
-sub Bind_smartMA(string _verbage)
-	DEBUG ${cbug}Bind_smartMA(assist: ${_verbage})\ax
-	/call Bind_setCombatControl smartma ${_verbage}
+#bind setAssist /smartma
+#bind setAssist /setassist
+sub Bind_setAssist(string _verbage, _name)
+	DEBUG ${cbug}Bind_setAssist(assist: ${_verbage}, name: ${_name})\ax
+	| /call Bind_setCombatControl smartma ${_verbage}
+	/call validate_assist FALSE ${_verbage} ${If[${Bool[${_name}]},${_name},]}
 /return
 
 
 
 |***
- *	DES: core controls
+ *	DES: combat controls
  *	USE: /cc []
  *	INI: 
  *  NOTE:
@@ -4395,9 +4419,10 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 	| enable / disable forced assist
 	/if  (${Bool[${_ccType.Equal[forceassist]}]}) {
-		/call writeINI useForceAssist Common ${If[${useForceAssist},FALSE,TRUE]}
- 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
-		/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+		/call validate_assist FALSE force
+		| /call writeINI useForceAssist Common ${If[${useForceAssist},FALSE,TRUE]}
+ 		| /if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
+		| /if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
 		VOUT /${_bind} forceassist ${sep} ${If[${useForceAssist},${oenabled},${odisabled}]}
 	
 	| force manual combat routines
@@ -4488,7 +4513,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[nukedelay]}]}) {
 		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
 			/call writeINI tNuke_Delay Timer ${_verbage} 
-			/call echos number "Nuke Cast Delay" ${_verbage} 0 0
+			VOUT /${_bind} nukedelay ${sep} ${cinfo}${_verbage}\ax
 		} else {
 			VOUT /${_bind} nukedelay(${cnum}${tNuke_Delay}\ax) allowable range is ${cinfo}1 - 100\ax
 			/return
@@ -4511,20 +4536,26 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 	| set out of group Manual Assist 1 or 2
 	} else /if (${Bool[${_ccType.Equal[ma1]}]}) {
+		/call validate_assist FALSE ma1 ${_verbage}
+		|**
 		/if (${Bool[${_verbage}]}) {
 			/call writeINI MA1 Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 		} else /if (!${Bool[${_verbage}]})  {
 			/call writeINI MA1 Common FALSE
 		} 				
+		**|
 		VOUT /${_bind} ma1 ${sep} ${If[${Bool[${MA1}]},${cinfo}${MA1}\ax,${odisabled}]}
 	} else /if (${Bool[${_ccType.Equal[ma2]}]}) {		
+		/call validate_assist FALSE ma2 ${_verbage}
+		|**
 		/if (${Bool[${_verbage}]}) {
 			/call writeINI MA2 Common ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 		} else /if (!${Bool[${_verbage}]})  {
 			/call writeINI MA2 Common FALSE
 		} 				
+		**|
 		VOUT /${_bind} ma2 ${sep} ${If[${Bool[${MA2}]},${cinfo}${MA2}\ax,${odisabled}]}	
-
+		
 
 	| MA1/2 engage at %
 	} else /if (${Bool[${_ccType.Equal[engage]}]}) {
@@ -4584,44 +4615,46 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		}
 		/call clear_combat
 
-		| Raid Assist 1
+		| Raid Assist Role
 		/if ((${_verbage.Equal[r]} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
 			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
-			| /call validate_assist FALSE raid
-			
-	 		/if (!${useSmartAssistR}) /call writeINI useSmartAssistR Common TRUE
-			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
-			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
-			/xtarget set 1 Raidassist1target
+			/call validate_assist FALSE raid
+	 		| /if (!${useSmartAssistR}) /call writeINI useSmartAssistR Common TRUE
+			| /if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+			| /if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
+			| /xtarget set 1 Raidassist1target
+
+		| Goup Assist role
+		} else /if ((${_verbage.Equal[g]} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
+			/call validate_assist FALSE group
+	 		| /if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
+			| /if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
+			| /if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
+			| /xtarget set 1 Groupassisttarget
 
 		| NO Assist
 		} else /if ((${_verbage.Equal[x]} || (!${Bool[${_verbage}]} && (${useSmartAssistR} || ${useSmartAssistG})) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
 			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
-			| /call validate_assist FALSE x
-	 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
-			/if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
-			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
-			/xtarget set 1 Autohater
+			/call validate_assist FALSE x
+	 		| /if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
+			| /if (${useSmartAssistG}) /call writeINI useSmartAssistG Common FALSE
+			| /if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
+			| /xtarget set 1 Autohater
+		}
 
-		| Goup Main Assist
-		} else /if ((${_verbage.Equal[g]} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
-			| /call validate_assist FALSE group
-	 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
-			/if (!${useSmartAssistG}) /call writeINI useSmartAssistG Common TRUE
-			/if (${useForceAssist}) /call writeINI useForceAssist Common FALSE
-			/xtarget set 1 Groupassisttarget
-		}	
+		| output result
 		/declare _assistMode string local |R|G
 		/declare _assM string local
 		
 		/for _count 1 to ${_assistMode.Count[|]}
 			/varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
-			DEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
+			SDEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${_assM},${cgood}${_assistMode.Arg[${_count},|]}\ax,${cinfo}${_assistMode.Arg[${_count},|]}\ax]}
 			/varset _sep TRUE
 		/next _count
 		VOUT /${_bind} smartma [${_listout}]
+
 
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
@@ -4836,6 +4869,17 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	/if (${Bool[${_${_bind}Type.Equal[home]}]}) {
 		/call writeINI HomeSet Movement ${If[${HomeSet},FALSE,TRUE]}  
 		/call set_home
+		
+	| navigate to the Target or NAME		
+	} else /if (${Bool[${_${_bind}Type.Equal[goto]}]}) {
+		/if (!${validate_plugin[TRUE, |MQ2Nav]}) /return
+		/if (!${Target.ID} && !${Bool[${_verbage}]}) /return
+		/if (${Bool[${_verbage}]}) {
+			/nav spawn ID ${_verbage}
+		} else /if (${Target.ID}) {
+			/nav spawn ${Target.DisplayName}
+		}
+		/return		
 
 	| set stick behind
 	} else /if (${Bool[${_${_bind}Type.Equal[behind]}]}) {
@@ -4866,9 +4910,27 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			VOUT /${_bind} radius(${cnum}${HomeRadius}\ax) allowable range ${cinfo}1 - 200\ax
 			/return
 		}
+		
+		
+	| gather your crew
+	} else /if (${_${_bind}Type.Equal[gather]}) {
+		/if (!${validate_plugin[TRUE, |MQ2Nav]}) /return
+		/declare _clist string local ${Ini[${INICore},Group,${_verbage}]}
+	
 
+		/for _count 1 to ${_clist.Count[|]}
+			/if (${_clist.Arg[${_count},|].Equal[${Me.DisplayName}]}) /continue
+			/if (${Bool[${Spawn[pc ${_clist.Arg[${_count},|]}]}]}) {
+				VOUT Gathering ${sep} ${cinfo}${_clist.Arg[${_count},|]}\ax
+				/bct ${_clist.Arg[${_count},|]} //nav spawn pc ${Me.DisplayName}
+				
+			}
+
+		/next _count		
+		/return
+		
 	| set leash range
-	} else /if (${Bool[${_${_bind}Type.Equal[leash]}]}) {
+	} else /if (${_${_bind}Type.Equal[leash]}) {
 		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
 			/if (${HomeRadius} < ${_verbage}) {
 				VOUT ${onotice} ${sep} Leash must be less then radius(${cnum}${HomeRadius}\ax)
@@ -4889,7 +4951,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			/return
 		}	
 		
-	| i need mounts
+	| i need mounts because i like to annoy people in the raid
 	} else /if (${Bool[${_${_bind}Type.Equal[mount]}]}) {
 		/if (!${Bool[${_verbage}]}) {
 			VOUT /${_bind} mount [${cinfo}on\ax ${sep} ${cinfo}off\ax]
@@ -4976,6 +5038,8 @@ sub Bind_crew(string _crewNumber)
 	/if (${Group.GroupSize} != ${_clist.Count[|]}) {
 		VOUT ${owarning} ${sep} Group failed to form properly.
 		/return
+	} else {
+		VOUT Group formed.
 	}
 	
 	| set Group Main Assist
@@ -4995,6 +5059,8 @@ sub Bind_crew(string _crewNumber)
 		/delay 5
 		/if (${Group.Member[${Group.Leader}].Index} != ${Group.Member[${${MacroQuest.Server}Leader}].Index}) /makeleader ${${MacroQuest.Server}Leader}
 	}
+	
+	VOUT Leader:${cinfo}${${MacroQuest.Server}Leader}\ax ${sep} Assist:${cinfo}${${MacroQuest.Server}Assist}\ax ${sep} Looter:${cinfo}${${MacroQuest.Server}Looter}\ax
 /return
 
 
@@ -5144,3 +5210,16 @@ sub Bind_grab(string _name)
 	}
 /return
 
+
+
+
+|***
+ *	DES: navigates tot he name.target
+ *	USE: /navto [NAME]
+ *	INI: 
+ *  NOTE: max range of 20
+ ***|
+#bind nav_to_target /navto
+sub Bind_nav_to_target (string _name)
+	/call Bind_setMovementControls goto ${_name}
+/return

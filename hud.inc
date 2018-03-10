@@ -36,8 +36,8 @@ sub Bind_hud(string _hcType, string _hcVerbage)
 	| adjust hud clock
 	/if (${Bool[${_${_bind}Type.Find[time]}]}) {
 		/varset HUDTime ${If[${HUDTime},FALSE,TRUE]}
-		/if (${HUDTime}) VOUT HUD Showing ${cinfo}Real Life\ax time.
-		/if (!${HUDTime}) VOUT HUD Showing ${cinfo}In Game\ax time.
+		/if (${HUDTime}) VOUT HUD Time ${sep} ${cinfo}IRL\ax
+		/if (!${HUDTime}) VOUT HUD Time ${sep} ${cinfo}Game\ax
 
 	| reset the MQhud ini file
 	} else /if (${Bool[${_${_bind}Type.Find[update]}]}) {
@@ -75,13 +75,16 @@ sub Bind_hud(string _hcType, string _hcVerbage)
  ***|
 sub HUDUpdate()
 	DEBUG ${cbug}HUDUpdate()\ax
-	VOUT This will only take a second ${sep}
+	VOUT Updating MQ2HUD.INI - > [core]
 	| /ini ".\..\MQ2HUD.ini" "core" NULL NULL
 	/delay 1s
 	
 	| Build
 	/noparse /ini HUDPATH "core1" "3,5,26,255,255,255,Build"
-	/noparse /ini HUDPATH "core2" "19,44,26,100,149,237,${coreBuild}"
+	| /noparse /ini HUDPATH "core2" "19,44,26,100,149,237,${coreBuild}"
+
+
+
 
 	| last tell
 	/noparse /ini HUDPATH "tell1" "3,5,38,255,255,255,Tell"
@@ -89,6 +92,7 @@ sub HUDUpdate()
 
 	| control toon
 	/noparse /ini HUDPATH "control1" "19,5,50,255,255,255,${If[${Bool[${autoControl}]},,Control]}"
+/return
 	/noparse /ini HUDPATH "control2" "19,5,50,0,255,0,${If[${Bool[${autoControl}]},Control,]}"
 	/noparse /ini HUDPATH "control3" "19,44,50,100,149,237,${If[${Bool[${toonControl}]},${toonControl},]}"
 
@@ -105,8 +109,8 @@ sub HUDUpdate()
 	| Target / LOS
 	/noparse /ini HUDPATH "bodytype1" "3,5,85,100,149,237,[                   ]"
 	/noparse /ini HUDPATH "bodytype2" "3,10,86,255,255,255,${Target.Body}"
-	/noparse /ini HUDPATH "LoS1" "3,70,86,0,255,0,${If[${Bool[${Target}]},${If[${Target.LineOfSight},DIS:${Target.Distance} .. ID:${Target.ID},]},]}"
-	/noparse /ini HUDPATH "LoS2" "3,70,86,255,0,0,${If[${Bool[${Target}]},${If[${Target.LineOfSight},,DIS:${Target.Distance} .. ID:${Target.ID}]},]}"
+	/noparse /ini HUDPATH "LoS1" "3,70,86,0,255,0,${If[${Bool[${Target}]},${If[${Target.LineOfSight},${Target.Distance} .. ID:${Target.ID},]},]}"
+	/noparse /ini HUDPATH "LoS2" "3,70,86,255,0,0,${If[${Bool[${Target}]},${If[${Target.LineOfSight},,${Target.Distance} .. ID:${Target.ID}]},]}"
 
 	| current target info
 	| /noparse /ini HUDPATH "target1" "3,5,98,255,255,255,Target"
@@ -175,15 +179,15 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "camp5" "19,155,26,25,25,25,${If[${HomeSet},,##        ##]}"
 
 	| tie info
-	/noparse /ini HUDPATH "tie1" "3,140,38,100,149,237,Tie"
-	/noparse /ini HUDPATH "tie2" "3,157,37,100,149,237,[     ][     ]"
-	/noparse /ini HUDPATH "tie3" "19,162,38,255,255,255,${If[${SetTie},${SetTieDistance},]}"
-	/noparse /ini HUDPATH "tie4" "19,183,38,255,255,255,${If[${SetTie},${tCheck_Tie},]}"
-	/noparse /ini HUDPATH "tie5" "19,183,38,25,25,25,${If[${SetTie},,##]}"
-	/noparse /ini HUDPATH "tie6" "19,162,38,25,25,25,${If[${SetTie},,##]}"
-	/noparse /ini HUDPATH "tie7" "19,201,38,0,255,0,${If[${Bool[${SetTieToon}]},${If[${Bool[${Spawn[${SetTieToon}]}]},${SetTieToon},]},]}"
-	/noparse /ini HUDPATH "tie8" "19,201,38,255,0,0,${If[${Bool[${SetTieToon}]},${If[!${Bool[${Spawn[${SetTieToon}]}]},${If[${Bool[${SetTieToon}]},${SetTieToon},]},]},]}"
-	/noparse /ini HUDPATH "tie9" "19,201,38,25,25,25,${If[${Bool[${SetTieToon}]},,NONE]}"
+	/noparse /ini HUDPATH "tie1" "19,140,38,100,149,237,${SetTieMode}"
+	/noparse /ini HUDPATH "tie2" "3,165,37,100,149,237,[     ][     ]"
+	/noparse /ini HUDPATH "tie3" "19,170,38,255,255,255,${If[${SetTie},${SetTieDistance},]}"
+	/noparse /ini HUDPATH "tie4" "19,191,38,255,255,255,${If[${SetTie},${tCheck_Tie},]}"
+	/noparse /ini HUDPATH "tie5" "19,191,38,25,25,25,${If[${SetTie},,##]}"
+	/noparse /ini HUDPATH "tie6" "19,170,38,25,25,25,${If[${SetTie},,##]}"
+	/noparse /ini HUDPATH "tie7" "19,209,38,0,255,0,${If[${Bool[${SetTieToon}]},${If[${Bool[${Spawn[${SetTieToon}]}]},${SetTieToon},]},]}"
+	/noparse /ini HUDPATH "tie8" "19,209,38,255,0,0,${If[${Bool[${SetTieToon}]},${If[!${Bool[${Spawn[${SetTieToon}]}]},${If[${Bool[${SetTieToon}]},${SetTieToon},]},]},]}"
+	/noparse /ini HUDPATH "tie9" "19,209,38,25,25,25,${If[${Bool[${SetTieToon}]},,NONE]}"
 
 	| burn a thing
 	/noparse /ini HUDPATH "burn1" "19,140,50,0,255,0,${If[${burnAuto},Burn,]}"
@@ -239,10 +243,6 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "ma22" "19,305,38,0,255,0,${If[${Bool[${MA2}]},${If[${Bool[${Spawn[${MA2}]}]},${MA2},]},]}"
 	/noparse /ini HUDPATH "ma23" "19,305,38,255,0,0,${If[${Bool[${MA2}]},${If[!${Bool[${Spawn[${MA2}]}]},${If[${Bool[${MA2}]},${MA2},]},]},]}"
 	/noparse /ini HUDPATH "ma24" "19,305,38,25,25,25,${If[${Bool[${MA2}]},,NONE]}"
-	
-
-
-
 
 	/noparse /ini HUDPATH "ass1" "3,280,50,100,149,237,Assist"
 	/noparse /ini HUDPATH "ass2" "3,315,49,100,149,237,[           ]"
@@ -275,7 +275,7 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "rest2" "19,170,74,255,255,255,${If[${autoRest},${autoRest},]}"
 	/noparse /ini HUDPATH "rest3" "19,170,74,25,25,25,${If[${autoRest},,##]}"
 	
-	| DE-buff switches
+	| deBuff switches
 	/noparse /ini HUDPATH "debuff0" "3,280,74,100,149,237,deBuff"
 	/noparse /ini HUDPATH "debuff1" "3,316,73,100,149,237,[                    ]"	
 	/noparse /ini HUDPATH "debuff2" "19,321,74,0,255,0,${If[${switchdeBuffMezz},Z,]}"
@@ -316,4 +316,6 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "notice2" "19,10,132,255,255,255,${hudNotice}"
 
 	/noparse /ini HUDPATH "time1" "19,360,132,146,149,180,${If[${HUDTime} || !${coreBuild},${Time.Time24},${GameTime}]}"
+	
+	VOUT MQ2HUD.INI update complete
 /return

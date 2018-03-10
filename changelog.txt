@@ -15,6 +15,46 @@ Current Requests:
 
 
 
+20180310
+/setassist [x|1 NAME|2 NAME|(g)roup|(r)aid|(f)orce]
+  -- direct access to setting assists.
+  [x] - disables ALL assists
+  [1 NAME] - 1,MA1 set the toon namual assist to NAME
+  [2 NAME] - 2,MA2 set the toon namual assist to NAME
+  [(g)roup] - g or group sets the toon to assist the group MA
+  [(r)aid] - r or raid, sets the toon to assit the raid MA
+  [(f)orce] - f or force, sets the toon to accept forced assist commands 
+incorporation of MQ2Nav
+  -- /tc mode [nav|stick]
+    -- /tc mode nav - will use MQ2NAv genereated meshes for /tie
+       NOTE: the movement is block(y), moving to the last registered point of the character tied too. then adjusta gain to catch up.
+    -- /tc mode stick - will use MQ2MoveUtils for /tie
+/movement [gather CREW] - will pull all your group members, as defined by the crew settings in core.ini to the command issuer
+/movement goto [NAME|TARGET] - navigates you to the target
+- set_stick()
+  -- more changes to the logic. the MQ2Nav method is still a little off.
+- core.ini->[no]->heallist=|NAME|NAME|NAME
+  -- set people you do not want to ever heal. because some people are just absolute cunts.  
+- class.wiz.inc
+  -- spellConcussion = Concussion Spell you want wizzy to use when agro gets too much for your squish ass to handle
+  -- spellConcussionPct = when you want the concussion spell to fire
+- AA / Disc now controlls    
+  -- core.ini->[General]->switchAADiscnowManual= TRUE to use AA and Disc now while in manual. FALSE by default
+  
+  
+* NOTES ON MQ2NAV
+- if you dont generate the mesh for the zone, dont bother using this feature.
+- the nav segment of /tie works a little differently. it will nav to the tie toons position, once there, will calculate to where the toon has moved too and regenerate the nav and move again.
+  this causes tie to move in segments very different the MQ2MoveUtils stick method. However, there are very little geometry collision issues.
+- this is a work in progress. i'm still learning this new method and getting it to work with core.
+- yes, i know this opens the dore for completely automated AFK killing. don't expect that to happen beyond the harvest and slaughter/hunt modes.  
+- i have not worked this into the alternate /mode(s) yet. But I plan too.
+- the /movement goto command takes you to the targets position at time of issue. thats is.
+- the /movement gather [CREW] command works off the CREW settings in core.ini. if you're not using the group settings in this, this command will do nothing for you.
+- this is not a required plugin to function.
+ 
+
+
 
 20180212
 HUDUPDATE

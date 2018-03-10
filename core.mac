@@ -102,6 +102,7 @@
 #define TESTFUNCTION "/call test_function"
 
 
+
 #include tc\declare.inc
 #include tc\common.inc
 #include tc\MQ2Cast_Spell_Routines.inc
@@ -182,6 +183,14 @@ sub main()
 	  UPDATEHUD FALSE	
 	 	/doevents
 		CLEARCURSOR
+		
+		/if (${coreAuto} || ${switchAADiscnowManual}) {
+			| check constant AA buffs
+			/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
+			| check constant Disc buffs
+			/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
+		}
+		
 
 		| non class specific automated thingies.
 		/if (${coreAuto}) {
@@ -217,11 +226,6 @@ sub main()
 			| food/drink
 			/if (${Bool[${clickFoodDispenser}]} && !${timer_click_food}) /call click_summon_food
 			/if (${Bool[${clickDrinkDispenser}]} && !${timer_click_drink}) /call click_summon_drink
-
-			| check constant AA buffs
-			/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
-			| check constant Disc buffs
-			/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 
 			| sort out return to camp
 			/if (${HomeSet}) {
