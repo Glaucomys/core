@@ -164,9 +164,19 @@ sub mode_get_mob()
 
 	/call check_watch_spawn
 
-	/if (!${Stick.Active} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
+	/if (${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
-		/squelch /stick ID ${Target2Kill} ${CombatDistance} UW
+
+		/if (${SetTieMode.Equal[nav]} && ${Bool[${Plugin[MQ2Nav]}]} && !${Navigation.Active}) {
+			/echo nav to ${Target2Kill}
+			/if (${Navigation.Active}) /squelch /nav stop
+			/squelch /nav id ${Target2Kill}
+
+		} else /if (${SetTieMode.Equal[stick]} && ${Bool[${Plugin[MQ2MoveUtils]}]} && !${Stick.Active}) {
+			/squelch /stick ID ${Target2Kill} ${CombatDistance} UW
+		}
+		
+		
 	} else /if (${Spawn[${Target2Kill}].Distance} <= ${CombatDistance} || ${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		/target ID ${Target2Kill}
@@ -229,7 +239,7 @@ sub mode_skill_train()
 
 |***
  *	DES: to help your rusty dagger collection.. why else would you fish?
- *	USE: /call do_fish_mode | /fish
+ *	USE: /call do_fish_mode | /mode fish
  *	INI: 
  *  NOTE: 
  ***|
@@ -274,7 +284,7 @@ sub mode_forage()
 
 |***
  *	DES: Kill people then drag them around like trophys!!! Win Win...
- *	USE: /call set_drag_mode or /mode drag
+ *	USE: /call mode_drag | /mode drag
  *	INI: na
  *  NOTE: 
  ***|
@@ -306,7 +316,7 @@ sub mode_drag()
 
 |***
  *	DES: turns the toon into a hunter of things.
- *	USE: /mode hunt
+ *	USE: /call mode_hunt | /mode hunt
  *	INI: core.zone.ini [zoneshortname] -> huntmob:|MOB1|MOB2
  *  NOTE: works better in open zones. don't say i didn't wan you.
  ***|
@@ -353,7 +363,7 @@ sub mode_hunt()
 
 |***
  *	DES: Pet Farm Mode
- *	USE: /call do_pet_farm_mode | /mode petfarm
+ *	USE: /call mode_petfarm | /mode petfarm
  *	INI: 
  *  NOTE: Use with caution. For static pet classes only.
  ***|
@@ -643,7 +653,6 @@ sub Event_mode_CombineError(string _line)
 	/varset switchAutoCursor ${Ini[${INIClass},"Common","switchAutoCursor"]}
 /return
 
-
 sub mode_tradeskill()
 	DEBUGMODE ${cbug}mode_tradeskill()\ax
 	
@@ -662,8 +671,6 @@ sub mode_tradeskill()
 	
 	UPDATEHUD
 /return
-
-
 
 
 
@@ -690,12 +697,8 @@ sub mode_get_waisted()
 	}
 
 	UPDATEHUD "Fukn Alcoholic"
-
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
-
-	
 	| check max stats too ?
-	
 	
 	| need booze! keep a stock on hand
 	/if (${FindItemCount[${_ale}]} < ${_aleCount} && ${Me.ItemReady[${_pole}]} && !${Me.Drunk}) {

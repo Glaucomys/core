@@ -267,10 +267,23 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "buff18" "19,365,62,25,25,25,${If[${switchBuffMerc},,M]}"
 
 	| lazy ass controlls
-	/noparse /ini HUDPATH "rest0" "3,140,74,100,149,237,Rest"
-	/noparse /ini HUDPATH "rest1" "3,165,73,100,149,237,[     ]"
-	/noparse /ini HUDPATH "rest2" "19,170,74,255,255,255,${If[${autoRest},${autoRest},]}"
-	/noparse /ini HUDPATH "rest3" "19,170,74,25,25,25,${If[${autoRest},,##]}"
+	/noparse /ini HUDPATH "rest0" "19,140,74,100,149,237,Rest"
+	/noparse /ini HUDPATH "rest2" "3,165,73,100,149,237,[     ]"
+	/noparse /ini HUDPATH "rest3" "19,170,74,255,255,255,${If[${autoRest},${autoRest},]}"
+	/noparse /ini HUDPATH "rest4" "19,170,74,25,25,25,${If[${autoRest},,##]}"
+
+	| rest options
+	/noparse /ini HUDPATH "rest5" "3,187,73,100,149,237,[         ]"
+	/noparse /ini HUDPATH "rest6" "19,192,74,0,255,0,${If[${switchAutoRestFull},F,]}"
+	/noparse /ini HUDPATH "rest7" "19,192,74,25,25,25,${If[${switchAutoRestFull},,F]}"
+
+	/noparse /ini HUDPATH "rest8" "19,199,74,0,255,0,${If[${switchModRodinRest},M,]}"
+	/noparse /ini HUDPATH "rest9" "19,199,74,25,25,25,${If[${switchModRodinRest},,M]}"
+
+	/noparse /ini HUDPATH "rest10" "19,208,74,0,255,0,${If[${switchBuffinRest},B,]}"
+	/noparse /ini HUDPATH "rest11" "19,208,74,25,25,25,${If[${switchBuffinRest},,B]}"
+
+
 	
 	| deBuff switches
 	/noparse /ini HUDPATH "debuff0" "3,280,74,100,149,237,deBuff"

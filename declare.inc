@@ -242,7 +242,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/declare coreBuild	 														int			outer 20180310
+	/declare coreBuild	 														int			outer 20180319
 	/call DeclareIniVar classBuild									int 		Common 0
 	/declare forceINIcheck													bool		outer TRUE
 	/declare castReturn 														string 	outer NULL
@@ -376,6 +376,12 @@ sub set_declares()
 	/call DeclareCoreIniVar switchDispBuild					string	General TRUE
 	/call DeclareCoreIniVar switchDispEXP						string	General TRUE
 	/call DeclareCoreIniVar switchAADiscnowManual		string	General FALSE
+	/call DeclareCoreIniVar switchAlwaysFaceTarget	string	General FALSE
+	/call DeclareCoreIniVar switchDelayWhileZoning	string	General FALSE
+	/call DeclareCoreIniVar switchAutoRestFull			string	General FALSE
+	/call DeclareCoreIniVar switchModRodinRest			string	General TRUE
+	/call DeclareCoreIniVar switchBuffinRest				string	General TRUE
+
 	
 	/call DeclareIniVar toonControl			 						string	Common FALSE
 	/call DeclareIniVar autoRest 										int 		Common 90
@@ -2929,13 +2935,12 @@ sub Event_NullSlot
 	VOUT ${owarning} ${sep} Opening all bags to correct null slot
 	/keypress OPEN_INV_BAGS
 	/timed 10 /keypress CLOSE_INV_BAGS
-	
 /return
 
 
 
 |***
- *	DES: Used whenever we zone. Preps toon for mob lists, movement, etc.
+ *	DES: catch when a zone happens
  *	USE: 
  *	INI: 
  *  NOTE: 
@@ -2944,25 +2949,15 @@ sub Event_NullSlot
 #event Zone "LOADING, PLEASE WAIT..."
 sub Event_Zone(string _line)
 	DEBUG ${cbug}Event_Zone(line: ${_line})\ax
+
+	| force a delay while zoning
+	/if (${switchDelayWhileZoning} && ${Me.Zoning}) {
+		/while (${Me.Zoning}) {
+			/delay 2s
+		}	
+	}
+
 	/call validate_zone FALSE TRUE
-
-|***
-	| /while (${Me.Zoning}) {
-	| 	/delay 1s
-	| }
-	/call echos zone 0 0 0 0 
-	/call check_zone_INI FALSE
-	/if (${burnForce}) /varset burnForce FALSE
-	/squelch /makecamp off
-	/if (${HomeSet}) /call writeINI HomeSet Movement FALSE
-	/call switch_clear_mode
-	/if (${coreAuto} && ${switchShrink}) /call check_shrink
-	
-	/call create_timer timer_zone_pause ${tZone_Pause}
-	/doevents flush
-
-***|
-
 /return 
 
 
@@ -4649,7 +4644,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		
 		/for _count 1 to ${_assistMode.Count[|]}
 			/varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
-			SDEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
+			DEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${_assM},${cgood}${_assistMode.Arg[${_count},|]}\ax,${cinfo}${_assistMode.Arg[${_count},|]}\ax]}
 			/varset _sep TRUE
 		/next _count

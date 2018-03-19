@@ -15,6 +15,24 @@ Current Requests:
 
 
 
+20180319
+HUDUPDATE
+- adjustments to zone validation on mac start. being a real PITA
+/here adjusted to account for nav movement
+- CORE.INI -> [general] switches
+  -- switchAlwaysFaceTarget=TRUE/FALSE -allows for force facing the target you are casting on
+  -- switchDelayWhileZoning=TRUE/FALSE - forces a delay in the macro while zoning in 1 second increments
+  -- switchAutoRestFull=TRUE/FALSE - forces rest to full manna/health when allowable
+  -- switchModRodinRest=TRUE/FALSE - enable/disable using a mod rod while resting
+  -- switchBuffinRest=TRUE/FALSE - enable/disable buffing while resting. INCLUDES: PETS/SELF/TELL/ITEM (the rest dont matter)
+  -- switchDelayWhileZoning=TRUE/FALSE - places Core into a while/loop while zoning  
+  -- switchDispInfo=TRUE/FALSE - (cosmetic) show /info command on mac start
+  -- switchDispBuild=TRUE/FALSE - (cosmetic) show build # on start
+  -- switchDispEXP=TRUE/FALSE - (cosmetic) display exp adjustments 
+  -- switchAADiscnowManual=TRUE/FALSE - enable/disable AA and Disc Now abilities to run while in manual mode as well as auto 
+  ** note: all variables set in Core.INI effect all toons. they are manual settings and require a mac restart to engage them.
+
+
 20180310
 /setassist [x|1 NAME|2 NAME|(g)roup|(r)aid|(f)orce]
   -- direct access to setting assists.
@@ -47,14 +65,12 @@ incorporation of MQ2Nav
 - the nav segment of /tie works a little differently. it will nav to the tie toons position, once there, will calculate to where the toon has moved too and regenerate the nav and move again.
   this causes tie to move in segments very different the MQ2MoveUtils stick method. However, there are very little geometry collision issues.
 - this is a work in progress. i'm still learning this new method and getting it to work with core.
-- yes, i know this opens the dore for completely automated AFK killing. don't expect that to happen beyond the harvest and slaughter/hunt modes.  
+- yes, i know this opens the door for completely automated AFK killing. don't expect that to happen beyond the harvest and slaughter/hunt modes.  
 - i have not worked this into the alternate /mode(s) yet. But I plan too.
 - the /movement goto command takes you to the targets position at time of issue. thats is.
 - the /movement gather [CREW] command works off the CREW settings in core.ini. if you're not using the group settings in this, this command will do nothing for you.
 - this is not a required plugin to function.
  
-
-
 
 20180212
 HUDUPDATE
@@ -1242,7 +1258,7 @@ WHITEWASH
 - check_buff_routines()
   -- added in class specific sections for engaged buff checks
 - mode.inc
-  -- /mode scorch will loot more linke /mode hunt
+  -- /mode scorch will loot more like /mode hunt
 - cast_AA_yaulp()
   -- should no longer trigger while sitting
 

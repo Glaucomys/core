@@ -990,7 +990,7 @@ sub do_rest()
 	CHECKTIE
 	/doevents
 	| check self click buffs
-	/if (!${Me.Invis}) {
+	/if (!${Me.Invis} && ${switchBuffinRest}) {
 		/if (${switchBuffItem} && !${check_engaged[]} && !${timer_check_buffs_item}) /call check_buffs_item
 		/if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
 	}
@@ -1002,14 +1002,21 @@ sub do_rest()
 		| Hybrid: RNG,SHD,BST,PAL
 		/if ((${MeleeList.Find[${Me.Class.ShortName}]} && ${CastList.Find[${Me.Class.ShortName}]}) || ${Me.Class.ShortName.Equal[BRD]}) {
 			DEBUG REST RNG,SHD,BST,PAL,BRD
+
 			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
+
+			| rest to full requirement
+			/if (${switchAutoRestFull}) {
+				/if (${Me.PctEndurance} < 99*.${tmpHealOverride}) /varset _needrest TRUE
+				/if (${Me.PctMana} < 99*.${tmpHealOverride}) /varset _needrest TRUE
+			}
+
 			/if (${Me.Class.ShortName.Equal[BRD]}) {
-				
 				DEBUG Rest Bard
 				/call cast_AA_Rallying
-					/if (${switchRestSong}) {
-						/if (!${Bool[${Me.Song[${spellRestSong}]}]}) {
+				/if (${switchRestSong}) {
+					/if (!${Bool[${Me.Song[${spellRestSong}]}]}) {
 						/if (${Me.Casting.ID} != ${Spell[${spellRestSong}].ID}) {
 							DEBUG song rest
 							/call mem_spell FALSE "${spellRestSong}" ${buffGem} TRUE
@@ -1018,14 +1025,13 @@ sub do_rest()
 						}
 					}
 				}
-				
 			} else {
-				/call use_mod_rod
+				/if (${switchModRodinRest}) /call use_mod_rod
 				/call cast_disc_breather
 			}
 			/if (${Select[${Me.Class.ShortName},PAL]}) {
 			} else /if (${Select[${Me.Class.ShortName},SHD]}) {
-				/if (${switchPcPet}) /call check_pet
+				/if (${switchPcPet} && ${switchBuffinRest}) /call check_pet
 			} else /if (${Select[${Me.Class.ShortName},RNG]}) {
 			} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			} 
@@ -1034,6 +1040,12 @@ sub do_rest()
 		} else /if (${MeleeList.Find[${Me.Class.ShortName}]} && !${CastList.Find[${Me.Class.ShortName}]}) {
 			DEBUG REST WAR,MNK,ROG,BER
 			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
+
+			| rest to full requirement
+			/if (${switchAutoRestFull}) {
+				/if (${Me.PctEndurance} < 99*.${tmpHealOverride}) /varset _needrest TRUE
+			}
+
 			/call cast_disc_breather
 			/if (${Select[${Me.Class.ShortName},WAR]}) {
 			} else /if (${Select[${Me.Class.ShortName},MNK]}) {
@@ -1047,8 +1059,14 @@ sub do_rest()
 			DEBUG REST CLR,DRU,SHM,ENC,WIZ,NEC,MAG
 			/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) {
 				/varset _needrest TRUE
-				/call use_mod_rod
+				/if (${switchModRodinRest}) /call use_mod_rod
 			}
+			
+			| rest to full requirement
+			/if (${switchAutoRestFull}) {
+				/if (${Me.PctMana} < 99*.${tmpHealOverride}) /varset _needrest TRUE
+				/if (${switchModRodinRest}) /call use_mod_rod
+			}			
 
 			/if (${Select[${Me.Class.ShortName},CLR]}) {
 				/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
@@ -1059,18 +1077,18 @@ sub do_rest()
 				/if (${Me.PctMana} < 60*.${tmpHealOverride} && !${flagCallNeedRez}) /call check_cani
 			} else /if (${Select[${Me.Class.ShortName},ENC]}) {
 			} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
-				/call sort_mancy_lineAA
+				/if (${switchBuffinRest}) /call sort_mancy_lineAA
 			} else /if (${Select[${Me.Class.ShortName},NEC]}) {
-				/if (${switchPcPet}) /call check_pet
+				/if (${switchPcPet} && ${switchBuffinRest}) /call check_pet
 			} else /if (${Select[${Me.Class.ShortName},MAG]}) {
-				/if (${switchPcPet}) /call check_pet
+				/if (${switchPcPet} && ${switchBuffinRest}) /call check_pet
 				/call Bind_setMAG mana
 			}
 		} 			
 	}
 		
 	/if (${_needrest}) {
-		DEBUG RESTING ${Me.PctMana} / ${Me.PctEndurance}
+		DEBUG RESTING ${Me.PctMana} / ${Me.PctEndurance} / Fullswitch:${switchAutoRestFull}
 		UPDATEHUD "REST"
 		/if (${Me.State.NotEqual[SIT]} && !${Bool[${Me.Mount.ID}]}) /sit
 		/delay 1
@@ -2178,6 +2196,11 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub, bool _forcew
 
 	| Passed all checks. lets cast some shits..
 	DEBUGCAST passed all checks
+	
+	| face the target or not?
+	/if (${switchAlwaysFaceTarget} && ${Target2Kill}) {
+		/if (!${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
+	}
 
 	| output echos
 	| Spell
@@ -3820,20 +3843,32 @@ sub set_combat_here()
 	| stop 'all' the movement options
 	AMIDEAD
 	| stop sticking to stuff
-	/if (${Stick.Active}) /squelch /stick off
 	/if (${tempsnapstuck}) /varset tempsnapstuck FALSE
 	/if (${SetTie}) /varset SetTie FALSE
 	
 	| stop advanced path
-	/if (${AdvPath.Following}) /squelch /afollow off
+	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
+		/if (${AdvPath.Following}) /squelch /afollow off
+	}
+
+	| stop stick
+	/if (${Bool[${Plugin[MQ2MoveUtils]}]}) {
+		/if (${Stick.Active}) /squelch /stick off
+	}
+
+	| stop mq2nav
+	/if (${Bool[${Plugin[MQ2Nav]}]}) {
+		/if (${Navigation.Active}) /squelch /nav stop
+	}	
 
 	| stop moving
 	/if (${Me.Moving}) {
 		/keypress forward
 		/keypress back
 	}
- 	
- 	| fix zone
+	
+
+	| fix zone
  	/call check_zone_INI FALSE
  	
 	| /call clear_combat
@@ -6685,7 +6720,7 @@ sub click_item_heal()
  ***|
 sub validate_zone(bool _error, bool _force)
 	DEBUG ${cbug}validate_zone(error: ${_error}, force: ${_force})\ax
-	/if (${timer_validate_zone}) /return
+	/if (${timer_validate_zone} && !${_force}) /return
 	/call create_timer timer_validate_zone ${tValidate_Zone}
 	/declare _zoned bool local FALSE
 
@@ -6695,15 +6730,20 @@ sub validate_zone(bool _error, bool _force)
 		/return
 
 	| zone does not match. wtf..
-	} else 	/if (${Zone.ShortName.NotEqual[${currentZone}]} || ${_force}) {
+	} else /if (${Zone.ShortName.NotEqual[${currentZone}]} || ${_force}) {
 		/varset currentZone ${Zone.ShortName}
 		/call echos zone 0 0 0 0
 		/call check_zone_INI FALSE
 		/varset _zoned TRUE
 		/call create_timer timer_zone_pause ${tZone_Pause}
 		/doevents flush
+	
+		| check for mesh
+		/if (${Bool[${Plugin[MQ2Nav]}]}) {
+			/if (!${Navigation.MeshLoaded}) VOUT ${owarning} ${sep} NO Mesh Loaded
+		}	
+		
 	}
-	DEBUG HERE
 	| yah. we zoned and stuff
 	/if (${_zoned}) {
 		/if (${burnForce}) /varset burnForce FALSE
@@ -6777,7 +6817,7 @@ sub validate_assist(bool _error, string _assist, string _name)
 	
 	| set assist to group
 	} else /if (${_assist.Equal[group]} || ${_assist.Equal[g]}) {
-		SDEBUG set group assist
+		DEBUG set group assist
 		/call writeINI useSmartAssistR Common FALSE
 		/call writeINI useSmartAssistG Common TRUE
 		/call writeINI useForceAssist Common FALSE

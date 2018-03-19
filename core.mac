@@ -151,9 +151,8 @@ sub main()
 	/call declare_timers
 	/if (${switchDispBuild}) /call echos startup 0 0 0 0
 	/call verify_build
-	/call Event_Zone
+	/call validate_zone FALSE TRUE
 	/call base_preperation
-	/varset currentZone ${Zone.ShortName}
 
 	AMIDEAD
 
