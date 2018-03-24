@@ -22,9 +22,9 @@ sub core_RNG()
 
 	:killtarget
 	| TESTFUNCTION
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
+	| /call prep_combat
+	| /if (!${Macro.Return}) /return
+	/if (!${prep_combat[]}) /return
 	
 	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
@@ -176,7 +176,7 @@ sub get_agro_RNG()
 	CHECKEXIT
 	/doevents
 	/if (${switchAgro}) {
-		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill} FAlse
+		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill} FALSE
 	}
 	/if (!${switchAgro}) {
 	}

@@ -70,9 +70,9 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 	} else /if (${_type.Equal[number]}) {
 		VOUT ${_verbage} ${sep} ${cinfo}${_tmpVariable}\ax
 
-	| core startup
-	} else /if (${_type.Equal[startup]}) {
-		OUT Core Build ${sep} ${cinfo}${coreBuild}\ax
+	| core Initialize
+	} else /if (${_type.Equal[initialize]}) {
+		OUT Initialize Core ${sep} ${cinfo}${coreBuild}\ax
 
 	| zone initialization
 	} else /if (${_type.Equal[zone]}) {
@@ -513,15 +513,15 @@ sub intialize_item_buffs()
 	DEBUG ${cbug}intialize_item_buffs()\ax
 	AMIDEAD
 	/doevents
-	| VOUT Initializing Item Click Buffs
+	/declare InvItem         														     							int			local 0
+	/declare ContainerItem																								int			local 0
 	/if (!${Defined[ClickItem]}) /declare ClickItem												int			outer 1
-	/if (!${Defined[InvItem]}) /declare InvItem              							int			local 0
-	/if (!${Defined[ContainerItem]}) /declare ContainerItem								int			local 0
 	/if (!${Defined[UseItem]}) /declare UseItem[40]                  			string	outer 
 	/if (!${Defined[SelfItem]}) /declare SelfItem[${UseItem.Size}]   			string 	outer 
 	/if (!${Defined[SpellItem]}) /declare SpellItem[${UseItem.Size}]   		string	outer 
 	/if (!${Defined[tmpClickName]}) /declare tmpClickName									string	outer ${Ini[${INIClass},ClickItems]}
-	/if (!${Defined[tmpFoundSpell]}) /declare tmpFoundSpell								bool		local FALSE
+	
+	| /declare tmpFoundSpell								bool		local FALSE
 
 	/for InvItem 1 to 32
 		AMIDEAD
@@ -586,9 +586,6 @@ sub check_buffs_item()
 	  	}
   	/next _count
   }
-
-	| CoTF progression illusion
-  | /if (${Me.ItemReady["Gunthak Swabby's Eyepatch"]} && !${Bool[${Me.Buff[Gunthak]}]} && ${Spell[Gunthak Grit].Stacks}) /call core_cast "Gunthak Swabby's Eyepatch" item
 
  	AMIDEAD
 	CHECKEXIT
@@ -976,6 +973,7 @@ sub do_rest()
 	}
 
 	/declare _needrest bool local FALSE
+	/declare _resting bool local FALSE
 	
 	:loopneedmorerest
 	/varset _needrest FALSE
@@ -1003,14 +1001,17 @@ sub do_rest()
 		/if ((${MeleeList.Find[${Me.Class.ShortName}]} && ${CastList.Find[${Me.Class.ShortName}]}) || ${Me.Class.ShortName.Equal[BRD]}) {
 			DEBUG REST RNG,SHD,BST,PAL,BRD
 
-			/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
-			/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 
 			| rest to full requirement
-			/if (${switchAutoRestFull}) {
+			/if (${switchAutoRestFull} && ${_resting}) {
 				/if (${Me.PctEndurance} < 99*.${tmpHealOverride}) /varset _needrest TRUE
 				/if (${Me.PctMana} < 99*.${tmpHealOverride}) /varset _needrest TRUE
+			} else {
+				/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
+				/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			}
+
+
 
 			/if (${Me.Class.ShortName.Equal[BRD]}) {
 				DEBUG Rest Bard
@@ -1091,6 +1092,7 @@ sub do_rest()
 		DEBUG RESTING ${Me.PctMana} / ${Me.PctEndurance} / Fullswitch:${switchAutoRestFull}
 		UPDATEHUD "REST"
 		/if (${Me.State.NotEqual[SIT]} && !${Bool[${Me.Mount.ID}]}) /sit
+		/varset _resting TRUE
 		/delay 1
 		CHECKTIE
 		AMIDEAD
@@ -1122,6 +1124,11 @@ sub set_home()
 	/squelch /moveto unpause
 	/squelch /stick off
 /return
+
+
+
+
+
 
 
 
@@ -2820,14 +2827,12 @@ sub set_tie()
 		}
 		/return
 	}
-
 	
 	/if (${timer_check_Tie}) /return
 	/if (${coreAuto}) /call create_timer timer_check_Tie ${tCheck_Tie}
 
 	AMIDEAD
 	/doevents
-
 
 	| reasons to not tie to a toon
 	/if (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${Spawn[pc ${SetTieToon}].Dead}) /return
@@ -2847,15 +2852,13 @@ sub set_tie()
 			/return
 		}
 	}
-	
-	
+		
 	| turn off camp
 	/if (${Bool[${MakeCamp}]}) {
 		/squelch /makecamp off
 		/call writeINI HomeSet Movement FALSE 
 	}
-	
-	
+		
 	| MQ2Nav mode for stick
 	/if (${Bool[${Plugin[MQ2Nav]}]} && ${SetTieMode.Equal[nav]}) {
 
@@ -4158,11 +4161,12 @@ sub check_buffs_tell()
  ***|
 sub broadcast_status()
 	DEBUG ${cbug}broadcast_status()\ax
-	/declare _count 			int 		local
-	/declare _build				string 	local 
+	/declare _count int local
+	/declare _build string local 
+	/declare _INIstatusName string local
 
 	| create your toon Core.INI entry
-	/declare _INIstatus		string 		local ${Ini[${INICore},"transmit_status","${Me.DisplayName}"]}
+	/declare _INIstatus string local ${Ini[${INICore},"transmit_status","${Me.DisplayName}"]}
 
 	| adjust the INI to your current status for youself and others If it is different
 	/if (${setBroadcast.Equal[TRUE]} && ${_INIstatus.NotEqual[DISABLED]}) {
@@ -4174,10 +4178,17 @@ sub broadcast_status()
 		/varset _INIstatus ${Ini[${INICore},"transmit_status","${NetBots.Client[${_count}]}"]}
 		/if (${_INIstatus.Equal[DISABLED]}) /continue
 		
-		/if (!${Bool[${_INIstatus}]} && ${Group.Member[${NetBots.Client[${_count}]}].ID}) {
-			/varset _build ${_build} ${If[${_INIstatus},,${NetBots.Client[${_count}].Left[3]}]}
-		}
+		/varset _INIstatusName ${NetBots.Client[${_count}]}
 		
+		/if (!${Bool[${_INIstatus}]} && ${Group.Member[${_INIstatusName}].ID}) {
+			
+			| do we want to use CLS or toon name?
+			/if (!${switchUseCLSinHUD}) {
+				/varset _build ${_build} ${If[${_INIstatus},,${_INIstatusName.Left[3]}]}
+			} else /if (${switchUseCLSinHUD}) {
+				/varset _build ${_build} ${If[${_INIstatus},,${Spawn[pc ${_INIstatusName}].Class.ShortName}]}
+			}
+		}
 	/next _count
 
 	/varset hudBroadcast ${_build}
@@ -4213,12 +4224,10 @@ sub do_loot()
 	/if (${Raid.Members} && ${Raid.MasterLooter.ID} != ${Me.ID} && !${switchOverrideLoot}) /return
 	/if (!${Raid.Members} && ${Bool[${Group.Members}]} && ${Group.MasterLooter.ID} != ${Me.ID} && !${switchOverrideLoot}) /return
 
-
 	UPDATEHUD "LOOT"
 
 	/delay 2s !${AdvLoot.LootInProgress}
 	/if (${Me.UseAdvancedLooting} && ${Group.MasterLooter.Name.Equal[${Me.DisplayName}]} && !${switchAutoCursor}) /varset switchAutoCursor TRUE
-	
 	
 	/declare _scount int local 0
 	/declare _pcount int local 0
@@ -4231,7 +4240,6 @@ sub do_loot()
 	
 	| if we want to give it to someone else
 	/declare _advlPerson string local
-
 
 	/if (${Raid.Members} || ${Bool[${Group.Members}]}) {
 		| Shared List Sorting
@@ -5207,7 +5215,6 @@ sub check_for_item(string _verbage)
 			}
 		/next _augslot
 	/next _slot	
-	
 		
 | Check Inventory
 	| -- search top inventory slots
@@ -5248,62 +5255,8 @@ sub check_for_item(string _verbage)
 	/next _slot
 	
 	/if (!${_found}) VOUT ${cbad}Not Found\ax ${sep} ${cinfo}${_verbage}\ax
-	
 /return
 
-
-
-|***
- *	DES: forces a reload of all INIs
- *	USE: /call core_reset
- *	INI: 
- *  NOTE:
- ***| 	
-sub core_reset()
-| /return
-	DEBUG ${cbug}core_reset()\ax
-	VOUT ${cgood}Reloading Core INIs\ax
-	/call set_declares
-	/call check_plugin
-	/call echos startup 0 0 0 0
-	/call declare_common
-	/call declare_${Me.Class.ShortName}
-	/call intialize_item_buffs
-	/call set_alias
-	/call Event_Zone
-	/call base_preperation
-	
-	| /call clear_combat
-	/if (${switchPcPet} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
-
-	| get shit out of our hands
-	CLEARCURSOR TRUE
-	
-	| clear modes
-	/call switch_clear_mode
-	
-	| clear all debugs
-	/call Bind_debug stop
-	
-	| clear the current target
-	/if (${clearTarget} && ${Target.ID}) /squelch /target clear
-	/call set_stop TRUE
-	/call clear_combat
-	
-	| set assists
-	/if (!${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull}) {
-		/smartma G
- 	} else /if (${Bool[${Raid.Members}]} && !${Select[${Me.Class.ShortName},CLR]} && ${switchPull}) {
-		/smartma R
-	}	else /if (${Select[${Me.Class.ShortName},CLR]} || ${switchPull}) {
-		/smartma X
-	}	
-	
-	| other misc resets
-	/call writeINI watchSpawn Common False
-	
-	VOUT ${cgood}Done\ax
-/return
 
 
 
@@ -5430,6 +5383,7 @@ sub click_item_burn()
 		/if (${Me.ItemReady[${clickItemBurn${_count}}]}) /call core_cast "${clickItemBurn${_count}}" item 0 FALSE
 	/next _count
 /return  
+
 
 
 |***
@@ -5670,7 +5624,6 @@ sub validate_cast(string _type, string _spell, int _tmpID)
 		/if (!${Me.ItemReady[${_spell}]}) /return FALSE
 		/if (${_tmpID} != 0 && (${Target.Distance} > ${Spell[${_spell}].MyRange} || ${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range})) /return FALSE
 
-
 	} else /if (${_type.Equal[pulse]}) {
 
 	}
@@ -5718,7 +5671,6 @@ sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
 		}
 	}
 	
-	
 	| skip needing a target
 	/if (${_tmpID} == 0 || ${Spell[${_spell}].SpellType.Equal[Self]}) /goto :notarget
 	
@@ -5727,7 +5679,6 @@ sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
 		/varset castReturn CAST_NOTREADY
 		/call create_timer timer_spellcast_nomob_ID 60s
 	}
-
 
 	| bailing on this spell. its either out of range, immune or something..
 	/if (${Bool[${_bail}]}) DEBUGCAST ${owarning} ${sep} _bail = ${_bail} immune too ${_spell}
@@ -5949,28 +5900,8 @@ sub fix_INI_declares()
 	| fix the range summon INI entries
 	/if (!${RangeItem.Count[|]}) /call writeINI RangeItem Common |"${RangeItem}"
 	/if (!${RangeItemSummon.Count[|]}) /call writeINI RangeItemSummon Common |"${RangeItemSummon}"		
-
-
 	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
 /return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -6194,7 +6125,6 @@ sub cast_cripple(int _tmpID)
 		/if (${Select[${Me.Class.ShortName},WIZ]}) /varset spellCripple Lower Element
 	}
 	
-
 	| cripple spell already exists on
 	/if (${Target.BuffDuration[${spellCripple}].TotalSeconds}) {
 		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
@@ -6777,7 +6707,6 @@ sub buy_AA(String _name)
 
 
 
-
  |***
  *	DES: asssit controlls
  *	USE: /call validate_assist [error] [x|raid|force|force|ma1|ma2] [NAME]
@@ -6847,7 +6776,6 @@ sub validate_assist(bool _error, string _assist, string _name)
 		} 				
 		/xtarget set 1 Autohater
 		
-		
 	| set assist to MA2
 	} else /if (${_assist.Equal[ma2]} || ${_assist.Equal[2]}) {
 		/if (${Bool[${_name}]}) {
@@ -6862,5 +6790,7 @@ sub validate_assist(bool _error, string _assist, string _name)
 	}
 	
 	/if (!${_pass} && ${_error}) /call echos failboat 0 0 0 0
-
 /return
+
+
+

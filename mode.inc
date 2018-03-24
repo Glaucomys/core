@@ -135,7 +135,7 @@ sub do_mode()
 	/if (${switchModeTradeskill}) /call mode_tradeskill
 	/if (${switchModeLush} && !${Me.Drunk}) /call mode_get_waisted
 	/if (${switchModeDrink} && !${Me.Drunk}) /call mode_get_drunk
-
+	/if (${switchModeTrainspell}) /call mode_trainspell
 /return
 
 
@@ -322,7 +322,7 @@ sub mode_drag()
  ***|
 sub mode_hunt()
 	DEBUGMODE ${cbug}mode_hunt()\ax
-	/declare _count 									int 	local 0
+	/declare _count int local 0
 	/doevents
 	AMIDEAD
 
@@ -355,7 +355,6 @@ sub mode_hunt()
 		/call clear_combat
 	}	
 		
-	:exit
 	UPDATEHUD
 /return
 
@@ -462,7 +461,6 @@ sub mode_petfarm()
 	/if (${Me.Pet.Target.ID} != ${Target2Kill}) /goto :gettarget
 	/if (${Spawn[${Target2Kill}].Type.NotEqual[CORPSE]}) /goto :loopwaittilldead
 
-	:exit
 	UPDATEHUD
 /return
 
@@ -566,7 +564,6 @@ sub mode_scorched_earth()
 	/if (${Me.Pet.Target.ID} != ${Target2Kill}) /goto :gettarget
 	/if (${Spawn[${Target2Kill}].Type.NotEqual[CORPSE]}) /goto :loopwaittilldead
 
-	:exit
 	UPDATEHUD
 /return
 
@@ -616,21 +613,58 @@ sub get_ground_harvest(string _tmpItem)
 	/delay 2s ${Bool[${Ground.ID}]}
 	/if (${Bool[${Ground.ID}]}) {
 		/if (${Ground.Distance3D} < ${setModeAgro}) {
-			:loopMove 
-			/face nolook loc ${Ground.Y}, ${Ground.X}
+			
+			
+	/if (${Bool[${Plugin[MQ2Nav]}]} && ${SetTieMode.Equal[nav]}) {	
+		/if (${Navigation.MeshLoaded}) {	
+			SDEBUG ${_tmpItem}: ${Ground.Y} ${Ground.X} ${Ground.Z}
 			/delay 1 
-			/keypress forward hold 
-			/if (${Ground.Distance3D} > 19) /goto :loopMove
-			/keypress forward
-			/click left item
-			/delay 5s (${Cursor.ID})
-			/delay ${Math.Rand[10]}
-			| VOUT Keep ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax] 
-			/autoinventory
-			CLEARCURSOR TRUE
-			/delay 5s (!${Cursor.ID})
-			/delay ${Math.Rand[10]}
+			
+			/if (${Navigation.PathExists[item]}) {
+				/echo here nav
+        /nav item
+    	} else /if (!${Navigation.PathExists[item]}) {
+    		/echo no path
+    	}
+			
+			| /nav loc ${Ground.Y} ${Ground.X} ${Ground.Z}
+			| /nav item
+			
+			| /while (${Navigation.Active} || ${Ground.Distance3D} > 19) {
+			| 	/delay 1s
+			| }
+			
+			/if (${Ground.Distance3D} < 19) /call Bind_grab ${_tmpItem}
+			
+			
+			/squelch /nav stop
+			
+		} else /if (!${Navigation.MeshLoaded}) {
+			OUT NO Nav Mesh for this zone. Returning to Stick.
+			/call Bind_setTieControl mode stick
 		}
+			
+
+	} else {
+		:loopMove 
+		/face nolook loc ${Ground.Y}, ${Ground.X}
+		/delay 1 
+		/keypress forward hold 
+		/if (${Ground.Distance3D} > 19) /goto :loopMove
+		/keypress forward
+		/click left item
+		/delay 5s (${Cursor.ID})
+		/delay ${Math.Rand[10]}
+		| VOUT Keep ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax] 
+		/autoinventory
+		CLEARCURSOR TRUE
+		/delay 5s (!${Cursor.ID})
+		/delay ${Math.Rand[10]}
+	}
+		
+		
+		
+		
 	}
 /return
 
@@ -751,9 +785,54 @@ sub mode_get_drunk()
 
 
 
+|***
+ *	DES: train spells
+ *	USE: /call mode_trainspell | /mode trainspell
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub mode_trainspell()
+	DEBUGMODE ${cbug}mode_trainspell()\ax
+	AMIDEAD
+	UPDATEHUD "Train: Spell"
+
+
+	/delcare _skill string local |alteration|abjuration|conjuration|divination|evocation
+	/declare _count int local 0
+	/declare _total int local 0
+	/declare gem[5]	bool local FALSE
+
+	
+
+	/for _count 1 to ${_skill.Count[|]}
+		/if (!${Bool[${_skill.Arg[${_count},|]}]}) /continue
+		/if (${Skill[${Spell[${${_skill.Arg[${_count},|]}}].Skill}].SkillCap} == ${Skill[${_skill.Arg[${_count},|]}].SkillCap}) /continue
+		/varcalc _total ${_total}+1
+		/if (${Me.Gem[${_total}].Name.Equal[${${_skill.Arg[${_count},|]}}]}) /continue
+		/varset gem[${total}] TRUE
+		/call mem_spell TRUE "${${_skill.Arg[${_count},|]}}" ${_total} FALSE
+	/next _count
+
+
+
+	/for _count 1 to ${_skill.Count[|]}
+		/if (!${gem[${_count}]}) /continue
+		/call core_cast "${${_skill.Arg[${_count},|]}}" 0 ${Me.ID} FALSE
+	}
+	
+	/call sort_cussor TRUE
+
+
+/return
 
 
 
 
+${Skill[${_skill.Arg[${_count},|]}].SkillCap}  
+${Spell[flusterbolt].Skill}
 
-
+   
+   ${Skill[${Spell[${alteration}].Skill}].SkillCap}  
+  
+  
+  

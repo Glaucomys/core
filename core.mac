@@ -93,14 +93,12 @@
 #define AMIDEAD "/if (${watch_for_death[]}) /call watch_for_rezbox"
 #define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]} || ${switchAmIDead} || ${flagCallNeedRez}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
-| #define CHECKTIE "/if ((${SetTie} && !${Bool[${timer_check_Tie}]}) || ${SetTieLock}) /call set_tie"
 #define CHECKTIE "/if ((${SetTie} && !${Bool[${timer_check_Tie}]}) || (${SetTie} && ${SetTieLock})) /call set_tie"
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"
 #define CHECKSAFELIST "/if (!${safelist.Find[${_sender}]} && !${switchOverrideSafelist}) /return"
 #define UPDATEHUD "/call update_HUD_notices"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
-
 
 
 #include tc\declare.inc
@@ -135,32 +133,7 @@
  *  NOTE: 
  ***|
 sub main()
-	/mqclear
- 	/declare INICore 											string 	outer tc\core.ini
- 	/declare INIClass 										string 	outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
-	/declare INIZone		     							string 	outer tc\core.zone.ini
-	/declare INILoot											string  outer	tc\core.loot.ini
-	/declare INIWiki		     							string 	outer tc\core.wiki.ini
-	/declare INIBlurb											string	outer tc\core.blurb.ini
-	/declare INIAugDump     							string 	outer tc\core.augmentdump.ini
-	/call set_declares
-	/call declare_${Me.Class.ShortName}
-	/call check_plugin
-	/call intialize_item_buffs
-	/call set_alias
-	/call declare_timers
-	/if (${switchDispBuild}) /call echos startup 0 0 0 0
-	/call verify_build
-	/call validate_zone FALSE TRUE
-	/call base_preperation
-
-	AMIDEAD
-
-	LOG .. Starting Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
-  /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
-
-	/if (${switchDispInfo}) VOUT Commands ${sep} ${cinfo}/info\ax
-	OUT ${cgood}Ready\ax
+	/call initialize_core
   
 	:loopmain
   	DEBUG ${cbug}:loopmain (Core: ${coreBuild})\ax
@@ -274,6 +247,40 @@ sub main()
 		/doevents
 		/call core_${Me.Class.ShortName}
 	/goto :loopmain
+/return
+
+
+
+
+|***
+ *	DES: initialize core
+ *	USE: /call initialize_core
+ *	INI: 
+ *  NOTE: what did you expect?
+ ***| 	
+sub initialize_core()
+	/mqclear
+	/if (!${Defined[INICore]}) /declare INICore 				string 	outer tc\core.ini
+	/if (!${Defined[INIClass]}) /declare INIClass 			string 	outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
+	/if (!${Defined[INIZone]}) /declare INIZone		     	string 	outer tc\core.zone.ini
+	/if (!${Defined[INILoot]}) /declare INILoot					string  outer	tc\core.loot.ini
+	/if (!${Defined[INIWiki]}) /declare INIWiki		     	string 	outer tc\core.wiki.ini
+	/if (!${Defined[INIBlurb]}) /declare INIBlurb				string	outer tc\core.blurb.ini
+	/call set_declares
+	/if (${switchDispBuild}) /call echos initialize 0 0 0 0
+	/call declare_${Me.Class.ShortName}
+	/call check_plugin
+	/call intialize_item_buffs
+	/call set_alias
+	/call declare_timers
+	/call verify_build
+	/call validate_zone FALSE TRUE
+	/call base_preperation
+
+	LOG .. Initialize Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
+  /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
+	/if (${switchDispInfo}) VOUT Commands ${sep} ${cinfo}/info\ax
+	OUT ${cgood}Ready\ax
 /return
 
 

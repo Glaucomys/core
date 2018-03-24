@@ -50,13 +50,13 @@ sub Event_16anniStein(string line, string _verbage)
 
 
 |*** Anni stuff  
-
-#event 16stein1 "Galdorin Visigothe says 'My stinky stein has rough dirty lips,'"
-#event 16stein2 "Galdorin Visigothe says 'but she loves a deep carouse.'"
-#event 16stein3 "Galdorin Visigothe says 'Beer or ale are her great trips.'"
-#event 16stein4 "Galdorin Visigothe says 'No matter how many vows'"
-#event 16stein5 "Galdorin Visigothe says 'I make or break, my drinking glass'"
-#event 16stein6 "Galdorin Visigothe says 'reminds me of my lovely Brasse.'"
+****|
+#event 16stein1 "Galdorin Visigothe says, 'My stinky stein has rough dirty lips,'"
+#event 16stein2 "Galdorin Visigothe says, 'but she loves a deep carouse.'"
+#event 16stein3 "Galdorin Visigothe says, 'Beer or ale are her great trips.'"
+#event 16stein4 "Galdorin Visigothe says, 'No matter how many vows'"
+#event 16stein5 "Galdorin Visigothe says, 'I make or break, my drinking glass'"
+#event 16stein6 "Galdorin Visigothe says, 'reminds me of my lovely Brasse.'"
 
 sub Event_16stein1(string line)
 	/say My stinky stein has rough dirty lips,

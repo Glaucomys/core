@@ -11,9 +11,27 @@
 
 Current Requests:
 - fix chanter charm mob code
-- no melee buff list
 
 
+
+20180324
+- redesign of Core initialization routines to accomodate /core reset
+- redesign of initial /declare to setDeclare() for /core reset
+/core [reset] - will reload all variables for Core without having to restart the mac
+- CORE.INI -> [general] switches
+  -- switchUseCLSinHUD=TRUE/FALSE - uses class shortname in the HUD notification for OFF toons vice the first three leters of there name .. (for those that name all there toons the same damned name)
+- broadcast_status() rewrite. should be a little more gooder...
+- rename DeclareIniVar() -> setINIVar()
+- events.inc
+  -- 16 anni stein event - fixed some typos
+/mode [trainspell]
+  -- trains spell skills
+  -- toon.ini -> [mode] -> |alteration|abjuration|conjuration|divination|evocation
+    -- set the skill to the spell you want cast.
+  -- this mode will mem the spells you have set in the INI and cast them untill your skillcap is reached for that level
+/movement
+  -- (cosmetic) the /movement command will now show what is on and off where applicable
+  
 
 20180319
 HUDUPDATE
