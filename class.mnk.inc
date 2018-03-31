@@ -174,6 +174,53 @@ sub synergy_MNK()
 /return
 
 
+|***
+ *	DES: swap melee skills to train them
+ *	USE: /mnk trainmelee | /call melee_train_MNK
+ *	INI: 
+ *  NOTE:
+ ***|
+sub melee_train_MNK()
+	DEBUG ${cbug}melee_train_MNK()\ax
+
+	| kick skills
+	/if (${Me.Skill[Kick]} <= ${Me.Skill[Flying Kick]} && ${Me.Skill[Kick]} <= ${Me.Skill[Round Kick]}) {
+		SDEBUG setting: Kick
+		/varset kick TRUE
+		/varset flyingkick FALSE
+		/varset roundkick FALSE
+	} else /if (${Me.Skill[Flying Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Flying Kick]} <= ${Me.Skill[Round Kick]}) {
+		SDEBUG setting: Flying Kick
+		/varset kick FALSE
+		/varset flyingkick TRUE
+		/varset roundkick FALSE
+	} else /if (${Me.Skill[Round Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Round Kick]} <= ${Me.Skill[Flying Kick]}) {
+		SDEBUG setting: Round Kick
+		/varset kick FALSE
+		/varset flyingkick FALSE
+		/varset roundkick TRUE
+	}
+
+	| punch skills
+	/if (${Me.Skill[Dragon Punch]} <= ${Me.Skill[Eagle Strike]} && ${Me.Skill[Dragon Punch]} <= ${Me.Skill[Tiger Claw]}) {
+		SDEBUG setting: Dragon Punch
+		/varset dragonpunch TRUE
+		/varset eaglestrike FALSE
+		/varset tigerclaw FALSE
+	} else /if (${Me.Skill[Eagle Strike]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Eagle Strike]} <= ${Me.Skill[Tiger Claw]}) {
+		SDEBUG setting: Eagle Strike
+		/varset dragonpunch FALSE
+		/varset eaglestrike TRUE
+		/varset tigerclaw FALSE
+	} else /if (${Me.Skill[Tiger Claw]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Tiger Claw]} <= ${Me.Skill[Eagle Strike]}) {
+		SDEBUG setting: Tiger Claw
+		/varset dragonpunch FALSE
+		/varset eaglestrike FALSE
+		/varset tigerclaw TRUE
+	}
+/return
+
+
 
 |***
  *	DES: Class controls
@@ -220,9 +267,15 @@ sub Bind_setMNK(string _classType, string _verbage)
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI ${Me.Class.ShortName}Point Heal ${_verbage}
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} healpoint(${cnum}${${Me.Class.ShortName}Point}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}
+
+	| enable/disable training melee punches and kicks
+	/if (${Bool[${_classType.Find[trainmelee]}]}) {
+		/call writeINI switchMNKTrainMelee Common ${If[${switchMNKTrainMelee},FALSE,TRUE]}
+		VOUT /${_bind} trainmelee ${sep} ${If[${switchMNKTrainMelee},${oenabled},${odisabled}]}
+		/return
 
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
@@ -235,3 +288,4 @@ sub Bind_setMNK(string _classType, string _verbage)
 		VOUT /${_bind} [${_listout}]
 	} 
 /return
+

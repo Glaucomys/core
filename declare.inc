@@ -264,7 +264,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180324
+	/call setDeclare coreBuild											int			outer 20180330
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -384,7 +384,7 @@ sub set_declares()
 		
 		
 	| core control
-	/call setDeclare coreType 											string 	outer "|auto|control|events|expadjust|expmaintain|explevel|fireworks|fixini|invite|killcode|dbcash|raidinvite|reset|rest|whitewash"
+	/call setDeclare coreType 											string 	outer "|auto|control|events|expadjust|expmaintain|explevel|fireworks|fixini|takeraidinvite|takegroupinvite|giveraidinvite|killcode|dbcash|reset|rest|whitewash"
 	/call setDeclare coreObscure										bool		outer FALSE
 	/call setINIVar coreAuto				 								bool	 	Common FALSE
 	/call DeclareCoreIniVar remoteKillKey						string	General "CHANGE ME" 
@@ -404,7 +404,7 @@ sub set_declares()
 	/call DeclareCoreIniVar switchModRodinRest			string	General TRUE
 	/call DeclareCoreIniVar switchBuffinRest				string	General TRUE
 	/call DeclareCoreIniVar switchUseCLSinHUD				string	General FALSE
-	
+	/call DeclareCoreIniVar switchUseADVL						string	General TRUE
 	
 	/call setINIVar toonControl			 								string	Common FALSE
 	/call setINIVar autoRest 												int 		Common 90
@@ -413,6 +413,10 @@ sub set_declares()
 	/call setINIVar MaxLevel      									int 		Common 110
 	/call setINIVar coreEventsInc  									bool 		Common TRUE
 	/call setINIVar switchAAFireworks								bool	 	Common FALSE
+
+	/call setINIVar switchTakeGroupInvite						bool 		Common FALSE
+	/call setINIVar switchTakeRaidInvite						bool 		Common FALSE
+	/call setINIVar switchGiveRaidInvite						bool		Common FALSE
 
 
 	| OCD Shit - 
@@ -431,7 +435,7 @@ sub set_declares()
 	
 		
 	| set /crew stuffs
-	/call DeclareCoreIniVar main													string	Group "|FALSE|FALSE"E
+	/call DeclareCoreIniVar main													string	Group "|FALSE|FALSE"
 	/call DeclareCoreIniVar main2													string	Group "|FALSE|FALSE"
 	/call DeclareCoreIniVar ${MacroQuest.Server}Leader		string	Group FALSE
 	/call DeclareCoreIniVar ${MacroQuest.Server}Assist		string	Group FALSE
@@ -455,12 +459,12 @@ sub set_declares()
 	/call DeclareCoreIniVar combatBST								string	Here MELEE
 	/call DeclareCoreIniVar combatRNG								string	Here MELEE
 	/call DeclareCoreIniVar combatBRD								string	Here MELEE
-	/call DeclareCoreIniVar makeVisible							bool		Here	TRUE
-	/call DeclareCoreIniVar clearTarget							bool		Here	TRUE
-	/call DeclareCoreIniVar defaultTimerDelay				string	Here	1m
-	/call DeclareCoreIniVar baseAgroRange						int			Here	60
-	/call DeclareCoreIniVar emptyHands							bool		Here	TRUE
-	/call DeclareCoreIniVar hereZRadius							int			Here	30
+	/call DeclareCoreIniVar makeVisible							bool		Here TRUE
+	/call DeclareCoreIniVar clearTarget							bool		Here TRUE
+	/call DeclareCoreIniVar defaultTimerDelay				string	Here 1m
+	/call DeclareCoreIniVar baseAgroRange						int			Here 60
+	/call DeclareCoreIniVar emptyHands							bool		Here TRUE
+	/call DeclareCoreIniVar hereZRadius							int			Here 30
 	
 	
 	| please take a number and have a seat.
@@ -558,6 +562,7 @@ sub set_declares()
 	/call setDeclare switchModeTradeskill						bool		outer FALSE
 	/call setDeclare switchModeLush									bool		outer FALSE
 	/call setDeclare switchModeTrainspell						bool		outer FALSE
+	/call setDeclare switchModeTrainspellSPC				bool		outer FALSE
 	/call DeclareCoreIniVar modeDrinkofChoice				string	mode FALSE
 
 
@@ -614,7 +619,7 @@ sub set_declares()
 	/call setINIVar ResidentMage										string	Common "|FALSE|FALSE"
 	/call setINIVar ResidentrDruid									string	Common "|FALSE|FALSE"
 	/call setINIVar ResidentWizard									string	Common "|FALSE|FALSE"
-	/call setINIVar ClassChannel										int			Common FALSE	
+	/call setINIVar ClassChannel										int			Common FALSE
 	/call setINIVar switchSos												bool	 	Common FALSE
 
 
@@ -1143,8 +1148,6 @@ sub set_declares()
   /call setDeclare 		onoffType										string	outer "|banestrike|horn|shrink"
 
 	/call setINIVar switchBanestrike								bool		Common FALSE		
-	/call setINIVar switchInvites										bool 		Common TRUE
-	/call setINIVar switchRaidInvite								bool		Common FALSE
 	/call setINIVar switchShrink										bool		Common FALSE
 	/call setINIVar switchHorn											bool		Common FALSE
 
@@ -1159,7 +1162,7 @@ sub set_declares()
   /call setDeclare druType												string	outer "|groupheal|healpoint|rampage|spiregroup|spireraid|xtradius|xttime"
   /call setDeclare encType												string	outer "|charm|gather|healpoint|spiregroup|spireraid"
   /call setDeclare magType												string	outer "|fade|forcetwincast|gather|healpoint|mana|rods|spiregroup|spireraid"
-  /call setDeclare mnkType												string	outer "|healpoint|spiregroup|spireraid"
+  /call setDeclare mnkType												string	outer "|healpoint|spiregroup|spireraid|trainmelee"
   /call setDeclare necType												string	outer "|healpoint|spiregroup|spireraid"
   /call setDeclare palType												string	outer "|defcount|groupheal|harmonions|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp"
   /call setDeclare rogType												string	outer "|ae|autosos|healpoint|poison|spiregroup|spireraid"
@@ -2231,7 +2234,7 @@ sub declare_BST()
  ***|
 sub declare_MNK()
 	/call setINIVar spellCripple 										string 	Spells FALSE
-
+	/call setINIVar switchMNKTrainMelee							bool		Common FALSE
 /return	
 
 
@@ -2482,20 +2485,50 @@ sub set_alias()
 /return
 
 
+
+|***
+ *	DES: raid and group invite accept controls
+ *	USE: EVENTS
+ *	INI: 
+ *  NOTE:
+ ***| 
 #event Join "#1# invites you to join a #2#.#*#"
 sub Event_Join(string line, string _sender, string _groupraid)
-	DEBUG ${cbug}Event_Join(\ax${_sender} ${_groupraid}\ax${cbug})\ax
-	/if (!${switchInvites}) /return
+	SDEBUG ${cbug}Event_Join(\ax${_sender} ${_groupraid}\ax${cbug})\ax
 	CHECKSAFELIST
-	VOUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
-	/if (${_groupraid.Equal[group]}) /invite
-	/if (${_groupraid.Equal[raid]}) {
-		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["join a raid"]}) {
-			/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
-		} else {	
-			/raidaccept	
+
+	| group invites
+	/if (${_groupraid.Equal[group]}) {
+		/if (!${switchTakeGroupInvite}) {
+			/return
+		} else /if (${switchTakeGroupInvite}) {
+			VOUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
+			/invite
 		}
 	}
+	
+	| raid invites
+	/if (${_groupraid.Equal[raid]}) {
+		/delay 1s
+		SDEBUG Raidinvite recieved
+		/if (!${switchTakeRaidInvite}) {
+			SDEBUG NO RAIDINVITES FOR ME
+			/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["join a raid"]}) {
+				/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup
+				/return
+			}
+			/raiddecline
+		} else /if (${switchTakeRaidInvite}) {
+			SDEBUG WE LIKE RAID INVITES
+			VOUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
+			/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["join a raid"]}) {
+				/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
+				/return
+			}
+			/raidaccept	
+		} 		
+	}
+
 /return
 
 
@@ -2514,10 +2547,6 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
   /if (${_cmd.Equal[killmob]}) /call Bind_override engageat
  
-   | 	/varset switchOverrideEngageat ${If[${switchOverrideEngageat},FALSE,TRUE]}
-		| /call echos override "Engageat" switchOverrideEngageat
- 
-  
   /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item 0 FALSE
   /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0 FALSE
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
@@ -2531,7 +2560,6 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	} else /if (${_cmd.Equal[smax]}) {
 		/call Bind_setCombatControl smartma X
 	}
- 
 
 	| group bail stuff
   /if (${_cmd.Equal[gtfo]}) {
@@ -2701,7 +2729,11 @@ sub Event_camping(string line)
 
 #event skillup "#*#You have become better at #1#! (#2#)"
 sub Event_skillup(string line, string skillname, int skillup)
-   VOUT [${cinfo}${skillname}\ax] has increased to (${cnum}${skillup}\ax)! [Max:${cnum}${Skill[${skillname}].SkillCap}\ax]
+	VOUT [${cinfo}${skillname}\ax] has increased to (${cnum}${skillup}\ax)! [Max:${cnum}${Skill[${skillname}].SkillCap}\ax]
+	/if (${Me.Class.ShortName.Equal[MNK]}) {
+		/if (${switchMNKTrainMelee}) /call melee_train_MNK
+  }
+   
 /return
 
 #event task_update "Your task '#1#' has been updated."
@@ -2712,7 +2744,7 @@ sub Event_task_update(string line, string skillname)
 #event noRaid "Your raid was disbanded."
 sub Event_noRaid()
  		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
-		/if (${switchRaidInvite}) /call writeINI switchRaidInvite Common FALSE
+		| /if (${switchRaidInvite}) /call writeINI switchRaidInvite Common FALSE
 /return
 
 |***
@@ -2726,24 +2758,22 @@ sub Event_noRaid()
 #event raidinvite             "#1# tells you#*#'#*#invite#*#'"
 
 sub Event_raidinvite(string line, string _sender)
-	/if (${switchRaidInvite}) {
-		/if (${Bool[${Raid.Member[${_sender}]}]}) {
-			VOUT ${cpc}${_sender}\ax is already in the raid.
-			/return
-		}
-		/if (${invitelist.Find[${_sender}]}) {
-			VOUT ${cbad}NO\ax invites for ${cpc}${_sender}\ax.
-			/return
-		}
-		/declare _timeDelay ${Math.Calc[${Math.Rand[40]}+20]}
-		/varset _timeDelay ${Int[${_timeDelay}]}
-		/delay 1m !${Raid.Locked}
-		VOUT Delay: ${cbug}${_timeDelay}\ax \ag- \ax ${cpc}${_sender}\ax requested a raid invite. [Raid: ${If[${Raid.Locked},${cbad}LOCKED\ax,${cgood}UNLOCKED\ax]}]
-		/delay 1m !${Raid.Locked}
-		/delay ${_timeDelay}
-		/raidinvite ${_sender}
-
+	/if (!${switchGiveRaidInvite}) /return
+	/if (${Bool[${Raid.Member[${_sender}]}]}) {
+		VOUT ${cpc}${_sender}\ax is already in the raid.
+		/return
 	}
+	/if (${invitelist.Find[${_sender}]}) {
+		VOUT ${cbad}NO\ax invites for ${cpc}${_sender}\ax.
+		/return
+	}
+	/declare _timeDelay ${Math.Calc[${Math.Rand[40]}+20]}
+	/varset _timeDelay ${Int[${_timeDelay}]}
+	/delay 1m !${Raid.Locked}
+	VOUT Delay: ${cbug}${_timeDelay}\ax \ag- \ax ${cpc}${_sender}\ax requested a raid invite. [Raid: ${If[${Raid.Locked},${cbad}LOCKED\ax,${cgood}UNLOCKED\ax]}]
+	/delay 1m !${Raid.Locked}
+	/delay ${_timeDelay}
+	/raidinvite ${_sender}
 /return
 
 |***
@@ -3528,7 +3558,6 @@ sub Bind_cursor(string _cursorType, string _verbage)
 		/call create_timer timer_auto_cursor_pause ${If[${Bool[${_verbage}]},${_verbage},30s]}
 		VOUT /cursor ${_cursorType.Lower} ${sep} ${cinfo}${If[${Bool[${_verbage}]},${_verbage},30s]}\ax
 
-
 	| set item to be passed to another
 	} else /if (${Cursor.ID} && ${_cursorType.Equal[pass]}) {
 
@@ -3539,21 +3568,13 @@ sub Bind_cursor(string _cursorType, string _verbage)
 		}
 
 		| /varset _properType ${_cursorType.Left[1].Upper}${_cursorType.Right[-1].Lower}
-	
 		/if (${Bool[${_verbage}]}) {
 			/varset _passto ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 		}
 
 		/ini "${INILoot}" "${Cursor.Name.Left[1]}" "${Cursor.Name}" |${_properType}|${_passto}
-
 		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
 		
-
-
-
-
-
-
 	| echo what the item is set too
 	} else /if (${Cursor.ID} && ${Bool[${cursorType.Find[${_cursorType}]}]} && ${_cursorType.Equal[what]}) {
 		VOUT /cursor ${_cursorType.Lower} ${sep} \a-w${Cursor.Name}\ax=${cinfo}${Ini[${INILoot},${Cursor.Name.Left[1]},${Cursor.Name}]}\ax
@@ -4235,17 +4256,26 @@ sub Bind_setCore(string _coreType, string _verbage)
 		/call writeINI switchAAFireworks Common ${If[${switchAAFireworks},FALSE,TRUE]}  
 		VOUT /${_bind} fireworks ${sep} ${If[${switchAAFireworks},${oenabled},${odisabled}]}
 		/if (!${switchAAFireworks}) /call create_timer timer_Waste_Fireworks 1
-
 		
 	| take invites to raid/group
 	} else /if (${Bool[${_coreType.Equal[invite]}]}) {
 		/call writeINI switchInvites Common ${If[${switchInvites},FALSE,TRUE]}  
 		/call echos switch "Auto Accept Invites for [${ctar}Group\ax|${ctar}Raid\ax]" switchInvites 0 0
 
-	| accepts requests to add to the raid
-	} else /if (${Bool[${_coreType.Equal[raidinvite]}]}) {
-		/call writeINI switchRaidInvite Common ${If[${switchRaidInvite},FALSE,TRUE]} 
-		/call echos switch "Accept request for invites to [${ctar}Raid\ax]" switchRaidInvite 0 0
+	| take raid invites
+	} else /if (${Bool[${_coreType.Equal[takeraidinvite]}]}) {
+		/call writeINI switchTakeRaidInvite Common ${If[${switchTakeRaidInvite},FALSE,TRUE]} 
+		VOUT /${_bind} takeraidinvite ${sep} ${If[${Bool[${switchTakeRaidInvite}]},${oenabled},${odisabled}]}
+
+	| take group invites
+	} else /if (${Bool[${_coreType.Equal[takegroupinvite]}]}) {
+		/call writeINI switchTakeGroupInvite Common ${If[${switchTakeGroupInvite},FALSE,TRUE]} 
+		VOUT /${_bind} takegroupinvite ${sep} ${If[${Bool[${switchTakeGroupInvite}]},${oenabled},${odisabled}]}
+	
+	| invite people to your raid
+	} else /if (${Bool[${_coreType.Equal[giveraidinvite]}]}) {
+		/call writeINI switchGiveRaidInvite Common ${If[${switchGiveRaidInvite},FALSE,TRUE]} 
+		VOUT /${_bind} giveraidinvite ${sep} ${If[${Bool[${switchGiveRaidInvite}]},${oenabled},${odisabled}]}
 
 	| claim market cash
 	} else /if (${Bool[${_coreType.Equal[dbcash]}]}) {

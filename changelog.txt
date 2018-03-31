@@ -13,6 +13,20 @@ Current Requests:
 - fix chanter charm mob code
 
 
+20180330
+- re-write of /mode trainspell (works now)
+- CORE.INI -> [general] switches
+	-- switchUseADVL=TRUE/FALSE -can completely disable advl (do_loot()) feature of Core. does NOT disable /cursor auto or use of the toons autoinventoryitem=
+	  ** if you do not set up your own advl, you will have problems!!
+/core [takeraidinvite|takegroupinvite]
+  -- invites are limited by the toons safelist
+  -- takeraidinvite	- take raid invites or not
+  -- takegroupinvite - take group invites or not.
+- class.rng.inc
+  -- adjusted the burn control. shouldn't lock anymore.
+- class.mon.inc
+  -- /mnk [trainmelee] - enable/disable auto switching of melee punch and kick skills to train them to their max
+
 
 20180324
 - redesign of Core initialization routines to accomodate /core reset

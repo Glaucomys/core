@@ -992,8 +992,10 @@ sub do_rest()
 		/if (${switchBuffItem} && !${check_engaged[]} && !${timer_check_buffs_item}) /call check_buffs_item
 		/if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
 	}
-
-	/if (${coreAuto} && (${Bool[${Group.Members}]} && ${Group.MasterLooter.ID}==${Me.ID}) && ${Me.UseAdvancedLooting} && !${AdvLoot.LootInProgress} && !${Stick.Active}) /call do_loot
+	
+	/if (${switchUseADVL}) {
+		/if (${coreAuto} && (${Bool[${Group.Members}]} && ${Group.MasterLooter.ID}==${Me.ID}) && ${Me.UseAdvancedLooting} && !${AdvLoot.LootInProgress} && !${Stick.Active}) /call do_loot
+	}
 	
 	/if (${Bool[${autoRest}]} && !${Me.Casting.ID} && !${Me.Moving} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]}) {
 			
@@ -2505,7 +2507,7 @@ sub use_skill_melee(int _tmpID)
 	}
 	
 	| monk/bst only skill 
-	/if (${validate_class[FALSE, |MON|BST]} && ${Spawn[${_tmpID}].Distance} <= 15) {
+	/if (${validate_class[FALSE, |MNK|BST]} && ${Spawn[${_tmpID}].Distance} <= 15) {
 		| fist
 		/if (${Bool[${dragonpunch}]} && !${Skill[Dragon Punch].Auto} && ${Me.AbilityReady[Dragon Punch]}) {
 			VMELEE Melee ${sep} ${csp}Dragon Punch\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
@@ -2522,10 +2524,10 @@ sub use_skill_melee(int _tmpID)
 			VMELEE Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability Kick
 		} else /if (${Bool[${flyingkick}]} && !${Skill[Flying Kick].Auto} && ${Me.AbilityReady[Flying Kick]}) {
-			VMELEE Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+			VMELEE Melee ${sep} ${csp}Flying Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Flying Kick"
-		} else /if (${Bool[${roundkick}]} && !${Skill[Rounf Kick].Auto} && ${Me.AbilityReady[Round Kick]}) {
-			VMELEE Melee ${sep} ${csp}Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
+		} else /if (${Bool[${roundkick}]} && !${Skill[Round Kick].Auto} && ${Me.AbilityReady[Round Kick]}) {
+			VMELEE Melee ${sep} ${csp}Round Kick\ax ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax]
 			/if (${Target.ID}) /doability "Round Kick"
 		}		
 	}
@@ -4199,7 +4201,7 @@ sub broadcast_status()
 
 |***
  *	DES: advanced loot routine(s)
- *	USE: /call do_loot
+ *	USE: auto
  *	INI: core.loot.ini
  *  NOTE: set a person in the group as master looter. Or, as the raid master looter.
  *	NOTE2: The event in this sectction is designed to handle lore items the toon already posseses. as of this, MQ has no property .Member value for LORE in ${AdvLoot
@@ -4208,6 +4210,7 @@ sub broadcast_status()
 #Event forcedloreleave "#*#does not want #1#. It is either on their never list or they have selected No#*#"
 sub Event_forcedloreleave(string line, string _itemName)
 	DEBUG ${cbug}Event_forcedloreleave()\ax
+	/if (!${switchUseADVL}) /return
 	/varset _itemName ${AdvLoot.SList[1].Name}
 	VOUT Cursor ${sep} ${cinfo}${_itemName}\ax -> ${oleave} 
 	/ini "${INILoot}" "${_itemName.Left[1]}" "${_itemName}" Leave
@@ -4218,6 +4221,7 @@ sub do_loot()
  	DEBUG ${cbug}do_loot()\ax
 	AMIDEAD
 	/doevents
+	/if (!${switchUseADVL}) /return
 	/if (${Stick.Active} || !${Me.FreeInventory} || !${Me.UseAdvancedLooting}) /return
 
 	| I am not the raid loot master /sigh
@@ -5895,6 +5899,15 @@ sub fix_INI_declares()
 		/ini "${INIClass}" "Spells" "Nuke7" NULL
 		/ini "${INIClass}" "Spells" "Nuke8" NULL
 	}
+
+
+	| update for invite command changes
+	/ini "${INIClass}" "Common" "switchInvites" NULL
+	/ini "${INIClass}" "Common" "switchRaidInvite" NULL
+
+
+
+
 
 
 	| fix the range summon INI entries

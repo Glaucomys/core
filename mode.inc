@@ -109,6 +109,7 @@ sub switch_clear_mode()
 	/varset switchOverrideLos ${Ini[${INIClass},"Override","switchOverrideLos"]}
 	/varset switchOverrideEngageat ${Ini[${INIClass},"Override","switchOverrideEngageat"]}
 	/varset switchAutoCursor ${Ini[${INIClass},"Common","switchAutoCursor"]}
+	/varset switchModeTrainspellSPC FALSE
 /return
 
 
@@ -345,7 +346,9 @@ sub mode_hunt()
 	}
 
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
-	/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
+	/if (${switchUseADVL}) {
+		/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
+	}
 	/if (${Spawn[${Target2Kill}].ID}) {
 		/call mode_get_mob
 	} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
@@ -791,48 +794,59 @@ sub mode_get_drunk()
  *	INI: 
  *  NOTE: 
  ***|
-sub mode_trainspell()
-	DEBUGMODE ${cbug}mode_trainspell()\ax
+sub mode_trainspell(string _type)
+	DEBUG ${cbug}mode_trainspell()\ax
 	AMIDEAD
 	UPDATEHUD "Train: Spell"
-
-
-	/delcare _skill string local |alteration|abjuration|conjuration|divination|evocation
-	/declare _count int local 0
-	/declare _total int local 0
-	/declare gem[5]	bool local FALSE
-
 	
+	/if (${_type.Equal[specialize]} && !${switchModeTrainspellSPC}) {
+		/echo specialize
+		/varset switchModeTrainspellSPC TRUE
+	
+	}
 
+	/declare _skill string local |alteration|abjuration|conjuration|divination|evocation
+	/declare _count int local 0
+	/declare _gem[5] bool local FALSE
+
+	| figure out what we want to cast
 	/for _count 1 to ${_skill.Count[|]}
+		DEBUG _count:${_count}
+		DEBUG skill: ${_skill.Arg[${_count},|]}(${Me.Skill[${_skill.Arg[${_count},|]}]}:${Me.SkillCap[${_skill.Arg[${_count},|]}]})
+		DEBUG spell: ${${_skill.Arg[${_count},|]}}, skill: ${Spell[${${_skill.Arg[${_count},|]}}].Skill}
+		
+		| validate skill caps and spell. if cap is maxed, move on		
+		/if (${Me.Skill[${If[${switchModeTrainspellSPC},specialize ,]}${_skill.Arg[${_count},|]}]} == ${Me.SkillCap[${If[${switchModeTrainspellSPC},specialize ,]}${_skill.Arg[${_count},|]}]}) /continue
+
+		| if the skill spell is set to FALSE, move on
 		/if (!${Bool[${_skill.Arg[${_count},|]}]}) /continue
-		/if (${Skill[${Spell[${${_skill.Arg[${_count},|]}}].Skill}].SkillCap} == ${Skill[${_skill.Arg[${_count},|]}].SkillCap}) /continue
-		/varcalc _total ${_total}+1
-		/if (${Me.Gem[${_total}].Name.Equal[${${_skill.Arg[${_count},|]}}]}) /continue
-		/varset gem[${total}] TRUE
-		/call mem_spell TRUE "${${_skill.Arg[${_count},|]}}" ${_total} FALSE
+		
+		| if the spell is FALSE, move on
+		/if (!${Bool[${Spell[${${_skill.Arg[${_count},|]}}].Skill}]}) /continue
+
+		| if I already have the spell memed, move on
+		/if (!${Me.Gem[${_count}].Name.Equal[${${_skill.Arg[${_count},|]}}]}) /call mem_spell TRUE "${${_skill.Arg[${_count},|]}}" ${_count} FALSE
+		
+		/varset _gem[${_count}] TRUE
 	/next _count
 
-
-
+	| start getting things done
 	/for _count 1 to ${_skill.Count[|]}
-		/if (!${gem[${_count}]}) /continue
-		/call core_cast "${${_skill.Arg[${_count},|]}}" 0 ${Me.ID} FALSE
-	}
-	
-	/call sort_cussor TRUE
-
-
+		DEBUG gem${_count}:${_gem[${_count}]}
+		/if (!${_gem[${_count}]}) /continue
+		/call core_cast "${${_skill.Arg[${_count},|]}}" 0 0 FALSE
+		/call sort_cursor TRUE
+	/next _count
 /return
 
 
 
 
 ${Skill[${_skill.Arg[${_count},|]}].SkillCap}  
-${Spell[flusterbolt].Skill}
+${Me.Skill[specialize divination]}
 
    
    ${Skill[${Spell[${alteration}].Skill}].SkillCap}  
   
   
-  
+${Me.Skill[${_skill.Arg[${_count},|]}]}  

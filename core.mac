@@ -222,7 +222,9 @@ sub main()
 		CHECKTIE
 
 		| looter stuffs
-		/if ((${coreAuto} || ${switchOverrideLoot}) && (!${SafeZone} || ${switchOverrideSafezone})) /call do_loot
+		/if (${switchUseADVL}) {
+			/if ((${coreAuto} || ${switchOverrideLoot}) && (!${SafeZone} || ${switchOverrideSafezone})) /call do_loot
+		}
 
 		/doevents		
 		

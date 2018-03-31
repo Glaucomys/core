@@ -22,9 +22,9 @@ sub core_RNG()
 
 	:killtarget
 	| TESTFUNCTION
-	| /call prep_combat
-	| /if (!${Macro.Return}) /return
-	/if (!${prep_combat[]}) /return
+	/call prep_combat
+	/if (!${Macro.Return}) /return
+	| /if (!${prep_combat[]}) /return
 	
 	CHECKREZ
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
