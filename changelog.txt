@@ -12,6 +12,14 @@
 Current Requests:
 - fix chanter charm mob code
 
+20180410
+- class.mnk.inc
+  -- /mnk [fdpct] - set the Pct you want to start FD agro [1-99]
+- class.war.inc
+  -- fixed a switch error for agro
+- various echo status updates for / commands
+- testing a routine for alliance casting on raids. currently ranger only.
+
 
 20180330
 - re-write of /mode trainspell (works now)

@@ -24,9 +24,9 @@ sub core_RNG()
 	| TESTFUNCTION
 	/call prep_combat
 	/if (!${Macro.Return}) /return
-	| /if (!${prep_combat[]}) /return
 	
 	CHECKREZ
+	/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
@@ -418,10 +418,48 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[summer]}) /varset _listout ${_listout}(${If[${switchNukeSummer},${oon},${ooff}]})		
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+${RNGAllianceTrigger.Arg[${_count},|]}
+
+${Spell[${RNGAlliance}].RankName.ID}
+
+${Target.BuffDuration[${RNGAlliance}].TotalSeconds} < 1
+
+${Target.Buff[${RNGAlliance}].Caster}
+
+${Me.SpellReady[${Spell[${RNGAlliance}].RankName}]}
+
+${Spawn[pc ${Target.Buff[${RNGAlliance}].Caster}].ID}
+
+${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} <= 3 
+
+${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}
+
+!${Target.Buff[${DoT${_count}chk}].ID}
 
 
 

@@ -310,8 +310,8 @@ sub force_twincast_WIZ()
  *	INI: [Spell] -> line[fire|ice|magic|mix]
  *  NOTE:
  ***|
-sub mem_spell_line(string _line)
- 	DEBUGCLASS ${cbug}mem_spell_line(group: ${_line})\ax
+sub mem_spell_line_WIZ(string _line)
+ 	DEBUGCLASS ${cbug}mem_spell_line_WIZ(group: ${_line})\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -469,7 +469,7 @@ sub Bind_setWIZ(string _classType, string _verbage)
 			/call sort_mancy_lineAA
 			/delay 2
 			
-			/call mem_spell_line ${lineCurrent}
+			/call mem_spell_line_WIZ ${lineCurrent}
 			/return
 		}
 		/for _count 1 to ${lineType.Count[|]}

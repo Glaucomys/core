@@ -253,7 +253,6 @@ sub main()
 
 
 
-
 |***
  *	DES: initialize core
  *	USE: /call initialize_core

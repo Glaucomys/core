@@ -1,6 +1,6 @@
 |***
  *	class.ber.inc
- *	Core Berzerker Include
+ *	Core Berzerker Include  
  *
  *	
  ***|

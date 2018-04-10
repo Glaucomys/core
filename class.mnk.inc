@@ -74,6 +74,13 @@ sub disc_MNK()
 	/call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
+
+	/if (!${switchAgro} && ${Me.PctAggro} >= ${setFDAgroPct}) {
+		/doability "Feign Death" 
+		/delay 1
+	}
+
+
 	/call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
 	/call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
 	
@@ -248,7 +255,16 @@ sub Bind_setMNK(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
-
+	
+	| set FD agro PCT
+	} else /if (${Bool[${_classType.Find[fdpct]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI setFDAgroPct Melee ${_verbage}
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fdpct(${cnum}${setFDAgroPct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}	
+	
 	| spire control
 	/if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
@@ -280,6 +296,8 @@ sub Bind_setMNK(string _classType, string _verbage)
 	} else {
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
+			
+			/if (${${_bind}Type.Arg[${_count},|].Equal[fdpct]}) /varset _listout ${_listout}(${cnum}${setFDAgroPct}\ax)
 			/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 			/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 			/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)

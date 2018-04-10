@@ -6807,3 +6807,37 @@ sub validate_assist(bool _error, string _assist, string _name)
 
 
 
+|***
+ *	DES: cast or trigger alliance on target
+ *	USE: /call trigger_alliance TARGETID
+ *	INI: 
+ *  NOTE:
+ ***|
+sub trigger_alliance(int _tmpID)
+	SDEBUG trigger_alliance(ID: ${_tmpID})
+
+	| we need raid peoples
+	/if (!${Raid.Members}) /return
+		
+	| alliance time
+	/if (!${Target.BuffDuration[${${Me.Class.ShortName}Alliance}].TotalSeconds}) {
+		/call core_cast "${Spell[${${Me.Class.ShortName}Alliance}].RankName}" 0 ${_tmpID} FALSE
+		/return
+	}
+
+	| my alliance. were done here
+	/if (${Spawn[${Target.Buff[${${Me.Class.ShortName}Alliance}].Caster}].ID} == ${Me.ID}) /return
+
+	| if theres no forced casted trigger, gtfo
+	/if (!${Bool[${${Me.Class.ShortName}AllianceTrigger}]}) /return
+
+	/declare _count int local 0
+
+	| is one of the trigger spells ready?
+	/for _count 1 to ${spellAllianceTrigger.Count[|]}
+		/if (${Me.SpellReady[${Spell[${spellAllianceTrigger.Arg[${_count},|]}].RankName}]}) {
+			/call core_cast "${Spell[${spellAllianceTrigger.Arg[${_count},|]}].RankName}" 0 ${_tmpID} FALSE
+			/continue
+		}
+	/next _count
+/return

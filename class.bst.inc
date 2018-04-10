@@ -110,6 +110,9 @@ sub disc_BST()
 	/call core_cast "Roar of Thunder" alt ${Target2Kill} FALSE
 	/if (!${Bool[${Target.Buff[${DiscEnduring}]}]}) /call core_cast "${DiscEnduring}" alt ${Target2Kill} FALSE
 	/if (${Me.PctEndurance} > 5 ) /call core_cast "${DiscRending}" disc ${Target2Kill} FALSE
+	
+	/if (!${Me.Song[Bestial Savagery].ID}) /call core_cast "Bestial Savagery" alt 0 FALSE
+	
 /return
 
 
