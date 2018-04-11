@@ -710,15 +710,15 @@ sub set_declares()
 	/call setDeclare MAGAAUnity											string	outer "Thaumaturge's Unity"
 
 	| Monk
-	/call setDeclare MONspire1											string	outer "Fundament: First Spire of the Sensei"
-	/call setDeclare MONspire2											string	outer "Fundament: Second Spire of the Sensei"
-	/call setDeclare MONspire3											string	outer "Fundament: Third Spire of the Sensei"
-	/call setDeclare MONsynergyAA										string	outer "Calanin's Synergy"
-	/call setDeclare MONEpic1												string	outer "Celestial Fists"
-	/call setDeclare MONEpic15											string	outer "Fistwraps of Celestial Discipline"
-	/call setDeclare MONEpic2												string	outer "Transcended Fistwraps of Immortality"
-	/call setDeclare MONAlliance										string	outer "Doomwalker's Alliance"
-	/call setDeclare MONAAUnity											string	outer FALSE
+	/call setDeclare MNKspire1											string	outer "Fundament: First Spire of the Sensei"
+	/call setDeclare MNKspire2											string	outer "Fundament: Second Spire of the Sensei"
+	/call setDeclare MNKspire3											string	outer "Fundament: Third Spire of the Sensei"
+	/call setDeclare MNKsynergyAA										string	outer "Calanin's Synergy"
+	/call setDeclare MNKEpic1												string	outer "Celestial Fists"
+	/call setDeclare MNKEpic15											string	outer "Fistwraps of Celestial Discipline"
+	/call setDeclare MNKEpic2												string	outer "Transcended Fistwraps of Immortality"
+	/call setDeclare MNKAlliance										string	outer "Doomwalker's Alliance"
+	/call setDeclare MNKAAUnity											string	outer FALSE
 		
 	| Necromancer
 	/call setDeclare NECspire1											string	outer "Fundament: First Spire of Necromancy"
@@ -1040,7 +1040,7 @@ sub set_declares()
 		/call setINIVar SilentCast	 									string	Spells FALSE
 	}
 	
-	/if (!${Select[${Me.Class.ShortName},MON,BER,WAR]}) { 
+	/if (!${Select[${Me.Class.ShortName},MNK,BER,WAR]}) { 
 		/call setINIVar switchNukeDelay								bool		Spells FALSE
 	}	
 	
@@ -2239,6 +2239,7 @@ sub declare_MNK()
 	/call setINIVar switchMNKTrainMelee							bool		Common FALSE
 	
 	/call setINIVar setFDAgroPct										int			Melee FALSE
+	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 	
 /return	
 
@@ -4519,6 +4520,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset isValidTarget TRUE
 					/varset combat MELEE
 					/varset Target2Kill ${Target.ID}
+					/return
 				| engage Range combat
 				} else /if (${Bool[${_verbage.Equal[range]}]}) {
 					/if (${Target.Distance} > 31) {
@@ -4526,11 +4528,13 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 						/varset combat RANGE
 						/varset Target2Kill ${Target.ID}	
 					} 
+					/return
 				| engage Nuke combat
 				} else /if (${Bool[${_verbage.Equal[nuke]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
+					/return
 
 				| force assist for other eqbc toons
 				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
@@ -4553,7 +4557,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 				/next _count
 				VOUT /${_bind} force [${_listout}]	
 			}
-			/return
 
 
 	| set bandolier swapping
@@ -4904,7 +4907,7 @@ sub Event_send(string line, string _sender, string _location)
 	| send 'em on their way with a valid location request
 	/if (${Defined[${_location}]}) {
 		/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
-		/call scribe ${${_location}} ${buffGem} TRUE
+		/call mem_spell TRUE ${${_location}} ${buffGem} TRUE
 		/call core_cast ${${_location}} 0 ${Spawn[pc ${_sender}].ID} FALSE
 	} 
 /return

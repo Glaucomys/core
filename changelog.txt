@@ -10,7 +10,17 @@
  ***|
 
 Current Requests:
-- fix chanter charm mob code
+
+
+
+20180410 part 2
+- class.mnk.inc
+  -- fixed the dumb closing brackets
+  -- fixed the MON-MNK class name errors.. (I think)
+- broke the /cc force commands. meh....
+- missed a scribe rename to mem_spell
+
+
 
 20180410
 - class.mnk.inc

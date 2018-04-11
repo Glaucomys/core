@@ -257,7 +257,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 	}	
 	
 	| set FD agro PCT
-	} else /if (${Bool[${_classType.Find[fdpct]}]}) {
+	if (${Bool[${_classType.Find[fdpct]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI setFDAgroPct Melee ${_verbage}
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -266,7 +266,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 		}	
 	
 	| spire control
-	/if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
+	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
 		/if (${Range.Between[0,3:${Int[${_verbage}]}]}) {
 			/call writeINI ${_spiretype} Buffs ${_verbage}
@@ -288,7 +288,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 		}
 
 	| enable/disable training melee punches and kicks
-	/if (${Bool[${_classType.Find[trainmelee]}]}) {
+	} else /if (${Bool[${_classType.Find[trainmelee]}]}) {
 		/call writeINI switchMNKTrainMelee Common ${If[${switchMNKTrainMelee},FALSE,TRUE]}
 		VOUT /${_bind} trainmelee ${sep} ${If[${switchMNKTrainMelee},${oenabled},${odisabled}]}
 		/return
