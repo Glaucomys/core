@@ -47,6 +47,7 @@ sub core_SHD()
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
 		/call click_item TRUE
+		/call click_item_swarm ${Target2Kill}
 		/if (${switchHarmonious}) /call check_harmonious
 		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
 		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
@@ -59,6 +60,7 @@ sub core_SHD()
 		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
 		/call use_skill_melee ${Target2Kill}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/if (${switchHarmonious}) /call check_harmonious
 		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	

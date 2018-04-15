@@ -264,7 +264,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180410
+	/call setDeclare coreBuild											int			outer 20180414
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -763,7 +763,7 @@ sub set_declares()
 	/call setDeclare ROGsynergyAA										string	outer "Blackguard's Synergy"
 	/call setDeclare ROGEpic1												string	outer "Ragebringer"
 	/call setDeclare ROGEpic15											string	outer "Fatestealer"
-	/call setDeclare ROGEpic2												string	outer "Nightshade, Bane of Entropy"
+	/call setDeclare ROGEpic2												string	outer "Nightshade, Blade of Entropy"
 	/call setDeclare ROGAlliance										string	outer "Poisonous Alliance"
 	/call setDeclare ROGAAUnity											string	outer FALSE
 
@@ -930,12 +930,19 @@ sub set_declares()
 	/call setINIVar CircleofPower										string	Items FALSE	
 	/call setINIVar CircleofLife										string	Items FALSE	
 	/call setINIVar CircleofMana										string	Items FALSE	
+
+	/call setINIVar clickItemSwarm1									string	Items FALSE 
+	/call setINIVar clickItemSwarm2									string	Items FALSE 
+	/call setINIVar clickItemSwarm3									string	Items FALSE 
+	/call setINIVar clickItemSwarm4									string	Items FALSE 	
+
+
 	
 	/call setINIVar clickOddItem1										string	Odds FALSE 
 	/call setINIVar clickOddItem2										string	Odds FALSE 
 	/call setINIVar clickOddItem3										string	Odds FALSE 
 	/call setINIVar clickOddItem4										string	Odds FALSE 	
-
+	
 	
 	| AAs that you want to always keep going
 	/call setINIVar AANow1													string	AANow FALSE 
@@ -981,7 +988,7 @@ sub set_declares()
 		/call setINIVar backstab											bool		meleedisc FALSE
 		/call setINIVar intimidation									bool		meleedisc FALSE
 	}
-	/if (${Select[${Me.Class.ShortName},BRD]}) {
+	/if (${Select[${Me.Class.ShortName},BRD|BER]}) {
 		/call setINIVar intimidation									bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},MNK,BST]}) {
@@ -1062,6 +1069,10 @@ sub set_declares()
 	
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
 		/call setINIVar buffGem 											string 	Spells "gem8"
+		/call fix_gem_id "${buffGem}"
+		/call setDeclare buffNum											 int 		local ${Macro.Return}		
+		
+		| /call setDeclare buffNum											
 		/call setINIVar GoMLevel											int			Spells 105
 		/call setINIVar GoMNuke												string	Spells FALSE
 		/call setINIVar GoMNukeCondition							string	Spells FALSE
@@ -1385,50 +1396,134 @@ sub declare_WIZ()
 	/call setINIVar NukeTwincastMix									string	Spells "Claw of Qunard"
 	/call setINIVar NukeTwincastCondition 					string	Spells FALSE
 	
+	
+	| faydwer ports
 	/call setDeclare fay 														string	outer "Translocate: Fay"
+	/call setDeclare fay_group 											string	outer "Fay Portal"
 	/call setDeclare dragonscale 										string	outer "Translocate: Dragonscale Hills"
+	/call setDeclare dragonscale_group 							string	outer "Dragonscale Hills Portal"
+
+	| antonica Ports
 	/call setDeclare northkarana 										string	outer "Translocate: North"
+	/call setDeclare northkarana_group 							string	outer "North Portal"
 	/call setDeclare commonlands 										string	outer "Translocate: Common"
+	/call setDeclare commonlands_group 							string	outer "Common Portal"
 	/call setDeclare nektulos 											string	outer "Translocate: Nek"
+	/call setDeclare nektulos_group 								string	outer "Nek Portal"
 	/call setDeclare qeyenos 												string	outer "Translocate: West"
+	/call setDeclare qeyenos_group 									string	outer "West Portal"
 	/call setDeclare northro 												string	outer "Translocate: Ro"
+	/call setDeclare northro_group 									string	outer "Ro Portal"
 	/call setDeclare cazic 													string	outer "Translocate: Cazic"
+	/call setDeclare cazic_group 										string	outer "Cazic Portal"
 	/call setDeclare undershore 										string	outer "Translocate: Undershore"
+	/call setDeclare undershore_group 							string	outer "Undershore Portal"
 	/call setDeclare westkarana 										string	outer "Translocate: West Karana"
+	/call setDeclare westkarana_group 							string	outer "West Karana Portal"
+
+	| discord ports 
 	/call setDeclare bloodfields 										string	outer "Translocate: Bloodfields"
+	/call setDeclare bloodfields_group 							string	outer "Bloodfields Portal"
 	/call setDeclare wallofslaughter 								string	outer "Translocate: Slaughter"
+	/call setDeclare wallofslaughter_group 					string	outer "Slaughter Portal"
+
+	| alaris ports
 	/call setDeclare shardslanding 									string	outer "Translocate: Shard's Landing"
+	/call setDeclare shardslanding_group 						string	outer "Shard's Landing Portal"
 	/call setDeclare pillars 												string	outer "Translocate Pillars of Alra"
+	/call setDeclare pillars_group 									string	outer "Alra Portal"
 	/call setDeclare sarith 												string	outer "Translocate Sarith"
+	/call setDeclare sarith_group 									string	outer "Sarith Portal"
+
+	| Kunark ports
 	/call setDeclare dreadlands 										string	outer "Translocate: Combine"
+	/call setDeclare dreadlands_group 							string	outer "Combine Portal"
 	/call setDeclare lceanium												string	outer "Translocate: Lceanium"
+	/call setDeclare lceanium_group									string	outer "Lceanium Portal"
+	/call setDeclare skyfire 												string	outer "Translocate: Skyfire"
+	/call setDeclare skyfire_group 									string	outer "Skyfire Portal"	
+
+	| liclin ports
 	/call setDeclare dawnshroud 										string	outer "Translocate: Dawnshroud"
+	/call setDeclare dawnshroud_group 							string	outer "Dawnshroud Portal"
 	/call setDeclare twilight 											string	outer "Translocate: Twilight"
+	/call setDeclare twilight_group 								string	outer "Twilight Portal"
 	/call setDeclare grimling 											string	outer "Translocate: Grimling"
+	/call setDeclare grimling_group 								string	outer "Grimling Portal"
 	/call setDeclare nexus 													string	outer "Translocate: Nexus"
-	/call setDeclare bind 													string	outer "Translocate"
-	/call setDeclare primary 												string	outer "Translocate: Primary Anchor"
-	/call setDeclare secondary 											string	outer "Translocate: Secondary Anchor"
-	/call setDeclare pushprimary 										string	outer "Primary Anchor Push"
-	/call setDeclare pushsecondary 									string	outer "Secondary Anchor Push"
+	/call setDeclare nexus_group 										string	outer "Nexus Portal"
+
+	| odus ports
 	/call setDeclare tempesttemple 									string	outer "Translocate: Tempest Temple"
+	/call setDeclare tempesttemple_group 						string	outer "Tempest Temple Portal"
 	/call setDeclare katta													string	outer "Translocate: Katta Castrum"
+	/call setDeclare katta_group										string	outer "Katta Castrum Portal"
 	/call setDeclare tox 														string	outer "Translocate: Tox"
+	/call setDeclare tox_group 											string	outer "Tox Portal"
 	/call setDeclare stonebrunt 										string	outer "Translocate: Stonebrunt"
+	/call setDeclare stonebrunt_group 							string	outer "Stonebrunt Portal"
+
+	| serpent's spine ports
 	/call setDeclare icefall 												string	outer "Translocate: Icefall Glacier"
+	/call setDeclare icefall_group 									string	outer "Icefall Glacier Portal"
 	/call setDeclare sunderock 											string	outer "Translocate: Sunderock Springs"
+	/call setDeclare sunderock_group 								string	outer "Sunderock Springs Portal"
 	/call setDeclare blightfire 										string	outer "Translocate: Blightfire Moors"
-	/call setDeclare Barnidu 												string	outer "Translocate: Barindu"
-	/call setDeclare Natimbi 												string	outer "Translocate: Natimbi"
+	/call setDeclare blightfire_group 							string	outer "Blightfire Moors Portal"
+
+	| taelosia ports
+	/call setDeclare barnidu 												string	outer "Translocate: Barindu"
+	/call setDeclare barnidu_group 									string	outer "Barindu Portal"
+	/call setDeclare natimbi 												string	outer "Translocate: Natimbi"
+	/call setDeclare natimbi_group 									string	outer "Natimbi Portal"
+
+	| planes ports
 	/call setDeclare grounds 												string	outer "Translocate: the Grounds"
+	/call setDeclare grounds_group 									string	outer "Grounds Portal"
 	/call setDeclare potime 												string	outer "Translocate: Plane of Time"
+	/call setDeclare potime_group 									string	outer "Plane of Time Portal"
 	/call setDeclare brells 												string	outer "Translocate: Brell's Rest"
-	/call setDeclare Arcstone 											string	outer "Translocate: Arcstone"
+	/call setDeclare brells_group 									string	outer "Brell's Rest Portal"
+	/call setDeclare arcstone 											string	outer "Translocate: Arcstone"
+	/call setDeclare arcstone_group 								string	outer "Arcstone Portal"
 	/call setDeclare pok 														string	outer "Translocate: Knowledge"
+	/call setDeclare pok_group 											string	outer "Knowledge Portal"
+
+	| velious ports
 	/call setDeclare cobaltscar 										string	outer "Translocate: Cobalt Scar"
+	/call setDeclare cobaltscar_group 							string	outer "Cobalt Scar Portal"
 	/call setDeclare wakening 											string	outer "Translocate: Wakening Lands"
+	/call setDeclare wakening_group 								string	outer "Wakening Lands Portal"
 	/call setDeclare greatdivide 										string	outer "Translocate: Great Divide"
-	/call setDeclare iceclad 												string	outer "Translocate: Iceclad"		
+	/call setDeclare greatdivide_group 							string	outer "Great Divide Portal"
+	/call setDeclare iceclad 												string	outer "Translocate: Iceclad"
+	/call setDeclare iceclad_group 									string	outer "Iceclad Portal"
+	
+	| misc ports	
+	/call setDeclare bind 													string	outer "Translocate"
+	/call setDeclare bind_group											string	outer "Teleport"
+	/call setDeclare primary 												string	outer "Translocate: Primary Anchor"
+	/call setDeclare primary_group 									string	outer "Primary Anchor Portal"
+	/call setDeclare secondary 											string	outer "Translocate: Secondary Anchor"
+	/call setDeclare secondary_group								string	outer "Secondary Anchor Portal"
+	/call setDeclare pushprimary 										string	outer "Primary Anchor Push"
+	/call setDeclare pushprimary_group 							string	outer "Teleport Primary Anchor"
+	/call setDeclare pushsecondary 									string	outer "Secondary Anchor Push"
+	/call setDeclare pushsecondary_group						string	outer "Teleport Secondary Anchor"
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 		
 	/call setINIVar runeMagiWard	 									string	Rune "Doomscale Husk"
 	/call setINIVar runeShieldofFate								string	Rune "Shield of Consequence"
@@ -2915,7 +3010,9 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
  *	INI: 
  *  NOTE:
  ***| 	
-#event Talk "#1# tells you, '#2#'"
+| #event Talk "#1# tells you, '#2#'"
+#event Talk "#1# tells you,#*# '#2#'"
+
 sub Event_Talk(string line, string _sender, string _chatText)
 |**
 	/declare _ignoreRelay		 	string 	local |${relayTells}|bank|${Me.Pet.DisplayName}|${Me}
@@ -3665,9 +3762,14 @@ sub Bind_rez(string _rezType, string _verbage)
 
 	/varset _sep FALSE
 	/for _count 1 to ${${_bind}Type.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchRez${${_bind}Type.Arg[${_count},|].Left[1].Upper}${${_bind}Type.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${${_bind}Type.Arg[${_count},|]}\ax
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
 		/if (${${_bind}Type.Arg[${_count},|].Equal[pct]}) /varset _listout ${_listout}(${cnum}${minRezPct}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout}(${cnum}${maxRezRange}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[combat]}) /varset _listout ${_listout}(${If[${switchRezCombat},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[emergency]}) /varset _listout ${_listout}(${If[${switchRezEmergency},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[everyone]}) /varset _listout ${_listout}(${If[${switchRezEveryone},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[give]}) /varset _listout ${_listout}(${If[${switchRezGive},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[take]}) /varset _listout ${_listout}(${If[${switchRezTake},${oon},${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /rez [${_listout}]	
@@ -3889,6 +3991,7 @@ sub Bind_petControl(string _pcType, string _verbage)
 		/call writeINI switchPcPet Pet TRUE
 		/call check_pet
 		/if (${Me.Pet.ID}) /call check_pet_buffs	
+		/return
 
 	| pet/engage#
 	} else /if (${Bool[${_pcType.Equal[pet]}]}) {
@@ -3917,12 +4020,11 @@ sub Bind_petControl(string _pcType, string _verbage)
 	} else /if (${Bool[${_pcType.Equal[swarm]}]}) {
 		/if (!${Bool[${_verbage}]}) {
 			/call writeINI switchPcSwarm Pet ${If[${switchPcSwarm},FALSE,TRUE]}
-			/call echos switch "Use Pet Swarm" switchPcSwarm 0 0
 		} else /if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {			
 			/call writeINI PcSwarmengageat Pet ${_verbage}
-			/call echos number "Swarm Pet Engage" ${_verbage} 0 0
 		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} swarm(${cnum}${PcSwarmengageat}\ax) valid range ${cinfo}1 - 99\ax
+			/return
 		}
 		
 	| pc tank
@@ -3931,6 +4033,7 @@ sub Bind_petControl(string _pcType, string _verbage)
 		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/call writeINI switchPcPettank Pet ${If[${switchPcPettank},FALSE,TRUE]}
 		/call echos switch "Pet Tank" switchPcPettank	0 0
+		/return
 		
 	| pc type
 	} else /if (${Bool[${_pcType.Equal[type]}]}) {
@@ -3944,6 +4047,7 @@ sub Bind_petControl(string _pcType, string _verbage)
 			/call writeINI PetBagSlotNumber Pet ${_verbage}
 		} else {
 			VOUT /${_bind} bag(${cnum}${PetBagSlotNumber}\ax] valid range range ${cinfo}1 - 10\ax
+			/return
 		}
 
 	}
@@ -3951,10 +4055,10 @@ sub Bind_petControl(string _pcType, string _verbage)
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]}
 		/if (${${_bind}Type.Arg[${_count},|].Equal[build]}) /varset _listout ${_listout} ${cinfo}build\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[pet]}) /varset _listout ${_listout} ${cinfo}pet\ax(${If[${PcPetengageat},${cinfo}${PcPetengageat}\ax,${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[swarm]}) /varset _listout ${_listout} ${cinfo}swarm\ax(${If[${PcSwarmengageat},${cnum}${PcSwarmengageat}\ax,${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[type]}) /varset _listout ${_listout} ${cinfo}type\ax(${If[${PcPettype},${cinfo}${PcPettype}\ax,${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[bag]}) /varset _listout ${_listout} ${cinfo}bag\ax(${If[${PetBagSlotNumber},${cnum}${PetBagSlotNumber}\ax,${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[pet]}) /varset _listout ${_listout} ${cinfo}pet\ax(${If[${PcPetengageat},${cnum}${PcPetengageat}\ax,${ooff}]})(${If[${switchPcPet},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[swarm]}) /varset _listout ${_listout} ${cinfo}swarm\ax(${If[${PcSwarmengageat},${cnum}${PcSwarmengageat}\ax,${ooff}]})(${If[${switchPcSwarm},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[type]}) /varset _listout ${_listout} ${cinfo}type\ax(${If[${Bool[${PcPettype}]},${cnum}${PcPettype}\ax,${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[bag]}) /varset _listout ${_listout} ${cinfo}bag\ax(${If[${Bool[${PetBagSlotNumber}]},${cnum}${PetBagSlotNumber}\ax,${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -4385,7 +4489,7 @@ sub Bind_info()
 	/declare _listout string local
 	/declare _sep bool local
 	/declare _count int local
-	/declare _controls string local |buff|burn|cc|core|cursor|debuff|echos|grab|hc|heal|lc|mode|movement|onoff|override|pc|port|rez|setassist|tc|tie|ts|${Me.Class.ShortName}
+	/declare _controls string local |buff|burn|cc|core|cursor|debuff|echos|grab|hc|heal|lc|mode|movement|onoff|override|pc|rez|setassist|tc|tie|ts|${Me.Class.ShortName}
 	
 	/for _count 1 to ${_controls.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
@@ -4515,12 +4619,13 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[force]}]}) {
 		/if (${Bool[${_verbage}]}) {
 			/if (${Target.ID} && (${Target.ID} != ${Me.ID}) && (${Target.ID} != ${Me.Pet.ID})) {
+
 				| engage Melee combat
 				/if (${Bool[${_verbage.Equal[melee]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat MELEE
 					/varset Target2Kill ${Target.ID}
-					/return
+
 				| engage Range combat
 				} else /if (${Bool[${_verbage.Equal[range]}]}) {
 					/if (${Target.Distance} > 31) {
@@ -4528,13 +4633,12 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 						/varset combat RANGE
 						/varset Target2Kill ${Target.ID}	
 					} 
-					/return
+
 				| engage Nuke combat
 				} else /if (${Bool[${_verbage.Equal[nuke]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
-					/return
 
 				| force assist for other eqbc toons
 				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
@@ -4557,6 +4661,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 				/next _count
 				VOUT /${_bind} force [${_listout}]	
 			}
+			/return
 
 
 	| set bandolier swapping
@@ -4739,13 +4844,15 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[smartengage]}) /varset _listout ${_listout}(${cnum}${smartengageAt}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[engage]}) /varset _listout ${_listout}(${cnum}${engageAt}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[nukedelay]}) /varset _listout ${_listout}(${cnum}${tNuke_Delay}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[agro]}) /varset _listout ${_listout}(${cnum}${MobAgro}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[agro]}) /varset _listout ${_listout}(${cnum}${MobAgro}\ax)(${If[${switchAgro},${oon},${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[combatdistance]}) /varset _listout ${_listout}(${cnum}${CombatDistance}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[saferadius]}) /varset _listout ${_listout}(${cnum}${combatRadius}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[stopnuke]}) /varset _listout ${_listout}(${cnum}${stopnukeAt}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[circle]}) /varset _listout ${_listout}(${cnum}${useCircle}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[alliance]}) /varset _listout ${_listout}(${If[${switchAlliance},${oon},${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[pull]}) /varset _listout ${_listout}(${If[${switchPull},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[MA1]}) /varset _listout ${_listout}(${If[${Bool[${MA1}]},${cnum}${MA1}\ax,${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[MA2]}) /varset _listout ${_listout}(${If[${Bool[${MA2}]},${cnum}${MA2}\ax,${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -4762,154 +4869,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 #bind MobAgro /agro
 sub Bind_MobAgro(int _MobAgro)
 	/call Bind_setCombatControl agro ${_MobAgro}
-/return
-
-
-
-|***
- *	DES: 
- *	USE: /port 
- *	INI: 
- *  NOTE:
- ***| 
-#bind port_list /port
-sub Bind_port_list(string _class, string _location)
-	/declare _listout 				string 	local
-	/declare _sep 						bool 		local FALSE
-	/declare _country 				int 		local 0
-	/declare _count 					int 		local 0
-	/declare _state 					int 		local 0
-	/declare _portclass 			string 	local |druid|wizard
-	/declare _continent 			string 	local |alaris|antonica|discord|faydwer|kunark|luclin|odus|serpentsspine|taelosia|planes|other
-	/declare _tell						bool		local FALSE
-
-	| druid port list
-	/declare _portDruidAlaris 											string local |beast|pillars|shardslanding
-	/declare _portDruidAntonica  										string local |commonlands|feerrott|karana|lavastorm|misty|ro|surefall|undershore|westkarna
-	/declare _portDruidDiscord 											string local |bloodfields|wallofslaughter
-	/declare _portDruidFaydwer 											string local |butcherblock|looping|steamfront
-	/declare _portDruidKunark 											string local |dreadlands|lceanium
-	/declare _portDruidLuclin 											string local |dawnshroud|grimling|nexus|twilight
-	/declare _portDruidOdus 												string local |buriedsea|stonebrunt|tempesttemple|tox
-	/declare _portDruidSerpentsspine							 	string local |blightfire|direwind|steppes
-	/declare _portDruidTaelosia 										string local |barindu|natimbi
-	/declare _portDruidPlanes 											string local |grounds|potime|brells|arcstone|knowledge
-	/declare _portDruidVelious 											string local |cobaltscar|wakening|greatdivide|iceclad
-	/declare _portDruidOther 												string local |primarypush|secondarypush|primary|secondary
-
-	| wizard port list
-	/declare _portWizardAlaris 											string local |pillars|sarith 
-	/declare _portWizardAntonica 										string local |northkarana|commonlands|nektulos|qeyenos|northro|cazic|undershore|westkarana
-	/declare _portWizardDiscord 										string local |wallofslaughter|bloodfields
-	/declare _portWizardFaydwer 										string local |fay|dragonscale
-	/declare _portWizardKunark 											string local |lceanium|dreadlands
-	/declare _portWizardLuclin 											string local |dawnshroud|twilight|grimling
-	/declare _portWizardOdus 												string local |tempesttemple|katta
-	/declare _portWizardSerpentsspine							 	string local |tox|stonebrunt|icefall|sunderock|blightfire
-	/declare _portWizardTaelosia 										string local |barindu|natimbi
-	/declare _portWizardPlanes 											string local |grounds|potime|brells|arcstone|pok
-	/declare _portWizardVelious 										string local |cobaltscar|wakening|greatdivide|iceclad
-	/declare _portWizardOther 											string local |bind|nexus|primary|secondary|primarypush|secondarypush
-			
-	| sort the class
-	/if (${Bool[${_class.Find[druid]}]}) {
-		/varset _class Druid
-	} else /if (${Bool[${_class.Find[wizard]}]}) {
-		/varset _class Wizard
-	} else {
-		/for _count 1 to ${_portclass.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_portclass.Arg[${_count},|]}\ax
-			/varset _sep TRUE
-		/next _count
-		VOUT /port [${_listout}] [${cinfo}location\ax]
-		/return
-	}
-	
-  | echo locations if class correct
-	/if (${Bool[${_class}]} && !${Bool[${_location}]}) {
-		/for _country 1 to ${_continent.Count[|]}
-			/for _state 1 to ${_port${_class}${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower}.Count[|]}
-				/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_port${_class}${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower}.Arg[${_state},|]}\ax
-				/varset _sep TRUE
-			/next _state
-			VOUT ${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower} [${_listout}] 
-			/varset _listout
-			/varset _sep
-		/next _country
-
-	| request port when class and location are present
-	} else /if (${Bool[${_class}]} && ${Bool[${_location}]}) {
-		/for _count 1 to ${Resident${_class}.Count[|]}
-			/if (${Spawn[pc ${Resident${_class}.Arg[${_count},|]} zradius 80 radius 100].ID}) {
-				/t ${Resident${_class}.Arg[${_count},|]} send ${_location}
-				/varset _tell TRUE
-			}		
-		/next _count
-		/if (!${_tell}) /call echos failboat 0 0 0 0
-	}
-
-/return
-
-
-
-|***
- *	DES: zephyr/TL requesting toon.
- *	USE: /t [toon] send [location]
- *	INI: 
- *  NOTE: 
- ***|
-#event send "#1# tells you, 'send #2#'"
-sub Event_send(string line, string _sender, string _location)
-	CHECKSAFELIST
-	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]} || ${Spawn[pc ${_sender}].Distance} > 125) /return
-	/declare _portList[14]		string local
-	/declare _count 					int local 0
-
-	/if (${_location.Equal[where]}) {
-		/if (${Select[${Me.Class.ShortName},DRU]}) {
-			/varset _portList[1] Alaris: shardslanding, pillars, beast
-			/varset _portList[2] Antonica: westkarna, lavastorm, undershore, misty, ro, feerrott, commonlands, surefall, karana
-			/varset _portList[3] Discord: wallofslaughter, bloodfields
-			/varset _portList[4] Faydwer: looping, steamfront, butcherblock
-			/varset _portList[5] Kunark: lceanium, dreadlands
-			/varset _portList[6] Luclin: dawnshroud, twilight, grimling, nexus
-			/varset _portList[7] Misc: primarypush, secondarypush, primary, secondary
-			/varset _portList[8] Odus: tempesttemple, buriedsea, stonebrunt, tox
-			/varset _portList[9] Serpent's Spine: direwind, steppes, blightfire
-			/varset _portList[10] Taelosia: barindu, natimbi
-			/varset _portList[11] The Planes: grounds, potime, brells, arcstone, knowledge
-			/varset _portList[12] 
-			/varset _portList[13] Velious: cobaltscar, wakening, greatdivide, iceclad
-			/varset _portList[14] --Port List End
-		} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
-			/varset _portList[1] Alaris: pillars, sarith 
-			/varset _portList[2] Antonica: northkarana, commonlands, nektulos, qeyenos, northro, cazic, undershore, westkarana
-			/varset _portList[3] Discord: wallofslaughter, bloodfields
-			/varset _portList[4] Faydwer: fay, dragonscale
-			/varset _portList[5] Kunark: lceanium, dreadlands
-			/varset _portList[6] Luclin: dawnshroud, twilight, grimling
-			/varset _portList[7] Misc: bind, nexus, primary, secondary, primarypush, secondarypush
-			/varset _portList[8] Odus: tempesttemple, katta
-			/varset _portList[9] Serpent's Spine: tox, stonebrunt, icefall, sunderock, blightfire
-			/varset _portList[10] Taelosia: barindu, natimbi
-			/varset _portList[11] The Planes: grounds, potime, brells, arcstone, pok
-			/varset _portList[12] 
-			/varset _portList[13] Velious: cobaltscar, wakening, greatdivide, iceclad
-			/varset _portList[14] --Port List End
-		}
-		| feed the response back to sender		
-		/for _count 1 to ${_portList.Size}
-			/t ${_sender} ${_portList[${_count}]}
-			/delay 8
-		/next _count
-	}
-	
-	| send 'em on their way with a valid location request
-	/if (${Defined[${_location}]}) {
-		/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
-		/call mem_spell TRUE ${${_location}} ${buffGem} TRUE
-		/call core_cast ${${_location}} 0 ${Spawn[pc ${_sender}].ID} FALSE
-	} 
 /return
 
 
@@ -5054,16 +5013,12 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	}
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} 
-		| ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
-
 		/if (${${_bind}Type.Arg[${_count},|].Equal[mount]}) /varset _listout ${_listout} ${cinfo}mount\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout} ${cinfo}gather\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[fast]}) /varset _listout ${_listout} ${If[${SetFaceFast},${cgood}fast\ax,${cinfo}fast\ax]}
 		/if (${${_bind}Type.Arg[${_count},|].Equal[behind]}) /varset _listout ${_listout} ${If[${SetStickBehind},${cgood}behind\ax,${cinfo}behind\ax]}
 		/if (${${_bind}Type.Arg[${_count},|].Equal[goto]}) /varset _listout ${_listout} ${cinfo}goto\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[home]}) /varset _listout ${_listout} ${If[${HomeSet},${cgood}home\ax,${cinfo}home\ax]}
-
-
 		/if (${${_bind}Type.Arg[${_count},|].Equal[arc]}) /varset _listout ${_listout} ${cinfo}arc\ax(${cnum}${SetFaceArc}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[leash]}) /varset _listout ${_listout} ${cinfo}leash\ax(${cnum}${HomeLeash}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[radius]}) /varset _listout ${_listout} ${cinfo}radius\ax(${cnum}${HomeRadius}\ax)
@@ -5320,3 +5275,55 @@ sub Bind_grab(string _name)
 sub Bind_nav_to_target (string _name)
 	/call Bind_setMovementControls goto ${_name}
 /return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

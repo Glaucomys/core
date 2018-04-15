@@ -13,13 +13,40 @@ Current Requests:
 
 
 
+
+
+20180414
+- /pc controlls
+  -- string error in the output for pet type. tis fixed
+  -- cosmetic changes to the control output
+- /rez controlls
+  -- cosmetic changes to the control output
+- adjusted the event control for tells to accept languages (for the TLP slummers)
+- click_item_swarm()
+  -- toon.ini -> [items] -> clickItemSwarm1-4=
+  -- can seperate items that have swarm pet clicks 
+  -- /pc swarm enable/disable using the click items
+- class.mag.inc
+  -- filled in Modes: MELEE and RANGE. generic for now. can fine tune later.
+	-- fixed /mag fade control. mage should fade now.
+- class.clr.inc
+  -- fixed /clr fade output (cosmetic)
+- class.wiz/dru.inc
+  -- so i completely broke the beg for ports. it is being worked on.
+- class.rog.inc
+  -- can spell.. epic should click now.  	
+- class.ber.inc
+  -- will use intimidation skill cause . click all the things!
+  -- COMPLETE revamp of burning routine...
+  
+
+
 20180410 part 2
 - class.mnk.inc
   -- fixed the dumb closing brackets
   -- fixed the MON-MNK class name errors.. (I think)
 - broke the /cc force commands. meh....
 - missed a scribe rename to mem_spell
-
 
 
 20180410

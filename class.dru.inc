@@ -50,6 +50,7 @@ sub core_DRU()
 		/call disc_${Me.Class.ShortName}			
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${combat.Equal[HEAL]}) {
 		/call set_combat HEAL
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
@@ -72,6 +73,7 @@ sub core_DRU()
 			/call disc_${Me.Class.ShortName}			
 			/call click_DPS_${Me.Class.ShortName}
 			/call click_item
+			/call click_item_swarm ${Target2Kill}
 		}
 	}
 	/if (${coreAuto}) {	

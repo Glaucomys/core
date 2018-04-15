@@ -33,12 +33,14 @@ sub core_WAR()
 		/call click_DPS_${Me.Class.ShortName}
 		/call stick_to_target
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {

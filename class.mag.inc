@@ -34,8 +34,39 @@ sub core_MAG()
 	/if (!${Macro.Return}) /return
 
 	CHECKREZ
+	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade	
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
+		/call set_combat MELEE
+		/call check_deBuffs ${Target2Kill}
+		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
+		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${switchPcSwarm}) /call cast_nuke_servant
+		/if (${useRain}) /call cast_nuke_rain		
+		/call click_item
+		/call click_item_swarm ${Target2Kill}
+		/call disc_${Me.Class.ShortName}
+		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
+		/if (${DoNuke}) /call cast_nuke
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana		
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
+		/call set_combat RANGE
+		/call check_deBuffs ${Target2Kill}
+		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
+		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
+		/call click_DPS_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${switchPcSwarm}) /call cast_nuke_servant
+		/if (${useRain}) /call cast_nuke_rain		
+		/call click_item
+		/call click_item_swarm ${Target2Kill}
+		/call disc_${Me.Class.ShortName}
+		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
+		/if (${DoNuke}) /call cast_nuke
+		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/call check_deBuffs ${Target2Kill}
@@ -46,6 +77,7 @@ sub core_MAG()
 		/if (${switchPcSwarm}) /call cast_nuke_servant
 		/if (${useRain}) /call cast_nuke_rain		
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
 		/if (${DoNuke}) /call cast_nuke
@@ -302,6 +334,15 @@ sub Bind_setMAG(string _classType, string _verbage)
 			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) ${sep} ${If[${switchGather},${oenabled},${odisabled}]}
 			/return
 		}			
+		
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFade Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFade}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}		
 	
 	| enable/disable force twincasting
 	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
@@ -311,11 +352,18 @@ sub Bind_setMAG(string _classType, string _verbage)
 
 	| get rods.. cause things and stuff
 	} else /if (${Bool[${_classType.Equal[rods]}]}) {
+
 		| self mod rod
-		/if (${Bool[${SelfRodName}]} && !${FindItem[${SelfRodName}].ID} && !${Cursor.Name.Equal[${SelfRodName}]} && ${Me.CurrentMana} >= ${Spell[${SelfRodSpell}].Mana}) {
-			/call core_cast "${SelfRodSpell}" ${buffGem} 0 FALSE
-			/call sort_cursor TRUE
+		/if (${Bool[${SelfRodName}]}) {
+			/if (!${FindItem[${SelfRodName}].ID}) {
+				/if (!${Cursor.Name.Equal[${SelfRodName}]} && ${Me.CurrentMana} >= ${Spell[${SelfRodSpell}].Mana}) {
+					/call core_cast "${SelfRodSpell}" ${buffGem} ${Me.ID} FALSE
+					/call sort_cursor TRUE
+				}
+			}
 		}
+			
+		
 		| group mod rod
 		/if (${Bool[${ModRodName}]} && !${FindItem[${ModRodName}].ID} && !${Cursor.Name.Equal[${ModRodName}]}) {
 			| /target ID ${Me.ID}
@@ -384,6 +432,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

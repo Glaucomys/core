@@ -38,6 +38,7 @@ sub core_BER()
 		/call use_skill_melee ${Target2Kill}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/if (${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
 		/call set_combat RANGE
@@ -46,6 +47,7 @@ sub core_BER()
 		/call use_skill_melee ${Target2Kill}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}		
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {
@@ -75,6 +77,18 @@ sub disc_BER()
 	/if (${Bool[${Me.Buff[Frenzied Resolve]}]} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) /call core_cast "Drawn to Blood" alt 0 FALSE
 	/if (!${Me.Underwater} && !${Me.Song[Battle Leap Warcry].ID}) /call core_cast "Battle Leap" alt 0 FALSE
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+	
+	/call is_burn_time
+	/if (!${Macro.Return}) {
+			/if (${Me.CombatAbilityReady[${DiscDisconcert}]}) /call core_cast "${DiscDisconcert}" disc 0 FALSE			
+			/call core_cast "${RecklessAbandon}" alt 0 FALSE
+	}
+		
+	/call core_cast "Binding Axe" alt 0 FALSE
+	
+	/if (${Bool[${Me.Song[Strike of Savagery]}]}) /call core_cast "Rampage" alt 0 FALSE
+		
+	/if (!${Me.Song[Reckless Abandon].ID}) /call core_cast "Vehement Rage" alt 0 FALSE
 
 	| to agro or not ?
 	/if (!${switchAgro} && ${Me.PctAggro} > 96) /call core_cast "Distraction Attack" alt 0 FALSE
@@ -87,12 +101,11 @@ sub disc_BER()
 	| this hits up to 8 targets and can cause fear.
 	/if (${AEMelee}) /call core_cast "War Cry of the Braxi" alt 0 FALSE
 
-
 	| dumb ass zerker has a dicho and a dicho ##. cant use the name to cast with..
 	/if (${Me.CombatAbilityReady[${DiscDicho}]} && ${Me.CurrentEndurance} > ${Spell[${DiscDicho}].EnduranceCost}*2) /disc 49307
 	| /if (${Me.CurrentEndurance} > ${Spell[${DiscDicho}].EnduranceCost}*2)  /call core_cast "${DiscDicho} 6" disc 0 FALSE
 	
-	/if (${AEMelee}) /call core_cast "Arcslice" disc 0 FALSE
+	/if (${AEMelee}) /call core_cast "Vicious Cyclone" disc 0 FALSE
 
 	| /if (${Me.CombatAbilityReady[${DiscOpenWound}]} && !${Me.Song[${OpenWoundEffect}].ID} && ${Me.CurrentEndurance} > ${Spell[${DiscOpenWound}].EnduranceCost})  /call core_cast "${DiscOpenWound}" disc 0
 	
@@ -101,10 +114,6 @@ sub disc_BER()
 	/if (!${Me.Buff[${AugmentedFrenzyEffect}].ID}) /call core_cast "${DiscAugmentedFrenzy}" disc 0 FALSE
 	/if (!${Me.Song[${DiscCryHavoc}].ID}) /call core_cast "${DiscCryHavoc}" disc 0 FALSE
 	/if (!${Me.Song[${DiscFesteringRage}].ID}) /call core_cast "${DiscFesteringRage}" disc 0 FALSE
-
-	| clear this for burns
-	/if (!${is_burn_time[]}) /call core_cast "${DiscDisconcert}" disc 0 FALSE
-	
 	
 	| swarm pet
 	/if (${switchPcSwarm}) /call core_cast "${DiscPet}" disc ${Target2Kill} FALSE
@@ -114,7 +123,7 @@ sub disc_BER()
 	/call core_cast "${DiscAxeofRallos}" disc ${Target2Kill} FALSE
 	/call core_cast "${ThrowingAxe}" disc ${Target2Kill} FALSE
 
-	/if (!${Me.Song[${SharedBloodLustRecourse}].ID}) /call core_cast "${SharedBloodLust}" disc 0 FALSE
+	/if (!${Me.Song[${SharedBloodLustRecourse}].ID} && ${Bool[${Me.TargetOfTarget}]}) /call core_cast "${SharedBloodLust}" disc 0 FALSE
 	/call check_deBuffs ${Target2Kill}
 /return
 
@@ -162,7 +171,6 @@ sub click_DPS_BER()
 
 	| epic 2.0
 	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
-	
 /return
 
 
@@ -173,10 +181,19 @@ sub click_DPS_BER()
  *	INI: 
  *	NOTE: 
  ***| 
+
 sub synergy_BER()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/doevents
+	
+	/if (${Me.ActiveDisc.Name.Equal[${DiscDisconcert}]}) {
+		:loopmakestop
+		/delay 5
+		/if (${Me.ActiveDisc.Name.Equal[${DiscDisconcert}]}) /stopdisc
+		/delay 5
+		/if (${Me.ActiveDisc.Name.Equal[${DiscDisconcert}]}) /goto :loopmakestop
+	}
 	
 	/if (${Me.AltAbilityReady[desperation]} && ${Me.PctHPs} < 90) /call core_cast "Desperation" alt 0 FALSE
 	/if (${Me.CombatAbilityReady[${DiscScream}]} && ${Me.CurrentEndurance} > ${Spell[${DiscScream}].EnduranceCost}) /disc ${DiscScream}
@@ -184,47 +201,49 @@ sub synergy_BER()
 		/delay ${Math.Rand[8]}s ${Me.Song[${CryOfChaos}].ID}
 		/if (!${Me.Song[${CryOfChaos}].ID}) {
 			/if (${Raid.Members}) /call core_cast "Cry of Battle" alt 0 FALSE
-			/if (${Me.CombatAbilityReady[${CryOfChaos}]}  &&${Me.CurrentEndurance} > ${Spell[${CryOfChaos}].EnduranceCost}) /disc ${CryOfChaos}
+			/if (${Me.CombatAbilityReady[${CryOfChaos}]} && ${Me.CurrentEndurance} > ${Spell[${CryOfChaos}].EnduranceCost}) /disc ${CryOfChaos}
 		}
 	} 
 	
 	| AA rampage choice
-	/if (${AEMelee} && ${SpawnCount[npc group radius 50 playerstate 4]} > 1) /call core_cast "Furious Rampage" alt 0 FALSE
-	/if (!${AEMelee}) /call core_cast "Focused Furious Rampage" alt 0 FALSE
-	
-	
-	| Brutal Discipline
-	/if (${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && ${Me.CombatAbilityReady[${DiscBerserking}]}) {
-		/if (${Me.AltAbilityReady[Blinding Fury]} && !${Me.Song[Strike of Savagery].ID}) /call core_cast "Blinding Fury" alt 0 FALSE
-		/if (${Me.Buff[Blinded by Fury].ID}) /call core_cast "${DiscBerserking}" disc 0 FALSE
-		/if (${Me.AltAbilityReady[Juggernaut Surge]}) /call core_cast "Juggernaut Surge" alt 0 FALSE
-		/if (!${Bool[${Me.ActiveDisc[${DiscMele}]}]} || !${Bool[${Me.Song[Empowered Blades]}]}) /call use_glyph
-		/if (${Me.AltAbilityReady[Intensity of the Resolute]} && !${Me.Song[Reckless Abandon].ID} && ${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
+	/if (${AEMelee} && ${SpawnCount[npc group radius 50 playerstate 4]} > 1) {
+		/call core_cast "Furious Rampage" alt 0 FALSE
+	} else /if (!${AEMelee}) {
+		/call core_cast "Focused Furious Rampage" alt 0 FALSE
+	}
 
-	| savage spirit .. does not stack with shaman epic buff
-	} else /if (${Me.AltAbilityReady[Savage Spirit]} && ${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && !${Bool[${Me.Song[Prophet's Gift of the Ruchu]}]}) {
-		| /if (${Me.PctHPs} > 90 && !${Me.Song[${OpenWoundEffect}].ID})  /call core_cast "${DiscOpenWound}" disc 0 FALSE
-		/call core_cast "${DiscFrenzyResolve}" disc 0 FALSE
-		/delay 3
-		/call core_cast "Savage Spirit" alt 0 FALSE
-		/if (!${switchAgro}) /call core_cast "Silent Strikes" alt 0 FALSE
-		/call core_cast "${UntamedgRage}" alt 0 FALSE
-		/call core_cast "${RecklessAbandon}" alt 0 FALSE
-		/call cast_AA_spire
-		/call core_cast "Blood Pact" alt 0 FALSE
-		
-	| Cleaving Acrimony Discipline
-	} else /if (${Me.CombatAbilityReady[${DiscCleavingAnger}]} && ${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]}) {
-		/disc ${DiscCleavingAnger}
-		/if (!${Me.Song[Reckless Abandon].ID}) /call core_cast "Vehement Rage" alt 0 FALSE
+	/if (!${switchAgro}) /call core_cast "Silent Strikes" alt 0 FALSE
+	/call core_cast "${UntamedgRage}" alt 0 FALSE
 
-	| Avenging Flurry Discipline	
-	} else /if (${Window[CombatAbilityWnd].Child[CAW_CombatEffectLabel].Text.Equal["No Effect"]} && ${Me.CombatAbilityReady[${DiscVengeful}]}) {
-		/disc ${DiscVengeful}
-		/call core_cast "Blood Pact" alt 0 FALSE
-	}	
+	/call core_cast "Blinding Fury" alt 0 FALSE
+	/call core_cast "Juggernaut Surge" alt 0 FALSE
+	/call use_glyph
+	/if (!${Me.Song[Reckless Abandon].ID} && ${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
+	/call cast_AA_spire
+	/call core_cast "Blood Pact" alt 0 FALSE
+
+	/if (${Bool[${Spawn[group PC Shaman].ID}]}) {
+	 	/if (!${Me.Buff[Savage Spirit].ID} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscBerserking}" disc 0 FALSE		
+		/if (!${Bool[${Me.ActiveDisc}]} && ${Me.AltAbilityReady[Savage Spirit]}) {
+		 /alt act 465
+		 /delay 5
+		 /return
+		}
+	} else {
+		/if (!${Bool[${Me.ActiveDisc}]} && ${Me.AltAbilityReady[Savage Spirit]}) {
+		 	/alt act 465
+		 	/delay 5
+		 	/return
+		}
+		/if (!${Me.Buff[Savage Spirit].ID} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscBerserking}" disc 0 FALSE		
+	}
 	
-	
+	/if (!${Me.Buff[Savage Spirit].ID} && !${Bool[${Me.ActiveDisc}]}) {
+		/if (${Me.PctHPs} < 89) /call core_cast "${DiscFrenzyResolve}" disc 0 FALSE
+		/if (!${Me.CombatAbilityReady[${DiscFrenzyResolve}]}) /disc ${DiscVengeful}
+		/if (!${Me.CombatAbilityReady[${DiscFrenzyResolve}]} && !${Me.CombatAbilityReady[${DiscVengeful}]}) /disc ${DiscCleavingAnger}
+	}
+
 	/call synergy_click_Circle
 	/call click_item_burn	
 /return
@@ -292,10 +311,8 @@ sub Bind_setBER(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
-
-
-

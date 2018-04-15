@@ -35,6 +35,7 @@ sub core_MNK()
 		/call use_skill_melee ${Target2Kill}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}		
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
@@ -45,6 +46,7 @@ sub core_MNK()
 		/call use_skill_melee ${Target2Kill}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}				
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},HEAL]}) {

@@ -70,6 +70,7 @@ sub core_CLR()
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/call disc_${Me.Class.ShortName}
 		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
@@ -966,7 +967,6 @@ sub Bind_setCLR(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[fade]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI useAAFade Buffs ${_verbage}
-			VOUT /${_bind} fade ${sep} (${cnum}${useYaulpPct}\ax)
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} fade(${cnum}${useAAFade}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return

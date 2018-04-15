@@ -26,7 +26,7 @@ sub core_RNG()
 	/if (!${Macro.Return}) /return
 	
 	CHECKREZ
-	/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+	/if (${coreAuto} && ${switchAlliance}) /call trigger_alliance ${Target2Kill}
 	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
 		/call set_combat MELEE
 		/call send_pet
@@ -40,11 +40,11 @@ sub core_RNG()
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 		/call set_combat RANGE
 		/call send_pet
-		CHECKTIE
 		/call disc_${Me.Class.ShortName}
 		/call click_BP
 		/if (${DoDoT}) /call cast_DOT
@@ -55,13 +55,14 @@ sub core_RNG()
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
 		/call send_pet
-		CHECKTIE
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke
 		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
+		/call click_item
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},HEAL]}) {
+		/call set_combat HEAL
 	} else /if (${Select[${combat},DUAL]}) {
 		/call set_combat MELEE
 		/call use_skill_melee ${Target2Kill}
@@ -79,6 +80,7 @@ sub core_RNG()
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 	}
+
 	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
 	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return

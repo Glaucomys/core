@@ -1182,25 +1182,47 @@ sub set_stop(bool _noecho)
 
 |***
  *	DES: Clicks usefull 1 off items
- *	USE: /call click_item [TRUE|FALSE] *if you want epic clicked (self only)
- *	INI: [Items] -> doclickItem
+ *	USE: /call click_item 
+ *	INI: [Items] -> clickItem##
  *  NOTE: 
  ***|
-sub click_item(bool _clickEpic)
+sub click_item()
 	DEBUGCAST ${cbug}click_item()\ax
-	| /if (${_clickEpic} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4 targetable]} >= 2) /call core_cast "${Epic}" item 0 FALSE
-
 	/declare _count int local 0
 	/for _count 1 to 6
 		DEBUG _count:${_count} item:${clickItem${_count}} ready:${Me.ItemReady[${clickItem${_count}}]} 
+		/if (${Spawn[${Target.ID}].PctHPs} < 5*.${tmpHealOverride}) /break
+		/if (${is_target_dead[${Target2Kill}]}) /break
 		/if (!${Bool[${clickItem${_count}}]}) /continue
+		| /if (!${Me.ItemReady[${clickItem${_count}}]) /continue
 		/doevents
 		AMIDEAD
 		CHECKTIE
+		/call core_cast "${clickItem${_count}}" item 0 FALSE
+	/next _count
+/return
+
+
+
+|***
+ *	DES: Clicks swarmpet items
+ *	USE: /call click_item_swarm [TARGETID]
+ *	INI: [Items] -> clickItemSwarm##
+ *  NOTE: 
+ ***|
+sub click_item_swarm(int _tmpID)
+	DEBUGCAST ${cbug}click_item_swarm(id: ${_tmpID})\ax
+	/declare _count int local 0
+	/for _count 1 to 4
+		DEBUG _count:${_count} item:${clickItemSwarm${_count}} ready:${Me.ItemReady[${clickItemSwarm${_count}}]} 
 		/if (${Spawn[${Target.ID}].PctHPs} < 5*.${tmpHealOverride}) /break
 		/if (${is_target_dead[${Target2Kill}]}) /break
-		/if (${Me.ItemReady[${clickItem${_count}}]}) /call core_cast "${clickItem${_count}}" item 0 FALSE
-
+		/if (!${Bool[${clickItemSwarm${_count}}]}) /continue
+		| /if (!${Me.ItemReady[${clickItemSwarm${_count}}]}) /continue
+		/doevents
+		AMIDEAD
+		CHECKTIE
+		 /call core_cast "${clickItemSwarm${_count}}" item ${_tmpID} FALSE
 	/next _count
 /return
 
@@ -1567,7 +1589,6 @@ sub get_assist_target()
  		
  		}
 		
-		
 		/doevents
 		AMIDEAD
 		/if (${Target2Kill} && ${Spawn[${Target}].Type.Equal[npc]}) {
@@ -1580,9 +1601,6 @@ sub get_assist_target()
 			/return
 		}
 	}
-
-
-	
 /return
 
 
@@ -1605,7 +1623,6 @@ sub is_target_valid(int _tmpID)
 	/varset isValidTarget TRUE
 
 	| check smart assists
-	
 	/if (!${useForceAssist}) {
 		/if (${Target.ID} && ${coreAuto}) {
 			/if (${useSmartAssistR} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
@@ -1628,7 +1645,6 @@ sub is_target_valid(int _tmpID)
 		}
 	}
 	
-	
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /varset isValidTarget FALSE
 	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /varset isValidTarget FALSE
 	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro} ) /varset isValidTarget FALSE
@@ -1640,7 +1656,6 @@ sub is_target_valid(int _tmpID)
 		
 	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
 /return ${isValidTarget}
-
 
 
 
@@ -2014,15 +2029,13 @@ sub use_mod_rod()
 		/if (${Me.ItemReady[Summoned: Large Modulation Shard]} && ${Me.CurrentHPs} > 23100) /call core_cast "Summoned: Large Modulation Shard" item 0 FALSE
 		/if (${Me.ItemReady[Summoned: Medium Modulation Shard]} && ${Me.CurrentHPs} > 15100) /call core_cast "Summoned: Medium Modulation Shard" item 0 FALSE
 		/if (${Me.ItemReady[Summoned: Small Modulation Shard]} && ${Me.CurrentHPs} > 7600) /call core_cast "Summoned: Small Modulation Shard" item 0 FALSE
-		/if (${Me.ItemReady[Summoned: Modulating Rod]} && ${Me.CurrentHPs}>325) /call core_cast "Summoned: Modulating Rod" item 0 FALSE
-
+		/if (${Me.ItemReady[Summoned: Modulating Rod]} && ${Me.CurrentHPs} > 325) /call core_cast "Summoned: Modulating Rod" item 0 FALSE
 		/if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 12850) /call core_cast "Wand of Pelagic Transvergence" item 0 FALSE
 		/if (${Me.ItemReady[Wand of Phantasmal Modulation]} && ${Me.CurrentHPs} > 11100) /call core_cast "Wand of Phantasmal Modulation" item 0 FALSE 
 		/if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 3594) /call core_cast "Wand of Pelagic Transvergence" item 0 FALSE
 		/if (${Me.ItemReady[Wand of Phantasmal Transvergence]} && ${Me.CurrentHPs} > 3138) /call core_cast "Wand of Phantasmal Transvergence" item 0 FALSE
 		/if (${Me.ItemReady[Wand of Temporal Mastery]} && ${Me.CurrentHPs} > 1686) /call core_cast "Wand of Temporal Mastery" item 0 FALSE
 		/if (${Me.ItemReady[Wand of Elemental Transvergence]} && ${Me.CurrentHPs} > 920) /call core_cast "Wand of Elemental Transvergence" item 0 FALSE
-
 		/if (${Me.ItemReady[Rod of Arcane Transvergence]} && ${Me.CurrentHPs} > 2530) /call core_cast "Rod of Arcane Transvergence" item 0 FALSE
 		/if (${Me.ItemReady[Rod of Spectral Transvergence]} && ${Me.CurrentHPs} > 1720) /call core_cast "Rod of Spectral Transvergence" item 0 FALSE
 		/if (${Me.ItemReady[Rod of Ethereal Transvergence]} && ${Me.CurrentHPs} > 1320) /call core_cast "Rod of Ethereal Transvergence" item 0 FALSE
@@ -2174,7 +2187,6 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub, bool _forcew
 		/varset _bail do_not_have
 		/if (${Bool[${_bail}]}) /goto :cooldown
 	}
-
 
 	| skip needing a target
 	/if (${_tmpID} == 0 || ${Spell[${_spell}].SpellType.Equal[Self]}) /goto :notarget
@@ -2477,7 +2489,7 @@ sub use_skill_melee(int _tmpID)
 	}	
 	
 	| Intimidation Bard/Rogue only skill
-	/if (${validate_class[FALSE, |BRD|ROG]}) {
+	/if (${validate_class[FALSE, |BRD|ROG|BER]}) {
 		/if (${Bool[${intimidation}]}) {
 			/if (${Me.AbilityReady[Intimidation]} && ${Spawn[${_tmpID}].Distance} <= 15) {
 				VMELEE Melee ${sep} ${csp}Intimidation\ax ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax]
@@ -2627,65 +2639,6 @@ sub cast_nuke_GoM(int _tmpID)
 
 
 |***
- *	DES: Buff Raid Members in your /agro range
- *	USE: /call check_buffs_raid
- *	INI: uses INI [Buffs] 
- *  NOTE: 
-
-sub check_buffs_raid()
-	DEBUG ${cbug}check_buffs_raid()\ax
-	/if (${coreAuto}) /call create_timer timer_check_buffs_raid ${tRaid_Buff}
-	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
-	/if (${coreAuto} && ${watch_for_death[]}) /return 
-
-	| # people in raid
-	/declare _i int local
-	| # of buffs to cast
-	/declare _x int local
-	| targets buff count
-	/declare _y int local
-	
-	/if (${Raid.Members} && ${Me.PctMana} > 10 && !${Me.Casting.ID}) {
-		UPDATEHUD "BUFF: Raid"
-		/for _i 1 to ${SpawnCount[raid radius ${MobAgro}]}
-			DEBUG Checking Raid Buffs on [${cinfo}${Raid.Member[${_i}].DisplayName}\ax]
-			/for _x 1 to ${BuffCount}
-				/if (!${Bool[${RaidBuff${_x}Class}]} || !${Bool[${Buff${_x}}]}) /continue
-				AMIDEAD
-				CHECKEXIT
-				/doevents
-				CHECKTIE
-				CLEARCURSOR TRUE
-				/if (!${Bool[${timer_Raid_Buffs${Spell[${Buff${_x}}].ID}${Raid.Member[${_i}].ID}}]} && ${RaidBuff${_x}Class.Find[${Spawn[${Raid.Member[${_i}].ID}].Class.ShortName}]} && ${Spawn[${Raid.Member[${_i}].ID}].Type.Equal[pc]} && ${Spawn[${Raid.Member[${_i}].ID}].Distance} < ${MobAgro} && ${Me.PctMana} >= 20) {
-					/if (${Stick.Active}) /squelch /stick off
-					/target ID ${Raid.Member[${_i}].ID}
-					/delay 1s ${Target.ID} == ${Raid.Member[${_i}].ID}
-					/delay 1s ${Target.BuffCount}
-					/delay 1s
-					DEBUG X=${_x} class:${RaidBuff${_x}Class.Find[${Spawn[${Raid.Member[${_i}].ID}].Class.ShortName}]} .. spell:${Buff${_x}chk}
-					/for _y 1 to ${Target.BuffCount}	
-						AMIDEAD
-						/if (!${Spell[${Target.Buff[${_y}]}].WillStack[${Spell[${Buff${_x}}]}]} && ${Target.Buff[${_y}].ID}) {
-							/call create_timer timer_Raid_Buffs${Spell[${Buff${_x}chk}].ID}${Raid.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
-							/return
-						}
-					/next _y
-					/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
-						CLEARCURSOR TRUE
-						VSPELL Raid Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${Raid.Member[${_i}].DisplayName}\ax]
-						/call MQ2Cast "${Buff${_x}}" ${buffGem} -targetid|${Raid.Member[${_i}].ID} 
-					}
-					/call create_timer timer_Raid_Buffs${Spell[${Buff${_x}chk}].ID}${Raid.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
-				}
-			/next _x	
-		/next _i
-		UPDATEHUD FALSE
-	}
-/return
- ***|
-
-
-|***
  *	DES: buffs mercs in your group
  *	USE: /call check_buffs_manual [mercenary|raid]
  *	INI: uses INI [Buffs] 
@@ -2717,7 +2670,6 @@ sub check_buffs_manual(string _type)
 	} else {
 		/return
 	}
-
 	
 	/if (${${_GroupRaid}.Members} && ${Me.PctMana} > 10 && !${Me.Casting.ID}) {
 		UPDATEHUD "BUFF: ${_type}"
@@ -2780,29 +2732,24 @@ sub check_buffs_manual(string _type)
  *	DES: preps the queue with target toon
  *	USE: /call cast_buffs_queue [toon name] [buff word]
  *	INI: 
- *  NOTE: need to remome the pet crap someday...
+ *  NOTE:
  ***|
 sub cast_buffs_queue(string _sender, string _verbage)
 	DEBUGCAST ${cbug}cast_buffs_queue(sender:${_sender}, request:${_verbage})\ax
 
-  /declare _a int local 0
-  /declare _i int local 0
+	/declare _a int local 0
+	/declare _i int local 0
 
-  /for _i 1 to ${BuffCount}
-    /for _a 1 to ${Buff${_i}Alias.Count[|]}
+	/for _i 1 to ${BuffCount}
+		/for _a 1 to ${Buff${_i}Alias.Count[|]}
 			AMIDEAD
-   		/doevents
-      /if (${_verbage.Find["${Buff${_i}Alias.Arg[${_a},|]}"]}) {
-        | /if (${_verbage.Find["pet"]} || ${_verbage.Find[${Spawn[pc ${_sender}].Pet.DisplayName}]} || ${Spawn[pet ${_sender}].ID}) {
-        |   VSPELL Buffing ${sep} ${cpc}${_sender}'s\ax Pet.
-        |   /call queue_buff_add ${Spawn[pc ${_sender}].Pet.ID} ${_i}
-        | } else {
-          DEBUGCAST ${_sender} requested ${cinfo}${Buff${_i}}\ax
-          /call queue_buff_add ${Spawn[pc ${_sender}].ID} ${_i}
-        | }
-      }
-    /next _a
-  /next _i
+			/doevents
+			/if (${_verbage.Find["${Buff${_i}Alias.Arg[${_a},|]}"]}) {
+				DEBUGCAST ${_sender} requested ${cinfo}${Buff${_i}}\ax
+				/call queue_buff_add ${Spawn[pc ${_sender}].ID} ${_i}
+			}
+		/next _a
+	/next _i
 /return
 
 
@@ -2842,7 +2789,6 @@ sub set_tie()
 		
 		| no nav plugin
 		/if (${SetTieMode.Equal[nav]} && ${Bool[${Plugin[MQ2Nav]}]}) {
-		
 		
 		| no moveutils plugin
 		} else /if (${SetTieMode.Equal[stick]} && ${Bool[${Plugin[MQ2MoveUtils]}]}) {
@@ -2912,66 +2858,7 @@ sub set_tie()
 
 /return
 
- 
- 
- 
-|** 
-sub set_tie()
-	DEBUG ${cbug}set_tie()\ax
-	/if (${timer_check_Tie}) /return
-	/if (${coreAuto}) /call create_timer timer_check_Tie ${tCheck_Tie}
 
-	AMIDEAD
-	/doevents
-	| reasons to not tie to a toon
-	/if (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${Spawn[pc ${SetTieToon}].Dead}) /return
-	/if (${Spawn[pc ${SetTieToon}].Distance} <= ${SetTieDistance} || !${Spawn[pc ${SetTieToon}].ID}) {
-		/if (${Stick.Active}) /squelch /stick off
-		/if (${Me.Moving}) {
-			/keypress forward
-			/keypress back
-		}
-		/return
-	}
-	
-	| turn off camp
-	/if (${Bool[${MakeCamp}]}) {
-		/squelch /makecamp off
-		/call writeINI HomeSet Movement FALSE 
-	}
-	
-	| all present and or accounted for SIR!
-	/squelch /face ID ${Spawn[pc ${SetTieToon}].ID} ${If[${SetFaceFast},fast,]}
-	/squelch /stick ID ${Spawn[pc ${SetTieToon}].ID} ${SetTieDistance} UW
-
-	| FORCE EMULATE FOLLOW.. HATE DOING THIS
-	| /while (${SetTie} && ${Spawn[pc ${SetTieToon}].ID} && ${SetTieLock}) {
-	| 	AMIDEAD
-	| 	/doevents
-	| 	/delay 1
-	| }
-
-
-	:okweremoving
-	AMIDEAD
-	/doevents
-	/if (${Spawn[pc ${SetTieToon}].Distance} <= ${SetTieDistance}) {
-		/squelch /stick off
-		/return
-	}
-	
-	/if (!${Stick.Stopped} && ${Spawn[pc ${SetTieToon}].ID}) {
-		/goto :okweremoving
-	} else {
-		/if (${Stick.Active}) /squelch /stick off
-		/if (${Me.Moving}) {
-			/keypress forward
-			/keypress back
-		}
-	}
-
-/return
-**|
 
  |***
  *	DES: Will sort out your familiar.
@@ -3136,11 +3023,7 @@ sub check_exit()
 	| 	/if (${Bool[${Me.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Target.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Me.Song[${noCastWith.Arg[${_count},|]}]}]}) /return TRUE
 	| /next _count	
 	
-	
-	
-	
 	| check no cast list and mezz?
-	
 	/if (${coreAuto} && ${Target.ID} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) /return TRUE
 	/if (${coreAuto} && ${Target.ID} && ${Bool[${Target.Mezzed}]} && !${switchPull}) /return TRUE
 
@@ -3460,18 +3343,12 @@ sub cast_disc_breather()
  *  NOTE:
  ***|
 sub fix_gem_id(string _spellGem)
-	DEBUGCAST ${cbug}fix_gem_id(fix: ${_spellGem})\ax
 	/declare _gem int local 0
-	/if (${_spellGem.Length} == 1) {
+	/if (${_spellGem.Length} == 1 || ${_spellGem.Length} == 4) {
 		/varset _gem ${_spellGem.Right[1]}
-	} else /if (${_spellGem.Length} == 2) {
+	} else /if (${_spellGem.Length} == 2 || ${_spellGem.Length} == 5) {
 		/varset _gem ${_spellGem.Right[2]} 
-	} else /if (${_spellGem.Length} == 4) {
-		/varset _gem ${_spellGem.Right[1]}
-	} else /if (${_spellGem.Length} == 5) {
-		/varset _gem ${_spellGem.Right[2]}
 	}
-	DEBUG fix_gem_id(return: ${_gem})
 /return ${_gem}
 
 
@@ -3483,7 +3360,7 @@ sub fix_gem_id(string _spellGem)
  *  NOTE: 
  ***|
 sub mem_spell(bool _echo, string _spellname, string _spellgem, bool _wait)
- 	DEBUGCAST ${cbug}mem_spell("${_spellname}", gem:${_spellgem}, wait:${_wait})\ax
+ 	DEBUG ${cbug}mem_spell(${_spellname}, gem:${_spellgem}, wait:${_wait})\ax
  	/if (${Me.Gem[${_spellname}]}) /return TRUE
 	AMIDEAD
 
@@ -3504,8 +3381,8 @@ sub mem_spell(bool _echo, string _spellname, string _spellgem, bool _wait)
 	DEBUGCAST ${_gem} "${Spell[${_spellname}].RankName}"
 	/memspell ${_gem} "${Spell[${_spellname}].RankName}"
 	/if (${_wait}) {
-		:waitforgem
-		/delay 10s ${Me.SpellReady[${_spellname}]}
+		| :waitforgem
+		/delay 1m ${Me.SpellReady[${_spellname}]}
 		/delay 4
 		/if (!${Me.SpellReady[${_spellname}]}) /goto :waitforgem
 	} else /if (!${_wait}) {
@@ -3753,7 +3630,6 @@ sub cast_rez(int _tmpID, string _rezAA)
 	/if (${timer_corpse_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
-		
 
 	| delay res a sec if they are not on the safe list.
 	/if (!${safelist.Find[${Spawn[${_tmpID}].DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM]}) /delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
@@ -5900,15 +5776,9 @@ sub fix_INI_declares()
 		/ini "${INIClass}" "Spells" "Nuke8" NULL
 	}
 
-
 	| update for invite command changes
 	/ini "${INIClass}" "Common" "switchInvites" NULL
 	/ini "${INIClass}" "Common" "switchRaidInvite" NULL
-
-
-
-
-
 
 	| fix the range summon INI entries
 	/if (!${RangeItem.Count[|]}) /call writeINI RangeItem Common |"${RangeItem}"
@@ -6814,7 +6684,7 @@ sub validate_assist(bool _error, string _assist, string _name)
  *  NOTE:
  ***|
 sub trigger_alliance(int _tmpID)
-	SDEBUG trigger_alliance(ID: ${_tmpID})
+	DEBUG trigger_alliance(ID: ${_tmpID})
 
 	| we need raid peoples
 	/if (!${Raid.Members}) /return

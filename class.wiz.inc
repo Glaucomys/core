@@ -41,6 +41,7 @@ sub core_WIZ()
 		/call stick_to_target
 		/call use_skill_melee ${Target2Kill}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
@@ -52,6 +53,7 @@ sub core_WIZ()
 		/call cast_nuke_wiz
 		/call disc_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_BP
 	} else /if (${Select[${combat},HEAL]}) {

@@ -45,7 +45,8 @@ sub core_NEC()
 		/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
 		/if (${DoNuke}) /call cast_nuke
 		/if (${DoDoT}) /call cast_DOT
-		/call click_item TRUE
+		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${Select[${combat},HEAL]}) {
 	} else /if (${Select[${combat},DUAL]}) {
 	}

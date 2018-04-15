@@ -42,6 +42,7 @@ sub core_BST()
 		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/call use_skill_melee ${Target2Kill}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/call cast_AA_focused_paragon
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
@@ -54,6 +55,7 @@ sub core_BST()
 		/if (${DoNuke}) /call cast_nuke
 		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/call cast_AA_focused_paragon
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
@@ -66,6 +68,7 @@ sub core_BST()
 		/if (${DoNuke}) /call cast_nuke
 		/if (${${switchPcSwarm}} && ${Bool[${ServantNuke}]}) /call cast_nuke_servant
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/call cast_AA_focused_paragon
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}

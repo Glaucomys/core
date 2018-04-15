@@ -37,6 +37,7 @@ sub core_ENC()
 		/call check_deBuffs ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
@@ -47,6 +48,8 @@ sub core_ENC()
 		/call check_deBuffs
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
+		/call click_item_swarm ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke			
@@ -56,6 +59,8 @@ sub core_ENC()
 		/call check_deBuffs ${Target2Kill}
 		/call click_DPS_${Me.Class.ShortName}
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
+		/call click_item_swarm ${Target2Kill}
 		/call disc_${Me.Class.ShortName}
 		/if (${DoDoT}) /call cast_DOT
 		/if (${DoNuke}) /call cast_nuke	
@@ -94,6 +99,7 @@ sub core_ENC()
 		}
 		/call click_BP
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
 	}
 	/if (${coreAuto}) {	

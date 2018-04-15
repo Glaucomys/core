@@ -35,6 +35,7 @@ sub core_BRD()
 		/if (${DoNuke}) /call bard_nuke
 		/call pulse
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
 	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
 		/call set_combat NUKE
@@ -43,10 +44,12 @@ sub core_BRD()
 		/if (${DoDoT}) /call bard_dot
 		/if (${DoNuke}) /call bard_nuke
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${Select[${combat},HEAL]}) {
 		/call set_combat HEAL
 		/call pulse
 		/call click_item
+		/call click_item_swarm ${Target2Kill}
 	} else /if (${Select[${combat},DUAL]}) {
 		/call get_assist_target
 		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
