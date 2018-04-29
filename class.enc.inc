@@ -25,93 +25,95 @@ sub core_ENC()
 		/if (!${Bool[${Macro.Return}]} && ${switchPcPet} && !${switchCharmPet}) /call check_pet
 	}
 
+
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-	
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call send_pet
-		/call stick_to_target
-		/call check_deBuffs ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke	
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/call set_combat RANGE
-		/call send_pet
-		/call stick_to_target
-		/call check_deBuffs
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_item_swarm ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke			
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		/call send_pet
-		/call check_deBuffs ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_item_swarm ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke	
-	} else /if (${Select[${combat},HEAL]}) {
-		/call set_combat HEAL
-		/call send_pet
-	} else /if (${Select[${combat},DUAL]}) {
-		/call get_target_ENC
-		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
-		| /if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
-		/if (${Bool[${mobList}]}) /call list_delete mobList ${Target2Kill}
-		/return
-		:loop
-		AMIDEAD
-		CHECKTIE
-		/if (${Spawn[${Target2Kill}].Type.Equal[Corpse]}  || !${Target2Kill} || !${Target.ID} || ${Target.Type.Equal[corpse]} || !${Spawn[${Target2Kill}].ID}) /call get_target_ENC
-		/call check_for_adds
-		/if (${addList.Count[|]} && ${switchdeBuffMezz}) /call mez_adds
-		/call check_for_adds
-		/if (${addList.Count[|]}) /return
-		/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
-		/call check_for_adds
-		/if (${addList.Count[|]}) /return
-		/if (!${addList.Count[|]}) /call check_deBuffs ${Target2Kill}
-		/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
-		/call check_for_adds
-		/if (${addList.Count[|]}) /return
-		/call is_target_valid ${Target2Kill}
-		/if (${isValidTarget}) {
-			/if (!${addList.Count[|]}) /call send_pet
-			/if (!${addList.Count[|]} && ${DoDoT}) /call cast_DOT
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
+		/if (${switchdeBuffMezz}) {
+			/call get_target_ENC
+			/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
+			/if (${Bool[${mobList}]}) /call list_delete mobList ${Target2Kill}
+			/return
+			:loop
+			/if (${Spawn[${Target2Kill}].Type.Equal[Corpse]} || !${Target2Kill} || !${Target.ID} || ${Target.Type.Equal[corpse]} || !${Spawn[${Target2Kill}].ID}) /call get_target_ENC
 			/call check_for_adds
-			/if (!${addList.Count[|]} && ${DoNuke}) /call cast_nuke
+			/if (${addList.Count[|]}) /call mez_adds
 			/call check_for_adds
-			/if (!${addList.Count[|]}) /call disc_ENC
+			/if (${addList.Count[|]}) /return
+			/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
+			/call check_for_adds
+			/if (${addList.Count[|]}) /return
+			/if (!${addList.Count[|]}) /call check_deBuffs ${Target2Kill}
+			/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
 		}
-		/call click_BP
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/if (${switchBuffSelf} && !${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
-	}
-	/if (${coreAuto}) {	
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/call use_mod_rod
-		/if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
-		/if (${switchBuffItem}) /call check_crystals
 		/if (${switchHealCure}) /call cast_cure
+		
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/if (${switchdeBuffMezz}) {
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchCombatDoT}) /call cast_DOT
+			/if (${switchdeBuffMezz}) {
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
+			/if (${switchCombatNuke}) /call cast_nuke
+			/if (${switchdeBuffMezz}) {
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			| /if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
+			/if (${switchBuffItem}) /call check_crystals
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -127,18 +129,46 @@ sub check_rune_ENC()
 	AMIDEAD
 	CHECKEXIT
 	UPDATEHUD "BUFF: Rune"
-	/if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0 FALSE TRUE
+
+
+
+	 /if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0 FALSE TRUE
+	| /if (${validate_cast[alt, "${runeVeil}", ${Me.ID}]}) /call core_cast2 "${runeVeil}" alt 0 FALSE
+	
 	/if (${validate_buff[alt, rune, runeEldritch]}) /call core_cast "${runeEldritch}" 0 0 FALSE TRUE
+	| /if (${validate_cast[alt, "${runeEldritch}", ${Me.ID}]}) /call core_cast2 "${runeEldritch}" alt 0 FALSE
+	
 	/if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0 FALSE TRUE
+	| /if (${validate_cast[alt, "${runeSpray}", ${Me.ID}]}) /call core_cast2 "${runeSpray}" alt 0 FALSE
+	
 	/if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0 FALSE TRUE
+	| /if (${validate_cast[alt, "${runeReactive}", ${Me.ID}]}) /call core_cast2 "${runeReactive}" alt 0 FALSE
+	
 	/if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0 FALSE TRUE
-	| /if (${validate_buff[spell, rune, runeAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE TRUE
-	/if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]}) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
+	| /if (${validate_cast[alt, "${runeMind}", ${Me.ID}]}) /call core_cast2 "${runeMind}" alt 0 FALSE
+	
+	/if (${validate_buff[spell, rune, runeAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE TRUE
+	| /if (${validate_cast[spell, "${runeAuspice}", ${Me.ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
+	
+	| /if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]}) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
+	| /if (${validate_cast[spell, "${runeEntAuspice}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE
+	 
 	/if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0 FALSE TRUE
+	| /if (${validate_cast[spell, "${runeWard}", ${Me.ID}]}) /call core_cast2 "${runeWard}" 0 0 FALSE
+	
 	/if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID} FALSE TRUE
+	| /if (${validate_cast[spell, "${runePoly}", ${Me.ID}]}) /call core_cast2 "${runePoly}" ${buffGem} ${Me.ID} FALSE
+	
 	/if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE TRUE
+	| /if (${validate_cast[spell, "${runeBrimstone}", ${Me.ID}]}) /call core_cast2 "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE
+	
 	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE TRUE
+	| /if (${validate_cast[spell, "${runeShieldofFate}", ${Me.ID}]}) /call core_cast2 "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE
+	
 	/if (${validate_buff[spell, rune, runeLegion]} && ${FindItemCount[Peridot]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID} FALSE TRUE
+	|  /if (${validate_cast[spell, "${runeLegion}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeLegion}" ${buffGem} ${Me.ID} FALSE
+
+
 	/call check_rune_auspice
 	UPDATEHUD FALSE
 /return
@@ -566,7 +596,7 @@ sub find_mob_to_charm()
 	/declare _count int local 0
 	/declare _spawns int local 0
 	/declare _tmpID int local 0
-	/delcare _maxlvl int local ${Int[${Math.Calc[${Me.Level}-1]}]}
+	/declare _maxlvl int local ${Int[${Math.Calc[${Me.Level}-1]}]}
 	
 	/delay 1
 	

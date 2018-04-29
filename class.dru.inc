@@ -17,9 +17,9 @@ sub core_DRU()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
-	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 	CHECKTIE
+	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
+	/if (${coreAuto} && ${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 
   /if (!${Bool[${timer_set_xtarget}]} && ${switchHealXtarget}) {
     /call set_xtarget
@@ -32,57 +32,42 @@ sub core_DRU()
 		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
 	}	
 
-
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		/call send_pet
-		/call check_deBuffs ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke
-		/call disc_${Me.Class.ShortName}			
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-	} else /if (${combat.Equal[HEAL]}) {
-		/call set_combat HEAL
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
+		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXTarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
-		/call check_deBuffs ${Target2Kill}
-	} else /if (${Select[${combat},DUAL]}) {
-		CHECKREZ
-		/call set_combat HEAL
-		/call send_pet
-		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/call is_target_valid ${Target2Kill}
+		/if (${switchHealCure}) /call cast_cure
+
 		/if (${isValidTarget}) {
 			CHECKREZ
-			/call set_combat NUKE
-			/call check_deBuffs ${Target2Kill}
+			/call set_combat ${combat.Upper}
+			/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
-			/if (${DoDoT}) /call cast_DOT
-			/if (${DoNuke}) /call cast_nuke
-			/call disc_${Me.Class.ShortName}			
-			/call click_DPS_${Me.Class.ShortName}
+			/if (${switchCombatDoT}) /call cast_DOT
+			/if (${switchCombatNuke}) /call cast_nuke
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call click_BP
 			/call click_item
-			/call click_item_swarm ${Target2Kill}
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
 		}
-	}
-	/if (${coreAuto}) {	
-		/call use_mod_rod
-		/if (${switchHealCure}) /call cast_cure
-	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} || !${coreAuto} && ${Target.ID} && ${Bool[${combat}]}) {
-		/call is_target_dead
-		/if (!${Macro.Return}) /goto :killtarget
+		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
+
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
 	}
 /return
 

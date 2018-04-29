@@ -17,49 +17,42 @@ sub core_ROG()
 	/doevents
 	AMIDEAD
 	CHECKTIE
-	
-	/if (${Bool[${RangeItemSummon}]}) /call check_ammo
-	/if (!${timer_click_poison}) /call click_poison
-	/if (${coreAuto} && ${switchSos}) /call automaticSoS
 
-
-	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
-	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/if (${Me.Invis}) /call sneak_attack
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/call send_pet
-		/call stick_to_target
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call use_skill_melee ${Target2Kill}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/call set_combat RANGE
-		/call send_pet
-		CHECKTIE
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},HEAL]}) {
-	} else /if (${Select[${combat},DUAL]}) {
-	}
 	/if (${coreAuto}) {
-		/call cast_disc_breather
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (!${timer_click_poison}) /call click_poison
+		/if (${switchSos}) /call automaticSoS
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+	
+	:killtarget
+	CHECKREZ
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
+
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
+	} 
+
 /return
 
 
@@ -96,20 +89,30 @@ sub disc_ROG()
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill} FALSE
-	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${Target.ID} && ${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
+	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	/call core_cast "Shadow's Flanking" alt 0 FALSE
-	/call use_skill_melee ${Target2Kill}
+	| /call use_skill_melee ${Target2Kill}
 	
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0 FALSE
 	/if (${validate_buff[disc, discs, DiscVision]}) /call core_cast "${DiscVision}" disc 0 FALSE
 
-	/if (${Target.ID} && ${Me.AltAbilityReady[${TwistedShank}]}) /call core_cast "${TwistedShank}" alt ${Target2Kill} FALSE
-	/if (${Target.ID} && ${Me.AltAbilityReady[${AbsorbingAgent}]}) /call core_cast "${AbsorbingAgent}" alt ${Target2Kill} FALSE
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscShadowHunter}]}) /call core_cast "${DiscShadowHunter}" disc ${Target2Kill} FALSE
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscDisassociative}]}) /call core_cast "${DiscDisassociative}" disc ${Target2Kill} FALSE
+	| /if (${Target.ID} && ${Me.AltAbilityReady[${TwistedShank}]}) /call core_cast "${TwistedShank}" alt ${Target2Kill} FALSE
+	/if (${validate_cast[alt, "${TwistedShank}", ${Target2Kill}]}) /call core_cast2 "${TwistedShank}" alt ${Target2Kill} FALSE
+
+	| /if (${Target.ID} && ${Me.AltAbilityReady[${AbsorbingAgent}]}) /call core_cast "${AbsorbingAgent}" alt ${Target2Kill} FALSE
+	/if (${validate_cast[alt, "${AbsorbingAgent}", ${Target2Kill}]}) /call core_cast2 "${AbsorbingAgent}" alt ${Target2Kill} FALSE
 	
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBleed}]} && ${Bool[${DiscBleed}]}) /call core_cast "${DiscBleed}" disc ${Target2Kill} FALSE
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscShadowHunter}]}) /call core_cast "${DiscShadowHunter}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[disc, "${DiscShadowHunter}", ${Target2Kill}]}) /call core_cast2 "${DiscShadowHunter}" disc ${Target2Kill} FALSE
+	
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscDisassociative}]}) /call core_cast "${DiscDisassociative}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[disc, "${DiscDisassociative}", ${Target2Kill}]}) /call core_cast2 "${DiscDisassociative}" disc ${Target2Kill} FALSE
+	
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBleed}]} && ${Bool[${DiscBleed}]}) /call core_cast "${DiscBleed}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[disc, "${DiscBleed}", ${Target2Kill}]}) /call core_cast2 "${DiscBleed}" disc ${Target2Kill} FALSE
+
+
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPlay}]} && ${Bool[${DiscPlay}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
 
 	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
@@ -126,13 +129,15 @@ sub disc_ROG()
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHiddenBlade}]} && ${Bool[${DiscHiddenBlade}]}) /call core_cast "${DiscHiddenBlade}" disc 0 FALSE
 	/if (${validate_buff[disc, discs, DiscHiddenBlade]}) /call core_cast "${DiscHiddenBlade}" disc 0 FALSE
 
-	/call use_skill_melee ${Target2Kill}
+	| /call use_skill_melee ${Target2Kill}
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHack}]} && ${Bool[${DiscHack}]}) /call core_cast "${DiscHack}" disc ${Target2Kill} FALSE
-	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscBladePoison}]} && ${Bool[${DiscBladePoison}]}) /call core_cast "${DiscBladePoison}" disc 0 FALSE
+
 	/if (${validate_buff[disc, discs, DiscBladePoison]}) /call core_cast "${DiscBladePoison}" disc 0 FALSE
 
-	| /if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[disc, "${DiscAggro}", ${Target2Kill}]}) /call core_cast2 "${DiscAggro}" disc ${Target2Kill} FALSE
+
+
 	
 	/if (${validate_buff[disc, discs, DiscBlinding]} && ${Target.Level} <= 110) /call core_cast "${DiscBlinding}" disc ${Target2Kill} FALSE
 	
@@ -153,7 +158,7 @@ sub click_DPS_ROG()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/call use_skill_melee ${Target2Kill}
+	| /call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 
 	| epic 2.0
@@ -174,7 +179,7 @@ sub patch_heal_ROG()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${Me.AltAbilityReady[Tumble]}) /call core_cast "Tumble" alt 0 FALSE
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${Me.AltAbilityReady[Tumble]} && ${validate_cast[alt, "Tumble", ${Me.ID}]}) /call core_cast2 "Tumble" alt 0 FALSE
 	/call click_item_heal
 /return
 
@@ -187,10 +192,10 @@ sub patch_heal_ROG()
  ***|
 sub automaticSoS()
 	DEBUGCLASS ${cbug}automaticSoS()\ax
+	/if (!${switchSos}) /return
 	AMIDEAD
 	CHECKTIE
 
-	/if (!${switchSos}) /return
 	/if (${Me.Combat} || ${Me.Stunned} || ${Me.State.Equal[FEIGN]}) /return
 	/if (${Me.Casting.ID} || ${Me.State.Equal[BIND]} || ${Window[TradeWnd].Open} || ${Window[MerchantWnd].Open} || ${Window[BigBankWnd].Open}) /return
 	
@@ -279,7 +284,7 @@ sub synergy_ROG()
 
 
 	/call core_cast "Dichotomic Weapons" disc 0 FALSE
-	/call use_skill_melee ${Target2Kill}
+	| /call use_skill_melee ${Target2Kill}
 	
 	/if (!${AEMelee}) {
 		/if (${Me.AltAbilityReady[Focused Rake's Rampage]}) /call core_cast "Focused Rake's Rampage" alt 0 FALSE
@@ -342,6 +347,7 @@ sub Bind_setROG(string _classType, string _verbage)
 		/if (${Range.Between[1,100:${Int[${_verbage}]}]}) {
 			/call writeINI clickPoisonCount Poison ${_num}
 			VOUT Rogue Poison Keep ${sep} ${cinfo}${_num}\ax
+			/return
 		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,100:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
 			/return

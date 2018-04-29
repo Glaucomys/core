@@ -62,19 +62,6 @@ sub writeCoreINI(string _varName, string _section, string _value)
 
 
 |***
- *	DES: adjust the related ini
- *	USE: /call Event_SetaliasVar NA [variable] [INISection] [value]
- *	INI: 
- *  NOTE: THIS IE BEING DONE AWAY WITH
-
-#event SetaliasVar 			"[MQ2] - Core: #1# -> [#2#] -> #3#"
-sub Event_SetaliasVar(string line, string _varName, string _section, string _value)
-	/call writeINI ${_varName} ${_section} ${_value}
-/return
- ***|
-
-
-|***
  *	DES: creates timers
  *	USE: /call declareTimer [NAME] [INT|BOOL|STRING|FLOAT] [INISECTION] [value] [timer_check_blah_blah]
  *	INI: 
@@ -101,13 +88,12 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
 
 
 |***
- *	DES: creates entries for the toon INI
- *	USE: 
+ *	DES: INI controller: will createnew entries and read/adapt current entries for use in memory
+ *	USE: /call setINIVar SKILLNAME int|bool|string [ini sub section] "variable value"
  *	INI: 
  *  NOTE: 
  ***|
 sub setINIVar(string _name, string _type, string _section, string _value)
-| sub DeclareIniVar(string _name, string _type, string _section, string _value)
 	| /echo \atDeclareIniVar\ax(_name:\a-w${_name}\ax, _type:\a-w${_type}\ax, _section:\a-w${_section}\ax, _value:\a-w${_value}\ax)
 	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]}) {
 		VOUT ${owarning} ${sep} INVALID INI SETTING/STRING [_name:${_name}/_type:${_type}/_section:${_section}] --\ax
@@ -172,7 +158,6 @@ sub update_zone_list(string _list)
 		/call echos listexists ${_list}
 	} else /if (${Target.ID} && !${Bool[${Spawn[pc ID ${Target.ID}]}]} && !${${_list}.Find[${Target.DisplayName}]}) {
 		/if (${Target.ID}) ${If[${Bool[${${_list}}]},/ini "${INIZone}" "${Zone.ShortName}" "${_list}" "${${_list}}|${Target.DisplayName}",/ini "${INIZone}" "${Zone.ShortName}" "${_list}" "|${Target.DisplayName}"]}
-		| /if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) /bc zonereset
 		/if (${validate_plugin[FALSE, |mq2eqbc]} && ${EQBC.Connected}) /bc zonereset
 	}
 /return 
@@ -264,12 +249,12 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180414
+	/call setDeclare coreBuild											int			outer 20180429
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
 	/declare _count 																int 		local 0
-	/call setDeclare combat													string	outer
+	/call setDeclare combat													string	outer FALSE
 		
 	/call setDeclare isValidTarget									bool		outer FALSE
 
@@ -398,7 +383,6 @@ sub set_declares()
 	/call DeclareCoreIniVar switchDispBuild					string	General TRUE
 	/call DeclareCoreIniVar switchDispEXP						string	General TRUE
 	/call DeclareCoreIniVar switchAADiscnowManual		string	General FALSE
-	/call DeclareCoreIniVar switchAlwaysFaceTarget	string	General FALSE
 	/call DeclareCoreIniVar switchDelayWhileZoning	string	General FALSE
 	/call DeclareCoreIniVar switchAutoRestFull			string	General FALSE
 	/call DeclareCoreIniVar switchModRodinRest			string	General TRUE
@@ -443,22 +427,22 @@ sub set_declares()
 	
 
 	| /here settings
-	/call DeclareCoreIniVar combatWAR								string	Here MELEE
-	/call DeclareCoreIniVar combatPAL								string	Here MELEE
-	/call DeclareCoreIniVar combatSHD								string	Here MELEE
-	/call DeclareCoreIniVar combatCLR								string	Here HEAL
-	/call DeclareCoreIniVar combatSHM								string	Here HEAL
-	/call DeclareCoreIniVar combatDRU								string	Here DUAL
-	/call DeclareCoreIniVar combatMAG								string	Here NUKE
-	/call DeclareCoreIniVar combatENC								string	Here DUAL
-	/call DeclareCoreIniVar combatWIZ								string	Here NUKE
-	/call DeclareCoreIniVar combatNEC								string	Here NUKE
-	/call DeclareCoreIniVar combatMNK								string	Here MELEE
-	/call DeclareCoreIniVar combatROG								string	Here MELEE
-	/call DeclareCoreIniVar combatBER								string	Here MELEE
-	/call DeclareCoreIniVar combatBST								string	Here MELEE
-	/call DeclareCoreIniVar combatRNG								string	Here MELEE
-	/call DeclareCoreIniVar combatBRD								string	Here MELEE
+	| /call DeclareCoreIniVar combatWAR								string	Here MELEE
+	| /call DeclareCoreIniVar combatPAL								string	Here MELEE
+	| /call DeclareCoreIniVar combatSHD								string	Here MELEE
+	| /call DeclareCoreIniVar combatCLR								string	Here HEAL
+	| /call DeclareCoreIniVar combatSHM								string	Here HEAL
+	| /call DeclareCoreIniVar combatDRU								string	Here DUAL
+	| /call DeclareCoreIniVar combatMAG								string	Here NUKE
+	| /call DeclareCoreIniVar combatENC								string	Here DUAL
+	| /call DeclareCoreIniVar combatWIZ								string	Here NUKE
+	| /call DeclareCoreIniVar combatNEC								string	Here NUKE
+	| /call DeclareCoreIniVar combatMNK								string	Here MELEE
+	| /call DeclareCoreIniVar combatROG								string	Here MELEE
+	| /call DeclareCoreIniVar combatBER								string	Here MELEE
+	| /call DeclareCoreIniVar combatBST								string	Here MELEE
+	| /call DeclareCoreIniVar combatRNG								string	Here MELEE
+	| /call DeclareCoreIniVar combatBRD								string	Here MELEE
 	/call DeclareCoreIniVar makeVisible							bool		Here TRUE
 	/call DeclareCoreIniVar clearTarget							bool		Here TRUE
 	/call DeclareCoreIniVar defaultTimerDelay				string	Here 1m
@@ -640,6 +624,7 @@ sub set_declares()
 	/call setDeclare BRDEpic2												string	outer "Prismatic Dragon Blade"
 	/call setDeclare BRDAlliance										string	outer "Alliance of Sticks and Stones"
 	/call setDeclare BRDAAUnity											string	outer FALSE
+	/call setDeclare BRDAAFade											string	outer 
 
 	| Beastlord
 	/call setDeclare BSTspire1											string	outer "Fundament: First Spire of the Savage Lord"
@@ -651,6 +636,7 @@ sub set_declares()
 	/call setDeclare BSTEpic2												string	outer "Spiritcaller Totem of the Feral"
 	/call setDeclare BSTAlliance										string	outer "Venomous Alliance"
 	/call setDeclare BSTAAUnity											string	outer "Feralist's Unity"
+	/call setDeclare BSTAAFade											string	outer 
 
 	| Berzerker
 	/call setDeclare BERspire1											string	outer "Fundament: First Spire of Savagery"
@@ -662,6 +648,7 @@ sub set_declares()
 	/call setDeclare BEREpic2												string	outer "Vengeful Taelosian Blood Axe"
 	/call setDeclare BERAlliance										string	outer "Demolisher's Alliance"
 	/call setDeclare BERAAUnity											string	outer FALSE
+	/call setDeclare BERAAFade											string	outer 
 
 	| Cleric
 	/call setDeclare CLRspire1											string	outer "Fundament: First Spire of Divinity"
@@ -673,6 +660,7 @@ sub set_declares()
 	/call setDeclare CLREpic2												string	outer "Aegis of Superior Divinity"
 	/call setDeclare CLRAlliance										string	outer "Divine Alliance"
 	/call setDeclare CLRAAUnity											string	outer "Saint's Unity"
+	/call setDeclare CLRAAFade											string	outer "Divine Peace"
 
 	| Druid
 	/call setDeclare DRUspire1											string	outer "Fundament: First Spire of Nature"
@@ -684,6 +672,7 @@ sub set_declares()
 	/call setDeclare DRUEpic2												string	outer "Staff of Everliving Brambles"
 	/call setDeclare DRUAlliance										string	outer "Bosquetender's Alliance"
 	/call setDeclare DRUAAUnity											string	outer "Wildtender's Unity"
+	/call setDeclare DRUAAFade											string	outer 
 	
 	| Enchanter	
 	/call setDeclare ENCspire1											string	outer "Fundament: First Spire of Enchantment"
@@ -697,6 +686,7 @@ sub set_declares()
 	/call setDeclare ENCEpic2												string	outer "Staff of Eternal Eloquence"
 	/call setDeclare ENCAlliance										string	outer "Chromatic Alliance"
 	/call setDeclare ENCAAUnity											string	outer "Orator's Unity"
+	/call setDeclare ENCAAFade											string	outer "Self Stasis"
 
 	| Magician
 	/call setDeclare MAGspire1											string	outer "Fundament: First Spire of the Elements"
@@ -708,6 +698,7 @@ sub set_declares()
 	/call setDeclare MAGEpic2												string	outer "Focus of Primal Elements"
 	/call setDeclare MAGAlliance										string	outer "Firebound Alliance"
 	/call setDeclare MAGAAUnity											string	outer "Thaumaturge's Unity"
+	/call setDeclare MAGAAFade											string	outer "Drape of Shadows"
 
 	| Monk
 	/call setDeclare MNKspire1											string	outer "Fundament: First Spire of the Sensei"
@@ -719,6 +710,7 @@ sub set_declares()
 	/call setDeclare MNKEpic2												string	outer "Transcended Fistwraps of Immortality"
 	/call setDeclare MNKAlliance										string	outer "Doomwalker's Alliance"
 	/call setDeclare MNKAAUnity											string	outer FALSE
+	/call setDeclare MNKAAFade											string	outer 
 		
 	| Necromancer
 	/call setDeclare NECspire1											string	outer "Fundament: First Spire of Necromancy"
@@ -730,6 +722,7 @@ sub set_declares()
 	/call setDeclare NECEpic2												string	outer "Deathwhisper"
 	/call setDeclare NECAlliance										string	outer "Malevolent Alliance"
 	/call setDeclare NECAAUnity											string	outer "Mortifier's Unity"
+	/call setDeclare NECAAFade											string	outer 
 
 	| Paladin
 	/call setDeclare PALspire1											string	outer "Fundament: First Spire of Holiness"
@@ -741,6 +734,7 @@ sub set_declares()
 	/call setDeclare PALEpic2												string	outer "Nightbane, Sword of the Valiant"
 	/call setDeclare PALAlliance										string	outer "Holy Alliance"
 	/call setDeclare PALAAUnity											string	outer "Divine Protector's Unity"
+	/call setDeclare PALAAFade											string	outer "Balefire Burst"
 
 	| Ranger
 	/call setDeclare RNGspire1											string	outer "Fundament: First Spire of the Pathfinders"
@@ -755,6 +749,7 @@ sub set_declares()
 	/call setDeclare RNGEpic2												string	outer "Aurora, the Heartwood Blade"
 	/call setDeclare RNGAlliance										string	outer "Bosquestalker's Alliance"
 	/call setDeclare RNGAAUnity											string	outer "Wildstalker's Unity (Azia)"
+	/call setDeclare RNGAAFade											string	outer "Cover Tracks"
 
 	| Rogue
 	/call setDeclare ROGspire1											string	outer "Fundament: First Spire of the Rake"
@@ -766,6 +761,7 @@ sub set_declares()
 	/call setDeclare ROGEpic2												string	outer "Nightshade, Blade of Entropy"
 	/call setDeclare ROGAlliance										string	outer "Poisonous Alliance"
 	/call setDeclare ROGAAUnity											string	outer FALSE
+	/call setDeclare ROGAAFade											string	outer "Escape"
 
 	| Shadow Knight
 	/call setDeclare SHDspire1											string	outer "Fundament: First Spire of the Reavers"
@@ -777,6 +773,7 @@ sub set_declares()
 	/call setDeclare SHDEpic2												string	outer "Innoruuk's Dark Blessing"
 	/call setDeclare SHDAlliance										string	outer "Bloodletting Alliance"
 	/call setDeclare SHDAAUnity											string	outer "Dark Lord's Unity (Beza)"
+	/call setDeclare SHDAAFade											string	outer "Death Peace"
 
 	| Shaman
 	/call setDeclare SHMspire1											string	outer "Fundament: First Spire of Ancestors"
@@ -788,6 +785,7 @@ sub set_declares()
 	/call setDeclare SHMEpic2												string	outer "Blessed Spiritstaff of the Heyokah"
 	/call setDeclare SHMAlliance										string	outer "Ancient Alliance"
 	/call setDeclare SHMAAUnity											string	outer "Visionary's Unity"
+	/call setDeclare SHMAAFade											string	outer 
 
 	| Warrior
 	/call setDeclare WARspire1											string	outer "Fundament: First Spire of the Warlord"
@@ -799,6 +797,7 @@ sub set_declares()
 	/call setDeclare WAREpic2												string	outer "Kreljnok's Sword of Eternal Power"
 	/call setDeclare WARAlliance										string	outer FALSE
 	/call setDeclare WARAAUnity											string	outer FALSE
+	/call setDeclare WARAAFade											string	outer 
 
 	| Wizard 
 	/call setDeclare WIZspire1											string	outer "Fundament: First Spire of Arcanum"
@@ -811,6 +810,7 @@ sub set_declares()
 	/call setDeclare WIZEpic2												string	outer "Staff of Phenomenal Power"
 	/call setDeclare WIZAlliance										string	outer "Frostbound Alliance"
 	/call setDeclare WIZAAUnity											string	outer "Etherealist's Unity"
+	/call setDeclare WIZAAFade											string	outer "A Hole in Space"
 
 
 	| set AA Unity Buffs
@@ -822,8 +822,7 @@ sub set_declares()
 
 
 	| combat controls
-	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|dual|engage|force|forceassist|heal|MA1|MA2|melee|nuke|nukedelay|pull|range|saferadius|smartengage|smartma|stopnuke|zradius"
-	/call setINIVar combat					 								string	Common MELEE
+	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|engage|faderest|force|melee|range|nuke|dot|forceassist|MA1|MA2|nukedelay|pull|saferadius|smartengage|smartma|stopnuke|zradius"
 	/call setINIVar MA1			 												string 	Common FALSE
 	/call setINIVar MA2			 												string 	Common FALSE
 	/call setINIVar MobAgro													int 		Common 60
@@ -841,6 +840,13 @@ sub set_declares()
 	/call setINIVar stopnukeAt 											int 		Common 0
 	/call setINIVar switchAlliance									bool		Spells FALSE
 	/call setINIVar spellAllianceTrigger						string	Spells |FALSE|FALSE
+	/call setINIVar switchForceFadeRest							bool		Common FALSE
+	
+	/call setINIVar switchCombatMelee								bool		Common FALSE
+	/call setINIVar switchCombatRange								bool		Common FALSE
+	/call setINIVar switchCombatNuke								bool		Common FALSE
+	/call setINIVar switchCombatDoT									bool		Common FALSE
+	
 	
 			
 	| rez	control
@@ -955,7 +961,7 @@ sub set_declares()
 
 
 	| overrides
-  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|loot|los|name|safelist|safezone"
+  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|name|safelist|safezone"
 	/call setDeclare switchOverride									bool		outer FALSE
 	/call setDeclare switchOverrideStop							bool		outer FALSE
   /call setINIVar switchOverrideLos								bool		Override FALSE
@@ -967,6 +973,7 @@ sub set_declares()
   /call setINIVar switchOverrideLoot							bool		Override FALSE
   /call setINIVar switchOverrideSafelist					bool		Override FALSE
   /call setDeclare switchOverrideClasscheck				bool		outer FALSE
+	/call setINIVar switchOverrideCombatheal				string	Override FALSE
 
 
 	| General class combat skills
@@ -986,10 +993,10 @@ sub set_declares()
 	/if (${Select[${Me.Class.ShortName},ROG]}) {
 		/call setDeclare flagSoS											bool		outer FALSE
 		/call setINIVar backstab											bool		meleedisc FALSE
-		/call setINIVar intimidation									bool		meleedisc FALSE
+		| /call setINIVar intimidation									bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},BRD|BER]}) {
-		/call setINIVar intimidation									bool		meleedisc FALSE
+		| /call setINIVar intimidation									bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},MNK,BST]}) {
 		/call setINIVar dragonpunch										bool		meleedisc FALSE
@@ -1177,10 +1184,10 @@ sub set_declares()
   /call setDeclare magType												string	outer "|fade|forcetwincast|gather|healpoint|mana|rods|spiregroup|spireraid"
   /call setDeclare mnkType												string	outer "|fdpct|healpoint|spiregroup|spireraid|trainmelee"
   /call setDeclare necType												string	outer "|healpoint|spiregroup|spireraid"
-  /call setDeclare palType												string	outer "|defcount|groupheal|harmonions|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp"
+  /call setDeclare palType												string	outer "|defcount|groupheal|harmonious|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp"
   /call setDeclare rogType												string	outer "|ae|autosos|healpoint|poison|spiregroup|spireraid"
   /call setDeclare rngType												string	outer "|fastheal|healpoint|spice|spiregroup|spireraid|summer"
-  /call setDeclare shdType												string	outer "|defcount|harmoniouns|healpoint|skin|spiregroup|spireraid|stance"
+  /call setDeclare shdType												string	outer "|defcount|harmonious|healpoint|skin|spiregroup|spireraid|stance"
   /call setDeclare shmType												string	outer "|groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|talisman|xtradius|xttime"
   /call setDeclare warType												string	outer "|healpoint|spiregroup|spireraid"
   /call setDeclare wizType												string	outer "|forcetwincast|gather|healpoint|line|manaburn|spiregroup|spireraid"
@@ -1755,10 +1762,8 @@ sub declare_PAL()
 	/call setDeclare mobAECount											int			outer 0 
 	/call setDeclare groupHurt 											int 		outer 0
 	/call setDeclare WorstHurt 											string 	outer FALSE
-	| /call setDeclare WorstHurtID 										int 		outer
 	/call setDeclare WorstHP 												int 		outer 100
 	/call setDeclare WorstClass 										string 	outer FALSE
-	| /call setDeclare MinorHurt											int    	outer 0 
 	
   /call setINIVar healWholeGroup									string 	Heal "Wave of Grief"
   /call setINIVar splashGroup											string 	Heal "Wave of Grief"
@@ -1932,21 +1937,28 @@ sub declare_BER()
  	/call setINIVar DiscDisconcert									string 	Discs "Disconcerting Discipline"
  	/call setINIVar DiscEnduranceTap								string 	Discs "Sapping Strikes"
  	/call setINIVar DiscPet													string 	Discs "Phantom Assailant"
-	/call setINIVar ${Me.Class.ShortName}Poin	 			int 		Heal 60
+	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 60
+	/call setDeclare OpenWoundEffect								string 	outer "Open Wound"
+	/call setDeclare AugmentedFrenzyEffect 					string 	outer "Augmented Frenzy Effect"
+	/call setINIVar buffGem 												string 	Spells FALSE
+	/call setINIVar intimidation										bool		meleedisc FALSE
 
-	/call setDeclare OpenWoundEffect								string 	outer Open Wound
+|**	
+
   /if (${OpenWoundDisc.Find[rk. III]}) {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
 		/varset OpenWoundEffect ${OpenWoundDisc.Left[-6]} effect II
   }
-	/call setDeclare AugmentedFrenzyEffect 					string outer Augmented Frenzy Effect
+  
+
+
   /if (${AugmentedFrenzyDisc.Find[rk. III]}) {
 		/varset AugmentedFrenzyEffect ${AugmentedFrenzyDisc.Left[-7]} effect III
 	} else /if (${RaidBuffCast${x}.Find[rk. II]})  {
 		/varset AugmentedFrenzyEffect ${AugmentedFrenzyDisc.Left[-6]} effect II
   } 
-    
+**|    
 	/call setINIVar spellCripple 										string 	Spells FALSE
 /return	
 
@@ -1960,7 +1972,6 @@ sub declare_BER()
  ***|
 sub declare_RNG()
 	/call setTimer tNuke_Summer											string	Timer 3s timer_cast_nuke_summer
-	/call create_timer timer_Elemental_Arrow 1
 
 	/call setINIVar DoNuke					 								int			Spells 5
 	/call setINIVar Nuke1					 									string	Spells "Anticipated Shots"	
@@ -2008,12 +2019,6 @@ sub declare_RNG()
 	/call setINIVar DiscEnrage		 									string	Spells "Enraging Wheel Kicks"
 	/call setINIVar DiscHeal			 									string	Spells "Reflexive Bladespurs"
 	/call setINIVar BladeStorm											string	Spells "Focused Squall of Blades"
-	/call setINIVar ElementalArrow									string	Spells "Elemental Arrow"
-	/call setINIVar GlacialArow											string	Spells "Glacial Arrow"
-	/call setINIVar VolatileArrow										string	Spells "Volatile Arrow"
-	/call setINIVar ArrowPoison			 								string	Spells "Poison Arrows"	
-	/call setINIVar ArrowFire			 									string	Spells "Flaming Arrows"	
-	/call setINIVar ArrowIce				 								string	Spells "Frost Arrows"	
 	/call setINIVar AuspiceTXT											string	Spells "AUSPICE (critSpell 33%, accuracy 230%, critHeal 33%, critMelee 225%, critDoT 33%, attack +165)"
 	/call setINIVar DiscSqual			 									string	Spells "Focused Squall of Blades"
 	                                        		
@@ -2251,6 +2256,7 @@ sub declare_BRD()
 	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
 	                                          		
 	/call setINIVar switchIntimidKick 							bool	 	meleedisc FALSE
+	/call setINIVar intimidation										bool		meleedisc FALSE
 	
 	
 /return	
@@ -2332,6 +2338,7 @@ sub declare_BST()
 sub declare_MNK()
 	/call setINIVar spellCripple 										string 	Spells FALSE
 	/call setINIVar switchMNKTrainMelee							bool		Common FALSE
+	/call setINIVar intimidation										bool		meleedisc FALSE
 	
 	/call setINIVar setFDAgroPct										int			Melee FALSE
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
@@ -2386,6 +2393,7 @@ sub declare_ROG()
 	/call setINIVar clickPoisonCount								int		 	Poison 60
                                              		
 	/call setINIVar spellCripple 										string 	Spells FALSE
+	/call setINIVar intimidation										bool		meleedisc FALSE
                                              		
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 /return	
@@ -2433,7 +2441,7 @@ sub declare_CLR()
   /call setINIVar healRemedy1											string 	Heal "Merciful Remedy"
   /call setINIVar healRemedy2											string 	Heal "Spiritual Remedy"
   /call setINIVar healRemedy3											string 	Heal "Graceful Remedy"
-  /call setINIVar healHoT 												string 	Heal "Ardent Elixir"
+  /call setINIVar healHoT 												string 	Heal FALSE
   /call setINIVar healSplash											string 	Heal "Convalescent Splash"
   /call setINIVar healIntervention1 							string  Heal "Merciful Intervention"
   /call setINIVar healIntervention2 							string  Heal "Mystical Intervention"
@@ -4303,7 +4311,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 		} else {
 			/call writeINI coreAuto Common ${If[${coreAuto},FALSE,TRUE]}
 		}
-		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}  
+		/varset combat ${If[${coreAuto},COMBAT,FALSE]}  
 		/if (!${coreAuto}) { 
 			/call set_stop TRUE
 			/call clear_combat
@@ -4597,7 +4605,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	/declare _bind string local cc
 	/declare _listout string local
 	/declare _sep bool local FALSE
-	/declare _combatModes string local |melee|range|nuke|heal|dual
+	| /declare _combatModes string local |melee|range|nuke|heal|dual
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -4620,6 +4628,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${Bool[${_verbage}]}) {
 			/if (${Target.ID} && (${Target.ID} != ${Me.ID}) && (${Target.ID} != ${Me.Pet.ID})) {
 
+|**
 				| engage Melee combat
 				/if (${Bool[${_verbage.Equal[melee]}]}) {
 					/varset isValidTarget TRUE
@@ -4632,6 +4641,12 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 						/varset isValidTarget TRUE
 						/varset combat RANGE
 						/varset Target2Kill ${Target.ID}	
+					} else /if (${Target.Distance} < 31) {	
+						VOUT Adjusting to ${sep} ${cinfo}MELEE\ax
+						/varset isValidTarget TRUE
+						/varset combat MELEE
+						/varset Target2Kill ${Target.ID}			
+						/varset _verbage MELEE				
 					} 
 
 				| engage Nuke combat
@@ -4639,6 +4654,32 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset isValidTarget TRUE
 					/varset combat NUKE
 					/varset Target2Kill ${Target.ID}
+**|
+
+
+				| engage base combat
+				/if (${Bool[${_verbage.Equal[combat]}]}) {
+					/varset isValidTarget TRUE
+					/varset combat COMBAT
+					/varset Target2Kill ${Target.ID}
+	
+	|**
+					/if (${Target.Distance} > 31) {
+						/varset isValidTarget TRUE
+						/varset Target2Kill ${Target.ID}	
+					} else /if (${Target.Distance} < 31) {	
+						VOUT Adjusting to ${sep} ${cinfo}MELEE\ax
+						/varset isValidTarget TRUE
+						/varset Target2Kill ${Target.ID}			
+					} 
+
+**|
+
+
+
+
+
+
 
 				| force assist for other eqbc toons
 				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
@@ -4649,12 +4690,12 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					DEBUG passing targetID: ${Target.ID}			
 					/bca //varset Target2Kill ${Target.ID}
 				}
-				VOUT /${_bind} force ${cinfo}${_verbage}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
+				VOUT /${_bind} force ${cinfo}${_verbage.Upper}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 			}
 			 
 			| echo options
 			} else {
-				/declare _tmpVariable string local |melee|range|nuke
+				/declare _tmpVariable string local |combat
 				/for _count 1 to ${_tmpVariable.Count[|]}
 					/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_tmpVariable.Arg[${_count},|]}\ax
 					/varset _sep TRUE
@@ -4690,15 +4731,29 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		} 
 		/return
 
-	| set automated combat
-	} else /if (${Bool[${_ccType.Equal[melee]}]} || ${Bool[${_ccType.Equal[range]}]} || ${Bool[${_ccType.Equal[nuke]}]} || ${Bool[${_ccType.Equal[heal]}]} || ${Bool[${_ccType.Equal[dual]}]}) {
-		/if (${combat.NotEqual[${_ccType}]}) /call writeINI combat Common ${_ccType.Upper}
-		/for _count 1 to ${_combatModes.Count[|]}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${combat.Equal[${_combatModes.Arg[${_count},|]}]},${cgood}${combat.Upper}\ax,${cinfo}${_combatModes.Arg[${_count},|]}\ax]}   
-			/varset _sep TRUE
-		/next _count
-		VOUT /${_bind} [${_listout}]	
-		/return
+
+
+	| enable combat: melee
+	} else /if (${Bool[${_ccType.Equal[melee]}]}) {
+		/call writeINI switchCombatMelee Common ${If[${switchCombatMelee},FALSE,TRUE]}
+
+	| enable combat: range
+	} else /if (${Bool[${_ccType.Equal[range]}]}) {
+		/call writeINI switchCombatRange Common ${If[${switchCombatRange},FALSE,TRUE]}
+
+	| enable combat: nuke
+	} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
+		/call writeINI switchCombatNuke Common ${If[${switchCombatNuke},FALSE,TRUE]}
+
+	| enable combat: dot
+	} else /if (${Bool[${_ccType.Equal[dot]}]}) {
+		/call writeINI switchCombatDoT Common ${If[${switchCombatDoT},FALSE,TRUE]}
+
+
+
+		
+		
+		
 				
 	| set Pull
 	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
@@ -4716,6 +4771,11 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			VOUT /${_bind} nukedelay(${cnum}${tNuke_Delay}\ax) allowable range is ${cinfo}1 - 100\ax
 		} 	
 		/return
+		
+	| force fade to rest
+	} else /if (${Bool[${_ccType.Equal[faderest]}]}) {
+		/if (!${validate_class[TRUE, |WAR|PAL|SHD|ROG|BER|RNG|MON|BST]}) /return
+		/call writeINI switchForceFadeRest Common ${If[${switchForceFadeRest},FALSE,TRUE]}
 
 	| agro/agro range ##
 	} else /if (${Bool[${_ccType.Equal[agro]}]}) {
@@ -4789,8 +4849,8 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[zradius]}]}) {
 		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
 			/call writeINI zradius Common ${_verbage} 
-			VOUT /${_bind} zradius ${sep} ${cinfo}${zradius}\ax
-			/call echos number "Set ZRadius" ${_verbage} 0 0
+			| VOUT /${_bind} zradius ${sep} ${cinfo}${zradius}\ax
+			| /call echos number "Set ZRadius" ${_verbage} 0 0
 		} else {
 			VOUT /${_bind} zradius(${cnum}${zradius}\ax) allowable range ${cinfo}1 - 200\ax
 			/return
@@ -4853,6 +4913,18 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[pull]}) /varset _listout ${_listout}(${If[${switchPull},${oon},${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[MA1]}) /varset _listout ${_listout}(${If[${Bool[${MA1}]},${cnum}${MA1}\ax,${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[MA2]}) /varset _listout ${_listout}(${If[${Bool[${MA2}]},${cnum}${MA2}\ax,${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[faderest]}) /varset _listout ${_listout}(${If[${switchForceFadeRest},${oon},${ooff}]})	
+		
+		/if (${${_bind}Type.Arg[${_count},|].Equal[melee]}) /varset _listout ${_listout}(${If[${switchCombatMelee},${oon},${ooff}]})	
+		/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout}(${If[${switchCombatRange},${oon},${ooff}]})	
+		/if (${${_bind}Type.Arg[${_count},|].Equal[nuke]}) /varset _listout ${_listout}(${If[${switchCombatNuke},${oon},${ooff}]})	
+		/if (${${_bind}Type.Arg[${_count},|].Equal[dot]}) /varset _listout ${_listout}(${If[${switchCombatDoT},${oon},${ooff}]})	
+		
+		
+		
+		
+		
+			
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -5275,51 +5347,6 @@ sub Bind_grab(string _name)
 sub Bind_nav_to_target (string _name)
 	/call Bind_setMovementControls goto ${_name}
 /return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

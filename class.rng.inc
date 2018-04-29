@@ -22,67 +22,40 @@ sub core_RNG()
 
 	:killtarget
 	| TESTFUNCTION
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-	
 	CHECKREZ
-	/if (${coreAuto} && ${switchAlliance}) /call trigger_alliance ${Target2Kill}
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call send_pet
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke
-		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${Bool[${timer_cast_nuke_summer}]}) /call cast_nuke_summer ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/call set_combat RANGE
-		/call send_pet
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke
-		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
-		/call click_item
-		/call click_DPS_${Me.Class.ShortName}
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		/call send_pet
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke
-		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
-		/call click_item
-		/call click_DPS_${Me.Class.ShortName}
-	} else /if (${Select[${combat},HEAL]}) {
-		/call set_combat HEAL
-	} else /if (${Select[${combat},DUAL]}) {
-		/call set_combat MELEE
-		/call use_skill_melee ${Target2Kill}
-		/if (${switchNukeSummer} && ${Bool[${NukeSummer}]} && !${timer_cast_nuke_summer}) /call cast_nuke_summer ${Target2Kill}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call use_skill_melee ${Target2Kill}
-		/call click_item
-		/call click_DPS_${Me.Class.ShortName}
-	} 
-	/if (${coreAuto}) {	
-		/call use_mod_rod
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-	}
 
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchCombatDoT}) /call cast_DOT
+			/if (${switchCombatNuke}) /call cast_nuke
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchNukeSummer} && ${switchCombatNuke}) /call cast_nuke_summer ${Target2Kill}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+	
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
+	} 
+
+
+
 /return
 
 
@@ -100,26 +73,47 @@ sub disc_RNG()
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	
+	/call check_deBuffs ${Target2Kill}
+	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+
+	| agro control
+	/if (${switchAgro}) {
+		/if (${validate_cast[disc, "${DiscEnrage}", ${Target2Kill}]}) /call core_cast2 "${DiscEnrage}" disc ${Target2Kill} FALSE
+	} else /if (!${switchAgro}) {
+		/if (${validate_cast[disc, "${DiscJolt}", ${Target2Kill}]}) /call core_cast2 "${DiscJolt}" disc ${Target2Kill} FALSE
+	}	
+		
 	| defensive	
 	/if (${coreAuto} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} > 1 && !${Bool[${Me.ActiveDisc}]}) {
-		/if (${Me.PctHPs} < 60*.${tmpHealOverride}) /call core_cast "${AADefensive1}" disc 0 FALSE
-		/if (${Me.PctHPs} < 40*.${tmpHealOverride}) /call core_cast "${AADefensive2}" disc 0 FALSE
-		/if (${Me.PctHPs} < 20*.${tmpHealOverride}) /call core_cast "${AADefensive3}" disc 0 FALSE
+		/if (${validate_cast[disc, "${AADefensive1}", ${Me.ID}]} && ${Me.PctHPs} < 60*.${tmpHealOverride}) /call core_cast2 "${AADefensive1}" disc 0 FALSE
+		/if (${validate_cast[disc, "${AADefensive2}", ${Me.ID}]} && ${Me.PctHPs} < 40*.${tmpHealOverride}) /call core_cast2 "${AADefensive2}" disc 0 FALSE
+		/if (${validate_cast[disc, "${AADefensive3}", ${Me.ID}]} && ${Me.PctHPs} < 20*.${tmpHealOverride}) /call core_cast2 "${AADefensive3}" disc 0 FALSE
 
 		| deflection
-		/if (${Me.PctHPs} < 10*.${tmpHealOverride}) /call core_cast "Weapon Shield Discipline" disc 0 FALSE
+		/if (${validate_cast[disc, "Weapon Shield Discipline", ${Me.ID}]} && ${Me.PctHPs} < 10*.${tmpHealOverride}) /call core_cast2 "Weapon Shield Discipline" disc 0 FALSE
 	}
 
-	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
-	/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${Me.SpellReady[${DoTSwarmDS}]} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast "${DoTSwarmDS}" 0 ${Target2Kill} FALSE
-	/if (${Target.ID} && ${switchdeBuffEradicate}) /call cast_eradicate_magic ${Target2Kill}
-	/if (${Target.ID} && !${timer_Elemental_Arrow}) /call cast_AA_elemental_arrows ${Target2Kill}
-	/call use_skill_melee ${Target2Kill}
-	/if (${Target.ID} && ${Bool[${DiscJolt}]} && !${switchAgro}) /call core_cast "${DiscJolt}" disc ${Target2Kill} FALSE
-	/if (${Target.ID} && ${Bool[${BladeStorm}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
-	/if (${Target.ID} && ${Bool[${DiscSqual}]}) /call core_cast "${DiscSqual}" disc ${Target2Kill} FALSE
-	/call check_deBuffs ${Target2Kill}
+	| elemental arrows rotation
+	/if (${Me.AltAbilityReady[Elemental Arrow]}) {
+		/if (!${Bool[${Target.Buff[Elemental Arrow]}]} && !${Bool[${Target.Buff[Glacial Arrow]}]} && !${Bool[${Target.Buff[Volatile Arrow]}]}) {
+			/if (${validate_cast[alt, "Elemental Arrow", ${Target2Kill}]}) /call core_cast2 "Elemental Arrow" alt ${Target2Kill} FALSE
+		}
+	} else /if (${Me.AltAbilityReady[Glacial Arrow]}) {
+		/if (!${Bool[${Target.Buff[Elemental Arrow]}]} && !${Bool[${Target.Buff[Glacial Arrow]}]}) {
+			/if (${validate_cast[alt, "Glacial Arrow", ${Target2Kill}]}) /call core_cast2 "Glacial Arrow" alt ${Target2Kill} FALSE
+		}
+	}	else /if (${Me.AltAbilityReady[Volatile Arrow]}) {
+		/if (!${Bool[${Target.Buff[Elemental Arrow]}]} && !${Bool[${Target.Buff[Volatile Arrow]}]}) {
+			/if (${validate_cast[alt, "Volatile Arrow", ${Target2Kill}]}) /call core_cast2 "Volatile Arrow" alt ${Target2Kill} FALSE
+		}
+	}		
+
+	| reverse DS DOT
+	/if (${validate_cast[spell, "${DoTSwarmDS}", ${Target2Kill}]} && ${switchCombatDoT} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast2 "${DoTSwarmDS}" 0 ${Target2Kill} FALSE
+
+	/if (${validate_cast[disc, "${BladeStorm}", ${Target2Kill}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[disc, "${DiscSqual}", ${Target2Kill}]}) /call core_cast2 "${DiscSqual}" disc ${Target2Kill} FALSE
+	
 /return
 
 
@@ -138,7 +132,7 @@ sub cast_AA_auspice()
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[${RNGauspice}]} && !${Bool[${Me.Song[${RNGauspice}]}]}) {
 		/call core_cast "Mass Group Buff" alt 0 FALSE
 		/call core_cast "${RNGauspice}" alt 0 FALSE
-		| /if (${Bool[${ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
+		/if (${Bool[${ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
 	 	/if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
 	} else /if (${Bool[${Me.Song[${RNGauspice}]}]}) {
 		VOUT ${cbad}QUIT\ax trying to cast ${csp}Auspice of the Hunter\ax while its running.	
@@ -155,77 +149,15 @@ sub cast_AA_auspice()
  ***|
 sub patch_heal_RNG()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
-	AMIDEAD
-	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
-	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride}) /call core_cast "${FastHeal}" 0 ${Me.ID} cast_break
+	AMIDEAD
+	CHECKEXIT
+	/if (${validate_cast[spell, "${FastHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride}) /call core_cast2 "${FastHeal}" 0 ${Me.ID} cast_break
 	/call click_item_heal
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) /if (${Select[${combat},MELEE]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast "${DiscHeal}" disc ${Target.ID} FALSE
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast "${SlowHeal}" 0 ${Me.ID} cast_break
-/return
-
-
-
-|***
- *	DES: Agro Routines
- *	USE: /call get_agro_${Me.Class.ShortName}
- *	INI: 
- *  NOTE: manual/Named/raid. all sorts...
- ***|
-sub get_agro_RNG()
-	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
-	AMIDEAD
-	CHECKEXIT
-	/doevents
-	/if (${switchAgro}) {
-		/if (${Bool[${DiscEnrage}]} && ${Select[${combat},MELEE]}) /call core_cast "${DiscEnrage}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[spell, "${DiscHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) {
+		/if (!${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast2 "${DiscHeal}" disc ${Target.ID} FALSE
 	}
-	/if (!${switchAgro}) {
-	}
-	/call use_skill_melee ${Target2Kill}
-/return
-
-
-
-|***
- *	DES: Ranger Elemental Arrows 
- *	USE: /call cast_AA_elemental_arrows
- *	INI: 
- *  NOTE: Rotates the three ranger elemental arrows. Prevents overlapping (inc other rangers). It will attempt to keep both ice and fire debufs on the mob at the same time.
- ***|
-sub cast_AA_elemental_arrows(int _tmpID)
-	DEBUGCLASS ${cbug}cast_AA_elemental_arrows()\ax
-	AMIDEAD
-	CHECKEXIT
-	/doevents
-	/call use_skill_melee ${Target2Kill}
-	/if (${Bool[${ElementalArrow}]}) {
-		/if (!${Bool[${Target.Buff["Elemental Arrow: Ice"]}]} && !${Bool[${Target.Buff["Elemental Arrow: Fire"]}]} && !${Bool[${Target.Buff[${GlacialArow}]}]} && !${Bool[${Target.Buff[${VolatileArrow}]}]}) {
-			/call core_cast "${ElementalArrow}" alt ${_tmpID} FALSE
-			/call create_timer timer_Elemental_Arrow 25s
-			/return
-		} else {
-			/call create_timer timer_Elemental_Arrow 10s
-		}
-	}
-	/if (${Bool[${GlacialArow}]}) {
-		/if (!${Bool[${Target.Buff["Elemental Arrow: Ice"]}]} && !${Bool[${Target.Buff[${GlacialArow}]}]}) {
-			/call core_cast "${GlacialArow}" alt ${_tmpID} FALSE
-			/call create_timer timer_Elemental_Arrow 25s
-			/return
-		} else {
-			/call create_timer timer_Elemental_Arrow 10s
-		}
-	}	
-	/if (${Bool[${VolatileArrow}]}) {
-		/if (!${Bool[${Target.Buff["Elemental Arrow: Fire"]}]} && !${Bool[${Target.Buff[${VolatileArrow}]}]}) {
-			/call core_cast "${VolatileArrow}" alt ${_tmpID} FALSE
-			/call create_timer timer_Elemental_Arrow 25s
-			/return
-		}	else {
-			/call create_timer timer_Elemental_Arrow 10s
-		}
-	}
+	/if (${validate_cast[spell, "${SlowHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${SlowHeal}" 0 ${Me.ID} cast_break
 /return
 
 
@@ -244,7 +176,7 @@ sub click_DPS_RNG()
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 	
-	/if (${Select[${combat},MELEE]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+	/if (!${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
 		| epic 2.0
 		/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	}
@@ -261,13 +193,13 @@ sub click_DPS_RNG()
  ***|
 sub cast_nuke_summer(int _tmpID)
 	DEBUGCLASS ${cbug}cast_nuke_summer(ID: ${_tmpID})\ax 
+	/if (${timer_cast_nuke_summer}) /return
 	/if (!${switchNukeSummer}) /return	
 	AMIDEAD
 	CHECKEXIT
 	/doevents
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
-	/if (!${cast_condition[NukeSummerCondition]}) /return
-	/call core_cast "${NukeSummer}" 0 ${_tmpID} cast_break
+	/if (${validate_cast[spell, "${NukeSummer}", ${_tmpID}]} && ${cast_condition[NukeSummerCondition]}) /call core_cast2 "${NukeSummer}" 0 ${_tmpID} cast_break
 /return
 
 

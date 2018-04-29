@@ -20,75 +20,64 @@ sub core_BRD()
 	CHECKTIE
 		
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call send_pet
-		/call stick_to_target
-		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
-		/if (${Bool[${Target2Kill}]}) /call disc_${Me.Class.ShortName}
-		/call click_DPS_${Me.Class.ShortName}
-		/if (${DoDoT}) /call bard_dot
-		/if (${DoNuke}) /call bard_nuke
-		/call pulse
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		/call send_pet
-		/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
-		/if (${DoDoT}) /call bard_dot
-		/if (${DoNuke}) /call bard_nuke
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-	} else /if (${Select[${combat},HEAL]}) {
-		/call set_combat HEAL
-		/call pulse
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-	} else /if (${Select[${combat},DUAL]}) {
-		/call get_assist_target
-		/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
-		/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
-		/call list_delete mobList ${Target2Kill}
-		/return
-		:loop
-		/doevents
-		AMIDEAD
-
-		CHECKTIE
-		/if (${Spawn[${Target2Kill}].Type.Equal[Corpse]}  || !${Target2Kill} || !${Target.ID} || ${Target.Type.Equal[corpse]} || !${Spawn[${Target2Kill}].ID}) /call get_assist_target
-		/call check_for_adds
-		/if (${addList.Count[|]} && ${switchdeBuffMezz}) /call mez_adds_BRD
-		/call check_for_adds
-		/if (${addList.Count[|]}) /return
-		/if (${mobList.Find[|]}) /call list_update
-		/call check_for_adds
-		/if (${addList.Count[|]}) /return
-		/call is_target_valid ${Target2Kill}
-		/if (${isValidTarget}) {
-			/if (!${addList.Count[|]}) /call set_combat MELEE
-			/if (!${addList.Count[|]}) /call stick_to_target
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+	
+		/if (${switchdeBuffMezz}) {
+			/call get_assist_target
+			/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
+			/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
+			/call list_delete mobList ${Target2Kill}
+			/return
+			:loop
+			/if (${Spawn[${Target2Kill}].Type.Equal[Corpse]}  || !${Target2Kill} || !${Target.ID} || ${Target.Type.Equal[corpse]} || !${Spawn[${Target2Kill}].ID}) /call get_assist_target
+			/call check_for_adds
+			/if (${addList.Count[|]}) /call mez_adds_BRD
 			/call check_for_adds
 			/if (${addList.Count[|]}) /return
-			/if (!${addList.Count[|]} && ${DoNuke}) /call bard_nuke
+			/if (${mobList.Find[|]}) /call list_update
 			/call check_for_adds
 			/if (${addList.Count[|]}) /return
-			/if (!${addList.Count[|]}) /call pulse
 		}
 
-	}
-	/if (${switchHealCure}) /call cast_cure
-	/if (${coreAuto}) {	
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
+		
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/if (${switchdeBuffMezz}) {
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}			
+			/call disc_${Me.Class.ShortName}
+			/if (${switchCombatDoT}) /call bard_dot
+			/if (${switchCombatNuke}) /call bard_nuke
+			/call pulse
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchdeBuffMezz}) {
+				/call check_for_adds
+				/if (${addList.Count[|]}) /return
+			}		
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+	
+			/if (${coreAuto}) {	
+				/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+				/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+				/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+			} else /if (!${coreAuto}) {
+				/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+			}
+		} 
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
+
 
 
 
@@ -104,7 +93,7 @@ sub disc_BRD()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/call stick_to_target
+	/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
 	/if (${Me.Casting.ID}) /call pulse_stop
 	/if (!${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill} FALSE
@@ -609,7 +598,7 @@ sub Bind_setBRD(string _classType, string _verbage)
 		/return
 
 	| intimidation/frenzied kick control
-	/if (${Bool[${_classType.Equal[intimidkick]}]}) {
+	} else /if (${Bool[${_classType.Equal[intimidkick]}]}) {
 		/call writeINI switchIntimidKick meleedisc ${If[${switchIntimidKick},FALSE,TRUE]}
 		VOUT /${_bind} intimidkick ${sep} ${If[${switchIntimidKick},${oenabled},${odisabled}]}
 

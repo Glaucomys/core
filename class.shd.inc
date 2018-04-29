@@ -1,6 +1,6 @@
 |***
  *	class.shd.inc
- *	Core Shadow Knight Include
+ *	Core Shadowknight Include
  *
  * 
  * 
@@ -26,55 +26,38 @@ sub core_SHD()
 	}	
 	
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call send_pet
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call click_DPS_${Me.Class.ShortName}
-		/call stick_to_target
-		/if (${DoDoT}) /call cast_DOT
-		/call use_skill_melee ${Target2Kill}
-		/if (${DoNuke}) /call cast_nuke
-		/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/call click_item TRUE
-		/call click_item_swarm ${Target2Kill}
-		/if (${switchHarmonious}) /call check_harmonious
-		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
-		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/call set_combat RANGE
-		/call check_deBuffs ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke} && ${switchAgro}) /call cast_nuke
-		/call use_skill_melee ${Target2Kill}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-		/if (${switchHarmonious}) /call check_harmonious
-		/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
-		/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},HEAL]}) {
-	} else /if (${Select[${combat},DUAL]}) {
-	}
-	/if (${coreAuto}) {	
-		/call use_mod_rod
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
 		/if (${switchHealCure}) /call cast_cure
+
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchCombatDoT}) /call cast_DOT
+			/if (${switchCombatNuke}) /call cast_nuke
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+			/if (${switchHarmonious}) /call check_harmonious
+			/if (${switchSteel} && !${timer_check_Steel}) /call check_steel	
+			/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
+		}
+
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
 
 

@@ -26,39 +26,40 @@ sub core_NEC()
 		}
 	}
 
-
 	:killtarget
+	CHECKREZ
 	/call prep_combat
-	/if (!${Macro.Return}) /return
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
 
-	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
-		/call check_deBuffs ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/call check_deBuffs ${Target2Kill}
-		/call click_BP
-		/call click_DPS_${Me.Class.ShortName}
-		/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
-		/if (${DoNuke}) /call cast_nuke
-		/if (${DoDoT}) /call cast_DOT
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-	} else /if (${Select[${combat},HEAL]}) {
-	} else /if (${Select[${combat},DUAL]}) {
-	}
-	CHECKREZ
-	/if (${coreAuto}) {	
-		/call use_mod_rod
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
-	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+	
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchPcSwarm}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
+			/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchCombatNuke}) /call cast_nuke
+			/if (${switchCombatDoT}) /call cast_DOT
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+		
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}	
+	}	
 /return
 
 
@@ -93,10 +94,6 @@ sub disc_NEC()
 	/call is_target_dead
 	/if (!${Macro.Return}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-
-	| heal clickies
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.ItemReady[Prayers of Life]}) /call core_cast "Prayers of Life" item 0 FALSE
-	/if (${switchHealSelf} && ${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.ItemReady[Overflowing Urn of Life]}) /call core_cast "Overflowing Urn of Life" item 0 FALSE
 
 	| aa wake the dead
 	/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill} FALSE

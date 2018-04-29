@@ -21,6 +21,7 @@ sub core_MAG()
 	CHECKTIE
 
 	/if (${coreAuto} && !${Me.Invis}) {
+		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 		/call check_engaged
 		/if (!${Bool[${Macro.Return}]}) {
 			/if (${switchPcPet}) /call check_pet
@@ -30,70 +31,54 @@ sub core_MAG()
 	}
 
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
 	CHECKREZ
-	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade	
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call check_deBuffs ${Target2Kill}
-		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
-		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
-		/call click_DPS_${Me.Class.ShortName}
-		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
-		/if (${switchPcSwarm}) /call cast_nuke_servant
-		/if (${useRain}) /call cast_nuke_rain		
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
-		/if (${DoNuke}) /call cast_nuke
-		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
-		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana		
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/call set_combat RANGE
-		/call check_deBuffs ${Target2Kill}
-		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
-		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
-		/call click_DPS_${Me.Class.ShortName}
-		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
-		/if (${switchPcSwarm}) /call cast_nuke_servant
-		/if (${useRain}) /call cast_nuke_rain		
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
-		/if (${DoNuke}) /call cast_nuke
-		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
-		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		/call check_deBuffs ${Target2Kill}
-		/if (${coreAuto} && ${switchPcPet} && !${Pet.ID}) /call check_pet
-		/if (${coreAuto} && ${switchPcPet} && ${Pet.ID}) /call send_pet
-		/call click_DPS_${Me.Class.ShortName}
-		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
-		/if (${switchPcSwarm}) /call cast_nuke_servant
-		/if (${useRain}) /call cast_nuke_rain		
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
-		/if (${DoNuke}) /call cast_nuke
-		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
-		/if (${coreAuto} &&  ${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /call Bind_setMAG mana
-	} else /if (${Select[${combat},HEAL]}) {
-	} else /if (${Select[${combat},DUAL]}) {
-	}
-	/if (${coreAuto}) {	
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
+
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchPcSwarm}) /call cast_nuke_servant
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchCombatNuke}) {
+				/if (${switchForceTwincast}) /call force_twincast_${Me.Class.ShortName}
+				/call cast_nuke
+				| /if (${useRain}) /call cast_nuke_rain
+			}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 /return
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -280,6 +265,7 @@ sub synergy_MAG()
  ***|
 sub force_twincast_MAG()
 	DEBUG ${cbug}force_twincast_MAG()\ax 
+	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents

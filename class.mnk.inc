@@ -20,44 +20,35 @@ sub core_MNK()
 	CHECKTIE
 
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-	
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/call check_deBuffs ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}		
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/call set_combat RANGE
-		/call use_skill_melee ${Target2Kill}
-		/call check_deBuffs ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call use_skill_melee ${Target2Kill}
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}				
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},HEAL]}) {
-	} else /if (${Select[${combat},DUAL]}) {
+		/if (${switchHealCure}) /call cast_cure
+
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
 	}
-	/if (${coreAuto}) {
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
-/return
+/return	
 	
 	
 	

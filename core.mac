@@ -46,7 +46,6 @@
 	Target2Kill					int				the ID of the mob that should be the focus of your wanton destruction
 	isValidTarget				bool			is ths a valid Target
 	timer_???						string		Prefix for running timers. [Timers] in the Toon INI(s) will hold most base set times.
-	combat							string		What you are currently doing [MELEE|RANGE|NUKE|HEAL] DUAL is reserved for more then one mode and CC for Chanters/Bards.
 	MobAgro							int				range that you will engage a mob at
 	_count, _x, _b, _i	int				local loop counts
 	_tmpID							int				the passed/local target ID
@@ -206,7 +205,7 @@ sub main()
 		}
 		
 		/if (${Me.PctEndurance} < 32) {
-			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MON|BST]}) /call cast_disc_breather
+			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MON|BST]}) /call cast_stamina_recovery
 		}
 
 		| use those AA.. hoarding bastard
@@ -217,6 +216,8 @@ sub main()
 
 		| guns need ammo
 		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
+		
+		| pet dragon pissed in my boots!
 		/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]}) /pet get lost
 		
 		CHECKTIE
@@ -361,7 +362,7 @@ sub base_preperation()
 	/squelch /hud ${HudType}
 	/squelch /loadhud ${HudName}
 			
-	| force sos switch for non rogues
+	| force sos switch FALSE for non rogues
 	/if (${switchSos} && !${validate_class[FALSE, |ROG]}) /call writeINI switchSos Common FALSE
 		
 	| check debuffs	switches	

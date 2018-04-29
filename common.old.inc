@@ -2601,8 +2601,9 @@ sub set_combat(str _mode)
 	/if (${Me.State.NotEqual[STAND]}) /stand
 	/if (${coreAuto} && ${Me.State.Equal[FEIGN]}) /squelch /stand
 
+	:tryagainbitch
 		
-	| combat	
+	| melee combat	
 	/if (${Bool[${_mode}]}) {
 		/if ((${switchCombatMelee} || ${switchCombatRange}) && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		
@@ -2613,13 +2614,14 @@ sub set_combat(str _mode)
 		} else {
 			/if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind}) {
 				/if ((${Spawn[${Target2Kill}].LineOfSight} && !${switchOverrideLos}) && !${Me.AutoFire}) /squelch /autofire on
-				/if (${coreAuto} && ${switchCombatMelee}) /call stick_to_target ${Target2Kill}
 			} else /if ((${Target.Distance} <= 31 && ${switchCombatMelee}) || (${SetStickBehind} && ${Target.Distance} <= ${MobAgro} && ${switchCombatMelee})) {
 				/squelch /attack on
-				/if (${coreAuto} && ${switchCombatMelee}) /call stick_to_target ${Target2Kill}
+				/if (${coreAuto}) /call stick_to_target ${Target2Kill}
 			}
 		}
 	}
+
+
 /return
 
 
@@ -4873,9 +4875,7 @@ sub prep_combat()
 
 	| healers get a pass... kind of
 	/if (${coreAuto} && ${switchOverrideCombatheal}) {
-		| /if ((${switchHealGroup} || ${switchHealXtarget}) && ${SpawnCount[npc radius ${MobAgro} playerstate 4]}) {
-		/if (${switchHealGroup} || ${switchHealXtarget}) {
-			/call is_target_valid ${Target2Kill}
+		/if ((${switchHealGroup} || ${switchHealXtarget}) && ${SpawnCount[npc radius ${MobAgro} playerstate 4]}) {
 			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
 			/varset combat COMBAT
 			/return TRUE
@@ -6780,9 +6780,9 @@ sub validate_assist(bool _error, string _assist, string _name)
 		/declare _sep bool local FALSE
 		
 		/for _count 1 to ${_assistMode.Count[|]}
-			| /varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
+			/varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
 			DEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${useSmartAssist${_assistMode.Arg[${_count},|]}},${cgood}${_assistMode.Arg[${_count},|]}\ax,${cinfo}${_assistMode.Arg[${_count},|]}\ax]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${_assM},${cgood}${_assistMode.Arg[${_count},|]}\ax,${cinfo}${_assistMode.Arg[${_count},|]}\ax]}
 			/varset _sep TRUE
 		/next _count
 		VOUT /setassist [${_listout}]

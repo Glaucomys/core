@@ -30,72 +30,74 @@ sub core_SHM()
 		/call check_cani
 	}	
 	
-	CHECKREZ
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call send_pet
-		/call stick_to_target
-		/call check_deBuffs ${Target2Kill}
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_item
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke	
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/call set_combat RANGE
-		/call send_pet
-		/call stick_to_target
-		/call check_deBuffs ${Target2Kill}
-		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_item
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke			
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		/call send_pet
-		/call check_deBuffs ${Target2Kill}
-		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_item
-		/call disc_${Me.Class.ShortName}
-		/if (${DoDoT}) /call cast_DOT
-		/if (${DoNuke}) /call cast_nuke	
-	} else /if (${Select[${combat},HEAL]}) {
-		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/call disc_${Me.Class.ShortName}
-		/if (${is_target_valid[${Target2Kill}]}) {
-			/call check_deBuffs ${Target2Kill}
-			/if (${DoDoT}) /call cast_DOT
-			/if (${DoNuke}) /call cast_nuke
-			/call click_item
-			/call send_pet
-			/call click_DPS_${Me.Class.ShortName}
-			/call disc_${Me.Class.ShortName}
-		}
-		/if (${switchPcPet} && !${Me.Pet.ID}) /call check_pet
-	} else /if (${Select[${combat},DUAL]}) {
-	}
-	/if (${coreAuto}) {	
+		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-		/call check_cani
-		/call use_mod_rod
-		/if (${switchTalisman} && !${timer_cast_talisman}) /call cast_talisman
+
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchCombatDoT}) /call cast_DOT
+			/if (${switchCombatNuke}) /call cast_nuke
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+
+		/if (${coreAuto}) {
+			/call check_cani	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
 	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+
 /return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -110,6 +112,8 @@ sub disc_SHM()
 	CHECKEXIT
 	/doevents
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+	/call check_deBuffs ${Target2Kill}
+
 /return
 
 
@@ -232,15 +236,15 @@ sub check_heal_group_SHM()
 	
 		
   | check for surge
-	/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) /call cast_surge_heal
+	/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]}) /call cast_surge_heal
 	
 	| Group regenerations. Use all the time. Don't care if hurt or not.
- 	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) {
+ 	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]}) {
  	 	/if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Elixir of the Seas]}]} && !${Bool[${Me.Song[Elixir of Wulthan]}]}) {
 	    /call core_cast "${healWholeGroupHoT}" 0 ${Me.ID} FALSE
 	  }
 	}
-  
+ 
 	/call check_no_cast_buffs
   
 	| group HoT
@@ -258,7 +262,7 @@ sub check_heal_group_SHM()
 	}  
   
   | check for surge
-  /if (${Me.CombatState.Equal[COMBAT]} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1) /call cast_surge_heal
+  /if (${Me.CombatState.Equal[COMBAT]} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]}) /call cast_surge_heal
 
 /return
 
@@ -484,13 +488,13 @@ sub Bind_setSHM(string _classType, string _verbage)
 
 	| use group Heals
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
-		/call Event_SetVar NA useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
+		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal" useGroupHeal 0 0
 	 	/return
 	
 	| use group Heal over Time	
 	} else /if (${Bool[${_classType.Equal[grouphot]}]}) {
-		/call Event_SetVar NA useGroupHoT Heal ${If[${useGroupHoT},FALSE,TRUE]} 	
+		/call writeINI useGroupHoT Heal ${If[${useGroupHoT},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal over Time" useGroupHoT 0 0
 	 	/return
 	 	

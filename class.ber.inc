@@ -21,42 +21,34 @@ sub core_BER()
 	CHECKTIE
 	
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-	
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call stick_to_target
-		/if (${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
-		/call set_combat MELEE
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/call disc_${Me.Class.ShortName}
-		/call click_DPS_${Me.Class.ShortName}		
-		/call click_BP
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-		/if (${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast "${DiscSlapintheFace}" disc ${Target2Kill}
-		/call set_combat RANGE
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call use_skill_melee ${Target2Kill}
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}		
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},HEAL]}) {
-	} else /if (${Select[${combat},DUAL]}) {
-	}
-	/if (${switchHealSelf} && ${coreAuto}) /call patch_heal_${Me.Class.ShortName}
-	| /if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (${coreAuto} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		/if (${switchHealCure}) /call cast_cure
+
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${validate_cast[disc, "${DiscSlapintheFace}", ${Target2Kill}]} && ${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast2 "${DiscSlapintheFace}" disc ${Target2Kill}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+
+		/if (${coreAuto}) {	
+			/call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}
+	} 
 /return
 
 
@@ -150,8 +142,9 @@ sub patch_heal_BER()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${Me.AltAbilityReady[Communion of Blood]}) /call core_cast "Uncanny Resilience" alt 0 FALSE
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${Me.AltAbilityReady[Blood Sustenance]}) /call core_cast "Blood Sustenance" alt 0 FALSE
+	
+	/if (${validate_cast[alt, "Uncanny Resilience", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Uncanny Resilience" alt 0 FALSE
+	/if (${validate_cast[alt, "Blood Sustenance", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Blood Sustenance" alt 0 FALSE
 	/call click_item_heal
 /return
 
@@ -195,7 +188,7 @@ sub synergy_BER()
 		/if (${Me.ActiveDisc.Name.Equal[${DiscDisconcert}]}) /goto :loopmakestop
 	}
 	
-	/if (${Me.AltAbilityReady[desperation]} && ${Me.PctHPs} < 90) /call core_cast "Desperation" alt 0 FALSE
+	/if (${validate_cast[alt, "Desperation", ${Me.ID}]} && ${Me.PctHPs} < 90) /call core_cast2 "Desperation" alt 0 FALSE
 	/if (${Me.CombatAbilityReady[${DiscScream}]} && ${Me.CurrentEndurance} > ${Spell[${DiscScream}].EnduranceCost}) /disc ${DiscScream}
 	/if (${Me.CombatAbilityReady[${CryOfChaos}]} && !${Me.Song[${CryOfChaos}].ID}) {
 		/delay ${Math.Rand[8]}s ${Me.Song[${CryOfChaos}].ID}

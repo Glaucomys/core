@@ -165,19 +165,26 @@ sub mode_get_mob()
 
 	/call check_watch_spawn
 
+	| get us to the mob
 	/if (${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
-
+		
+		| use nave for movement
 		/if (${SetTieMode.Equal[nav]} && ${Bool[${Plugin[MQ2Nav]}]} && !${Navigation.Active}) {
-			/echo nav to ${Target2Kill}
+			| /echo nav to ${Target2Kill}
 			/if (${Navigation.Active}) /squelch /nav stop
 			/squelch /nav id ${Target2Kill}
 
+		| adjust nav	
+		| } else /if (${SetTieMode.Equal[nav]} && ${Bool[${Plugin[MQ2Nav]}]} && ${Navigation.Active}) {
+		| 	/squelch /nav id ${Target2Kill}
+
+		| use stick for movement
 		} else /if (${SetTieMode.Equal[stick]} && ${Bool[${Plugin[MQ2MoveUtils]}]} && !${Stick.Active}) {
 			/squelch /stick ID ${Target2Kill} ${CombatDistance} UW
 		}
 		
-		
+	| at the mob, do something about it		
 	} else /if (${Spawn[${Target2Kill}].Distance} <= ${CombatDistance} || ${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		/target ID ${Target2Kill}

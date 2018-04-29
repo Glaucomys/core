@@ -146,16 +146,22 @@ sub HUDUpdate()
 
 	| combat modes
 	/noparse /ini HUDPATH "bot1" "3,140,13,100,149,237,[              ][    ][     ]"
-	/noparse /ini HUDPATH "bot2" "19,145,14,0,255,0,${If[${coreAuto} && ${combat.Equal[MELEE]},M,]}"
-	/noparse /ini HUDPATH "bot3" "19,145,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[MELEE]}) || (${coreAuto} && !${combat.Equal[MELEE]}),M,]}"
-	/noparse /ini HUDPATH "bot4" "19,153,14,0,255,0,${If[${coreAuto} && ${combat.Equal[RANGE]},R,]}"
-	/noparse /ini HUDPATH "bot5" "19,153,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[RANGE]}) || (${coreAuto} && !${combat.Equal[RANGE]}),R,]}"
-	/noparse /ini HUDPATH "bot6" "19,161,14,0,255,0,${If[${coreAuto} && ${combat.Equal[HEAL]},H,]}"
-	/noparse /ini HUDPATH "bot7" "19,161,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[HEAL]}) || (${coreAuto} && !${combat.Equal[HEAL]}),H,]}"
-	/noparse /ini HUDPATH "bot8" "19,169,14,0,255,0,${If[${coreAuto} && ${combat.Equal[NUKE]},N,]}"
-	/noparse /ini HUDPATH "bot9" "19,169,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[NUKE]}) || (${coreAuto} && !${combat.Equal[NUKE]}),N,]}"
-	/noparse /ini HUDPATH "bot10" "19,177,14,0,255,0,${If[${coreAuto} && ${combat.Equal[DUAL]},D,]}"
-	/noparse /ini HUDPATH "bot11" "19,177,14,25,25,25,${If[!${coreAuto} || (!${coreAuto} && !${combat.Equal[DUAL]}) || (${coreAuto} && !${combat.Equal[DUAL]}),D,]}"
+	/noparse /ini HUDPATH "bot2" "19,145,14,0,255,0,${If[${coreAuto},A,]}"
+	/noparse /ini HUDPATH "bot3" "19,145,14,25,25,25,${If[${coreAuto},,A]}"
+	/noparse /ini HUDPATH "bot4" "19,153,14,0,255,0,${If[${switchCombatMelee},M,]}"
+	/noparse /ini HUDPATH "bot5" "19,153,14,25,25,25,${If[${switchCombatMelee},,M]}"
+	/noparse /ini HUDPATH "bot6" "19,161,14,0,255,0,${If[${switchCombatRange},R,]}"
+	/noparse /ini HUDPATH "bot7" "19,161,14,25,25,25,${If[${switchCombatRange},,R]}"
+	/noparse /ini HUDPATH "bot8" "19,169,14,0,255,0,${If[${switchCombatNuke},N,]}"
+	/noparse /ini HUDPATH "bot9" "19,169,14,25,25,25,${If[${switchCombatNuke},,N]}"
+	/noparse /ini HUDPATH "bot10" "19,177,14,0,255,0,${If[${switchCombatDoT},D,]}"
+	/noparse /ini HUDPATH "bot11" "19,177,14,25,25,25,${If[${switchCombatDoT},,D]}"
+
+
+
+
+
+
 	
 	| combat distance
 	/noparse /ini HUDPATH "CD1" "19,191,14,255,255,255,${CombatDistance}"

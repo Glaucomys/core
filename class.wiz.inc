@@ -17,7 +17,6 @@ sub core_WIZ()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
-
 	CHECKTIE
 	
 	/if (${coreAuto}) {
@@ -26,46 +25,39 @@ sub core_WIZ()
 	}
 	
 	:killtarget
-	/call prep_combat
-	/if (!${Macro.Return}) /return
-
 	CHECKREZ
-	/if (${Select[${combat},MELEE]} && ${isValidTarget}) {
-		/call set_combat MELEE
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
-		/if (${DoNuke}) /call cast_nuke
-		/call disc_${Me.Class.ShortName}
-		/call click_BP
-		/call stick_to_target
-		/call use_skill_melee ${Target2Kill}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-	} else /if (${Select[${combat},RANGE]} && ${isValidTarget}) {
-	} else /if (${Select[${combat},NUKE]} && ${isValidTarget}) {
-		/call set_combat NUKE
-		CHECKTIE
-		/call cast_temp_pet ${Target2Kill} "${tempPet}"
-		/call send_pet
-		/if (${switchForceTwincast} && !${timer_force_twincast}) /call force_twincast_${Me.Class.ShortName}
-		/call cast_nuke_wiz
-		/call disc_${Me.Class.ShortName}
-		/call click_item
-		/call click_item_swarm ${Target2Kill}
-		/call click_DPS_${Me.Class.ShortName}
-		/call click_BP
-	} else /if (${Select[${combat},HEAL]}) {
-	} else /if (${Select[${combat},DUAL]}) {
-	}
-	/if (${coreAuto}) {	
-		/call use_mod_rod
+	/call prep_combat
+	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		DEBUG combat:${cinfo}${combat.Upper}\ax		
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-	}
-	/if (${coreAuto} && !${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
-	/if (!${coreAuto} && ${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+	
+		/if (${isValidTarget}) {
+			/call set_combat ${combat.Upper}
+			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
+			/if (${switchPcSwarm}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchCombatNuke}) {
+				/if (${switchForceTwincast}) /call force_twincast_${Me.Class.ShortName}
+				/call cast_nuke_wiz
+			}
+			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
+			/call disc_${Me.Class.ShortName}
+			/call click_BP
+			/call click_item
+			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
+			/call click_DPS_${Me.Class.ShortName}
+		}
+		
+		/if (${coreAuto}) {	
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
+			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+		} else /if (!${coreAuto}) {
+			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+		}	
+	}	
 /return
 
 
@@ -84,13 +76,17 @@ sub disc_WIZ()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	
 	| debuff the mob
-	/if (${switchdeBuffCripple} && !${Target.Buff[Lower Element].ID} && !${Target.Crippled.Duration}) /call core_cast "Lower Element" alt ${Target2Kill} FALSE
+	/if (${switchdeBuffCripple}) {
+		/if (!${Target.Buff[Lower Element].ID} && !${Target.Crippled.Duration}) /call core_cast "Lower Element" alt ${Target2Kill} FALSE
+	}
 
-	| ditch agro
-	/if (!${switchAgro} && ${Me.PctAggro} > 30) /call core_cast "Arcane Whisper" alt ${Target2Kill} FALSE
-	/if (!${switchAgro} && ${Me.PctAggro} > 80) /call core_cast "Concussive Intuition" alt ${Target2Kill} FALSE
-	/if (!${switchAgro} && ${Me.PctAggro} > ${spellConcussionPct}) /call core_cast "${spellConcussion}" 0 ${Target2Kill} FALSE
-	
+	| agro control
+	/if (${switchAgro}) {
+	} else /if (!${switchAgro}) {
+		/if (${Me.PctAggro} > 30) /call core_cast "Arcane Whisper" alt ${Target2Kill} FALSE
+		/if (${Me.PctAggro} > 80) /call core_cast "Concussive Intuition" alt ${Target2Kill} FALSE
+		/if (${Me.PctAggro} > ${spellConcussionPct}) /call core_cast "${spellConcussion}" 0 ${Target2Kill} FALSE
+	}
 	
 	| filler DPS. used when inbetween/down spellgem casts
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
@@ -108,13 +104,12 @@ sub disc_WIZ()
 			/return
 		}
 	| aa Force of Will
-	| } else /if (${lineCurrent.Equal[Magic]} && ${Me.AltAbilityReady[Force of Will]}) {
-	| 	/if (${Me.CurrentMana} > ${Spell[Force of Will].Mana}) {
-	| 		/call core_cast "Force of Will" alt ${Target2Kill} FALSE
-	| 		/return
-	| 	}
+	} else /if (${lineCurrent.Equal[Magic]} && ${Me.AltAbilityReady[Force of Will]}) {
+		/if (${Me.CurrentMana} > ${Spell[Force of Will].Mana}) {
+			/call core_cast "Force of Will" alt ${Target2Kill} FALSE
+			/return
+		}
 	}
-	
 /return
 
 
@@ -129,7 +124,6 @@ sub click_DPS_WIZ()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	/doevents
 	AMIDEAD
-
 	/call click_horn_of_unity 	
 /return
 
@@ -159,8 +153,6 @@ sub check_harvest()
 			/return
 		}
 	}
-	
-	
 	
 	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Harvest of Druzzil]}) {
 		/call core_cast "Harvest of Druzzil" alt 0 FALSE
@@ -290,6 +282,7 @@ sub synergy_WIZ()
  ***|
 sub force_twincast_WIZ()
 	DEBUGCLASS ${cbug}force_twincast_WIZ()\ax 
+	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents

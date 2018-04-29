@@ -3,15 +3,99 @@
  * Core Change Log
  * Timestamp: YYYYMMDD
  *
- *
- * WHITEWASH means a '/core whitewash' needs to be run to reset the aliases
  * HUDUPDATE means you need to do a '/hc delete' then a '/hc update' to make needed changes to the MQ2Hud.INI
  *
  ***|
 
-Current Requests:
+*** I swear to god. If you don't read this and ask me questions, /ignore ***
 
 
+20180429
+HUDUPDATE
+- rename cast_disc_breather() -> cast_stamina_recovery()
+- added (Class ShortName)AAFade to predefined class skills
+- added toon.ini -> [common] -> switchForceFadeRest=TRUE|FALSE - sets the toon to forse a fade during combat to enable breather trigger.
+- /cc [faderest] - enable/disable forcing the toon to use fade AA during combat to enable the rest disc
+
+- class.rng.inc
+  -- removed elemental arrows timers. will keep them on cooldown now
+  -- elemental arrows cycle proper now. (DB changed the target buff name and didnt notice)
+  -- moved get_agro_RNG() body to discs
+  -- moved cast_AA_Elemental_arrows() body to discs
+  -- summer nuke is tied to both the summer switch and nuke switch. turning either off will stop summer nukes
+  -- reverse DS DoT swarms are tied to the DoT switch.
+- class.shm.inc
+  -- replaced 2 instances of an old function with correct. Event_setVar -> writeINI
+- class.clr.inc
+  -- no longer force fade on < HP% while in manual. thats your job
+  -- some adjustments to loops. trying to make it a smidgen faster
+- class.rog.inc
+  -- no longer summon poisons in manual. seriosusly dont be so lazy
+- class.mag.inc 
+  -- no longer force fade on < HP% while in manual
+- class.pal.inc
+  -- several adjustments to the agro routines
+  -- typo in harmonious
+- class.brd.inc
+  -- error in selection logic for class switches
+- class.shd.inc
+  -- typo in harmonious
+- class.enc.inc
+  -- typo in a declare
+  
+
+- all classes
+  -- no longer send pets to a forced combat target while in manual.
+  -- HEALERS now need to use an assist. moving on...
+  -- HEALERS will maintain more focus on the last person they healed. unless you have them doing something else besides healing
+
+*NEW casting routines*  
+- these will be migrated as i have time.
+- validate_cast()
+  -- EG. ${validate_cast[spell|disc|item|alt, "NAME OF THING", TARGETID]}  
+  -- returns TRUE if able to cast FALSE if not
+  -- this is part 1 of the split of core_cast.
+  
+- core_cast2()
+  -- slimmer casting routine. never has to hit it if fails validate_cast()
+  
+- support for non gold (paid) accounts is no more. i really don't feel like mainting that code too
+- switchAlwaysFaceTarget has been removed. casters dont need to face the god damn target
+- logic error in rest routine for classes w/o rest/breather disc line
+
+  
+- ALL modes are being depreciated. [HEAL,MELEE,RANGE,NUKE,DUAL]
+
+new switches for combat
+- /cc [melee|range|nuke|dot]
+  -- melee - enables melee combat and mele base skills
+  -- range - is range items as defined in the ini and usable by /range or /autofire command
+  -- nuke - enables anything defined in the nukes routine in the INI
+  -- dot - enablesd anything defined in the DOT routine in the INI
+  -- enabeling both melee and range will allow auto switching based on range to target (31 paces is the magic number)
+  -- any combination can be used.
+- /cc force[combat] - will force combat when in manual mode
+  -- there is no more force [melee|range|nuke|heal|dual] (they are gone)
+
+** HEALING !!!!!!
+- healing is now tied directly to combat. if the healer is not in combat, it will not heal
+- this includes resting. no combat = NO heal for you! (repleate outloud w/broken english in turkish accent)
+- this fixes the cleric dumping all its AA emergency heals when zoning into a zone.
+- will not heal on puller incomming either.
+- WTF you say? no heals on incomming.. yah, thats right.
+- if you dont like this change. see the override addition for combatheal (IE keep reading)
+
+- /override [combatheal]
+  -- combatheal - ENABLED allows the healers to ignore the prep_combat requirement of being in combat to reach their heal routines. works for rest as well.
+    -- this override will also get you past the requirement of a healer needing an assist.
+    -- this override is tied to the toons agro range
+    -- this unfixes the cleric dumping all its AA heals. (refer to previous fix)
+    
+- /here
+  -- removed class modes from core.ini. if you still see them do /core fixini
+  
+- prep_combat()
+  -- rewrite.. cause. well it needed it... we trust nothing now.
 
 
 
