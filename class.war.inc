@@ -34,6 +34,7 @@ sub core_WAR()
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
@@ -69,8 +70,6 @@ sub disc_WAR()
 	/if (${Bool[${Macro.Return}]}) /return
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/call check_deBuffs ${Target2Kill}
-	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 
 	/if (${Me.AltAbilityReady[${AABraceforImpact}]}) /call core_cast "${AABraceforImpact}" alt 0 FALSE
 	/if (${Me.AltAbilityReady[${AAWarStomp}]}) /call core_cast "${AAWarStomp}" alt 0 FALSE
@@ -82,6 +81,7 @@ sub disc_WAR()
 	
 	/if (${Me.AltAbilityReady[${AAHeroicBlade}]} && ${Target.Distance} <= ${Spell[${AAHeroicBlade}].MyRange} && !${switchAgro}) /call core_cast "${AAHeroicBlade}" alt 0 FALSE
 	/if (${Me.AltAbilityReady[${AABladeGuardian}]} && ${Me.Song[${AABladeGuardian}].Stacks}) /call core_cast "${AABladeGuardian}" alt 0 FALSE
+	/if (${Me.AltAbilityReady[${AAVehementRage}]}) /call core_cast "${AAVehementRage}" alt 0 FALSE
 
 	/if (${Me.CombatAbilityReady[${DiscField}]} && ${Me.CurrentEndurance} > ${Spell[${DiscField}].EnduranceCost} && !${Me.Song[${DiscField}].ID} ) /call core_cast "${DiscField}" disc 0 FALSE
 

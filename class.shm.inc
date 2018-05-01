@@ -47,6 +47,7 @@ sub core_SHM()
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
@@ -70,37 +71,6 @@ sub core_SHM()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: Combat skills, Disciplines and Alternate abilities.
  *	USE: Disc
@@ -112,8 +82,6 @@ sub disc_SHM()
 	CHECKEXIT
 	/doevents
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/call check_deBuffs ${Target2Kill}
-
 /return
 
 
@@ -135,7 +103,7 @@ sub click_DPS_SHM()
 
 |***
  *	DES: We want Mana
- *	USE: /cani #
+ *	USE: 
  *	INI: 
  *  NOTE: 
  ***|
@@ -143,16 +111,55 @@ sub check_cani()
 	DEBUGCLASS ${cbug}check_cani()\ax
 	CHECKEXIT
 	/doevents
+	AMIDEAD
 	
-	/if (${Me.PctMana} < ${CaniPercent} && ${Me.SpellReady[${spellCannibalization}]}) {
-		/call core_cast "${spellCannibalization}" 0 0 FALSE
-		/return
+	| canni spell first...
+	/if (${Me.PctMana} <= ${CanniPctManna} && ${Me.PctHPs} <= ${CanniPctHPs}) {
+		/declare _cancast bool local FALSE
+	
+		/if (${spellCannibalization.Equal[Cannibalize]} && ${Me.CurrentHPs} > 50) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Cannibalize II]} && ${Me.CurrentHPs} > 67) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Cannibalize III]} && ${Me.CurrentHPs} > 74) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Cannibalize IV]} && ${Me.CurrentHPs} > 148) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancient Chaotic Pain]} && ${Me.CurrentHPs} > 668) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Pained Memory]} && ${Me.CurrentHPs} > 688) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancient Ancestral Calling]} && ${Me.CurrentHPs} > 868) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Bargain]} && ${Me.CurrentHPs} > 1042) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Bargain Rk. II]} && ${Me.CurrentHPs} > 1085) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Bargain Rk. III]} && ${Me.CurrentHPs} > 1128) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Hearkening]} && ${Me.CurrentHPs} > 1161) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Hearkening Rk. II]} && ${Me.CurrentHPs} > 1324) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Hearkening Rk. III]} && ${Me.CurrentHPs} > 1141) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Obligation]} && ${Me.CurrentHPs} > 1417) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Obligation Rk. II]} && ${Me.CurrentHPs} > 1615) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Obligation Rk. III]} && ${Me.CurrentHPs} > 1721) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Covenant]} && ${Me.CurrentHPs} > 1559) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Covenant Rk. II]} && ${Me.CurrentHPs} > 1777) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Covenant Rk. III]} && ${Me.CurrentHPs} > 1893) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Arrangement]} && ${Me.CurrentHPs} > 2366) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Arrangement Rk. II]} && ${Me.CurrentHPs} > 2484) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Arrangement Rk. III]} && ${Me.CurrentHPs} > 2608) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Pact]} && ${Me.CurrentHPs} > 4564) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Pact Rk. II]} && ${Me.CurrentHPs} > 4792) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Ancestral Pact Rk. III]} && ${Me.CurrentHPs} > 5032) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Tribal Pact]} && ${Me.CurrentHPs} > 6693) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Tribal Pact Rk. II]} && ${Me.CurrentHPs} > 7028) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Tribal Pact Rk. III]} && ${Me.CurrentHPs} > 7379) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Tribal Bargain]} && ${Me.CurrentHPs} > 8117) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Tribal Bargain Rk. II]} && ${Me.CurrentHPs} > 8523) /varset _cancast TRUE
+		/if (${spellCannibalization.Equal[Tribal Bargain Rk. III]} && ${Me.CurrentHPs} > 8949) /varset _cancast TRUE
+
+		/if (${_cancast}) {
+			/if (${validate_spell[spell, "${spellCannibalization}", ${Me.ID}]}) /call core_cast2 "${spellCannibalization}" 0 0 FALSE
+			/return
+		}
+
 	}
-	/if (${Me.PctMana} < ${CaniPercent} && ${Me.AltAbilityReady[Cannibalization]}) {
-		/call core_cast "Cannibalization" alt 0 FALSE
-		/return
-	}
+	
+	| use the aa cani
+	/if (${validate_spell[alt, "${Cannibalization}", ${Me.ID}]}) /call core_cast2 "Cannibalization" alt 0 FALSE
 /return
+
 
 
 
@@ -309,6 +316,55 @@ sub check_heal_XTarget_SHM()
 	/next _count
 	UPDATEHUD FALSE  
 /return
+
+
+
+|***
+ *	DES: Checks and Heals Pets. Group ONLY
+ *	USE: /heal pet
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_pet_heal_SHM()
+	DEBUGCLASS ${cbug}check_pet_heal_CLR()\ax
+	/declare _count int local
+	/varset pWorstHurt ${Me.CleanName}
+	/varset pWorstHP 100
+	/varset pWorstHurtID ${Me.ID}
+  
+  /for _count 0 to ${Group}
+  	AMIDEAD
+		SIMPLEEXIT
+		/doevents
+		CHECKREZ
+    /if (${Group.Member[${_count}].Pet.ID}) {
+      /if (${Group.Member[${_count}].Pet.Distance} <= ${Spell[${healRemedy1}].MyRange}) {
+        /if (${Group.Member[${_count}].Pet.PctHPs} < ${pWorstHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
+          /varset pWorstHurt ${Group.Member[${_count}].Pet.Name}
+          /varset pWorstHurtID ${Group.Member[${_count}].Pet.ID}
+          /varset pWorstHP ${Group.Member[${_count}].Pet.PctHPs}
+        }
+      }
+    }
+  /next _count
+
+  /if (${pWorstHurtID} == ${Me.ID}) /return
+  DEBUGCLASS PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
+  /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healMain}].MyRange} && ${Me.SpellReady[${healMain}]}) {
+    /call core_cast "${healMain}" 0 ${pWorstHurtID} FALSE
+  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention1}].MyRange} && ${Me.SpellReady[${healIntervention1}]}) {
+    /call core_cast "${healIntervention1}" 0 ${pWorstHurtID}   FALSE
+  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healReckless}].MyRange} && ${Me.SpellReady[${healReckless}]}) {
+    /call core_cast "${healReckless}" 0 ${pWorstHurtID} FALSE
+  } 
+/return
+
+
+
+
+
+
+
 
 
 
@@ -515,6 +571,25 @@ sub Bind_setSHM(string _classType, string _verbage)
 		VOUT /${_bind} [${_listout}]
 		/return
 
+
+	| canni HP pct
+	} else /if (${Bool[${_classType.Equal[cannihp]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI canniPctHPs Spells ${_verbage}
+		} else {
+			VOUT /${_bind} cannihp [${cinfo}${canniPctHPs}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}	
+
+	| canni Manna pct
+	} else /if (${Bool[${_classType.Equal[cannimanna]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI canniPctManna Spells ${_verbage}
+		} else {
+			VOUT /${_bind} cannimanna [${cinfo}${canniPctHPs}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}	
+
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
 		/if (!${validate_expansion[TRUE, |16]}) /return
@@ -554,6 +629,9 @@ sub Bind_setSHM(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[cannihps]}) /varset _listout ${_listout}(${cnum}${canniPctHPs}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[cannimanna]}) /varset _listout ${_listout}(${cnum}${canniPctManna}\ax)
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

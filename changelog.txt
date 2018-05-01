@@ -7,10 +7,52 @@
  *
  ***|
 
-*** I swear to god. If you don't read this and ask me questions, /ignore ***
+ ** I swear to god. If you don't read this and ask me questions, /ignore
 
 
-20180429
+
+
+20180501
+- fixini.inc
+	-- /core fixini [TRUE|FALSE] - FALSE=just fixini will check current entries. TRUE=will force checking of all old entries as well as current
+  -- new include.
+  -- set aside for adjustment of all INI entries
+  -- went back and found all the old ones i did not keep in the current routine to clean up INIs
+	-- this is executed on every build change. can do a manual execution with /core fixini if you like.
+- pets
+  -- enchanter, mage and necro/SK will check for components first.
+- cast_aa_snare()
+  -- now part of the base debuff check routine. no idea why it wasnt before
+- check_buffs_self()
+  -- will check for AAnow and Discnow
+- /onoff
+  -- cosmetic changes
+- /cc
+  -- cosmetic changes (isolated melee range nuke and dot. little easier to read.)
+
+- all classes
+  -- moved the debuff checks in before the dots and nukes engage. in melee only cases, before Item click checks
+  -- no longer checked in discs
+- class.shm.inc
+  -- pet heal routine was missing... not missing anymore. /heal pet should work again.
+  -- added in specifics for cani by HP and spell being cast. (thanks saarr for the list)
+  -- /shm [cannimanna|canihps] class controls added
+  -- [spells]->canniPctHPs->## - pct of HPS you are willing to check to canni
+  -- [spells]->canniPctManna->## - pct of Manna you are willing to check to canni
+  -- [spells]->caniPercent is now gone. make sure to reset the new values
+- class.shd.inc
+  -- typo in class switches
+- class.bst.inc
+  -- put the nukes and dots back in. they have been punished enough
+- class.mnk.inc
+  -- class commands missed a "/" .. its always the little things  
+- class.war.inc
+  -- AAVehementRage is now spelled correctly. /shrug i stand by warriors cant spell comment..
+  
+
+
+
+20180501
 HUDUPDATE
 - rename cast_disc_breather() -> cast_stamina_recovery()
 - added (Class ShortName)AAFade to predefined class skills
@@ -42,7 +84,6 @@ HUDUPDATE
   -- typo in harmonious
 - class.enc.inc
   -- typo in a declare
-  
 
 - all classes
   -- no longer send pets to a forced combat target while in manual.

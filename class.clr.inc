@@ -54,6 +54,7 @@ sub core_CLR()
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
@@ -103,7 +104,6 @@ sub disc_CLR()
 	AMIDEAD
 	CHECKEXIT
 	/if (!${Me.Sitting} && ${Bool[${doYaulp}]}) /call cast_yaulp
-	/call check_deBuffs ${Target2Kill}
 
 	| /if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_yaulp
 	/if (${is_target_valid[${Target2Kill}]}) {

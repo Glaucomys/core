@@ -38,6 +38,7 @@ sub core_ROG()
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
@@ -90,7 +91,6 @@ sub disc_ROG()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill} FALSE
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${switchdeBuffSnare}) /call cast_aa_snare ${Target2Kill}
 	/call core_cast "Shadow's Flanking" alt 0 FALSE
 	| /call use_skill_melee ${Target2Kill}
 	
@@ -137,11 +137,9 @@ sub disc_ROG()
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[disc, "${DiscAggro}", ${Target2Kill}]}) /call core_cast2 "${DiscAggro}" disc ${Target2Kill} FALSE
 
-
 	
 	/if (${validate_buff[disc, discs, DiscBlinding]} && ${Target.Level} <= 110) /call core_cast "${DiscBlinding}" disc ${Target2Kill} FALSE
 	
-	/call check_deBuffs ${Target2Kill}
 /return
 
 

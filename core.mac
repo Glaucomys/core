@@ -123,6 +123,7 @@
 #include tc\class.war.inc
 #include tc\class.wiz.inc
 #include tc\hud.inc
+#include tc\fixini.inc
 
 
 |***

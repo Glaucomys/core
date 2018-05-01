@@ -42,6 +42,7 @@ sub core_NEC()
 			/if (${switchPcSwarm}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
 			/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatNuke}) /call cast_nuke
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}

@@ -38,6 +38,7 @@ sub core_SHD()
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
@@ -112,7 +113,6 @@ sub disc_SHD()
 	/if (${switchHealSelf} && ${Me.PctHPs} < 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Leech Touch]}) /call core_cast "Leech Touch" alt ${Target2Kill} FALSE
 	/if (${switchHealSelf} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0 FALSE
 	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]}) /call core_cast "Deflection Discipline" disc 0 FALSE
-	/call check_deBuffs ${Target2Kill}
 
 /return
 
@@ -283,7 +283,7 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/if (${Bool[${_classType.Find[skin]}]}) {
 		/call writeINI switchSkin Buffs ${If[${switchSkin},FALSE,TRUE]}  
 		/call echos switch "Buff ${sep} ${Skin}" switchSkin 0 0
-		/reuturn
+		/return
 	
 	| on/off switch for Harmonious
 	} else /if (${Bool[${_classType.Find[harmonious]}]}) {

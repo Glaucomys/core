@@ -47,6 +47,7 @@ sub core_MAG()
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatNuke}) {
 				/if (${switchForceTwincast}) /call force_twincast_${Me.Class.ShortName}
 				/call cast_nuke

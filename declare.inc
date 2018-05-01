@@ -249,7 +249,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180429
+	/call setDeclare coreBuild											int			outer 20180501
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -266,7 +266,6 @@ sub set_declares()
 	/call setDeclare hudBroadcast										string	outer FALSE
 	/call setDeclare tmpMode												string	outer FALSE
 	/call setDeclare hudDeathCount									int			outer	0
-		
 	/call DeclareCoreIniVar HudName									string	General Core
 	/call DeclareCoreIniVar HudType									string	General normal
 	/call setINIVar HUDTime													bool 		Common TRUE
@@ -427,22 +426,6 @@ sub set_declares()
 	
 
 	| /here settings
-	| /call DeclareCoreIniVar combatWAR								string	Here MELEE
-	| /call DeclareCoreIniVar combatPAL								string	Here MELEE
-	| /call DeclareCoreIniVar combatSHD								string	Here MELEE
-	| /call DeclareCoreIniVar combatCLR								string	Here HEAL
-	| /call DeclareCoreIniVar combatSHM								string	Here HEAL
-	| /call DeclareCoreIniVar combatDRU								string	Here DUAL
-	| /call DeclareCoreIniVar combatMAG								string	Here NUKE
-	| /call DeclareCoreIniVar combatENC								string	Here DUAL
-	| /call DeclareCoreIniVar combatWIZ								string	Here NUKE
-	| /call DeclareCoreIniVar combatNEC								string	Here NUKE
-	| /call DeclareCoreIniVar combatMNK								string	Here MELEE
-	| /call DeclareCoreIniVar combatROG								string	Here MELEE
-	| /call DeclareCoreIniVar combatBER								string	Here MELEE
-	| /call DeclareCoreIniVar combatBST								string	Here MELEE
-	| /call DeclareCoreIniVar combatRNG								string	Here MELEE
-	| /call DeclareCoreIniVar combatBRD								string	Here MELEE
 	/call DeclareCoreIniVar makeVisible							bool		Here TRUE
 	/call DeclareCoreIniVar clearTarget							bool		Here TRUE
 	/call DeclareCoreIniVar defaultTimerDelay				string	Here 1m
@@ -1188,7 +1171,7 @@ sub set_declares()
   /call setDeclare rogType												string	outer "|ae|autosos|healpoint|poison|spiregroup|spireraid"
   /call setDeclare rngType												string	outer "|fastheal|healpoint|spice|spiregroup|spireraid|summer"
   /call setDeclare shdType												string	outer "|defcount|harmonious|healpoint|skin|spiregroup|spireraid|stance"
-  /call setDeclare shmType												string	outer "|groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|talisman|xtradius|xttime"
+  /call setDeclare shmType												string	outer "|cannihps|cannimanna|groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|talisman|xtradius|xttime"
   /call setDeclare warType												string	outer "|healpoint|spiregroup|spireraid"
   /call setDeclare wizType												string	outer "|forcetwincast|gather|healpoint|line|manaburn|spiregroup|spireraid"
     
@@ -1878,7 +1861,7 @@ sub declare_WAR()
 	/call setINIVar AAWarStomp 											string	Discs "War Stomp"
 	/call setINIVar AABraceforImpact 								string	Discs "Brace for Impact"
 	/call setINIVar AAMageHunter										string	Discs "Mark of the Mage Hunter"
-	/call setINIVar AAVhementRage 									string	Discs "Vhement Rage"
+	/call setINIVar AAVehementRage 									string	Discs "Vehement Rage"
 	/call setINIVar AABladeGuardian 								string	Discs "Blade Guardian"
 	/call setINIVar AAKneeStrike 										string	Discs "Knee Strike"
 	/call setINIVar AAImpCommand										string	Discs "Imperator's Command"
@@ -2157,6 +2140,10 @@ sub declare_SHM()
   /call setDeclare MinorHurt											int    	outer 0 
   /call setDeclare WorstHp		 										int    	outer 100	
 
+  /call setDeclare pWorstHurt 										string 	outer ${Me.DisplayName}
+  /call setDeclare pWorstHP												int			outer 100
+  /call setDeclare pWorstHurtID										int 		outer ${Me.ID}
+
 	/call setTimer tTalisman												string	Timer 30s timer_cast_talisman
 	/call setINIVar spellTalisman	 									string	Spells "Talisman of the Leopard"
 	/call setINIVar switchTalisman			 						bool		Spells TRUE
@@ -2190,8 +2177,11 @@ sub declare_SHM()
 	/call setINIVar DoT4chk						 							string	Spells FALSE
 	/call setINIVar DoT4Condition 									string	Spells FALSE
                                           		
-	/call setINIVar CaniPercent				 							int			Spells 60
+	/call setINIVar CanniPctHPs				 							int			Spells 60
+	/call setINIVar CanniPctManna				 						int			Spells 60
 	/call setINIVar spellCannibalization						string	Spells "Tribal Pact"
+
+
                                           		
 	/call setINIVar useGroupHeal 										bool		Heal TRUE
 	/call setINIVar useGroupHoT											bool		Heal TRUE
@@ -2499,53 +2489,6 @@ sub declare_CLR()
 	/call setINIVar DoT4chk						 							string	Spells FALSE
 	/call setINIVar DoT4Condition 									string	Spells FALSE
 /return	
-
-
-
-|***
- *	DES: This will clear all store alises that core has created in your MacroQuest2.INI file. or those with matching names.
- *	USE: /core whitewash
- *	INI: MacroQuest2.INI
- *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry it's slow as fuck.
- ***|
-sub whitewash(bool _silent)
-	/if (!${_silent}) VOUT ${owarning} ${sep} Deleting all Core ${cinfo}${coreBuild}\ax aliases. ${cbad}Please Wait\ax
-	/declare _count 				int local 0
-	/declare _todelete[1] 	string local
-	/declare _index 				int local 0
-	/declare _increment			int local 1
-	
-	| retired aliases
-	| /varset _todelete[xx] |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion|home|paragon|combatradius|HuntMobAgro
-	| /varset _todelete[xx] |spice|stop|setagro|smartma|setpull|HUDTime|banestrike|broadcast|ib|sb|pb|resetcore|verbose|buildpet|autorest|toastauto|primary|secondary|invis|info|whohas
-	| /varset _todelete[xx] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable|core|invites|facefast|stickbehind|hudupdate|qmpct|qm|toastmobcount|toastengageat|combatdistance
-	| /varset _todelete[xx] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash|agro|engageat|autorest|smartengageat|watchspawn|petengageat|petswarmengageat
-	| /varset _todelete[xx] |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|tie|ignorelos|forage|fish|train|petfarm|drag|ri|hunt|tietoon|tiedistance|tietime
-	| /varset _todelete[xx]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
-	| /varset _todelete[xx] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore|pettype|pettank|whitewash|doyaulp|cr|ma1|ma2|info|huntagro|killcode|useeradicate
-	| /varset _todelete[xx] |control|smartengageat|killmob|combat|on|off|maxlevel|autoadjustexp|oneoff|userain|crew|autologin|usebuffkill|pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel|core
-	| /varset _todelete[xx] |mirror|maintexplvl|autocontrol|echoaugments|relay|givecoin|stop|usegrouphot|usegroupheal|rc|purify|sendpets|harvest|gather|rod|redorod|rods|song|glyph|lesson|wood|cani
-	| /varset _todelete[xx] |here|take|homeradius|homeleash
-		
-	| core aliases
-	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson
-
-	
-	/for _count 1 to ${_todelete.Size}
-		DEBUG _count: ${_count}-${_todelete.Size}
-		/for _index 1 to ${_todelete[${_count}].Count[|]}
-			DEBUG _index: ${_count}-${_todelete.Size}: ${_index} ${_todelete[${_count}].Arg[${_index},|]}
-			/if (!${_silent}) VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
-			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
-			/varcalc _increment ${_increment}+1
-		/next _index	
-	/next _count
-	
-	/if (!${_silent}) {
-		/call echos ending
-		/endm
-	}
-/return
 
 
 
@@ -4425,7 +4368,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 
 	| delete old INI entries
  	} else /if (${Bool[${_coreType.Find[fixini]}]}) {
-		/call fix_INI_declares
+		/call fix_INI_declares ${_verbage}
 		/return
 	}
 
@@ -4466,9 +4409,7 @@ sub Bind_onoff(string _onoffType)
 	/if (${Bool[${${_bind}Type.Find[${_${_bind}Type}]}]}) {
 		/if (${Defined[switch${_onoffType.Left[1].Upper}${_onoffType.Right[-1].Lower}]}) {
 			/call writeINI switch${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower} Common ${If[${switch${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower}},FALSE,TRUE]}  
-			/call echos switch "${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower}" switch${_${_bind}Type.Left[1].Upper}${_${_bind}Type.Right[-1].Lower} 0 0
 		} 
-		/return
 	}
 	
 	/for _count 1 to ${${_bind}Type.Count[|]}
@@ -4480,7 +4421,6 @@ sub Bind_onoff(string _onoffType)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
-	}
 /return  
 
 
@@ -4605,7 +4545,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	/declare _bind string local cc
 	/declare _listout string local
 	/declare _sep bool local FALSE
-	| /declare _combatModes string local |melee|range|nuke|heal|dual
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -4628,58 +4567,11 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${Bool[${_verbage}]}) {
 			/if (${Target.ID} && (${Target.ID} != ${Me.ID}) && (${Target.ID} != ${Me.Pet.ID})) {
 
-|**
-				| engage Melee combat
-				/if (${Bool[${_verbage.Equal[melee]}]}) {
-					/varset isValidTarget TRUE
-					/varset combat MELEE
-					/varset Target2Kill ${Target.ID}
-
-				| engage Range combat
-				} else /if (${Bool[${_verbage.Equal[range]}]}) {
-					/if (${Target.Distance} > 31) {
-						/varset isValidTarget TRUE
-						/varset combat RANGE
-						/varset Target2Kill ${Target.ID}	
-					} else /if (${Target.Distance} < 31) {	
-						VOUT Adjusting to ${sep} ${cinfo}MELEE\ax
-						/varset isValidTarget TRUE
-						/varset combat MELEE
-						/varset Target2Kill ${Target.ID}			
-						/varset _verbage MELEE				
-					} 
-
-				| engage Nuke combat
-				} else /if (${Bool[${_verbage.Equal[nuke]}]}) {
-					/varset isValidTarget TRUE
-					/varset combat NUKE
-					/varset Target2Kill ${Target.ID}
-**|
-
-
 				| engage base combat
 				/if (${Bool[${_verbage.Equal[combat]}]}) {
 					/varset isValidTarget TRUE
 					/varset combat COMBAT
 					/varset Target2Kill ${Target.ID}
-	
-	|**
-					/if (${Target.Distance} > 31) {
-						/varset isValidTarget TRUE
-						/varset Target2Kill ${Target.ID}	
-					} else /if (${Target.Distance} < 31) {	
-						VOUT Adjusting to ${sep} ${cinfo}MELEE\ax
-						/varset isValidTarget TRUE
-						/varset Target2Kill ${Target.ID}			
-					} 
-
-**|
-
-
-
-
-
-
 
 				| force assist for other eqbc toons
 				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
@@ -4703,7 +4595,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 				VOUT /${_bind} force [${_listout}]	
 			}
 			/return
-
 
 	| set bandolier swapping
 	} else /if (${Bool[${_ccType.Equal[bandolier]}]}) {
@@ -4731,30 +4622,37 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		} 
 		/return
 
+	| enable combat: melee, range, nuke, dot
+	} else /if (${Select[${_ccType},melee,range,nuke,dot]}) {
 
+		| enable combat: melee
+		/if (${Bool[${_ccType.Equal[melee]}]}) {
+			/call writeINI switchCombatMelee Common ${If[${switchCombatMelee},FALSE,TRUE]}
 
-	| enable combat: melee
-	} else /if (${Bool[${_ccType.Equal[melee]}]}) {
-		/call writeINI switchCombatMelee Common ${If[${switchCombatMelee},FALSE,TRUE]}
+		| enable combat: range
+		} else /if (${Bool[${_ccType.Equal[range]}]}) {
+			/call writeINI switchCombatRange Common ${If[${switchCombatRange},FALSE,TRUE]}
 
-	| enable combat: range
-	} else /if (${Bool[${_ccType.Equal[range]}]}) {
-		/call writeINI switchCombatRange Common ${If[${switchCombatRange},FALSE,TRUE]}
+		| enable combat: nuke
+		} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
+			/call writeINI switchCombatNuke Common ${If[${switchCombatNuke},FALSE,TRUE]}
 
-	| enable combat: nuke
-	} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
-		/call writeINI switchCombatNuke Common ${If[${switchCombatNuke},FALSE,TRUE]}
+		| enable combat: dot
+		} else /if (${Bool[${_ccType.Equal[dot]}]}) {
+			/call writeINI switchCombatDoT Common ${If[${switchCombatDoT},FALSE,TRUE]}
+		}
 
-	| enable combat: dot
-	} else /if (${Bool[${_ccType.Equal[dot]}]}) {
-		/call writeINI switchCombatDoT Common ${If[${switchCombatDoT},FALSE,TRUE]}
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/if (${${_bind}Type.Arg[${_count},|].Equal[melee]}) /varset _listout ${_listout} ${cinfo}melee\ax(${If[${switchCombatMelee},${oon},${ooff}]})	
+			/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}range\ax(${If[${switchCombatRange},${oon},${ooff}]})	
+			/if (${${_bind}Type.Arg[${_count},|].Equal[nuke]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}nuke\ax(${If[${switchCombatNuke},${oon},${ooff}]})	
+			/if (${${_bind}Type.Arg[${_count},|].Equal[dot]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}dot\ax(${If[${switchCombatDoT},${oon},${ooff}]})	
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
+		/return
+	}
 
-
-
-		
-		
-		
-				
 	| set Pull
 	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
@@ -4919,12 +4817,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout}(${If[${switchCombatRange},${oon},${ooff}]})	
 		/if (${${_bind}Type.Arg[${_count},|].Equal[nuke]}) /varset _listout ${_listout}(${If[${switchCombatNuke},${oon},${ooff}]})	
 		/if (${${_bind}Type.Arg[${_count},|].Equal[dot]}) /varset _listout ${_listout}(${If[${switchCombatDoT},${oon},${ooff}]})	
-		
-		
-		
-		
-		
-			
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

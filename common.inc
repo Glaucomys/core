@@ -240,6 +240,16 @@ sub cast_summon_pet()
 		/delay 5
 	}
 	/if (${switchPcPet} && !${Me.Pet.ID})  {
+		/if (${Me.Class.ShortName.Equal[ENC]}) {
+			/if (!${FindItem[Tiny Dagger]}) VOUT Missing ${sep} ${cinfo)Tiny Dagger\ax
+			/return
+		} else /if (${Me.Class.ShortName.Equal[MAG]}) {
+			/if (!${FindItem[Malchite]}) VOUT Missing ${sep} ${cinfo)Malchite\ax
+			/return
+		}else /if (${Select[${Me.Class.ShortName},NEC,SHD}) {
+			/if (!${FindItem[Bone Chips]}) VOUT Missing ${sep} ${cinfo)Bone Chips\ax
+			/return
+		}
 		VOUT Building ${sep} ${csp}${PcPettype}\ax
 		/call core_cast "${PcPettype}" ${buffGem} 0 FALSE
 		/call create_timer timer_check_pet_buffs 20
@@ -686,11 +696,11 @@ sub check_buffs_self()
 		
 			| /if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID} FALSE
 			/if (${validate_cast[item, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" item 0 FALSE
-			
-			
-			
 		}
 	/next _count
+
+	/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
+	/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 	/if (${Me.Class.ShortName.Equal[WIZ]}) /call sort_mancy_lineAA
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
 	/if (${coreAuto} && ${switchShrink}) /call check_shrink
@@ -5332,10 +5342,10 @@ sub check_stance()
 	CHECKEXIT
 	/doevents
 	/if (!${switchStance}) /return
-	
+	/call create_timer timer_check_Stance ${tcheck_Stance}
+		
 	/if (!${Bool[${Me.Buff[${Stance}]}]} && ${Me.SpellReady[${Stance}]}) {
 		/call core_cast "${Stance}" 0 0 FALSE
-		/call create_timer timer_check_Stance ${tcheck_Stance}
 	}
 /return
 
@@ -5850,115 +5860,6 @@ sub set_base_install()
 
 
 |***
- *	DES: Used to remove stale entries from the toons INI. 'cause I gotta keep changing shits.
- *	USE: /call fix_INI_declares
- *	INI: 
- *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
- ***|
-sub fix_INI_declares()
-	/ini "${INIClass}" "Common" "echoChannel" NULL
-	/ini "${INIClass}" "Common" "relayTells" NULL
-	/ini "${INIClass}" "Common" "verbose" NULL
-
-	/ini "${INIClass}" "Items" "doclickItem" NULL
-	/ini "${INIClass}" "Items" "doclickItemBurn" NULL
-	/ini "${INIClass}" "Odds" "doclickOdds" NULL
-
-	/ini "${INIClass}" "Discs" "DefensiveDisc" NULL
-
-	/ini "${INIClass}" "Discs" "DiscArmor" NULL
-	/ini "${INIClass}" "Discs" "DiscGuard" NULL
-	/ini "${INIClass}" "Discs" "DiscHoly" NULL
-
-	/ini "${INIClass}" "Common" "useSmartAssist1" NULL
-	/ini "${INIClass}" "Common" "useSmartAssist2" NULL
-
-	| update for invite command changes
-	/ini "${INIClass}" "Common" "switchInvites" NULL
-	/ini "${INIClass}" "Common" "switchRaidInvite" NULL
-	
-
-	| UPDATE FOR MODE DEPRECIATION
-	/ini "${INIClass}" "Common" "combat" NULL
-	
-	/ini "${INICore}" "Here" "combatWAR" NULL
-	/ini "${INICore}" "Here" "combatPAL" NULL
-	/ini "${INICore}" "Here" "combatSHD" NULL
-	/ini "${INICore}" "Here" "combatCLR" NULL
-	/ini "${INICore}" "Here" "combatSHM" NULL
-	/ini "${INICore}" "Here" "combatDRU" NULL
-	/ini "${INICore}" "Here" "combatMAG" NULL
-	/ini "${INICore}" "Here" "combatENC" NULL
-	/ini "${INICore}" "Here" "combatWIZ" NULL
-	/ini "${INICore}" "Here" "combatNEC" NULL
-	/ini "${INICore}" "Here" "combatROG" NULL
-	/ini "${INICore}" "Here" "combatBER" NULL
-	/ini "${INICore}" "Here" "combatBST" NULL
-	/ini "${INICore}" "Here" "combatRNG" NULL
-	/ini "${INICore}" "Here" "combatBRD" NULL
-	/ini "${INICore}" "Here" "combatMNK" NULL
-
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/if (${Me.Class.ShortName.Equal[BRD]}) {
-		/ini "${INIClass}" "meleedisc" "seloskick" NULL
-	}
-
-	/if (${Me.Class.ShortName.Equal[WIZ]}) {
-		/ini "${INIClass}" "Spells" "DoNuke" NULL
-		/ini "${INIClass}" "Spells" "Nuke1" NULL
-		/ini "${INIClass}" "Spells" "Nuke2" NULL
-		/ini "${INIClass}" "Spells" "Nuke3" NULL
-		/ini "${INIClass}" "Spells" "Nuke4" NULL
-		/ini "${INIClass}" "Spells" "Nuke5" NULL
-		/ini "${INIClass}" "Spells" "Nuke6" NULL
-		/ini "${INIClass}" "Spells" "Nuke7" NULL
-		/ini "${INIClass}" "Spells" "Nuke8" NULL
-	}
-
-
-	
-	/if (${Me.Class.ShortName.Equal[RNG]}) {
-		/ini "${INIClass}" "Spells" "ElementalArrow" NULL
-		/ini "${INIClass}" "Spells" "GlacialArow" NULL
-		/ini "${INIClass}" "Spells" "VolatileArrow" NULL
-		
-		/ini "${INIClass}" "Spells" "ArrowPoison" NULL
-		/ini "${INIClass}" "Spells" "ArrowFire" NULL
-		/ini "${INIClass}" "Spells" "ArrowIce" NULL
-	}
-	
-
-	/ini "${INICore}" "General" "switchAlwaysFaceTarget" NULL
-
-	| /call DeclareCoreIniVar switchAlwaysFaceTarget	string	General FALSE
-
-	
-	
-
-	| fix the range summon INI entries
-	/if (!${RangeItem.Count[|]}) {
-		/call writeINI RangeItem Common |"${RangeItem}"
-	}
-	/if (!${RangeItemSummon.Count[|]}) {
-		/call writeINI RangeItemSummon Common |"${RangeItemSummon}"		
-	}
-	VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
-/return
-
-
-
-|***
  *	DES: check specific classes ONLY
  *	USE: /if (${validate_class[BOOL, |CLS|CLS]) /dowhatever
  *	INI: 
@@ -6334,8 +6235,8 @@ sub verify_build()
 	/if (${Int[${classBuild}]} != ${Int[${coreBuild}]}) {
 
 		/if (${forceINIcheck}) {
-			| clean INIs?
-			/call fix_INI_declares	
+			| clean INIs. do not force old clean
+			/call fix_INI_declares FALSE
 			
 			| fix INI version builds
 			/call writeINI classBuild common ${coreBuild}

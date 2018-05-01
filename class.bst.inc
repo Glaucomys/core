@@ -42,6 +42,9 @@ sub core_BST()
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
+			/if (${switchCombatNuke}) /call cast_nuke
+			/if (${switchCombatDoT}) /call cast_DOT
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}

@@ -51,6 +51,7 @@ sub core_DRU()
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
@@ -85,6 +86,7 @@ sub disc_DRU()
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
+
 	/call core_cast "Storm Strike" alt ${Target2Kill} FALSE
 	/call core_cast "Season's Wrath" alt ${Target2Kill} FALSE
 /return

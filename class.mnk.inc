@@ -34,6 +34,7 @@ sub core_MNK()
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
@@ -250,7 +251,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 	}	
 	
 	| set FD agro PCT
-	if (${Bool[${_classType.Find[fdpct]}]}) {
+	/if (${Bool[${_classType.Find[fdpct]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI setFDAgroPct Melee ${_verbage}
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {

@@ -54,6 +54,7 @@ sub core_BRD()
 				/if (${addList.Count[|]}) /return
 			}			
 			/call disc_${Me.Class.ShortName}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call bard_dot
 			/if (${switchCombatNuke}) /call bard_nuke
 			/call pulse
@@ -97,7 +98,6 @@ sub disc_BRD()
 	/if (${Me.Casting.ID}) /call pulse_stop
 	/if (!${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill} FALSE
-	/call check_deBuffs ${Target2Kill}
 	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill} FALSE
 	/call core_cast "Cacophony" alt ${Target2Kill} FALSE
 	/call core_cast "Bladed Song" alt ${Target2Kill} FALSE

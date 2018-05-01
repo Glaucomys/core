@@ -38,6 +38,7 @@ sub core_WIZ()
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchPcSwarm}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatNuke}) {
 				/if (${switchForceTwincast}) /call force_twincast_${Me.Class.ShortName}
 				/call cast_nuke_wiz
