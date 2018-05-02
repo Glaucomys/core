@@ -1,4 +1,4 @@
-6656|***
+|***
  *	class.bst.inc
  *	Core Beastlord Include
  *

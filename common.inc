@@ -234,22 +234,24 @@ sub cast_summon_pet()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/if (${coreAuto} && ${switchPcPet} && ${Me.AltAbilityReady[Suspended Minion]}) {
+	/if (${coreAuto} && ${switchPcPet} && ${Me.AltAbilityReady[Suspended Minion]} && !${Me.Pet.ID}) {
 		/call core_cast "Suspended Minion" alt 0 FALSE
 		/delay 5s !${Me.Casting.ID}
 		/delay 5
 	}
 	/if (${switchPcPet} && !${Me.Pet.ID})  {
+		|*
 		/if (${Me.Class.ShortName.Equal[ENC]}) {
-			/if (!${FindItem[Tiny Dagger]}) VOUT Missing ${sep} ${cinfo)Tiny Dagger\ax
+			/if (!${FindItem[Tiny Dagger].ID}) VOUT Missing ${sep} ${cinfo}Tiny Dagger\ax
 			/return
 		} else /if (${Me.Class.ShortName.Equal[MAG]}) {
-			/if (!${FindItem[Malchite]}) VOUT Missing ${sep} ${cinfo)Malchite\ax
+			/if (!${FindItem[Malachite].ID}) VOUT Missing ${sep} ${cinfo}Malachite\ax
 			/return
-		}else /if (${Select[${Me.Class.ShortName},NEC,SHD}) {
-			/if (!${FindItem[Bone Chips]}) VOUT Missing ${sep} ${cinfo)Bone Chips\ax
+		} else /if (${Select[${Me.Class.ShortName},NEC,SHD]}) {
+			/if (!${FindItem[Bone Chips].ID}) VOUT Missing ${sep} ${cinfo}Bone Chips\ax
 			/return
 		}
+		*|
 		VOUT Building ${sep} ${csp}${PcPettype}\ax
 		/call core_cast "${PcPettype}" ${buffGem} 0 FALSE
 		/call create_timer timer_check_pet_buffs 20
@@ -453,8 +455,8 @@ sub check_aura()
 	
 	UPDATEHUD "CHECK: Aura"
 	
-	| Aura: berzerker, monk
-	/if (${validate_class[FALSE, |BER|MNK]}) {
+	| Aura: berzerker, monk, warrior
+	/if (${validate_class[FALSE, |BER|MNK|WAR]}) {
 		/if (${Bool[${Aura1Buff}]} && !${Bool[${Me.Aura[1].Name.Equal[${Aura1Buff}]}]}) {
 			VOUT Disc ${sep} ${csp}${Aura1Spell}\ax
 			/disc ${Aura1Spell}
@@ -666,7 +668,7 @@ sub check_buffs_self()
 			DEBUG _count: ${_count} - ${BuffAAUnity${_count}} = ${Me.Buff[${BuffAAUnity${_count}}].Duration}
 			/if (${Bool[${BuffAAUnity${_count}}]} && !${Bool[${Me.Buff[${BuffAAUnity${_count}}].Duration}]}) {
 				| /call core_cast "${${Me.Class.ShortName}AAUnity}" alt 0 FALSE
-				/if (${validate_cast[alt, "${${Me.Class.ShortName}AAUnity}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}AAUnity}" alt 0 FALSE
+				/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}AAUnity}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}AAUnity}" alt 0 FALSE
 
 				/break
 			}
@@ -689,13 +691,13 @@ sub check_buffs_self()
 			/if (!${Me.SpellReady[${Buff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
 			
  		  | /if (${Me.Book[${Buff${_count}}]} && ${Me.CurrentMana} > ${Spell[${Buff${_count}}].Mana}) /call core_cast "${Buff${_count}}" ${buffGem} ${Me.ID} FALSE
-			/if (${validate_cast[spell, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" ${buffGem} ${Me.ID} FALSE
+			/if (${validate_cast[FALSE, spell, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" ${buffGem} ${Me.ID} FALSE
 	
 			| /if (${Me.AltAbility[${Buff${_count}}].ID}) /call core_cast "${Buff${_count}}" alt 0 FALSE
-			/if (${validate_cast[alt, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" alt 0 FALSE
+			/if (${validate_cast[FALSE, alt, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" alt 0 FALSE
 		
 			| /if (${Me.ItemReady[${Buff${_count}}]}) /call core_cast "${Buff${_count}}" item ${Me.ID} FALSE
-			/if (${validate_cast[item, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" item 0 FALSE
+			/if (${validate_cast[FALSE, item, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" item 0 FALSE
 		}
 	/next _count
 
@@ -1245,7 +1247,7 @@ sub click_item_swarm(int _tmpID)
 		/doevents
 		AMIDEAD
 		CHECKTIE
-		/if (${validate_cast[item, "${clickItemSwarm${_count}}", ${_tmpID}]}) /call core_cast2 "${clickItemSwarm${_count}}" item ${_tmpID} FALSE
+		/if (${validate_cast[FALSE, item, "${clickItemSwarm${_count}}", ${_tmpID}]}) /call core_cast2 "${clickItemSwarm${_count}}" item ${_tmpID} FALSE
 	/next _count
 /return
 
@@ -1905,7 +1907,7 @@ sub cast_AA_banestrike(int _tmpID)
 	CHECKEXIT
 	/if (${is_target_dead[${_tmpID}]}) /return
 	/if (!${is_target_valid[${_tmpID}]}) /return
-	/if (${validate_cast[alt, "Banestrike", ${_tmpID}]}) /call core_cast2 "Banestrike" alt ${_tmpID} FALSE
+	/if (${validate_cast[FALSE, alt, "Banestrike", ${_tmpID}]}) /call core_cast2 "Banestrike" alt ${_tmpID} FALSE
 /return
 
 
@@ -2590,8 +2592,8 @@ sub cast_nuke_servant()
 	/if (!${switchPcSwarm}) /return
 	AMIDEAD
 	CHECKEXIT
-	/if (${validate_cast[spell, "${ServantNuke}", ${Target2Kill}]}) /call core_cast "${ServantNuke}" 0 ${Target2Kill} cast_break
-	/if (${validate_cast[alt, "${ServantNuke}", ${Target2Kill}]}) /call core_cast "${ServantNuke}" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, spell, "${ServantNuke}", ${Target2Kill}]}) /call core_cast "${ServantNuke}" 0 ${Target2Kill} cast_break
+	/if (${validate_cast[FALSE, alt, "${ServantNuke}", ${Target2Kill}]}) /call core_cast "${ServantNuke}" alt ${Target2Kill} FALSE
 /return
 
 
@@ -5599,13 +5601,13 @@ sub validate_buff(string _type, string _inisub, string _spell)
 
 |***
  *	DES: validates casting of "things on a target
-  *	USE: /call ${validate_cast[[spell|alt|disc|item|pulse], name, targetID]
+  *	USE: /call ${validate_cast[[TRUE|FALSE], [spell|alt|disc|item|pulse], name, targetID]
  *	INI: 
  *  NOTE: will sort silver subscriptions as well.
  *  This is designed tomake sure whatever we are attempting to cast, is castable. be it a disc, item, spell, booger flick.. whatever.. IS IT READY TO BE USED?
  ***|
-sub validate_cast(string _type, string _spell, int _tmpID)
-	DEBUG ${cbug}validate_cast(type:${_type}, name:${_spell}, ID:${_tmpID})\ax
+sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
+	DEBUG ${cbug}validate_cast(error:${_error}, type:${_type}, name:${_spell}, ID:${_tmpID})\ax
 	
 	| /if (${is_target_dead[${_tmpID}]}) /return FALSE
 
@@ -5616,15 +5618,16 @@ sub validate_cast(string _type, string _spell, int _tmpID)
 	| check spell
 	/if (${_type.Equal[spell]}) {
 		/if (!${Bool[${Me.Book[${_spell}]}]}) /return FALSE
-		/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE
+		/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]}) /return FALSE
 		/if ((${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) || ${Me.Moving} || ${AdvPath.Following}) /return FALSE
 		/if (${Me.Casting.ID}) /return FALSE
-		/if (!${switchOverrideLos} && !${Spawn[${_tmpID}].LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE
+		/if (!${switchOverrideLos} && !${Spawn[${_tmpID}].LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]}) /return FALSE
 		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 
 		| spell stacks ?
-		| /if (!${Select[${_type},alt,item,disc]} && !${Spell[${_spell}].Stacks}) /return FALSE
+		| ${Spell[${Me.Casting.ID}].Category.Equal[Heals]}
+		| ${Spell[${_spell}].Stacks}
 
 		| restist types vs core.zone.inc
 		/if (!${Spell[${_spell}].SpellType.Equal[Beneficial]}) {
@@ -5635,6 +5638,14 @@ sub validate_cast(string _type, string _spell, int _tmpID)
 			/if (${NoColdList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Cold]}) /return FALSE
 			/if (${NoCorruptionList.Find[${Target.DisplayName}]} && ${Spell[${_spell}].ResistType.Equal[Corruption]}) /return FALSE
 		}
+		
+		| check for stacking issues
+		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]} && (${Target.ID} == ${Me.ID})) {
+			DEBUG we made it to the buff routine...
+		}
+		
+		| ${Spell[${_spell}].Category.Equal[Heals]}
+		| ${Spell[${_spell}].SpellType.Equal[Beneficial]}
 		
 	| check alt ability
 	} else /if (${_type.Equal[alt]}) {

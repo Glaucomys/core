@@ -80,7 +80,7 @@ sub disc_PAL()
 		/declare _count int local 0
 		/for _count 1 to 3
 			/if (${Bool[${Me.ActiveDisc}]}) /break
-			/if (${validate_cast[disc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
+			/if (${validate_cast[FALSE, disc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
 				/call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 				/break
 			}			
@@ -92,24 +92,24 @@ sub disc_PAL()
 	
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	
-	/if (${validate_cast[disc, "${DiscFastRune}", ${Me.ID}]}) /call core_cast2 "${DiscFastRune}" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscFastRune}", ${Me.ID}]}) /call core_cast2 "${DiscFastRune}" disc 0 FALSE
 	
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	| AA inquisitors armor stacking control
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} > 2) {
 		/if (!${Me.Song[[${AAGroupInquisitor}].ID}) { 
-			/if (${validate_cast[alt, "${AAInquisitor}", ${Me.ID}]}) /call core_cast2 "${AAInquisitor}" alt 0 FALSE
+			/if (${validate_cast[FALSE, alt, "${AAInquisitor}", ${Me.ID}]}) /call core_cast2 "${AAInquisitor}" alt 0 FALSE
 
 		| dont use group armor in raids
 		} else /if (!${Me.Song[${AAInquisitor}].ID} && !${Raid.Members}) {
-			/if (${validate_cast[alt, "${AAGroupInquisitor}", ${Me.ID}]})  /call core_cast2 "${AAGroupInquisitor}" alt 0 FALSE
+			/if (${validate_cast[FALSE, alt, "${AAGroupInquisitor}", ${Me.ID}]})  /call core_cast2 "${AAGroupInquisitor}" alt 0 FALSE
 		}
 	}
 
 	| undead cripple
 	/if (${Target.Body.Name.Equal[Undead]}) {
-		/if (${validate_cast[alt, "Vanquish the Fallen", ${Target2Kill}]}) /call core_cast2 "Vanquish the Fallen" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Vanquish the Fallen", ${Target2Kill}]}) /call core_cast2 "Vanquish the Fallen" alt ${Target2Kill} FALSE
 	}
 	
 	| Yaulp.. all the time!!
@@ -133,22 +133,22 @@ sub patch_heal_PAL()
 
 	| Panic Heal 1
   /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride}) {
-		/if (${validate_cast[spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 FALSE
+		/if (${validate_cast[FALSE, spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 FALSE
 	}
 
 	| Panic Heal 2
   /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.20*.${tmpHealOverride}) {
-		/if (${validate_cast[spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 FALSE
+		/if (${validate_cast[FALSE, spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 FALSE
 	}
 
 	| dpsheal
 	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.40*.${tmpHealOverride}) {
-		/if (${validate_cast[disc, "${DiscReflexive}", ${Target2Kill}]}) /call core_cast2 "${DiscReflexive}" disc ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, disc, "${DiscReflexive}", ${Target2Kill}]}) /call core_cast2 "${DiscReflexive}" disc ${Target2Kill} FALSE
 	}
 
 	| Hand of Piety AA Group heal	
 	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 1 ) {
-		/if (${validate_cast[alt, "Hand of Piety", ${Me.ID}]}) /call core_cast2 "Hand of Piety" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Hand of Piety", ${Me.ID}]}) /call core_cast2 "Hand of Piety" alt 0 FALSE
 	}
 
 	/call click_item_heal
@@ -174,25 +174,25 @@ sub get_agro_PAL()
 	
 	/if  (${mobAECount} > 1) {
 		/if (!${Bool[${Raid.Members}]} || ${Bool[${Raid.Members}]} && ${Raid.MainAssist.Name.Equal[${Me.DisplayName}]}) {
-			/if (${validate_cast[alt, "${AAAELodestar}", ${Target2Kill}]}) /call core_cast2 "${AAAELodestar}" alt ${Target2Kill} FALSE
+			/if (${validate_cast[FALSE, alt, "${AAAELodestar}", ${Target2Kill}]}) /call core_cast2 "${AAAELodestar}" alt ${Target2Kill} FALSE
 		}
 	} else /if (${mobAECount} > 4) {
 		/if (!${Bool[${Raid.Members}]} || ${Bool[${Raid.Members}]} && ${Raid.MainAssist.Name.Equal[${Me.DisplayName}]}) {
-			/if (${validate_cast[alt, "${AAAEBeacon}", ${Target2Kill}]}) /call core_cast2 "${AAAEBeacon}" alt ${Target2Kill} FALSE
+			/if (${validate_cast[FALSE, alt, "${AAAEBeacon}", ${Target2Kill}]}) /call core_cast2 "${AAAEBeacon}" alt ${Target2Kill} FALSE
 		}
 	}
 
 	| chain stun
-	/if (${validate_cast[alt, "${chainStun}", ${Target2Kill}]}) /call core_cast2 "${chainStun}" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "${chainStun}", ${Target2Kill}]}) /call core_cast2 "${chainStun}" alt ${Target2Kill} FALSE
 
 	| AA pet hate (the little sword thingie)
 	/if (${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-		/if (${validate_cast[alt, "Projection of Piety", ${Target2Kill}]}) /call core_cast2 "Projection of Piety" alt ${Target2Kill} cast_break
+		/if (${validate_cast[FALSE, alt, "Projection of Piety", ${Target2Kill}]}) /call core_cast2 "Projection of Piety" alt ${Target2Kill} cast_break
 	}
 
 	| snap hate
 	/if ((${Me.PctAggro} < 60 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && !${Raid.Members}) {
-		/if (${validate_cast[alt, "Ageless Enmity", ${Target2Kill}]}) /call core_cast2 "Ageless Enmity" alt ${Target2Kill} cast_break
+		/if (${validate_cast[FALSE, alt, "Ageless Enmity", ${Target2Kill}]}) /call core_cast2 "Ageless Enmity" alt ${Target2Kill} cast_break
 	}
 
 	| named fake hate
@@ -202,7 +202,7 @@ sub get_agro_PAL()
 
 	| Valiant Defense. agro+heal
 	/if (${Me.PctAggro} < 95 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-		/if (${validate_cast[spell, "${ValiantDefense}", ${Target2Kill}]}) /call core_cast2 "${ValiantDefense}" 0 ${Target2Kill} cast_break
+		/if (${validate_cast[FALSE, spell, "${ValiantDefense}", ${Target2Kill}]}) /call core_cast2 "${ValiantDefense}" 0 ${Target2Kill} cast_break
 	}
 
 /return
@@ -271,7 +271,7 @@ sub check_splash_group_PAL()
   
 	| Panic Splash
   /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${splashPanic}].MyRange}) {
-		/if (${validate_cast[spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${splashPanic}" 0 FALSE
+		/if (${validate_cast[FALSE, spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${splashPanic}" 0 FALSE
 		/if (${castReturn.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
 	}
 	
@@ -281,20 +281,20 @@ sub check_splash_group_PAL()
 		CHECKEXIT
 		| Group Splash
 	  /if (${groupHurt} >= 1) {
-	    /if (${validate_cast[spell, "${splashGroup}", ${Me.ID}]}) /call core_cast2 "${splashGroup}" 0 FALSE
+	    /if (${validate_cast[FALSE, spell, "${splashGroup}", ${Me.ID}]}) /call core_cast2 "${splashGroup}" 0 FALSE
 	    /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
 	  } 
 			
 		| AA Splash
 	  /if (${groupHurt} >= 3) {
-	  	/if (${validate_cast[alt, "Hand of Piety", ${Me.ID}]}) /call core_cast2 "Hand of Piety" alt 0 FALSE
+	  	/if (${validate_cast[FALSE, alt, "Hand of Piety", ${Me.ID}]}) /call core_cast2 "Hand of Piety" alt 0 FALSE
 	  }
 	  
 		AMIDEAD
 	 	/doevents
 		| Touch Heal 
 	  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
-	  	/if (${validate_cast[spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt} FALSE
+	  	/if (${validate_cast[FALSE, spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt} FALSE
 	  }
 	}
 	 
@@ -314,7 +314,7 @@ sub cast_AA_marrs_gift()
 	AMIDEAD
 	CHECKEXIT
 	/call create_timer timer_check_MG ${tcheck_MG}
-	/if (!${validate_cast[alt, "Marr's Gift", ${Me.ID}]}) /return
+	/if (!${validate_cast[FALSE, alt, "Marr's Gift", ${Me.ID}]}) /return
 	/if (${timer_zone_pause} || ${SafeZone} && !${switchOverrideSafezone}  || ${Me.Sitting}) /return
 	
 	/if (${Me.PctMana} < ${useMGPct}*.${tmpHealOverride}) {
@@ -338,7 +338,7 @@ sub check_steel()
 	AMIDEAD
 	CHECKEXIT
 
-	/if (${validate_cast[spell, "${Steel}", ${Me.ID}]}) {
+	/if (${validate_cast[FALSE, spell, "${Steel}", ${Me.ID}]}) {
 		/call core_cast2 "${Steel}" 0 0 FALSE
 		/call create_timer timer_check_Steel ${tcheck_Steel}
 	}
@@ -361,7 +361,7 @@ sub synergy_PAL()
 	/declare _count int local 0
 	/for _count 1 to 3
 		/if (${Bool[${Me.ActiveDisc}]}) /break
-		/if (${validate_cast[disc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
+		/if (${validate_cast[FALSE, disc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
 			/call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 			/break
 		}			
@@ -369,18 +369,20 @@ sub synergy_PAL()
 
 	| deflection
 	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride}) {
-		/if (${validate_cast[disc, "Deflection Discipline", ${Me.ID}]}) {
+		/if (${validate_cast[FALSE, disc, "Deflection Discipline", ${Me.ID}]}) {
 			/call core_cast2 "Deflection Discipline" disc 0 FALSE
-		} else /if (${validate_cast[alt, "Shield Flash", ${Me.ID}]}) {
+			/return
+		} else /if (${validate_cast[FALSE, alt, "Shield Flash", ${Me.ID}]}) {
 			/call core_cast2 "Shield Flash" alt 0 FALSE
+			/return
 		}
 	}
 
 	/call cast_AA_spire	
 
-	/if (${validate_cast[alt, "${AAJudgement}", ${Me.ID}]}) /call core_cast2 "${AAJudgement}" alt 0 FALSE
-	/if (${validate_cast[alt, "${AAValorousRage}",${Me.ID} ]]}) /call core_cast2 "${AAValorousRage}" alt 0 FALSE
-	/if (${validate_cast[alt, "${AAShield}", ${Me.ID}]}) /call core_cast2 "${AAShield}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAJudgement}", ${Me.ID}]}) /call core_cast2 "${AAJudgement}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAValorousRage}", ${Me.ID} ]]}) /call core_cast2 "${AAValorousRage}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAShield}", ${Me.ID}]}) /call core_cast2 "${AAShield}" alt 0 FALSE
 	
 	| epic 2.0
 	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE	

@@ -11,6 +11,14 @@
 
 
 
+20180502
+- check_aura()
+  -- warriors had auras.. who knew!!?!
+- unbroke the /cc agro and pull switches
+- validate_cast()
+  -- adjustments for error reporting added.
+
+
 
 20180501
 - fixini.inc
@@ -48,7 +56,6 @@
   -- class commands missed a "/" .. its always the little things  
 - class.war.inc
   -- AAVehementRage is now spelled correctly. /shrug i stand by warriors cant spell comment..
-  
 
 
 

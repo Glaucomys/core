@@ -249,7 +249,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180501
+	/call setDeclare coreBuild											int			outer 20180502
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -4622,37 +4622,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		} 
 		/return
 
-	| enable combat: melee, range, nuke, dot
-	} else /if (${Select[${_ccType},melee,range,nuke,dot]}) {
-
-		| enable combat: melee
-		/if (${Bool[${_ccType.Equal[melee]}]}) {
-			/call writeINI switchCombatMelee Common ${If[${switchCombatMelee},FALSE,TRUE]}
-
-		| enable combat: range
-		} else /if (${Bool[${_ccType.Equal[range]}]}) {
-			/call writeINI switchCombatRange Common ${If[${switchCombatRange},FALSE,TRUE]}
-
-		| enable combat: nuke
-		} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
-			/call writeINI switchCombatNuke Common ${If[${switchCombatNuke},FALSE,TRUE]}
-
-		| enable combat: dot
-		} else /if (${Bool[${_ccType.Equal[dot]}]}) {
-			/call writeINI switchCombatDoT Common ${If[${switchCombatDoT},FALSE,TRUE]}
-		}
-
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			/if (${${_bind}Type.Arg[${_count},|].Equal[melee]}) /varset _listout ${_listout} ${cinfo}melee\ax(${If[${switchCombatMelee},${oon},${ooff}]})	
-			/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}range\ax(${If[${switchCombatRange},${oon},${ooff}]})	
-			/if (${${_bind}Type.Arg[${_count},|].Equal[nuke]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}nuke\ax(${If[${switchCombatNuke},${oon},${ooff}]})	
-			/if (${${_bind}Type.Arg[${_count},|].Equal[dot]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}dot\ax(${If[${switchCombatDoT},${oon},${ooff}]})	
-			/varset _sep TRUE
-		/next _count
-		VOUT /${_bind} [${_listout}]
-		/return
-	}
-
 	| set Pull
 	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
@@ -4677,7 +4646,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 	| agro/agro range ##
 	} else /if (${Bool[${_ccType.Equal[agro]}]}) {
-		/if (${Bool[${_verbage}]} && ${Range.Between[1,400:${Int[${_verbage}]}]}) {
+		/if (${Range.Between[1,400:${Int[${_verbage}]}]}) {
 			/call writeINI MobAgro Common ${_verbage} 
 			VOUT /${_bind} agro ${sep} ${cinfo}${_verbage}\ax
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,400:${Int[${_verbage}]}]})  {
@@ -4779,7 +4748,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		}
 
 		| output result
-		/declare _assistMode string local |R|G
+		/declare _assistMode string local |R|G|X
 		/declare _assM string local
 		
 		/for _count 1 to ${_assistMode.Count[|]}
@@ -4794,6 +4763,38 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	| alliance on or off... yada yada		
 	} else /if (${Bool[${_ccType.Equal[alliance]}]}) {
 		/call writeINI switchAlliance Spells ${If[${switchAlliance},FALSE,TRUE]}
+
+	| enable combat: melee, range, nuke, dot
+	} else /if (${Select[${_ccType},melee,range,nuke,dot]}) {
+
+		| enable combat: melee
+		/if (${Bool[${_ccType.Equal[melee]}]}) {
+			/call writeINI switchCombatMelee Common ${If[${switchCombatMelee},FALSE,TRUE]}
+
+		| enable combat: range
+		} else /if (${Bool[${_ccType.Equal[range]}]}) {
+			/call writeINI switchCombatRange Common ${If[${switchCombatRange},FALSE,TRUE]}
+
+		| enable combat: nuke
+		} else /if (${Bool[${_ccType.Equal[nuke]}]}) {
+			/call writeINI switchCombatNuke Common ${If[${switchCombatNuke},FALSE,TRUE]}
+
+		| enable combat: dot
+		} else /if (${Bool[${_ccType.Equal[dot]}]}) {
+			/call writeINI switchCombatDoT Common ${If[${switchCombatDoT},FALSE,TRUE]}
+		}
+
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			/if (${${_bind}Type.Arg[${_count},|].Equal[melee]}) /varset _listout ${_listout} ${cinfo}melee\ax(${If[${switchCombatMelee},${oon},${ooff}]})	
+			/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}range\ax(${If[${switchCombatRange},${oon},${ooff}]})	
+			/if (${${_bind}Type.Arg[${_count},|].Equal[nuke]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}nuke\ax(${If[${switchCombatNuke},${oon},${ooff}]})	
+			/if (${${_bind}Type.Arg[${_count},|].Equal[dot]}) /varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}dot\ax(${If[${switchCombatDoT},${oon},${ooff}]})	
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
+		/return
+	}		
+		
 
 	}
 	/for _count 1 to ${${_bind}Type.Count[|]}
