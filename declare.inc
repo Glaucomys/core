@@ -249,7 +249,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180502
+	/call setDeclare coreBuild											int			outer 20180503
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -805,7 +805,7 @@ sub set_declares()
 
 
 	| combat controls
-	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|engage|faderest|force|melee|range|nuke|dot|forceassist|MA1|MA2|nukedelay|pull|saferadius|smartengage|smartma|stopnuke|zradius"
+	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|engage|faderest|force|melee|meleedisc|range|nuke|dot|forceassist|MA1|MA2|nukedelay|pull|saferadius|smartengage|smartma|stopnuke|zradius"
 	/call setINIVar MA1			 												string 	Common FALSE
 	/call setINIVar MA2			 												string 	Common FALSE
 	/call setINIVar MobAgro													int 		Common 60
@@ -976,10 +976,9 @@ sub set_declares()
 	/if (${Select[${Me.Class.ShortName},ROG]}) {
 		/call setDeclare flagSoS											bool		outer FALSE
 		/call setINIVar backstab											bool		meleedisc FALSE
-		| /call setINIVar intimidation									bool		meleedisc FALSE
 	}
-	/if (${Select[${Me.Class.ShortName},BRD|BER]}) {
-		| /call setINIVar intimidation									bool		meleedisc FALSE
+	/if (${Select[${Me.Class.ShortName},BRD,BER,MNK,ROG]}) {
+		/call setINIVar intimidation									bool		meleedisc FALSE
 	}
 	/if (${Select[${Me.Class.ShortName},MNK,BST]}) {
 		/call setINIVar dragonpunch										bool		meleedisc FALSE
@@ -1134,8 +1133,8 @@ sub set_declares()
 	/call setINIVar sumFamiliarLeave								bool		Pet TRUE	
 
 	| debug
-  /call setDeclare 		debugType										string	outer "|stop|core|class|casting|rez|array|mode"
-  /call setDeclare		switchDebugStop							bool 		outer FALSE
+  /call setDeclare debugType											string	outer "|stop|core|class|casting|rez|array|mode"
+  /call setDeclare switchDebugStop								bool 		outer FALSE
 	/call setINIVar switchDebugCore									bool		debug FALSE 
 	/call setINIVar switchDebugClass								bool		debug FALSE 
 	/call setINIVar switchDebugCasting							bool		debug FALSE 
@@ -1151,6 +1150,7 @@ sub set_declares()
   /call setDeclare 		onoffType										string	outer "|banestrike|horn|shrink"
 
 	/call setINIVar switchBanestrike								bool		Common FALSE		
+	/call setINIVar BanestrikeCondition							string	Common FALSE
 	/call setINIVar switchShrink										bool		Common FALSE
 	/call setINIVar switchHorn											bool		Common FALSE
 
@@ -1671,8 +1671,6 @@ sub declare_SHD()
 	/call setTimer tcheck_Skin											string 	Timer 45s timer_check_Skin
 	/call setTimer tcheck_Stance										string 	Timer 3m timer_check_Stance
 
-
-
 	/call setDeclare mobAECount											int			outer 0
 	/call setINIVar Withstand 											string 	Discs "Repel"
 	/call setINIVar BladeStrike 										string 	Discs "Lacerating Blade"
@@ -1724,7 +1722,7 @@ sub declare_SHD()
 	/call setINIVar switchStance 										bool	 	Buffs TRUE
 	/call setINIVar Stance 													string 	Buffs "Staunch Stance"
 	/call setINIVar switchSkin			 								bool	 	Buffs TRUE
-	/call setINIVar Skin			 											string 	Buffs "Vizat's Skin"
+	/call setINIVar Skin			 											string 	Buffs "Tylix's Skin"
 
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 /return	
@@ -1924,7 +1922,6 @@ sub declare_BER()
 	/call setDeclare OpenWoundEffect								string 	outer "Open Wound"
 	/call setDeclare AugmentedFrenzyEffect 					string 	outer "Augmented Frenzy Effect"
 	/call setINIVar buffGem 												string 	Spells FALSE
-	/call setINIVar intimidation										bool		meleedisc FALSE
 
 |**	
 
@@ -2246,7 +2243,6 @@ sub declare_BRD()
 	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
 	                                          		
 	/call setINIVar switchIntimidKick 							bool	 	meleedisc FALSE
-	/call setINIVar intimidation										bool		meleedisc FALSE
 	
 	
 /return	
@@ -2328,8 +2324,8 @@ sub declare_BST()
 sub declare_MNK()
 	/call setINIVar spellCripple 										string 	Spells FALSE
 	/call setINIVar switchMNKTrainMelee							bool		Common FALSE
-	/call setINIVar intimidation										bool		meleedisc FALSE
-	
+	/call setINIVar buffGem 												string 	Spells "gem8"
+
 	/call setINIVar setFDAgroPct										int			Melee FALSE
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 	
@@ -2383,7 +2379,6 @@ sub declare_ROG()
 	/call setINIVar clickPoisonCount								int		 	Poison 60
                                              		
 	/call setINIVar spellCripple 										string 	Spells FALSE
-	/call setINIVar intimidation										bool		meleedisc FALSE
                                              		
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 /return	
@@ -2604,7 +2599,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
   /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
 
  
-	| commands to control all assist targets.  
+	|** commands to control all assist targets.  
   /if (${_cmd.Equal[sma1]} && !${switchPull}) {
 		/call Bind_setCombatControl smartma R
   } else /if (${_cmd.Equal[smag]} && !${switchPull}) {
@@ -2612,6 +2607,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	} else /if (${_cmd.Equal[smax]}) {
 		/call Bind_setCombatControl smartma X
 	}
+	**|
 
 	| group bail stuff
   /if (${_cmd.Equal[gtfo]}) {
@@ -2630,7 +2626,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	 *	DES: Tell toon to take ports: translocate, banner, Guild Hall TL, Task Acceptance
 	 *	USE: /take, /bc take
 	 ***|
-	/if (${_cmd.Equal[port]} || ${_cmd.Equal[take]}) {
+	/if (${_cmd.Equal[take]}) {
 		| take ports
 		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find[${Spawn[${Me}].Guild}]} || ${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["Guild Hall"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
 		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["be translocated by"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
@@ -2683,7 +2679,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 		/delay 1s !${Me.Casting.ID}
 		| /call core_cast  "Fellowship Registration Insignia" item 0 FALSE
 		/useitem Fellowship Registration Insignia
-		/return
+		/return TRUE
 	}
 
 	|***
@@ -4523,7 +4519,7 @@ sub Bind_ts(string _tsType)
  *	INI: 
  *  NOTE: 
  ***| 	
-#bind setAssist /smartma
+| #bind setAssist /smartma
 #bind setAssist /setassist
 sub Bind_setAssist(string _verbage, _name)
 	DEBUG ${cbug}Bind_setAssist(assist: ${_verbage}, name: ${_name})\ax
@@ -4654,6 +4650,15 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			/return
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchAgro Common ${If[${switchAgro},FALSE,TRUE]}
+
+			|**
+			/if (${switchAgro}) {
+				/call writeINI taunt meleedisc TRUE
+			} else /if (!${switchAgro}) {
+				/call writeINI taunt meleedisc FALSE
+			}
+			**|
+
 			VOUT /${_bind} agro ${sep} ${If[${switchAgro},${oenabled},${odisabled}]}
 		}
 		/call check_AA_agro		
@@ -4793,10 +4798,46 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/next _count
 		VOUT /${_bind} [${_listout}]
 		/return
-	}		
 		
+	| melee discs
+	} else /if (${Bool[${_ccType.Equal[meleedisc]}]}) {
+		/if (${Bool[${_verbage.Equal[kick]}]} && ${Me.Skill[kick]}) /call writeINI kick meleedisc ${If[${kick},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[bash]}]} && ${Me.Skill[bash]}) /call writeINI bash meleedisc ${If[${bash},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[taunt]}]} && ${Me.Skill[taunt]}) /call writeINI taunt meleedisc ${If[${taunt},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[disarm]}]} && ${Me.Skill[disarm]}) /call writeINI disarm meleedisc ${If[${disarm},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[intimidation]}]} && ${Me.Skill[intimidation]}) /call writeINI intimidation meleedisc ${If[${intimidation},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[backstab]}]} && ${Me.Skill[backstab]}) /call writeINI backstab meleedisc ${If[${backstab},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[frenzy]}]} && ${Me.Skill[frenzy]}) /call writeINI frenzy meleedisc ${If[${frenzy},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[dragonpunch]}]} && ${Me.Skill[dragon punch]}) /call writeINI dragonpunch meleedisc ${If[${dragonpunch},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[eaglestrike]}]} && ${Me.Skill[eagle strike]}) /call writeINI eaglestrike meleedisc ${If[${eaglestrike},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[tigerclaw]}]} && ${Me.Skill[tiger claw]}) /call writeINI tigerclaw meleedisc ${If[${tigerclaw},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[flyingkick]}]} && ${Me.Skill[flying kick]}) /call writeINI flyingkick meleedisc ${If[${flyingkick},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[roundkick]}]} && ${Me.Skill[round kick]}) /call writeINI roundkick meleedisc ${If[${roundkick},FALSE,TRUE]}
+		/if (${Bool[${_verbage.Equal[slam]}]} && ${Me.Skill[slam]}) /call writeINI slam meleedisc ${If[${slam},FALSE,TRUE]}
 
+
+		/declare _meleeskill string local |backstab|bash|disarm|dragonpunch|eaglestrike|flyingkick|frenzy|intimidation|kick|roundkick|slam|taunt|tigerclaw
+		/for _count 1 to ${_meleeskill.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_meleeskill.Arg[${_count},|]}\ax		
+			/if (${_meleeskill.Arg[${_count},|].Equal[kick]} && ${Me.Skill[kick]}) /varset _listout ${_listout}(${If[${kick},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[bash]} && ${Me.Skill[bash]}) /varset _listout ${_listout}(${If[${bash},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[taunt]} && ${Me.Skill[taunt]}) /varset _listout ${_listout}(${If[${taunt},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[disarm]} && ${Me.Skill[disarm]}) /varset _listout ${_listout}(${If[${disarm},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[intimidation]} && ${Me.Skill[intimidation]}) /varset _listout ${_listout}(${If[${intimidation},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[frenzy]} && ${Me.Skill[frenzy]}) /varset _listout ${_listout}(${If[${frenzy},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[backstab]} && ${Me.Skill[backstab]}) /varset _listout ${_listout}(${If[${backstab},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[dragonpunch]} && ${Me.Skill[dragon punch]}) /varset _listout ${_listout}(${If[${dragonpunch},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[eaglestrike]} && ${Me.Skill[eagle strike]}) /varset _listout ${_listout}(${If[${eaglestrike},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[tigerclaw]} && ${Me.Skill[tiger claw]}) /varset _listout ${_listout}(${If[${tigerclaw},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[flyingkick]} && ${Me.Skill[flyin gkick]}) /varset _listout ${_listout}(${If[${flyingkick},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[roundkick]} && ${Me.Skill[round kick]}) /varset _listout ${_listout}(${If[${roundkick},${oon},${ooff}]})	
+			/if (${_meleeskill.Arg[${_count},|].Equal[slam]} && ${Me.Skill[slam]}) /varset _listout ${_listout}(${If[${slam},${oon},${ooff}]})	
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} meleedisc [${_listout}]
+		/return
 	}
+
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
 		/if (${${_bind}Type.Arg[${_count},|].Equal[zradius]}) /varset _listout ${_listout}(${cnum}${zradius}\ax)
@@ -4813,7 +4854,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[MA1]}) /varset _listout ${_listout}(${If[${Bool[${MA1}]},${cnum}${MA1}\ax,${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[MA2]}) /varset _listout ${_listout}(${If[${Bool[${MA2}]},${cnum}${MA2}\ax,${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[faderest]}) /varset _listout ${_listout}(${If[${switchForceFadeRest},${oon},${ooff}]})	
-		
 		/if (${${_bind}Type.Arg[${_count},|].Equal[melee]}) /varset _listout ${_listout}(${If[${switchCombatMelee},${oon},${ooff}]})	
 		/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout}(${If[${switchCombatRange},${oon},${ooff}]})	
 		/if (${${_bind}Type.Arg[${_count},|].Equal[nuke]}) /varset _listout ${_listout}(${If[${switchCombatNuke},${oon},${ooff}]})	

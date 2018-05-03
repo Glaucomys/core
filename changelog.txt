@@ -11,13 +11,41 @@
 
 
 
+20180503
+- /smartma is gone. use /setassist [g|r|1|2|f|x]
+- /bc smag, smar, smax are gone. use /bca //setassist [g|r|1|2|f|x]
+- removed a considerable ammount of bool protection for switches. should be using the / commands and less editing INIs directly for controls.
+- /bc port is gone. /take is broadcast across all bc. use it.
+- banestrike now has a condition. evaluate for TRUE to use. just like normal casting
+- prep_combat()
+  -- so i managed to write in my own little paradox of sorts. any target was being intrepreted as valid even w/o forcing combat in manual mode. i blame the clerics.
+  -- should release the current target a little faster when issuing a stop/alto command too.
+- /here
+  -- corrected an assist issue
+- validate_cast()
+  -- should no longe conflict with ornaments of the same name (like epic ornaments) when trying to click them
+  -- epicitem added as a check. until MQ accounts for "," in item names when passed as a function variable.
+- /cc meledisc [backstab|bash|disarm|dragonpunch|eaglestrike|flyingkick|frenzy|intimidation|kick|roundkick|taunt|tigerclaw]
+  -- enable or disable the melee combat skill
+  -- if your class does not get the skill, you're spinning them wheels  
+  -- i'll isolate them more as i get all the skill to classes sorted
+- cast_summon_pet()
+  -- "should" make sure ENC,MAG,NEC,SHD have the proper spell component
+- class.rog.inc
+  -- converted to new cast routines. let me know if something is not firing
+- class.shd.inc
+  -- gave them back their skin buffs. shouldn't try and use pally steel anymore. identity issues i suppose.
+  -- will now check skin and harmonions while resting
+- class.pal.inc
+  -- will now check steel and harmonions while in rest
+
+
 20180502
 - check_aura()
   -- warriors had auras.. who knew!!?!
 - unbroke the /cc agro and pull switches
 - validate_cast()
   -- adjustments for error reporting added.
-
 
 
 20180501
@@ -37,7 +65,6 @@
   -- cosmetic changes
 - /cc
   -- cosmetic changes (isolated melee range nuke and dot. little easier to read.)
-
 - all classes
   -- moved the debuff checks in before the dots and nukes engage. in melee only cases, before Item click checks
   -- no longer checked in discs
@@ -58,14 +85,12 @@
   -- AAVehementRage is now spelled correctly. /shrug i stand by warriors cant spell comment..
 
 
-
 20180501
 HUDUPDATE
 - rename cast_disc_breather() -> cast_stamina_recovery()
 - added (Class ShortName)AAFade to predefined class skills
 - added toon.ini -> [common] -> switchForceFadeRest=TRUE|FALSE - sets the toon to forse a fade during combat to enable breather trigger.
 - /cc [faderest] - enable/disable forcing the toon to use fade AA during combat to enable the rest disc
-
 - class.rng.inc
   -- removed elemental arrows timers. will keep them on cooldown now
   -- elemental arrows cycle proper now. (DB changed the target buff name and didnt notice)
@@ -91,29 +116,22 @@ HUDUPDATE
   -- typo in harmonious
 - class.enc.inc
   -- typo in a declare
-
 - all classes
   -- no longer send pets to a forced combat target while in manual.
   -- HEALERS now need to use an assist. moving on...
   -- HEALERS will maintain more focus on the last person they healed. unless you have them doing something else besides healing
-
 *NEW casting routines*  
 - these will be migrated as i have time.
 - validate_cast()
   -- EG. ${validate_cast[spell|disc|item|alt, "NAME OF THING", TARGETID]}  
   -- returns TRUE if able to cast FALSE if not
   -- this is part 1 of the split of core_cast.
-  
 - core_cast2()
   -- slimmer casting routine. never has to hit it if fails validate_cast()
-  
 - support for non gold (paid) accounts is no more. i really don't feel like mainting that code too
 - switchAlwaysFaceTarget has been removed. casters dont need to face the god damn target
 - logic error in rest routine for classes w/o rest/breather disc line
-
-  
 - ALL modes are being depreciated. [HEAL,MELEE,RANGE,NUKE,DUAL]
-
 new switches for combat
 - /cc [melee|range|nuke|dot]
   -- melee - enables melee combat and mele base skills
@@ -124,7 +142,6 @@ new switches for combat
   -- any combination can be used.
 - /cc force[combat] - will force combat when in manual mode
   -- there is no more force [melee|range|nuke|heal|dual] (they are gone)
-
 ** HEALING !!!!!!
 - healing is now tied directly to combat. if the healer is not in combat, it will not heal
 - this includes resting. no combat = NO heal for you! (repleate outloud w/broken english in turkish accent)
@@ -132,19 +149,15 @@ new switches for combat
 - will not heal on puller incomming either.
 - WTF you say? no heals on incomming.. yah, thats right.
 - if you dont like this change. see the override addition for combatheal (IE keep reading)
-
 - /override [combatheal]
   -- combatheal - ENABLED allows the healers to ignore the prep_combat requirement of being in combat to reach their heal routines. works for rest as well.
     -- this override will also get you past the requirement of a healer needing an assist.
     -- this override is tied to the toons agro range
     -- this unfixes the cleric dumping all its AA heals. (refer to previous fix)
-    
 - /here
   -- removed class modes from core.ini. if you still see them do /core fixini
-  
 - prep_combat()
   -- rewrite.. cause. well it needed it... we trust nothing now.
-
 
 
 20180414
@@ -170,8 +183,7 @@ new switches for combat
 - class.ber.inc
   -- will use intimidation skill cause . click all the things!
   -- COMPLETE revamp of burning routine...
-  
-
+ 
 
 20180410 part 2
 - class.mnk.inc

@@ -47,7 +47,7 @@ sub core_SHD()
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
 			/call click_DPS_${Me.Class.ShortName}
 			/if (${switchHarmonious}) /call check_harmonious
-			/if (${switchSteel} && !${timer_check_Steel}) /call check_steel	
+			/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
 			/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
 		}
 
@@ -189,7 +189,6 @@ sub click_DPS_SHD()
  ***|
 sub check_skin()
 	DEBUGCLASS ${cbug}check_skin()\ax
-	/if (!${switchSkin}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -226,7 +225,7 @@ sub synergy_SHD()
 	/next _count	
 
 	/if (${Me.AltAbilityReady[T`Vyl's Resolve]} && ${Target.Distance} <= ${Spell[T`Vyl's Resolve].MyRange}) /call core_cast "T`Vyl's Resolve" alt ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${CrimsonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimesonBlade}].EnduranceCost}) /call core_cast "${CrimsonBlade}" disc 0 FALSE
+	/if (${Me.CombatAbilityReady[${CrimsonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimsonBlade}].EnduranceCost}) /call core_cast "${CrimsonBlade}" disc 0 FALSE
 	/call cast_AA_spire
 	/if (${Me.AltAbilityReady[Veil of Darkness]}) /call core_cast "Veil of Darkness" alt ${Target2Kill} FALSE
 	/if (${Me.AltAbilityReady[Harm Touch]}) /call core_cast "Harm Touch" alt ${Target2Kill} FALSE

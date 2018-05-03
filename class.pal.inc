@@ -133,12 +133,12 @@ sub patch_heal_PAL()
 
 	| Panic Heal 1
   /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride}) {
-		/if (${validate_cast[FALSE, spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 FALSE
+		/if (${validate_cast[FALSE, spell, "${healPanic1}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 FALSE
 	}
-
-	| Panic Heal 2
-  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.20*.${tmpHealOverride}) {
-		/if (${validate_cast[FALSE, spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 FALSE
+	
+	| Hand of Piety AA Group heal	
+	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 1 ) {
+		/if (${validate_cast[FALSE, alt, "Hand of Piety", ${Me.ID}]}) /call core_cast2 "Hand of Piety" alt 0 FALSE
 	}
 
 	| dpsheal
@@ -146,14 +146,13 @@ sub patch_heal_PAL()
 		/if (${validate_cast[FALSE, disc, "${DiscReflexive}", ${Target2Kill}]}) /call core_cast2 "${DiscReflexive}" disc ${Target2Kill} FALSE
 	}
 
-	| Hand of Piety AA Group heal	
-	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 1 ) {
-		/if (${validate_cast[FALSE, alt, "Hand of Piety", ${Me.ID}]}) /call core_cast2 "Hand of Piety" alt 0 FALSE
+	| Panic Heal 2
+  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.20*.${tmpHealOverride}) {
+		/if (${validate_cast[FALSE, spell, "${healPanic2}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 FALSE
 	}
 
 	/call click_item_heal
 /return
-
 
 
 
@@ -204,9 +203,7 @@ sub get_agro_PAL()
 	/if (${Me.PctAggro} < 95 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
 		/if (${validate_cast[FALSE, spell, "${ValiantDefense}", ${Target2Kill}]}) /call core_cast2 "${ValiantDefense}" 0 ${Target2Kill} cast_break
 	}
-
 /return
-
 
 
 
@@ -222,6 +219,8 @@ sub click_DPS_PAL()
 	CHECKEXIT
 	/doevents
 	/call click_horn_of_unity 	
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+
 /return
 
 
@@ -384,9 +383,6 @@ sub synergy_PAL()
 	/if (${validate_cast[FALSE, alt, "${AAValorousRage}", ${Me.ID} ]]}) /call core_cast2 "${AAValorousRage}" alt 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${AAShield}", ${Me.ID}]}) /call core_cast2 "${AAShield}" alt 0 FALSE
 	
-	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE	
-	
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn
@@ -403,7 +399,7 @@ sub synergy_PAL()
 #bind setPAL /pal
 sub Bind_setPAL(string _classType, string _verbage)
 	DEBUGCLASS ${cbug}Bind_setPAL(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${validate_class[TRUE, |PAL]}) /return
+	/if (!${validate_class[FALSE, |PAL]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

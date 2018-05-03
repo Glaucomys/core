@@ -71,7 +71,7 @@ sub sneak_attack()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	
 	/if (${Target.ID} && ${Me.Invis} && ${Me.Sneaking}) {
-		/call core_cast "${DiscSneakAttack}" disc ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, disc, "${DiscSneakAttack}", ${Target2Kill}]}) /call core_cast2 "${DiscSneakAttack}" disc ${Target2Kill} FALSE
 		/doability backstab
 	}
 /return
@@ -89,13 +89,13 @@ sub disc_ROG()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAssault}]} && ${Bool[${DiscAssault}]}) /call core_cast "${DiscAssault}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscAssault}", ${Target2Kill}]}) /call core_cast2 "${DiscAssault}" disc ${Target2Kill} FALSE
+	
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/call core_cast "Shadow's Flanking" alt 0 FALSE
-	| /call use_skill_melee ${Target2Kill}
+	/if (${validate_cast[FALSE, alt, "Shadow's Flanking", ${Me.ID}]}) /call core_cast2 "Shadow's Flanking" alt 0 FALSE
 	
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscVision}]} && ${Bool[${DiscVision}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast "${DiscVision}" disc 0 FALSE
-	/if (${validate_buff[disc, discs, DiscVision]}) /call core_cast "${DiscVision}" disc 0 FALSE
+	/if (${validate_cast[,FALSE disc, "${DiscVision}", ${Me.ID}]}) /call core_cast2 "${DiscVision}" disc 0 FALSE
 
 	| /if (${Target.ID} && ${Me.AltAbilityReady[${TwistedShank}]}) /call core_cast "${TwistedShank}" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, alt, "${TwistedShank}", ${Target2Kill}]}) /call core_cast2 "${TwistedShank}" alt ${Target2Kill} FALSE
@@ -117,28 +117,30 @@ sub disc_ROG()
 
 	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
 		/if (${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :skipDiscPlay
-		/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
+		/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
 		:skipDiscPlay
 	}
 
-	/if (!${NameList.Find[${Target.DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
-		/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
+	/if (!${NameList.Find[${Target.DisplayName}]}) {
+		/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
 	}	
 	
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPhantom}]} && ${Bool[${DiscPhantom}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill} FALSE
+	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPhantom}]} && ${Bool[${DiscPhantom}]}) /call core_cast2 "${DiscPhantom}" disc ${Target2Kill} FALSE
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHiddenBlade}]} && ${Bool[${DiscHiddenBlade}]}) /call core_cast "${DiscHiddenBlade}" disc 0 FALSE
-	/if (${validate_buff[disc, discs, DiscHiddenBlade]}) /call core_cast "${DiscHiddenBlade}" disc 0 FALSE
+	| /if (${validate_buff[disc, discs, DiscHiddenBlade]}) /call core_cast "${DiscHiddenBlade}" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscHiddenBlade}", ${Me.ID}]}) /call core_cast2 "${DiscHiddenBlade}" disc 0 FALSE
 
-	| /call use_skill_melee ${Target2Kill}
-	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHack}]} && ${Bool[${DiscHack}]}) /call core_cast "${DiscHack}" disc ${Target2Kill} FALSE
+	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscHack}]} && ${Bool[${DiscHack}]}) /call core_cast "${DiscHack}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscHack}", ${Target2Kill}]}) /call core_cast2 "${DiscHack}" disc ${Target2Kill} FALSE
 
-	/if (${validate_buff[disc, discs, DiscBladePoison]}) /call core_cast "${DiscBladePoison}" disc 0 FALSE
+	| /if (${validate_buff[disc, discs, DiscBladePoison]}) /call core_cast "${DiscBladePoison}" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscBladePoison}", ${Me.ID}]}) /call core_cast2 "${DiscBladePoison}" disc 0 FALSE
 
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscAggro}", ${Target2Kill}]}) /call core_cast2 "${DiscAggro}" disc ${Target2Kill} FALSE
-
 	
-	/if (${validate_buff[disc, discs, DiscBlinding]} && ${Target.Level} <= 110) /call core_cast "${DiscBlinding}" disc ${Target2Kill} FALSE
+	| /if (${validate_buff[disc, discs, DiscBlinding]} && ${Target.Level} <= 110) /call core_cast "${DiscBlinding}" disc ${Target2Kill} FALSE
+	/if (${validate_buff[FALSE, disc, "${DiscBlinding}", ${Target2Kill}]} && ${Target.Level} <= 110) /call core_cast2 "${DiscBlinding}" disc ${Target2Kill} FALSE
 	
 /return
 
@@ -156,12 +158,8 @@ sub click_DPS_ROG()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	| /call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
-
-	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
-	
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 /return
 
 
@@ -236,7 +234,7 @@ sub click_poison()
 	| keep a stock on hand
 	/if (${FindItemCount[${clickPoisonItem}]} < ${clickPoisonCount} && ${Me.ItemReady[${clickPoisonDispenser}]}) {
 		DEBUGCLASS click ${clickPoisonDispenser}
-		/call core_cast "${clickPoisonDispenser}" item ${Me.ID} FALSE
+		/if (${validate_cast[FALSE, item, "${clickPoisonDispenser}", ${Me.ID}]}) /call core_cast2 "${clickPoisonDispenser}" item ${Me.ID} FALSE
 		/call sort_cursor TRUE
 	}
 	
@@ -246,9 +244,7 @@ sub click_poison()
 		/doevents
 		/if (${Bool[${Me.Buff[${clickPoisonBuff.Arg[${_count},|]}]}]}) /varset _found TRUE
 	/next _count		
-
-	/if (!${_found} && ${Me.ItemReady[${clickPoisonItem}]}) /call core_cast "${clickPoisonItem}" item ${Me.ID} FALSE
-
+	/if (!${_found} && ${validate_cast[FALSE, item, "${clickPoisonItem}", ${Me.ID}]}) /call core_cast2 "${clickPoisonItem}" item ${Me.ID} FALSE
 	/call create_timer timer_click_poison ${tClick_Poison}
 /return
 
@@ -275,35 +271,36 @@ sub synergy_ROG()
 
 	| envenomed blades / dirty fighting stack issue
 	/if (${Target.ID} && ${Me.AltAbilityReady[Dirty Fighting]} && !${Me.Buff[Envenomed Blades].ID}) {
-		/call core_cast "Dirty Fighting" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Dirty Fighting", ${Target2Kill}]}) /call core_cast2 "Dirty Fighting" alt ${Target2Kill} FALSE
 	} else /if (${Me.AltAbilityReady[Envenomed Blades]} && !${Me.Buff[Dirty Fighting].ID}) {
-		/call core_cast "Envenomed Blades" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Envenomed Blades", ${Me.ID}]}) /call core_cast2 "Envenomed Blades" alt 0 FALSE
 	}
 
 
-	/call core_cast "Dichotomic Weapons" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "Dichotomic Weapons", ${Me.ID}]}) /call core_cast2 "Dichotomic Weapons" disc 0 FALSE
 	| /call use_skill_melee ${Target2Kill}
 	
 	/if (!${AEMelee}) {
-		/if (${Me.AltAbilityReady[Focused Rake's Rampage]}) /call core_cast "Focused Rake's Rampage" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Focused Rake's Rampage", ${Me.ID}]}) /call core_cast2 "Focused Rake's Rampage" alt 0 FALSE
 	} else /if (${AEMelee}) {
-		/if (${Me.AltAbilityReady[Rake's Rampage]}) /call core_cast "Rake's Rampage" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Rake's Rampage", ${Me.ID}]}) /call core_cast2 "Rake's Rampage" alt 0 FALSE
 	}
 
-	/call core_cast "${DiscPinPoint}" disc ${Target2Kill} FALSE
-	/if (${Bool[${Target2Kill}]} && ${Me.CombatAbilityReady[${DiscAggro}]} && ${Bool[${DiscAggro}]}) /call core_cast "${DiscAggro}" disc ${Target2Kill} FALSE
-	/call core_cast "Rogue's Fury" alt 0 FALSE
-	/if ( ${Me.PctEndurance} > 15) /call core_cast "${DiscMark}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscPinPoint}", ${Target2Kill}]}) /call core_cast2 "${DiscPinPoint}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscAggro}", ${Target2Kill}]}) /call core_cast2 "${DiscAggro}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Rogue's Fury", ${Me.ID}]}) /call core_cast2 "Rogue's Fury" alt 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscMark}", ${Target2Kill}]} && ${Me.PctEndurance} > 15) /call core_cast2 "${DiscMark}" disc ${Target2Kill} FALSE
 	/call cast_AA_spire
-	/if (${Raid.Members}) /call core_cast "Intensity of the Resolute" alt 0 FALSE
-  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscFrenzy}" disc 0 FALSE
-  /delay 2
-  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscTwistedChance}" disc 0 FALSE
-  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscEradicator}" disc 0 FALSE
-  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscRazor}" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Intensity of the Resolute", ${Me.ID}]} && ${Raid.Members}) /call core_cast2 "Intensity of the Resolute" alt 0 FALSE
+  /if (${validate_cast[FALSE, disc, "${DiscFrenzy}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) {
+  	/call core_cast2 "${DiscFrenzy}" disc 0 FALSE
+  	/delay 2
+  }
+  /if (${validate_cast[FALSE, disc, "${DiscTwistedChance}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) /call core_cast2 "${DiscTwistedChance}" disc 0 FALSE
+  /if (${validate_cast[FALSE, disc, "${DiscEradicator}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) /call core_cast2 "${DiscEradicator}" disc 0 FALSE
+  /if (${validate_cast[FALSE, disc, "${DiscRazor}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) /call core_cast2 "${DiscRazor}" disc 0 FALSE
 
-  /if (!${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscAspBleeder}" disc 0 FALSE
-  
+  /if (${validate_cast[FALSE, disc, "${DiscAspBleeder}", ${Me.ID}]}) && !${Me.ActiveDisc.ID}) /call core_cast2 "${DiscAspBleeder}" disc 0 FALSE
 
 	/call synergy_click_Circle
 	/call click_item_burn
@@ -320,7 +317,7 @@ sub synergy_ROG()
 #bind setROG /rog
 sub Bind_setROG(string _classType, string _verbage)
 	DEBUGCLASS ${cbug}Bind_setROG(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${validate_class[TRUE, |ROG]}) /return
+	/if (!${validate_class[FALSE, |ROG]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local

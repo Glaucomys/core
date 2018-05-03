@@ -239,32 +239,38 @@ sub cast_summon_pet()
 		/delay 5s !${Me.Casting.ID}
 		/delay 5
 	}
-	/if (${switchPcPet} && !${Me.Pet.ID})  {
-		|*
-		/if (${Me.Class.ShortName.Equal[ENC]}) {
-			/if (!${FindItem[Tiny Dagger].ID}) VOUT Missing ${sep} ${cinfo}Tiny Dagger\ax
-			/return
-		} else /if (${Me.Class.ShortName.Equal[MAG]}) {
-			/if (!${FindItem[Malachite].ID}) VOUT Missing ${sep} ${cinfo}Malachite\ax
-			/return
-		} else /if (${Select[${Me.Class.ShortName},NEC,SHD]}) {
-			/if (!${FindItem[Bone Chips].ID}) VOUT Missing ${sep} ${cinfo}Bone Chips\ax
+	
+	| component check
+	/if (${switchPcPet} && !${Me.Pet.ID}) {
+		/declare _error bool local FALSE
+		/if (${validate_class[FALSE, |ENC]} && !${FindItem[Tiny Dagger].ID}) /varset _error TRUE
+		/if (${validate_class[FALSE, |MAG]} && !${FindItem[Malachite].ID}) /varset _error TRUE
+		/if (${validate_class[FALSE, |NEC|SHD]} && !${FindItem[Bone Chips].ID}) /varset _error TRUE
+		
+		/if (${_error}) {
+			OUT Missing pet component. 
+			OUT Shutting pets off 'till you go buy some.
+			OUT Don't forget to turn back on.
+			/call writeINI switchPcPet Pet FALSE
 			/return
 		}
-		*|
-		VOUT Building ${sep} ${csp}${PcPettype}\ax
-		/call core_cast "${PcPettype}" ${buffGem} 0 FALSE
-		/call create_timer timer_check_pet_buffs 20
-		/delay 20s !${Me.Casting.ID}
-		/pet hold on
-		/pet ghold on
-		/if (${switchPcPet} && ${Bool[${PetTank}]} && ${coreAuto}) { 
+	}
+
+	VOUT Building ${sep} ${csp}${PcPettype}\ax
+	/if (${validate_cast[FALSE, spell, "${PcPettype}", ${Me.ID}]}) /call core_cast2 "${PcPettype}" ${buffGem} 0 FALSE
+	/call create_timer timer_check_pet_buffs 20
+	/delay 20s !${Me.Casting.ID}
+	/pet hold on
+	/pet ghold on
+	
+	/if (${coreAuto} && ${switchPcPet}) { 
+		/if (${Bool[${PetTank}]}) { 
 			/pet taunt on
-		} else /if (${switchPcPet} && !${Bool[${PetTank}]} && ${coreAuto}) { 
+		} else /if (!${Bool[${PetTank}]}) { 
 			/pet taunt off
 		}
-		/call send_pet
 	}
+	/call send_pet
 /return
 
 
@@ -1055,8 +1061,12 @@ sub do_rest()
 				/call cast_stamina_recovery
 			}
 			/if (${Select[${Me.Class.ShortName},PAL]}) {
+				/if (${switchHarmonious}) /call check_harmonious
+				/if (${switchSteel} && !${timer_check_Steel}) /call check_steel	
 			} else /if (${Select[${Me.Class.ShortName},SHD]}) {
 				/if (${switchPcPet} && ${switchBuffinRest}) /call check_pet
+				/if (${switchHarmonious}) /call check_harmonious
+				/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
 			} else /if (${Select[${Me.Class.ShortName},RNG]}) {
 			} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			} 
@@ -1497,10 +1507,10 @@ sub get_assist_target()
 	AMIDEAD
 	/if (!${coreAuto}) /return
 	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]} && !${useForceAssist}) /return
-	/if (${useForceAssist} && &${Target2Kill} == ${Me.ID}) /return
+	/if (${useForceAssist} && ${Target2Kill} == ${Me.ID}) /return
 	
 	| if no MA present. move along..	
-	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${useSmartAssistR}]} && !${Bool[${useSmartAssistG}]} && !${Bool[${useForceAssist}]}) {
+	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${useSmartAssistR} && !${useSmartAssistG} && !${useForceAssist}) {
 		DEBUG ${cbad}NO Assist Set\ax
 		/delay 1
 		/return
@@ -1514,28 +1524,28 @@ sub get_assist_target()
 	
 	| if we dont have underfoot expansion, skip ALL smartassist go directly to jail. 
 	/if (!${validate_expansion[FALSE, |16]}) /goto :skippingtoMAtarget
-	/if (${Bool[${useForceAssist}]}) /goto :skippingtoMAforcedtarget
+	/if (${useForceAssist}) /goto :skippingtoMAforcedtarget
 
 	| no, you still cannot assist yourself. get over it
 	/if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call validate_assist FALSE X
 	/if (${Spawn[pc ${Raid.MainAssist}].ID} == ${Me.ID}) /call validate_assist FALSE X
 
 	| tar acquisition when using smart assist. set XTarget positions.
-	/if (${Bool[${useSmartAssistR}]} || ${Bool[${useSmartAssistG}]}) {
+	/if (${useSmartAssistR} || ${useSmartAssistG}) {
 		DEBUG Using SmartMA
 
-		| if the raid/group roles are not set, move on tho MA1/2	
+		| if the raid/group roles are not setor dead, move on tho MA1/2	
 		/if (${Bool[${useSmartAssistG}]} && (!${Bool[${Group.MainAssist}]} || ${Bool[${Spawn[${Group.MainAssist}].Dead}]})) /goto :skippingtoMAtarget
 	
-		/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 1 Target]} && ${Raid.Members} && ${Bool[${useSmartAssistR}]}) {
+		/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 1 Target]} && ${Raid.Members} && ${useSmartAssistR}) {
 			/xtarget set 1 raidassist1target
 			/xtarget set 2 Autohater
-		} else /if (${Me.XTarget[1].TargetType.NotEqual[Group Assist Target]} && ${Bool[${Group.Members}]} && ${Bool[${useSmartAssistG}]}) {
+		} else /if (${Me.XTarget[1].TargetType.NotEqual[Group Assist Target]} && ${Bool[${Group.Members}]} && ${useSmartAssistG}) {
 			/xtarget set 1 groupassisttarget
 		}
 		
-		| smart assist raid 1
-		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssistR}]}) {
+		| smart assist raid
+		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${useSmartAssistR}) {
 			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
 				DEBUG Setting SMA1
 				/varset Target2Kill ${Me.XTarget[1].ID}
@@ -1547,7 +1557,7 @@ sub get_assist_target()
 			}	
 		}
 		| smart assist group
-		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${Bool[${useSmartAssistG}]}) {
+		/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]} && ${useSmartAssistG}) {
 			/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat} || ${switchdeBuffMezz}) {
 				DEBUG Setting SMAG
 				/varset Target2Kill ${Me.XTarget[1].ID}
@@ -1907,6 +1917,7 @@ sub cast_AA_banestrike(int _tmpID)
 	CHECKEXIT
 	/if (${is_target_dead[${_tmpID}]}) /return
 	/if (!${is_target_valid[${_tmpID}]}) /return
+	/if (!${cast_condition[BanestrikeCondition]}) /return 
 	/if (${validate_cast[FALSE, alt, "Banestrike", ${_tmpID}]}) /call core_cast2 "Banestrike" alt ${_tmpID} FALSE
 /return
 
@@ -3808,7 +3819,7 @@ sub set_combat_here()
 	/if (!${coreAuto}) /call writeINI coreAuto Common TRUE
 	
 	| wake the Main Assist up from its nap, set him in place and group assists
-	/if (${Me.DisplayName.Equal[${GroupAssist}]}) {
+	/if (${Me.DisplayName.Equal[${${MacroQuest.Server}Assist}]}) {
 		/if (!${HomeSet}) {
 			/call writeINI HomeSet Movement TRUE
 			/call set_home
@@ -4919,8 +4930,6 @@ sub prep_combat()
 			/if (${burnForce}) {
 				/if ((!${SafeZone} && ${Select[${Me.CombatState},COMBAT]}) || (${SafeZone} && ${Select[${Me.CombatState},ACTIVE]})) /call synergy_${Me.Class.ShortName}
 			} 
-			
-			/varset combat COMBAT
 			/return TRUE
 		} else /if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) {
 			/varset combat FALSE
@@ -5609,8 +5618,6 @@ sub validate_buff(string _type, string _inisub, string _spell)
 sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	DEBUG ${cbug}validate_cast(error:${_error}, type:${_type}, name:${_spell}, ID:${_tmpID})\ax
 	
-	| /if (${is_target_dead[${_tmpID}]}) /return FALSE
-
 	/if (${_tmpID}) {
 		/if (!${Spawn[${_tmpID}].ID}) /return FALSE
 	}
@@ -5621,13 +5628,12 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]}) /return FALSE
 		/if ((${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) || ${Me.Moving} || ${AdvPath.Following}) /return FALSE
 		/if (${Me.Casting.ID}) /return FALSE
-		/if (!${switchOverrideLos} && !${Spawn[${_tmpID}].LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]}) /return FALSE
-		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		/if (!${Spell[${_spell}].Category.Equal[Heals]}) {
+			/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE
+			/if (!${switchOverrideLos} && !${Spawn[${_tmpID}].LineOfSight} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE
+		}
+		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].MyRange}) /return FALSE
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
-
-		| spell stacks ?
-		| ${Spell[${Me.Casting.ID}].Category.Equal[Heals]}
-		| ${Spell[${_spell}].Stacks}
 
 		| restist types vs core.zone.inc
 		/if (!${Spell[${_spell}].SpellType.Equal[Beneficial]}) {
@@ -5642,39 +5648,96 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		| check for stacking issues
 		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]} && (${Target.ID} == ${Me.ID})) {
 			DEBUG we made it to the buff routine...
+			/if (!${Spell[${_spell}].Stacks}) /return FALSE
 		}
-		
-		| ${Spell[${_spell}].Category.Equal[Heals]}
-		| ${Spell[${_spell}].SpellType.Equal[Beneficial]}
+
 		
 	| check alt ability
 	} else /if (${_type.Equal[alt]}) {
 		/if (!${Me.AltAbilityReady[${_spell}]}) /return FALSE
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
-		/if (${_tmpID}) {
-			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		
+		| check for stacking issues
+		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
+			SDEBUG we made it to the buff routine...
+			/if (!${Spell[${_spell}].Stacks}) /return FALSE
 		}
 	
 	| check disc
 	} else /if (${_type.Equal[disc]}) {
 		/if (!${Me.CombatAbilityReady[${_spell}]}) /return FALSE
 		/if (${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
-		/if (${_tmpID}) {
-			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		/if (${Me.Buff[${FindItem[${_spell}].Spell}].ID}) /return FALSE
+		/if (${Me.Song[${FindItem[${_spell}].Spell}].ID}) /return FALSE
+				
+		| check for stacking issues
+		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
+			SDEBUG we made it to the buff routine...
+			/if (!${Spell[${_spell}].Stacks}) /return FALSE
 		}
 
 	| check item
 	} else /if (${_type.Equal[item]}) {
-		/if (!${Me.ItemReady[${_spell}]}) /return FALSE
-		/if (${_tmpID}) {
-			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		/if (${_error}) OUT ${cbug}validate_cast(error:${_error}, type:${_type}, name:"${_spell}", ID:${_tmpID})\ax
+		/if (!${Me.ItemReady[=${_spell}]}) /return FALSE
+		/echo here
+		/if (${_tmpID} != ${Me.ID}) {
+			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${FindItem[=${_spell}].Spell}].MyRange} && ${Spell[${FindItem[=${_spell}].Spell}].Range} != 0) /return FALSE
+		}
+
+
+		/if (${Me.Buff[${FindItem[=${_spell}].Spell}].ID}) /return FALSE
+		/if (${Me.Song[${FindItem[=${_spell}].Spell}].ID}) /return FALSE
+					
+		| check for stacking issues
+		/if (${Spell[${FindItem[=${_spell}].Spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
+			SDEBUG we made it to the buff routine...
+			/if (!${Spell[${FindItem[=${_spell}].Spell}].Stacks}) /return FALSE
 		}
 		
+	| epic clicks
+	} else /if (${_type.Equal[epicitem]}) {
+		/if (${_error}) OUT ${cbug}validate_cast(error:${_error}, type:${_type}, name:${${Me.Class.ShortName}Epic${_spell}}, ID:${_tmpID})\ax
+		/if (!${Me.ItemReady[=${${Me.Class.ShortName}Epic${_spell}}]}) /return FALSE
+		/echo here
+		/if (${_tmpID} != ${Me.ID}) {
+			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].MyRange} && ${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].Range} != 0) /return FALSE
+		}
+		/if (${Me.Buff[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].ID}) /return FALSE
+		/if (${Me.Song[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].ID}) /return FALSE
+		/if (${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
+			SDEBUG we made it to the buff routine...
+			/if (!${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].Stacks}) /return FALSE
+		}
+
 	| check bard shit.. gotta be difficult..
 	} else /if (${_type.Equal[pulse]}) {
 
 	}
 /return TRUE
+
+
+
+${FindItem[${${Me.Class.ShortName}Epic2}].Spell.ID}
+
+${Spell[${FindItem[Rage of Rolfron].Spell}].SpellType.Equal[Beneficial]}
+
+${Spell[${FindItem[=${${Me.Class.ShortName}Epic2}].Spell}].SpellType.Equal[Beneficial]}
+
+${Spell[${FindItem[=${${Me.Class.ShortName}Epic2}].Spell}].MyRange}
+${Spell[${FindItem[=${_spell}].Spell}].MyRange}
+
+${Me.ItemReady[=${${Me.Class.ShortName}Epic2}]}
+
+${Spell[${FindItem[=${${Me.Class.ShortName}Epic2}].Spell}].EnduranceCost}
+
+${Spell[${${Me.Class.ShortName}Epic2}].EnduranceCost}
+
+
+
+
 
 
 
@@ -5824,12 +5887,13 @@ sub set_base_install()
 	/call writeINI SetFaceArc Movement 30	
 	
 	| buffs
-	/call writeINI switchBuffCombat Buffs TRUE
+	/call writeINI switchBuffCombat Buffs FALSE
 	/call writeINI switchBuffItem Buff TRUE
 	/call writeINI switchBuffSelf Buffs TRUE
 	
 
 	| class specific settings
+	|**
 	/if (${Select[${Me.Class.ShortName},BER]}) {
 		/call writeINI combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},BRD]}) {
@@ -5865,6 +5929,7 @@ sub set_base_install()
 	} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
 		/call writeINI combat Common NUKE
 	}
+	**|
 
 /return
 

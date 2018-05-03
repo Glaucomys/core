@@ -20,7 +20,8 @@
 	- core.ini									Script settings that affect all the toons and environment.
 	- common.inc								All common use functions.
 	- events.inc								Contains responses to EQ generated changes (environment/emotes).
-	- hud.inc										Sets the hud.
+	- fixini.inc								holds all INI legacy removed entries.
+	- hud.inc										Sets the Heads Up Display
 	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias, binds'.
 	- test.inc									empty. testing purposes.
 	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
@@ -98,7 +99,6 @@
 #define UPDATEHUD "/call update_HUD_notices"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
-
 
 #include tc\declare.inc
 #include tc\common.inc
