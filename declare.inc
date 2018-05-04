@@ -10,238 +10,6 @@
 
 
 
-
-
-|***
- *	DES: sets an outer variable
- *	USE: /call setDeclare [variable Name] [variable type] outer [value]
- *	INI: 
- *  NOTE: 
- ***|
-sub setDeclare(string _name, string _type, string _section, string _value)
-	| /echo \asetDeclare\ax(${_name.Left[1].Upper}${_name.Right[-1]} -> ${_type} -> ${_value})
-	/if (${Defined[${_name}]}) {
-		/varset ${_name} ${_value}
-	} else {
-		/declare ${_name} ${_type} outer ${_value}
-	}
-/return
-
-
-
-|***
- *	DES: adjust the related class ini
- *	USE: /call writeINI [variable] [INISection] [value]
- *	INI: 
- *  NOTE: 
- ***|
-sub writeINI(string _varName, string _section, string _value)
-	DEBUG ${cbug}writeINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
-	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
-		/varset ${_varName} ${_value}
-	 	/ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
-	}
-/return
-
-
-
-|***
- *	DES: adjust the related Core.INI
- *	USE: /call writeCoreINI [variable] [INISection] [value]
- *	INI: 
- *  NOTE: 
- ***|
-sub writeCoreINI(string _varName, string _section, string _value)
-	DEBUG ${cbug}writeCoreINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
-	/if (${Defined[${_varName}]} && ${Ini[${INICore},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
-		/varset ${_varName} ${_value}
-	 	/ini "${INICore}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
-	}
-/return
-
-
-
-|***
- *	DES: creates timers
- *	USE: /call declareTimer [NAME] [INT|BOOL|STRING|FLOAT] [INISECTION] [value] [timer_check_blah_blah]
- *	INI: 
- *  NOTE: 
- ***|
-sub setTimer(string _name, string _type, string _section, string _value, string _my_timer)
-	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]} || !${Bool[${_my_timer}]}) {
-		/if (!${Bool[${_name}]}) VOUT ${ocaution} ${sep} BAD variable Name. 
-		/if (!${Bool[${_type}]}) VOUT ${ocaution} ${sep} BAD variable Type. 
-		/if (!${Bool[${_section}]}) VOUT ${ocaution} ${sep} BAD INI Section.
-		/if (!${Bool[${_my_timer}]}) VOUT ${ocaution} ${sep} BAD Timer Name. 
-		/return
-	}
-
-	/if (!${Defined[${_name}]}) /declare ${_name} ${_type} outer
-	/varset ${_name} ${Ini[${INIClass},${_section},${_name},"${_value}"]}
-	/if (!${Bool[${Ini[${INIClass},${_section}].Find[${_name}]}]}) {
-		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
-	} 
-
-	/call create_timer ${_my_timer} 1
-/return
-
-
-
-|***
- *	DES: INI controller: will createnew entries and read/adapt current entries for use in memory
- *	USE: /call setINIVar SKILLNAME int|bool|string [ini sub section] "variable value"
- *	INI: 
- *  NOTE: 
- ***|
-sub setINIVar(string _name, string _type, string _section, string _value)
-	| /echo \atDeclareIniVar\ax(_name:\a-w${_name}\ax, _type:\a-w${_type}\ax, _section:\a-w${_section}\ax, _value:\a-w${_value}\ax)
-	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]}) {
-		VOUT ${owarning} ${sep} INVALID INI SETTING/STRING [_name:${_name}/_type:${_type}/_section:${_section}] --\ax
-		/return
-	}
-	
-	| create the variable
-	/if (!${Defined[${_name}]}) /declare ${_name} ${_type} outer
-	
-	/if (!${Bool[${Ini[${INIClass},${_section}].Find[${_name}]}]}) {
-		| /echo \arINI writing\ax: ${Me.DisplayName} "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
-		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
-		/varset ${_name} ${_value}
-	} else {
-		 /varset ${_name} ${Ini[${INIClass},${_section},${_name.Left[1].Upper}${_name.Right[-1]},"${_value}",noparse]}
-	}
-
-	/if (${Me.Book[${Me.Book[${${_name}} Rk. III]}].ID}) {
-		/varset ${_name} ${Me.Book[${Me.Book[${${_name}} Rk. III]}].Name} 
-	} else /if (${Me.Book[${Me.Book[${${_name}} Rk. II]}].ID}) {
-		/varset ${_name} ${Me.Book[${Me.Book[${${_name}} Rk. II]}].Name}
-	} else /if (${Me.CombatAbility[${${_name}} Rk. III]}) {
-		/varset ${_name} ${${_name}} Rk. III
-	} else /if (${Me.CombatAbility[${${_name}} Rk. II]}) {
-		/varset ${_name} ${${_name}} Rk. II
-	}
-/return
-
-
-
-|***
- *	DES: creates INI entries for core.ini
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***|
-sub DeclareCoreIniVar(string name, string varType, string section, string value)
-	/if (!${Bool[${name}]} || !${Bool[${varType}]} || !${Bool[${section}]}) {
-		/echo ${cbad}-- INVALID INI SETTING/STRING [${name}/${varType}/${section}] --\ax
-		/return
-	}
-
-	/if (!${Defined[${name}]}) /declare ${name} ${varType} outer
-	/varset ${name} ${Ini[${INICore},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}",noparse]}
-	/if (!${Bool[${Ini[${INICore},${section}].Find[${name}]}]}) {
-		/ini "${INICore}" "${section}" "${name.Left[1].Upper}${name.Right[-1]}" "${${name}}" "${${value}}"
-	}
-/return
- 
-
-
-|***
- *	DES: Updates the list controls names
- *	USE: 
- *	INI: core.zone.ini
- *  NOTE: 
- ***|
-sub update_zone_list(string _list)
-	/if (!${Target.ID}) {
-		/call echos needtarget
-	} else /if (${Target.ID} && ${${_list}.Find[${Target.DisplayName}]}) {
-		/call echos listexists ${_list}
-	} else /if (${Target.ID} && !${Bool[${Spawn[pc ID ${Target.ID}]}]} && !${${_list}.Find[${Target.DisplayName}]}) {
-		/if (${Target.ID}) ${If[${Bool[${${_list}}]},/ini "${INIZone}" "${Zone.ShortName}" "${_list}" "${${_list}}|${Target.DisplayName}",/ini "${INIZone}" "${Zone.ShortName}" "${_list}" "|${Target.DisplayName}"]}
-		/if (${validate_plugin[FALSE, |mq2eqbc]} && ${EQBC.Connected}) /bc zonereset
-	}
-/return 
- 
-
-
-|***
- *	DES: check/create the zone base INI entries.
- *	USE: /call check_zone_INI
- *	INI: 
- *  NOTE: 
- ***| 
-sub check_zone_INI(string _sender)
-	DEBUG ${cbug}check_zone_INI(_sender: ${_sender})\ax 
-	/if (${Bool[${_sender}]} && !${Spawn[pc ${_sender}].ID}) /return
-
-	/declare _count 						int local	0
-	/declare _listtype 					string local	
-	/declare _list 							string local ${ZoneFileList}
-	/declare _tmpString					string local
-	
-	/if (${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {
-		/varset FullZoneName ${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}	
-		/varset SafeZone ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
-		
-		/for _count 1 to ${_list.Count[|]}
-			/varset _listtype ${_list.Arg[${_count},|]}
-			/if (!${Bool[${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_listtype}" ""
-			/varset ${_listtype} ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
-		/next _count				
-
-		/return
-	} else /if (${Bool[${Ini[${INIZone},"${Zone.Name}"]}]} || !${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} || !${Bool[${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}]}) {	
-		| start swap. create a full zone name INI
-		/if (!${Bool[${Ini[${INIZone},"${Zone.Name}","SafeZone"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}]}) {
-			/ini "${INIZone}" "${Zone.Name}" "SafeZone" ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
-		} else /if (!${Bool[${Ini[${INIZone},"${Zone.Name}","SafeZone"]}]} && !${Bool[${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}]}) {
-			/ini "${INIZone}" "${Zone.Name}" "SafeZone" "FALSE"
-		}
-		
-		/for _count 1 to ${_list.Count[|]}
-			/varset _listtype ${_list.Arg[${_count},|]}
-			
-			| create full name
-			/if (!${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]} && ${Bool[${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}]}) {
-				/varset _tmpString ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
-				/ini "${INIZone}" "${Zone.Name}" "${_listtype}" "${_tmpString}"
-			} else /if (!${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]} && !${Bool[${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}]}) {
-				/ini "${INIZone}" "${Zone.Name}" "${_listtype}" ""
-			}
-		/next _count	
-
-		| create new short name section entries	
-		
-		| delete the short name and start the recreation	
-		/if (${Bool[${Ini[${INIZone},"${Zone.ShortName}"]}]} && ${Zone.ShortName.NotEqual[${Zone.Name}]}) /ini "${INIZone}" "${Zone.ShortName}" NULL NULL
-		
-		| create full zone name and load
-		/ini "${INIZone}" "${Zone.ShortName}" "FullZoneName" "${Zone.Name}"
-		/varset FullZoneName ${Ini[${INIZone},"${Zone.ShortName}","FullZoneName"]}		
-
-		| create safezone and load 
-		/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" ${Ini[${INIZone},"${Zone.Name}","SafeZone"]}
-		/varset SafeZone ${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}
-		
-		| create mob entries and load
-		/for _count 1 to ${_list.Count[|]}
-			/varset _listtype ${_list.Arg[${_count},|]}
-			/if (${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]}) {
-				/varset _tmpString ${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}
-				/ini "${INIZone}" "${Zone.ShortName}" "${_listtype}" "${_tmpString}"
-			} else /if (!${Bool[${Ini[${INIZone},"${Zone.Name}","${_listtype}"]}]} ) {
-				/ini "${INIZone}" "${Zone.ShortName}" "${_listtype}" ""
-			}
-			/varset ${_listtype} ${Ini[${INIZone},"${Zone.ShortName}","${_listtype}"]}
-		/next _count	
-		
-		| delete the full name and hope this shit works
-		/if (${Bool[${Ini[${INIZone},"${Zone.Name}"]}]} && ${Zone.Name.NotEqual[${Zone.ShortName}]}) /ini "${INIZone}" "${Zone.Name}" NULL NULL
-	}
-/return 
-
-
-
 |***
  *	DES: class INI files for each toon
  *	USE: /call set_declares
@@ -249,7 +17,7 @@ sub check_zone_INI(string _sender)
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180503
+	/call setDeclare coreBuild											int			outer 20180504
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -286,6 +54,7 @@ sub set_declares()
 	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
 	/call DeclareCoreIniVar smartasserrors					string	General TRUE
 	/call DeclareCoreIniVar forceNukeLoop						string	General FALSE
+	/call DeclareCoreIniVar autoAddNameList					string	General TRUE
  			
 		|** Output Color Display 
 			Default			\ax							Black				\ab
@@ -1043,7 +812,7 @@ sub set_declares()
 
 	| buffs
 	/call setINIVar BuffRemove											string	Buffs "|Illusion: Gnoll Reaver|Illusion: Darkfell Gnoll Reaver|Illusion: Blackburrow Gnoll Reaver|Illusion: Mucktail Gnoll Reaver|Illusion: Direwind Gnoll Reaver|Illusion: Human Pirate|Illusion: Ogre Pirate"
-  /call setDeclare buffType												string	outer "|stop|self|item|combat|bc|raid|tell|pet|merc"
+  /call setDeclare buffType												string	outer "|stop|self|item|combat|bc|raid|tell|pet|merc|group"
 	/call setDeclare switchBuff											bool		outer FALSE
 	/call setDeclare switchBuffStop									bool		outer FALSE
 	/call setINIVar switchBuffItem	 								bool		Buffs FALSE 
@@ -1054,6 +823,7 @@ sub set_declares()
 	/call setINIVar switchBuffRaid									bool		Buffs FALSE
 	/call setINIVar switchBuffTell									bool		Buffs FALSE
 	/call setINIVar switchBuffMerc									bool		Buffs FALSE
+	/call setINIVar switchBuffGroup									bool		Buffs FALSE
 
 	
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
@@ -1078,9 +848,9 @@ sub set_declares()
 		/call setINIVar Buff${_count}Alias						string 	Buffs "|FALSE|FALSE" 
 		/call setINIVar BCBuff${_count}Class					string 	Buffs "|WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM"
 		/call setINIVar RaidBuff${_count}Class				string 	Buffs "|WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM"
+		/call setINIVar ManualBuff${_count}Class			string 	Buffs "|WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM"
 		/call setINIVar Buff${_count}noBCinRaid				bool	 	Buffs FALSE
 	/next _count
-
 
 	/call setINIVar Aura1Spell 											string 	Aura FALSE
 	/call setINIVar Aura1Buff 											string 	Aura FALSE  
@@ -1203,8 +973,6 @@ sub set_declares()
 	
 	/call setDeclare clickHealItem									string outer "|Prayers of Life|Overflowing Urn of Life"
 	
-	
-
 	| Mode stuffs
 	| Train Spell spells
 	/if (${Bool[${Me.Class.CanCast}]}) {
@@ -1214,13 +982,16 @@ sub set_declares()
 		/call setINIVar divination										string 	Mode FALSE
 		/call setINIVar evocation											string 	Mode FALSE
 	}
-
-	
-	
 /return
 	
 
 
+ |***
+ *	DES: sets all timers used that are not specific to a class
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
 sub declare_timers()
 	/declare _count int local 0
 
@@ -1256,7 +1027,8 @@ sub declare_timers()
 	/call setTimer tItem_Buff												string	Timer 1m 		timer_check_buffs_item
 	/call setTimer tBC_Buff													string	Timer 20s 	timer_check_buffs_BC
 	/call setTimer tRaid_Buff												string	Timer 20s 	timer_check_buffs_raid
-	/call setTimer tMerc_Buff												string	Timer 20s 	timer_check_buffs_merc
+	/call setTimer tMerc_Buff												string	Timer 40s 	timer_check_buffs_merc
+	/call setTimer tGroup_Buff											string	Timer 5m	 	timer_check_buffs_group
 	/call setTimer tCheck_Aura											string	Timer 3m 		timer_check_aura
 	/call setTimer tTell_Buff												string	Timer	10s 	timer_check_buffs_tell
 	/call setTimer tCheck_Ammo											string	Timer	5s 		timer_Check_Ammo
@@ -1501,20 +1273,6 @@ sub declare_WIZ()
 	/call setDeclare pushsecondary 									string	outer "Secondary Anchor Push"
 	/call setDeclare pushsecondary_group						string	outer "Teleport Secondary Anchor"
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-		
 	/call setINIVar runeMagiWard	 									string	Rune "Doomscale Husk"
 	/call setINIVar runeShieldofFate								string	Rune "Shield of Consequence"
 	/call setINIVar runeCrystalwing									string	Rune "Armor of the Codex"
@@ -3555,6 +3313,9 @@ sub Bind_buff(string _buffType, string _verbage)
 	| tell
 	} else /if (${_buffType.Equal[tell]}) {
 		/call writeINI switchBuffTell Buffs ${If[${switchBuffTell},FALSE,TRUE]}
+	| group
+	} else /if (${_buffType.Equal[group]}) {
+		/call writeINI switchBuffGroup Buffs ${If[${switchBuffGroup},FALSE,TRUE]}
 	| pet
 	} else /if (${_buffType.Equal[pet]}) {
 		/if (!${validate_class[TRUE, ${PetList}]}) {

@@ -732,7 +732,7 @@ sub mode_get_waisted()
 	/declare _box					string	local Fisherman's Companion
 
 	| no fishermans companion. end this mess
-	/if (!${FindItem[=${_box}]}) {
+	/if (!${FindItem[=${_box}].ID}) {
 		VOUT ${onotice} ${sep} No ${_box}
 		VOUT This Mode uses Fisherman's Companion.
 		VOUT Go get one.

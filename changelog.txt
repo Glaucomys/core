@@ -11,6 +11,62 @@
 
 
 
+20180504
+HUDUPDATE
+- there is not a G in the buffs line for group buffing
+** WARNING...
+- the next two commands are rather obtrusive and intensive.
+-- in order to varify a buff on a person not in your Netbots BC, they have to examin the toon, verify every buff with what they want to cast and then cast and set timers.
+-- so your, at max, looking at 42 buff slots with 15 possible buffs in Core. so, up to 630 iterations per group member as a worst case senario.
+-- in the testing it was averaging about 2 seconds per toon. which isnt bad.
+-- i do not suggest setting this for a short timer. the default will be 5 min. adjust at your own peril.
+** consider yourself warned...
+
+- /buff [group] - will enable buffing people in your group
+  -- feeds off of ManualBuff#Class=|WAR|PAL|SHD|BRD|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM in the toons INI
+  -- default check time is every 5 min
+  -- this will not buff you. just everyone else (except mercs).
+- /buff [merc] - to enable buffing mercs. don't ask me why..
+  -- is set to feed off of ManualBuff#Class now and NOT raidbuff#class.
+  -- mercs work off class, just like a normal toon does
+
+- new file: namelistdata.ini
+  -- last 6 xpacs of named for every zone (thanks to achilles2017 for providing the list)
+  -- empty named lists will auto update upon entering the zone. this can be disabled with core.ini->[general]->autoAddNameList=FALSE
+  -- the auto update does NOT overwrite the namelist if something is already there. issue the command "/core fixini namelist" if you want it forced
+  -- if you want older xpacs. send me the info in the same format as the namelistdata.ini file. i'll add it to the master list
+- /core fixini [NULL|old|namelist]
+  -- i had to adjust this to accomodate more options then a TRUE|FALSE. 
+  -- /core fixini - will simply remove current ini entries that are no longer valid. this is forced on every new build date
+  -- /core fixini [old] - removes as many of the old ini entries as i have kept track of over the build cycles
+  -- /core fixini [namelist] - will update your namelist according to the data maintained in namelistdata.ini for the zone you are in. 
+    -- this will force overwrite your current namelist for the zone you are in.
+  -- i'm going to start using 10 build dates as a cycle. anything 11 or older will be moved to old. or maybe a month or two.. hell i dunno. need to keep it loading faster.
+- fixini.inc
+  -- moved the following functions to this file:
+    -- whitewash
+    -- writeINI
+    -- writeCoreINI
+    -- setINIVar
+    -- DeclareCoreIniVar
+    -- update_zone_list
+    -- check_zone_INI
+- validate_cast()
+  -- checks for curent effect buffs and songs for beneficial spells
+- /mode drink
+  -- corrected a non numeric condition
+- AANow() and DiscNow()
+  -- converted to the new casting routines
+- class.shm.inc
+  -- swarm (temp) pet issues.
+  -- fixed the canni hp/manna issue. was a dumb case sensitive variable.
+  -- gave them back their pets. shaman life gets lonely...
+- class.pal.inc
+  -- converted to the new castign routines
+  
+
+
+
 20180503
 - /smartma is gone. use /setassist [g|r|1|2|f|x]
 - /bc smag, smar, smax are gone. use /bca //setassist [g|r|1|2|f|x]

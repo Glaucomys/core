@@ -263,12 +263,13 @@ sub main()
  ***| 	
 sub initialize_core()
 	/mqclear
-	/if (!${Defined[INICore]}) /declare INICore 				string 	outer tc\core.ini
-	/if (!${Defined[INIClass]}) /declare INIClass 			string 	outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
-	/if (!${Defined[INIZone]}) /declare INIZone		     	string 	outer tc\core.zone.ini
-	/if (!${Defined[INILoot]}) /declare INILoot					string  outer	tc\core.loot.ini
-	/if (!${Defined[INIWiki]}) /declare INIWiki		     	string 	outer tc\core.wiki.ini
-	/if (!${Defined[INIBlurb]}) /declare INIBlurb				string	outer tc\core.blurb.ini
+	/if (!${Defined[INICore]}) /declare INICore 								string 	outer tc\core.ini
+	/if (!${Defined[INIClass]}) /declare INIClass 							string 	outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
+	/if (!${Defined[INIZone]}) /declare INIZone						     	string 	outer tc\core.zone.ini
+	/if (!${Defined[INILoot]}) /declare INILoot									string  outer	tc\core.loot.ini
+	/if (!${Defined[INIWiki]}) /declare INIWiki		   				  	string 	outer tc\core.wiki.ini
+	/if (!${Defined[INIBlurb]}) /declare INIBlurb								string	outer tc\core.blurb.ini
+	
 	/call set_declares
 	/if (${switchDispBuild}) /call echos initialize 0 0 0 0
 	/call declare_${Me.Class.ShortName}

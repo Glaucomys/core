@@ -28,7 +28,18 @@ sub core_SHM()
 
 	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_cani
+		/call check_engaged
+		/if (!${Bool[${Macro.Return}]}) {
+			/if (${switchPcPet}) /call check_pet
+		}
 	}	
+
+	/if (${coreAuto} && !${Me.Invis}) {
+		/call check_engaged
+		/if (!${Bool[${Macro.Return}]}) {
+			/if (${switchPcPet}) /call check_pet
+		}
+	}
 	
 	:killtarget
 	CHECKREZ
@@ -43,7 +54,6 @@ sub core_SHM()
 
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
-			/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
@@ -150,14 +160,14 @@ sub check_cani()
 		/if (${spellCannibalization.Equal[Tribal Bargain Rk. III]} && ${Me.CurrentHPs} > 8949) /varset _cancast TRUE
 
 		/if (${_cancast}) {
-			/if (${validate_spell[spell, "${spellCannibalization}", ${Me.ID}]}) /call core_cast2 "${spellCannibalization}" 0 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${spellCannibalization}", ${Me.ID}]}) /call core_cast2 "${spellCannibalization}" 0 0 FALSE
 			/return
 		}
 
+		| use the aa cani
+		/if (${validate_cast[FALSE, alt, "Cannibalization", ${Me.ID}]}) /call core_cast2 "Cannibalization" alt 0 FALSE
 	}
 	
-	| use the aa cani
-	/if (${validate_spell[alt, "${Cannibalization}", ${Me.ID}]}) /call core_cast2 "Cannibalization" alt 0 FALSE
 /return
 
 
@@ -575,18 +585,18 @@ sub Bind_setSHM(string _classType, string _verbage)
 	| canni HP pct
 	} else /if (${Bool[${_classType.Equal[cannihp]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/call writeINI canniPctHPs Spells ${_verbage}
+			/call writeINI CanniPctHPs Spells ${_verbage}
 		} else {
-			VOUT /${_bind} cannihp [${cinfo}${canniPctHPs}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} cannihp [${cinfo}${CanniPctHPs}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}	
 
 	| canni Manna pct
 	} else /if (${Bool[${_classType.Equal[cannimanna]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/call writeINI canniPctManna Spells ${_verbage}
+			/call writeINI CanniPctManna Spells ${_verbage}
 		} else {
-			VOUT /${_bind} cannimanna [${cinfo}${canniPctHPs}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} cannimanna [${cinfo}${CanniPctHPs}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}	
 
@@ -629,8 +639,8 @@ sub Bind_setSHM(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[cannihps]}) /varset _listout ${_listout}(${cnum}${canniPctHPs}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[cannimanna]}) /varset _listout ${_listout}(${cnum}${canniPctManna}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[cannihps]}) /varset _listout ${_listout}(${cnum}${CanniPctHPs}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[cannimanna]}) /varset _listout ${_listout}(${cnum}${CanniPctManna}\ax)
 
 		/varset _sep TRUE
 	/next _count

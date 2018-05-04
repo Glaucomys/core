@@ -254,7 +254,7 @@ sub HUDUpdate()
 
 	| buff switches
 	/noparse /ini HUDPATH "buff1" "3,280,62,100,149,237,Buff"
-	/noparse /ini HUDPATH "buff2" "3,305,61,100,149,237,[                      ]"
+	/noparse /ini HUDPATH "buff2" "3,305,61,100,149,237,[                         ]"
 	/noparse /ini HUDPATH "buff3" "19,310,62,0,255,0,${If[${switchBuffSelf},S,]}"
 	/noparse /ini HUDPATH "buff4" "19,310,62,25,25,25,${If[${switchBuffSelf},,S]} "
 	/noparse /ini HUDPATH "buff5" "19,319,62,0,255,0,${If[${switchBuffItem},I,]}"
@@ -271,6 +271,8 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "buff16" "19,357,62,25,25,25,${If[${switchBuffPet},,P]}"
 	/noparse /ini HUDPATH "buff17" "19,365,62,0,255,0,${If[${switchBuffMerc},M,]}"
 	/noparse /ini HUDPATH "buff18" "19,365,62,25,25,25,${If[${switchBuffMerc},,M]}"
+	/noparse /ini HUDPATH "buff19" "19,374,62,0,255,0,${If[${switchBuffGroup},G,]}"
+	/noparse /ini HUDPATH "buff20" "19,374,62,25,25,25,${If[${switchBuffGroup},,G]}"
 
 	| lazy ass controlls
 	/noparse /ini HUDPATH "rest0" "19,140,74,100,149,237,Rest"

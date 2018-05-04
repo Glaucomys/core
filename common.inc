@@ -2691,9 +2691,9 @@ sub cast_nuke_GoM(int _tmpID)
  ***|
 sub check_buffs_manual(string _type)
 	DEBUG ${cbug}check_buffs_manual(type: ${_type})\ax
-	/if (${coreAuto}) /call create_timer timer_check_buffs_merc ${tMerc_Buff}
-	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
-	/if (${coreAuto} && ${watch_for_death[]}) /return 
+	/if (!${coreAuto}) /return
+	/if (!${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
+	/if (${watch_for_death[]}) /return 
 
 	| # people in group
 	/declare _i int local
@@ -2704,66 +2704,90 @@ sub check_buffs_manual(string _type)
 	| declare type types
 	/declare _GroupRaid string local NULL
 	/declare _PCMercenary string local NULL
+	/declare _INIline string local NULL
 	
 	| set type types..
 	/if (${_type.Equal[raid]}) {
+		/call create_timer timer_check_buffs_raid ${tRaid_Buff}
 		/varset _GroupRaid Raid
 		/varset _PCMercenary pc
+		/varset _INIline Raid
+	} else /if (${_type.Equal[group]}) {
+		/call create_timer timer_check_buffs_group ${tGroup_Buff}
+		/varset _GroupRaid Group
+		/varset _PCMercenary pc
+		/varset _INIline Manual
 	} else /if (${_type.Equal[mercenary]}) {
+		/call create_timer timer_check_buffs_merc ${tMerc_Buff}
 		/varset _GroupRaid Group
 		/varset _PCMercenary mercenary
+		/varset _INIline Manual
 	} else {
 		/return
 	}
+	
+	
+	| ${Group.Members}
+	
+	
+	DEBUG _GroupRaid:${_GroupRaid}, _PCMercenary:${_PCMercenary}, _INIline:${_INIline}
 	
 	/if (${${_GroupRaid}.Members} && ${Me.PctMana} > 10 && !${Me.Casting.ID}) {
 		UPDATEHUD "BUFF: ${_type}"
 		/for _i 0 to ${${_GroupRaid}.Members}
 			DEBUG Checking Buffs on [${cinfo}${${_GroupRaid}.Member[${_i}].DisplayName}\ax]
-			| is the right type pf member
-			/if (!${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Type.Equal[${_PCMercenary}]}) /continue
 			
+			| do not buff self with this mode!!
+			/if (${${_GroupRaid}.Member[${_i}].DisplayName.Equal[${Me.DisplayName}]}) /continue
+			
+			| is the right type of member
+			DEBUG ${_GroupRaid}:${_PCMercenary}:${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Name}  - !${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Type.Equal[${_PCMercenary}]}
+			/if (${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Type.NotEqual[${_PCMercenary}]}) /continue
 			
 			/for _x 1 to ${BuffCount}
-				/if (!${Bool[${RaidBuff${_x}Class}]} || !${Bool[${Buff${_x}}]}) /continue
+				DEBUG buff ${_x}:${Buff${_x}}
+				/if (!${Bool[${Buff${_x}}]}) /continue
+				/if (!${Bool[${${_INIline}Buff${_x}Class}]}) /continue
 				AMIDEAD
 				CHECKEXIT
 				/doevents
 				CHECKTIE
 				CLEARCURSOR TRUE
 				
-				/if (${RaidBuff${_x}Class.Find[${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Class.ShortName}]} && ${Spawn[${Group.Member[${_i}].ID}].Type.Equal[${_PCMercenary}]} && ${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Distance} < ${MobAgro} && ${Me.PctMana} >= 20) {
+				/if (!${${_INIline}Buff${_x}Class.Find[${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Class.ShortName}]}) /continue 
+				/if (!${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Type.Equal[${_PCMercenary}]}) /continue
+				/if (${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Distance} > ${MobAgro} && ${Me.PctMana} <= 20) /continue
 	
-					| stop what you're doing and get the target
-					/if (${Stick.Active}) /squelch /stick off
-					/target ID ${${_GroupRaid}.Member[${_i}].ID}
-					/delay 1s ${Target.ID} == ${${_GroupRaid}.Member[${_i}].ID}
-					/delay 1s ${Target.BuffCount}
-					/delay 1s
-					DEBUG X=${_x} class:${RaidBuff${_x}Class.Find[${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Class.ShortName}]} .. spell:${Buff${_x}chk}
+				| stop what you're doing and get the target
+				/if (${Stick.Active}) /squelch /stick off
+				/target ID ${${_GroupRaid}.Member[${_i}].ID}
+				/delay 1s ${Target.ID} == ${${_GroupRaid}.Member[${_i}].ID}
+				/delay 1s ${Target.BuffCount}
+				/delay 1s
+				DEBUG X=${_x} class:${${_INIline}Buff${_x}Class.Find[${Spawn[${${_GroupRaid}.Member[${_i}].ID}].Class.ShortName}]} .. spell:${Buff${_x}chk}
 
-					| check the buffs, if it doesnt stack mark it and dont come back
-					/for _y 1 to ${Target.BuffCount}	
-						AMIDEAD
-						
-						/if (!${Spell[${Target.Buff[${_y}]}].WillStack[${Spell[${Buff${_x}}]}]} && ${Target.Buff[${_y}].ID}) {
-							/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
-						} else {
-							/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} 1
-							/delay 2
-						}
-					/next _y
-
-					/if (${Bool[${timer_manual_buffs${Spell[${Buff${_x}}].ID}${Group.Member[${_i}].ID}}]}) /continue
+				| check the buffs, if it doesnt stack mark it and dont come back
+				/for _y 1 to ${Target.BuffCount}	
+					AMIDEAD
+					/if (${timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID}}) /continue
 					
-					| if target doesnt have the buff, hook em up
-					/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
-						CLEARCURSOR TRUE
-						VSPELL Merc Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${${_GroupRaid}.Member[${_i}].DisplayName}\ax]
-						/call MQ2Cast "${Buff${_x}}" ${buffGem} -targetid|${${_GroupRaid}.Member[${_i}].ID} 
+					/if (!${Spell[${Target.Buff[${_y}]}].WillStack[${Spell[${Buff${_x}}]}]} || ${Target.Buff[${_y}].ID}) {
+						/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
+					} else {
+						/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} 1
+						/delay 2
 					}
-					/call create_timer timer_manual_buffs${Spell[${Buff${_x}chk}].ID}${${_GroupRaid}.Member[${_i}].ID} ${Spell[${Spell[${Buff${_x}chk}].ID}].Duration.TotalSeconds}s
+				/next _y
+
+				/if (${Bool[${timer_manual_buffs${Spell[${Buff${_x}}].ID}${Group.Member[${_i}].ID}}]}) /continue
+				
+				| if target doesnt have the buff, hook em up
+				/if (!${Target.Buff[${Buff${_x}chk}].ID}) {
+					CLEARCURSOR TRUE
+					VSPELL ${_GroupRaid} Buffing ${sep} ${csp}${Buff${_x}}\ax on [${cpc}${${_GroupRaid}.Member[${_i}].DisplayName}\ax]
+					/call MQ2Cast "${Buff${_x}}" ${buffGem} -targetid|${${_GroupRaid}.Member[${_i}].ID} 
 				}
+
 				
 			/next _x	
 		/next _i
@@ -3026,9 +3050,7 @@ sub check_exit()
 	
 	| did I just die and get sent to bind ?
 	/if (${coreAuto} && ${Me.Buff[Revival Sickness].ID} && ${Zone.ID} == ${Me.ZoneBound.ID}) /return TRUE
-	
-	| /if (${coreAuto} && ${watch_for_death[]}) /return 
-	
+		
 	/doevents
 
 	| movement
@@ -4477,14 +4499,20 @@ sub check_AA_now()
 	CHECKEXIT
 
 	| nowAA1
-	/if (${Bool[${AANow1}]} && ${Me.AltAbilityReady[${AANow1}]} && ${Spell[${AANow1}].Stacks}) {
-		/if (!${Bool[${Me.Buff[${AANow1}]}]} && !${Bool[${Me.Song[${AANow1}]}]}) /call core_cast "${AANow1}" alt 0 FALSE
+	| /if (${Bool[${AANow1}]} && ${Me.AltAbilityReady[${AANow1}]} && ${Spell[${AANow1}].Stacks}) {
+	| 	/if (!${Bool[${Me.Buff[${AANow1}]}]} && !${Bool[${Me.Song[${AANow1}]}]}) /call core_cast "${AANow1}" alt 0 FALSE
+	| }
+	/if (${Bool[${AANow1}]}) {
+		/if (${validate_cast[FALSE, alt, "${AANow1}", ${Me.ID}]}) /call core_cast2 "${AANow1}" alt 0 FALSE
 	}
 
-	| nowAA2
-	/if (${Bool[${AANow2}]} && ${Me.AltAbilityReady[${AANow2}]} && ${Spell[${AANow2}].Stacks}) {
-		/if (!${Bool[${Me.Buff[${AANow2}]}]} && !${Bool[${Me.Song[${AANow2}]}]}) /call core_cast "${AANow2}" alt 0 FALSE
-	}	
+
+	/if (${Bool[${AANow2}]}) {
+		/if (${validate_cast[FALSE, alt, "${AANow2}", ${Me.ID}]}) /call core_cast2 "${AANow2}" alt 0 FALSE
+	}
+	
+	
+		
 /return
 
 
@@ -5182,7 +5210,8 @@ sub check_buff_routines(bool _force)
 			/if (${switchBuffBc}  && !${timer_check_buffs_BC}) /call check_buffs_BC
 			/if (${switchBuffPet} && ${Me.Pet.ID} && !${timer_check_pet_buffs}) /call check_pet_buffs
 			/if (${switchBuffSelf} && (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
-			/if (${switchBuffMerc}  && !${timer_check_buffs_merc}) /call check_buffs_manual mercenary
+			/if (${switchBuffMerc} && !${timer_check_buffs_merc}) /call check_buffs_manual mercenary
+			/if (${switchBuffGroup} && !${timer_check_buffs_group}) /call check_buffs_manual group
 		}
 	}
 /return
@@ -5646,9 +5675,11 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		}
 		
 		| check for stacking issues
-		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]} && (${Target.ID} == ${Me.ID})) {
+		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]} && (${_tmpID} == ${Me.ID})) {
 			DEBUG we made it to the buff routine...
 			/if (!${Spell[${_spell}].Stacks}) /return FALSE
+			/if (${Me.Buff[${_spell}].ID}) /return FALSE
+			/if (${Me.Song[${_spell}].ID}) /return FALSE		
 		}
 
 		
@@ -5659,9 +5690,11 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
 		
 		| check for stacking issues
-		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
-			SDEBUG we made it to the buff routine...
+		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
+			DEBUG we made it to the buff routine...
 			/if (!${Spell[${_spell}].Stacks}) /return FALSE
+			/if (${Me.Buff[${_spell}].ID}) /return FALSE
+			/if (${Me.Song[${_spell}].ID}) /return FALSE		
 		}
 	
 	| check disc
@@ -5671,29 +5704,31 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
 		/if (${Me.Buff[${FindItem[${_spell}].Spell}].ID}) /return FALSE
 		/if (${Me.Song[${FindItem[${_spell}].Spell}].ID}) /return FALSE
-				
+						
 		| check for stacking issues
-		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
-			SDEBUG we made it to the buff routine...
+		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
+			DEBUG we made it to the buff routine...
 			/if (!${Spell[${_spell}].Stacks}) /return FALSE
+			/if (${Me.Buff[${_spell}].ID}) /return FALSE
+			/if (${Me.Song[${_spell}].ID}) /return FALSE		
 		}
 
 	| check item
 	} else /if (${_type.Equal[item]}) {
 		/if (${_error}) OUT ${cbug}validate_cast(error:${_error}, type:${_type}, name:"${_spell}", ID:${_tmpID})\ax
 		/if (!${Me.ItemReady[=${_spell}]}) /return FALSE
-		/echo here
 		/if (${_tmpID} != ${Me.ID}) {
 			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${FindItem[=${_spell}].Spell}].MyRange} && ${Spell[${FindItem[=${_spell}].Spell}].Range} != 0) /return FALSE
 		}
 
-
-		/if (${Me.Buff[${FindItem[=${_spell}].Spell}].ID}) /return FALSE
-		/if (${Me.Song[${FindItem[=${_spell}].Spell}].ID}) /return FALSE
+		/if (${_tmpID} == ${Me.ID}) {
+			/if (${Me.Buff[${FindItem[=${_spell}].Spell}].ID}) /return FALSE
+			/if (${Me.Song[${FindItem[=${_spell}].Spell}].ID}) /return FALSE
+		}
 					
 		| check for stacking issues
-		/if (${Spell[${FindItem[=${_spell}].Spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
-			SDEBUG we made it to the buff routine...
+		/if (${Spell[${FindItem[=${_spell}].Spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
+			DEBUG we made it to the buff routine...
 			/if (!${Spell[${FindItem[=${_spell}].Spell}].Stacks}) /return FALSE
 		}
 		
@@ -5701,14 +5736,13 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	} else /if (${_type.Equal[epicitem]}) {
 		/if (${_error}) OUT ${cbug}validate_cast(error:${_error}, type:${_type}, name:${${Me.Class.ShortName}Epic${_spell}}, ID:${_tmpID})\ax
 		/if (!${Me.ItemReady[=${${Me.Class.ShortName}Epic${_spell}}]}) /return FALSE
-		/echo here
 		/if (${_tmpID} != ${Me.ID}) {
 			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].MyRange} && ${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].Range} != 0) /return FALSE
 		}
 		/if (${Me.Buff[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].ID}) /return FALSE
 		/if (${Me.Song[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].ID}) /return FALSE
 		/if (${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
-			SDEBUG we made it to the buff routine...
+			DEBUG we made it to the buff routine...
 			/if (!${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].Stacks}) /return FALSE
 		}
 
@@ -5717,6 +5751,10 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 
 	}
 /return TRUE
+
+
+
+
 
 
 
@@ -6860,4 +6898,47 @@ sub trigger_alliance(int _tmpID)
 			/continue
 		}
 	/next _count
+/return
+
+
+
+|***
+ *	DES: sets an outer variable
+ *	USE: /call setDeclare [variable Name] [variable type] outer [value]
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub setDeclare(string _name, string _type, string _section, string _value)
+	| /echo \asetDeclare\ax(${_name.Left[1].Upper}${_name.Right[-1]} -> ${_type} -> ${_value})
+	/if (${Defined[${_name}]}) {
+		/varset ${_name} ${_value}
+	} else {
+		/declare ${_name} ${_type} outer ${_value}
+	}
+/return
+
+
+
+|***
+ *	DES: creates timers
+ *	USE: /call declareTimer [NAME] [INT|BOOL|STRING|FLOAT] [INISECTION] [value] [timer_check_blah_blah]
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub setTimer(string _name, string _type, string _section, string _value, string _my_timer)
+	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]} || !${Bool[${_my_timer}]}) {
+		/if (!${Bool[${_name}]}) VOUT ${ocaution} ${sep} BAD variable Name. 
+		/if (!${Bool[${_type}]}) VOUT ${ocaution} ${sep} BAD variable Type. 
+		/if (!${Bool[${_section}]}) VOUT ${ocaution} ${sep} BAD INI Section.
+		/if (!${Bool[${_my_timer}]}) VOUT ${ocaution} ${sep} BAD Timer Name. 
+		/return
+	}
+
+	/if (!${Defined[${_name}]}) /declare ${_name} ${_type} outer
+	/varset ${_name} ${Ini[${INIClass},${_section},${_name},"${_value}"]}
+	/if (!${Bool[${Ini[${INIClass},${_section}].Find[${_name}]}]}) {
+		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
+	} 
+
+	/call create_timer ${_my_timer} 1
 /return
