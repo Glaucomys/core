@@ -71,18 +71,6 @@ sub core_MAG()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: Discs
  *	USE: auto
@@ -95,8 +83,8 @@ sub disc_MAG()
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	/if (${Me.AltAbilityReady[Force of Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Force of Elements].MyRange}) /call core_cast "Force of Elements" alt ${Target2Kill} FALSE
-	/if (${switchForceTwincast} && ${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) /call core_cast "${TwincastSpell}" 0 ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt,"Force of Elements", ${Target2Kill}]}) /call core_cast2 "Force of Elements" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, spell,"${TwincastSpell}", ${Me.ID}]} && ${switchForceTwincast} && !${Me.Buff[Improved Twincast].ID}) /call core_cast2 "${TwincastSpell}" 0 ${Me.ID} FALSE
 /return
 
 
@@ -113,8 +101,8 @@ sub use_cauldron()
 	CHECKTIE
 	/call create_timer timer_caldron_use ${tCauldron_use}
 
-	/if (${Bool[${Cauldron}]} && ${Me.ItemReady[${Cauldron}]}) {
-		/call core_cast "${Cauldron}" item 0 FALSE
+	/if (${Bool[${Cauldron}]}) {
+		/if (${validate_cast[FALSE, item, "${Cauldron}", ${Me.ID}]}) /call core_cast2 "${Cauldron}" item 0 FALSE
 		/call sort_cursor TRUE
 	}
 /return
@@ -135,19 +123,19 @@ sub click_DPS_MAG()
 	/call click_horn_of_unity 	
 	
 	| click summon rods. DPS fillers....
-	/if (${Me.ItemReady[${ParadoxRodName}]}) {
-		/call MQ2Cast "${ParadoxRodName}" item -targetid|${Target2Kill}
-		| /call core_cast "${ParadoxRodName}" item ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, item, "${ParadoxRodName}", ${Target2Kill}]}) {
+		| /call MQ2Cast "${ParadoxRodName}" item -targetid|${Target2Kill}
+		/call core_cast2 "${ParadoxRodName}" item ${Target2Kill} FALSE
 		/return
 	}
-	/if (${Me.ItemReady[${OrbName}]}) {
-		/call MQ2Cast "${OrbName}" item -targetid|${Target2Kill}
-		| /call core_cast "${OrbName}" item ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, item, "${OrbName}", ${Target2Kill}]}) {
+		| /call MQ2Cast "${OrbName}" item -targetid|${Target2Kill}
+		/call core_cast2 "${OrbName}" item ${Target2Kill} FALSE
 		/return
 	}
-	/if (${switchPcPet} && ${Me.ItemReady[${ElementRodName}]} && ${Target.PctHPs} > 20) {
-		/call MQ2Cast "${ElementRodName}" item -targetid|${Target2Kill}
-		| /call core_cast "${ElementRodName}" item ${Target2Kill} FALSE
+	/if (${switchPcSwarm} && ${validate_cast[FALSE, item, "${ElementRodName}", ${Target2Kill}]}) {
+		| /call MQ2Cast "${ElementRodName}" item -targetid|${Target2Kill}
+		/call core_cast2 "${ElementRodName}" item ${Target2Kill} FALSE
 		/return
 	}
 /return
@@ -164,8 +152,8 @@ sub cast_nuke_salvo()
 	DEBUGCLASS ${cbug}cast_nuke_salvo()\ax
 	CHECKEXIT
 	CHECKTIE
-	/if (${switchPcPet} && ${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${NukeSalvo}]} && ${Me.CurrentMana} >= ${Spell[${NukeSalvo}].Mana} && ${Spawn[${Target.ID}].NearestSpawn[3,pet radius 30]}) {
-		/call core_cast "${NukeSalvo}" 0 ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, spell, "${NukeSalvo}", ${Target2Kill}]} && ${switchPcPet} && ${Spawn[${Target.ID}].NearestSpawn[3,pet radius 30]}) {
+		/call core_cast2 "${NukeSalvo}" 0 ${Target2Kill} FALSE
 	}
 /return
 
@@ -181,9 +169,9 @@ sub pet_heal_MAG()
 	DEBUGCLASS ${cbug}pet_heal_${Me.Class.ShortName}()${citem}
 	CHECKEXIT
 	CHECKTIE
-	/if (${Pet.PctHPs} < 40 && ${Me.AltAbilityReady[${PetAAHeal}]}) /call core_cast "${PetAAHeal}" alt ${Me.Pet.ID} FALSE
-	/if (${Pet.PctHPs} < 60 && ${Me.SpellReady[${PetHealSpell}]}) /call core_cast "${PetHealSpell}" ${PetHealType} ${Me.Pet.ID} FALSE
-	/if (${Pet.PctHPs} < 80 && ${Me.SpellReady[${PetRenewalSpell}]}) /call core_cast "${PetRenewalSpell}" ${PetRenewalType} ${Me.Pet.ID} FALSE
+	/if (${validate_cast[FALSE, alt, "${PetAAHeal}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 40) /call core_cast "${PetAAHeal}" alt ${Me.Pet.ID} FALSE
+	/if (${validate_cast[FALSE, spell, "${PetHealSpell}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 60) /call core_cast "${PetHealSpell}" ${PetHealType} ${Me.Pet.ID} FALSE
+	/if (${validate_cast[FALSE, spell, "${PetRenewalSpell}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 80) /call core_cast "${PetRenewalSpell}" ${PetRenewalType} ${Me.Pet.ID} FALSE
 /return
 
 
@@ -214,7 +202,7 @@ sub synergy_MAG()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKTIE
-	/if (${Me.AltAbilityReady[Elemental Ward]}) /call core_cast "Elemental Ward" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Elemental Ward", ${Me.ID}]}) /call core_cast2 "Elemental Ward" alt 0 FALSE
 	
 	| twincast
 	/if (${Me.AltAbilityReady[Improved Twincast]} && !${Me.Buff[Twincast].ID}) {
@@ -223,32 +211,37 @@ sub synergy_MAG()
 		/call core_cast "Twincast" 0 0 FALSE
 	}
 	
-	/if (${Me.AltAbilityReady[Focus of Arcanum]} && !${Bool[${Me.Buff[Focus of Arcanum]}]} && ${Target.PctHPs} > 20) /call core_cast "Focus of Arcanum" alt 0 FALSE
+	/if (${Target.PctHPs}) > 20) {
+		/if (${validate_cast[FALSE, alt, "Focus of Arcanum", ${Me.ID}]}) /call core_cast2 "Focus of Arcanum" alt 0 FALSE
+	}
 	
 	| direct damage bonus
 	/if (${Target.PctHPs} > 10) {
-		/if (${Me.AltAbilityReady[Heart of Flames]} && !${Bool[${Me.Buff[Elemental Union]}]}) {
-			/call core_cast "Heart of Flames" alt 0 FALSE
-		} else /if (${Me.AltAbilityReady[Elemental Union]} && !${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Heart of Flames]}) {
-			/call core_cast "Elemental Union" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Heart of Flames", ${Me.ID}]} && !${Bool[${Me.Buff[Elemental Union]}]}) {
+			/call core_cast2 "Heart of Flames" alt 0 FALSE
+		} else /if (${validate_cast[FALSE, alt, "Elemental Union", ${Me.ID}]} && !${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Heart of Flames]}) {
+			/call core_cast2 "Elemental Union" alt 0 FALSE
 		} else /if (!${Me.AltAbilityReady[Heart of Flames]} && !${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Elemental Union]} && !${Bool[${Me.Buff[Elemental Union]}]}) {
 			/call use_glyph
 		}
 	}
 
 	/call cast_AA_spire
-	/if (${Me.AltAbilityReady[${SilentCast}]}) /call core_cast "${SilentCast}" alt 0 FALSE
-	/if (${Me.AltAbilityReady[Heart of Stone]}) /call core_cast "Heart of Stone" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${SilentCast}", ${Me.ID}]}) /call core_cast2 "${SilentCast}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Heart of Stone", ${Me.ID}]}) /call core_cast2 "Heart of Stone" alt 0 FALSE
 
 	| pet AAs
 	/if (${switchPcPet}) {
-		/if (${Me.AltAbilityReady[Servant of Ro]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Servant of Ro].MyRange}) /call core_cast "Servant of Ro" alt ${Target2Kill} FALSE
-		/if (${Me.AltAbilityReady[Companion's Fury]}) /call core_cast "Companion's Fury" alt ${Me.Pet.ID} FALSE
+		/if (${validate_cast[FALSE, alt, "Servant of Ro", ${Target2Kill}]}) /call core_cast2 "Servant of Ro" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Companion's Fury", ${Me.Pet.ID}]}) /call core_cast2 "Companion's Fury" alt ${Me.Pet.ID} FALSE
 	}
-	/if (${switchPcSwarm}) /if (${Me.AltAbilityReady[Host of the Elements]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[Host of the Elements].MyRange}) /call core_cast "Host of the Elements" alt ${Target2Kill} FALSE
+	/if (${switchPcSwarm}) {
+		/if (${validate_cast[FALSE, alt, "Host of the Elements", ${Target2Kill}]}) /call core_cast2 "Host of the Elements" alt ${Target2Kill} FALSE
+	}
 
 	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
+	| /if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
 
 
 
@@ -272,11 +265,8 @@ sub force_twincast_MAG()
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return 
 	
-	| SDEBUG pass checks
-	
-	/if (${Me.SpellReady[${NukeTwincast}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
-		| /echo twincast nuke
-		/call core_cast "${NukeTwincast}" 0 ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, spell, "${NukeTwincast}", ${Target2Kill}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
+		/call core_cast2 "${NukeTwincast}" 0 ${Target2Kill} FALSE
 		/call create_timer timer_force_twincast ${tForce_Twincast}
 	}
 /return
@@ -334,8 +324,8 @@ sub Bind_setMAG(string _classType, string _verbage)
 	| enable/disable force twincasting
 	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
 		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
-		VOUT /${_bind} forcetwincast ${sep} ${If[${switchForceTwincast},${oenabled},${odisabled}]}
-		/return
+		| VOUT /${_bind} forcetwincast ${sep} ${If[${switchForceTwincast},${oenabled},${odisabled}]}
+		| /return
 
 	| get rods.. cause things and stuff
 	} else /if (${Bool[${_classType.Equal[rods]}]}) {
@@ -390,17 +380,22 @@ sub Bind_setMAG(string _classType, string _verbage)
 	| get mana
 	} else /if (${Bool[${_classType.Equal[mana]}]}) {
 
-		/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Bool[${SelfRodName}]} && ${Me.ItemReady[${SelfRodName}]}) /call core_cast "${SelfRodName}" item 0 FALSE
-		/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Bool[${ModRodName}]} && ${Me.ItemReady[${ModRodName}]}) /call core_cast "${ModRodName}" item 0 FALSE
-		/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.PctMana} <= 19 && ${Me.AltAbilityReady[Mana Reserve]}) /call core_cast "Mana Reserve" alt 0 FALSE
-		
 		:checkgather
-	  /if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Bool[${GatherSpell}]} && ${Me.SpellReady[${GatherSpell}]}) /call core_cast "${GatherSpell}" 0 0 FALSE
-	  
-		/if (${Me.AltAbilityReady[Forceful Rejuvenation]} && ${Me.PctMana} < ${autoRest}*.${tmpHealOverride} && !${Me.SpellReady[${GatherSpell}]}) {
-			/call core_cast "Forceful Rejuvenation" alt 0 FALSE
-			/goto :checkgather
+		/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) {
+			/if (${Bool[${SelfRodName}]} && ${Me.ItemReady[${SelfRodName}]}) /call core_cast "${SelfRodName}" item 0 FALSE
+			/if (${Bool[${ModRodName}]} && ${Me.ItemReady[${ModRodName}]}) /call core_cast "${ModRodName}" item 0 FALSE
+			/if (${Me.PctMana} <= 19 && ${Me.AltAbilityReady[Mana Reserve]}) /call core_cast "Mana Reserve" alt 0 FALSE
+
+		  /if (${Bool[${GatherSpell}]} && ${Me.SpellReady[${GatherSpell}]}) /call core_cast "${GatherSpell}" 0 0 FALSE
+		  
+			/if (${Me.AltAbilityReady[Forceful Rejuvenation]} && !${Me.SpellReady[${GatherSpell}]}) {
+				/call core_cast "Forceful Rejuvenation" alt 0 FALSE
+				/delay 2
+				/goto :checkgather
+			}
+
 		}
+		
 		/return
 
 	| healpoint
@@ -420,12 +415,11 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[forcetwincast]}) /varset _listout ${_listout}(${If[${switchForceTwincast},${oon},${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
-
-
 
 
 

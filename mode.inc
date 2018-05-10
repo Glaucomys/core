@@ -11,7 +11,7 @@
 
 |***
  *	DES: set mode type
- *	USE: /mode [fish|forage|drag|petfarm|scorch|hunt|harvest]
+ *	USE: /mode []
  *	INI: NA
  *  NOTE: starts/ends non-standard modes
  ***|
@@ -137,6 +137,8 @@ sub do_mode()
 	/if (${switchModeLush} && !${Me.Drunk}) /call mode_get_waisted
 	/if (${switchModeDrink} && !${Me.Drunk}) /call mode_get_drunk
 	/if (${switchModeTrainspell}) /call mode_trainspell
+	/if (${switchModeOpen} && !${timer_mode_open}) /call mode_open
+
 /return
 
 
@@ -224,7 +226,7 @@ sub mode_get_mob()
 sub mode_skill_train()
 	DEBUGMODE ${cbug}mode_skill_train()\ax
 	AMIDAD
-	UPDATEHUD "TRAINING"
+	UPDATEHUD "Mode: Train"
 	:looptrainingskills
 	/doevents
 	/delay 10
@@ -254,7 +256,7 @@ sub mode_skill_train()
 sub mode_fish()
 	DEBUGMODE ${cbug}mode_fish()\ax
 	AMIDEAD
-	UPDATEHUD "Fish"
+	UPDATEHUD "Mode: Fish"
 	/if (!${Me.Standing}) /stand
 	/if (${Me.ItemReady[Fisherman's Companion]} && !${Me.ItemReady[Brell's Fishin' Pole]}) {
 		DEBUGMODE Pole broke. Learn to play with your things better..
@@ -279,8 +281,9 @@ sub mode_fish()
  ***|
 sub mode_forage()
 	DEBUGMODE ${cbug}mode_forage()\ax
+	/if (${Select[${Me.CombatState},COMBAT]}) /return
 	AMIDEAD
-	UPDATEHUD "Forage"
+	UPDATEHUD "Mode: Forage"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	/if (!${Me.Standing}) /stand
 	/doability forage
@@ -300,7 +303,7 @@ sub mode_drag()
 	DEBUGMODE ${cbug}mode_drag()\ax
 	/declare _count 		int local
 	/declare _corpseID 	int local
-	UPDATEHUD "Drag Corpse"
+	UPDATEHUD "Mode: Drag"
 	/doevents
 	AMIDEAD
 
@@ -334,7 +337,7 @@ sub mode_hunt()
 	/doevents
 	AMIDEAD
 
-	UPDATEHUD "Hunt"
+	UPDATEHUD "Mode: Hunt"
 	CLEARCURSOR TRUE
 	
 	/for _count 1 to ${HuntMobList.Count[|]}
@@ -388,7 +391,7 @@ sub mode_petfarm()
 	/varset switchOverrideEngageat TRUE
 	/varset switchOverrideLos TRUE
 	
-	UPDATEHUD "Pet Farm"
+	UPDATEHUD "Mode: PetFarm"
 	:loopfindmob
 	/doevents
 	/if (!${switchModePetfarm}) /return
@@ -494,7 +497,7 @@ sub mode_scorched_earth()
 	/call clear_combat
 	
 	:loopfindmob
-	UPDATEHUD "Scorched Earth"
+	UPDATEHUD "Mode: Scorch"
 	/doevents
 	/if (!${switchModeScorch}) /return
 	/if (${SafeZone} && !${switchOverrideSafezone}) {
@@ -589,7 +592,7 @@ sub mode_harvest()
 	DEBUGMODE ${cbug}mode_harvest()\ax
 	AMIDEAD
 	/declare _count int local
-	UPDATEHUD "Harvest"
+	UPDATEHUD "Mode: Harvest"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 
 	CLEARCURSOR TRUE
@@ -624,57 +627,53 @@ sub get_ground_harvest(string _tmpItem)
 	/if (${Bool[${Ground.ID}]}) {
 		/if (${Ground.Distance3D} < ${setModeAgro}) {
 			
-			
-	/if (${Bool[${Plugin[MQ2Nav]}]} && ${SetTieMode.Equal[nav]}) {	
-		/if (${Navigation.MeshLoaded}) {	
-			SDEBUG ${_tmpItem}: ${Ground.Y} ${Ground.X} ${Ground.Z}
-			/delay 1 
-			
-			/if (${Navigation.PathExists[item]}) {
-				/echo here nav
-        /nav item
-    	} else /if (!${Navigation.PathExists[item]}) {
-    		/echo no path
-    	}
-			
-			| /nav loc ${Ground.Y} ${Ground.X} ${Ground.Z}
-			| /nav item
-			
-			| /while (${Navigation.Active} || ${Ground.Distance3D} > 19) {
-			| 	/delay 1s
-			| }
-			
-			/if (${Ground.Distance3D} < 19) /call Bind_grab ${_tmpItem}
-			
-			
-			/squelch /nav stop
-			
-		} else /if (!${Navigation.MeshLoaded}) {
-			OUT NO Nav Mesh for this zone. Returning to Stick.
-			/call Bind_setTieControl mode stick
-		}
-			
+		/if (${Bool[${Plugin[MQ2Nav]}]} && ${SetTieMode.Equal[nav]}) {	
+			/if (${Navigation.MeshLoaded}) {	
+				SDEBUG ${_tmpItem}: ${Ground.Y} ${Ground.X} ${Ground.Z}
+				/delay 1 
+				
+				/if (${Navigation.PathExists[item]}) {
+					/echo here nav
+	        /nav item
+	    	} else /if (!${Navigation.PathExists[item]}) {
+	    		/echo no path
+	    	}
+				
+				| /nav loc ${Ground.Y} ${Ground.X} ${Ground.Z}
+				| /nav item
+				
+				| /while (${Navigation.Active} || ${Ground.Distance3D} > 19) {
+				| 	/delay 1s
+				| }
+				
+				/if (${Ground.Distance3D} < 19) /call Bind_grab ${_tmpItem}
+				
+				
+				/squelch /nav stop
+				
+			} else /if (!${Navigation.MeshLoaded}) {
+				OUT NO Nav Mesh for this zone. Returning to Stick.
+				/call Bind_setTieControl mode stick
+			}
+				
 
-	} else {
-		:loopMove 
-		/face nolook loc ${Ground.Y}, ${Ground.X}
-		/delay 1 
-		/keypress forward hold 
-		/if (${Ground.Distance3D} > 19) /goto :loopMove
-		/keypress forward
-		/click left item
-		/delay 5s (${Cursor.ID})
-		/delay ${Math.Rand[10]}
-		| VOUT Keep ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax] 
-		/autoinventory
-		CLEARCURSOR TRUE
-		/delay 5s (!${Cursor.ID})
-		/delay ${Math.Rand[10]}
-	}
-		
-		
-		
-		
+		} else {
+			:loopMove 
+			/face nolook loc ${Ground.Y}, ${Ground.X}
+			/delay 1 
+			/keypress forward hold 
+			/if (${Ground.Distance3D} > 19) /goto :loopMove
+			/keypress forward
+			/click left item
+			/delay 5s (${Cursor.ID})
+			/delay ${Math.Rand[10]}
+			| VOUT Keep ${sep} ${cinfo}${Cursor.Name}\ax ${sep} [${ctar}${FindItemCount[${Cursor.Name}]}\ax] 
+			/autoinventory
+			CLEARCURSOR TRUE
+			/delay 5s (!${Cursor.ID})
+			/delay ${Math.Rand[10]}
+		}
+
 	}
 /return
 
@@ -740,7 +739,7 @@ sub mode_get_waisted()
 		/return
 	}
 
-	UPDATEHUD "Fukn Alcoholic"
+	UPDATEHUD "Mode: Drink"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	| check max stats too ?
 	
@@ -773,7 +772,7 @@ sub mode_get_drunk()
 		/varset switchModeDrink FALSE
 		/return
 	}
-	UPDATEHUD "Fukn Alcoholic"
+	UPDATEHUD "Mode: Drink"
 
 	| start drinking.
 	/while (${Me.Skill[Alcohol Tolerance]} < ${Skill[Alcohol Tolerance].SkillCap}) {
@@ -804,7 +803,7 @@ sub mode_get_drunk()
 sub mode_trainspell(string _type)
 	DEBUG ${cbug}mode_trainspell()\ax
 	AMIDEAD
-	UPDATEHUD "Train: Spell"
+	UPDATEHUD "Mode: TrainSpell"
 	
 	/if (${_type.Equal[specialize]} && !${switchModeTrainspellSPC}) {
 		/echo specialize
@@ -848,12 +847,29 @@ sub mode_trainspell(string _type)
 
 
 
+|***
+ *	DES: open something
+ *	USE: /call mode_open | /mode open
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub mode_open(string _type)
+	DEBUG ${cbug}mode_trainspell()\ax
+	AMIDEAD
+	UPDATEHUD "Mode: Open"
 
-${Skill[${_skill.Arg[${_count},|]}].SkillCap}  
-${Me.Skill[specialize divination]}
+	/call create_timer timer_mode_open ${tMode_Open}
+	/declare _tmpID int local
 
-   
-   ${Skill[${Spell[${alteration}].Skill}].SkillCap}  
-  
-  
-${Me.Skill[${_skill.Arg[${_count},|]}]}  
+	/if (${SpawnCount[${modeOpenItem} npc radius 20]}) {
+		/varset _tmpID ${Spawn[${modeOpenItem} npc radius 20].ID}
+		/target ID ${_tmpID}
+		/if (${Target.Dead}) /return
+		/delay 2s ${Target.ID} == ${_tmpID}
+		/open
+		/delay 1s
+		/return
+	} 
+
+	UPDATEHUD FALSE
+/return

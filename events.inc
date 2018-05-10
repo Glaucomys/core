@@ -1785,19 +1785,19 @@ sub CureDamselofDecay()
   AMIDEAD
 	| DPS classes BST,RNG,MON,ROG,ENC,WIZ,MAG,NEC,SHD,PAL,BRD,BST
 	/if (${Select[${Me.Class.ShortName},BST,RNG,MON,ROG,ENC,WIZ,MAG,NEC,SHD,PAL,BRD,BST]} && (${Me.Buff[Withering Physicality XIII].ID} || ${Me.Buff[Withering Limbs XIII].ID})) {
-		/if (${Me.Buff[Withering Physicality XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item
-		/if (${Me.Buff[Withering Limbs XIII].ID}) && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item		
+		/if (${Me.Buff[Withering Physicality XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item 0 FALSE
+		/if (${Me.Buff[Withering Limbs XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item 0 FALSE
 	}
 		
 	| healers CLR,SHM,DRU
 	/if (${Select[${Me.Class.ShortName},CLR,SHM,DRU]} && (${Me.Buff[Withering Physicality XIII].ID} || ${Me.Buff[Withering Faith XIII].ID})) {
-		/if (${Me.Buff[Withering Physicality XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item
-		/if (${Me.Buff[Withering Faith XIII].ID} && ${Me.ItemReady[Distillate of Immunization XV]}) /call core_cast "Distillate of Immunization XV" item
+		/if (${Me.Buff[Withering Physicality XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item 0 FALSE
+		/if (${Me.Buff[Withering Faith XIII].ID} && ${Me.ItemReady[Distillate of Immunization XV]}) /call core_cast "Distillate of Immunization XV" item 0 FALSE
 	}
 	
 	| TANKS WAR,SHD,PAL
 	/if (${Select[${Me.Class.ShortName},WAR,SHD,PAL]} && ${Me.Buff[Withering Physicality XIII].ID}) {
-		/if (${Me.Buff[Withering Physicality XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item
+		/if (${Me.Buff[Withering Physicality XIII].ID} && ${Me.ItemReady[Distillate of Immunization XIII]}) /call core_cast "Distillate of Immunization XIII" item 0 FALSE
 	}
 /return
 

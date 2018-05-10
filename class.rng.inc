@@ -110,8 +110,7 @@ sub disc_RNG()
 
 	| reverse DS DOT
 	/if (${validate_cast[FALSE, spell, "${DoTSwarmDS}", ${Target2Kill}]} && ${switchCombatDoT} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast2 "${DoTSwarmDS}" 0 ${Target2Kill} FALSE
-
-	/if (${validate_cast[FALSE, disc, "${BladeStorm}", ${Target2Kill}]}) /call core_cast "${BladeStorm}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${BladeStorm}", ${Target2Kill}]}) /call core_cast2 "${BladeStorm}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscSqual}", ${Target2Kill}]}) /call core_cast2 "${DiscSqual}" disc ${Target2Kill} FALSE
 	
 /return
@@ -130,8 +129,8 @@ sub cast_AA_auspice()
 	CHECKEXIT
 	/doevents
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[${RNGauspice}]} && !${Bool[${Me.Song[${RNGauspice}]}]}) {
-		/call core_cast "Mass Group Buff" alt 0 FALSE
-		/call core_cast "${RNGauspice}" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Mass Group Buff", ${Me.ID}]}) /call core_cast2 "Mass Group Buff" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "${RNGauspice}", ${Me.ID}]}) /call core_cast2 "${RNGauspice}" alt 0 FALSE
 		/if (${Bool[${ClassChannel}]}) /${ClassChannel} ${AuspiceTXT}
 	 	/if (${Bool[${Raid.Members}]}) /rs ${AuspiceTXT}
 	} else /if (${Bool[${Me.Song[${RNGauspice}]}]}) {
@@ -154,7 +153,7 @@ sub patch_heal_RNG()
 	CHECKEXIT
 	/if (${validate_cast[FALSE, spell, "${FastHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride}) /call core_cast2 "${FastHeal}" 0 ${Me.ID} cast_break
 	/call click_item_heal
-	/if (${validate_cast[FALSE, spell, "${DiscHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) {
+	/if (${validate_cast[FALSE, disc, "${DiscHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) {
 		/if (!${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast2 "${DiscHeal}" disc ${Target.ID} FALSE
 	}
 	/if (${validate_cast[FALSE, spell, "${SlowHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${SlowHeal}" 0 ${Me.ID} cast_break
@@ -178,7 +177,7 @@ sub click_DPS_RNG()
 	
 	/if (!${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
 		| epic 2.0
-		/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+		/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	}
 	
 /return
@@ -219,20 +218,20 @@ sub synergy_RNG()
 	
 	| MELEE
 	/if (${combat.Equal[MELEE]}) {
-		/if (${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-			/call core_cast "Empowered Blades" alt 0 FALSE
-		} else /if (${Me.CombatAbilityReady[${DiscMele}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-			/call core_cast "${DiscMele}" disc 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Empowered Blades", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/call core_cast2 "Empowered Blades" alt 0 FALSE
+		} else /if (${validate_cast[FALSE, disc, "${DiscMele}", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/call core_cast2 "${DiscMele}" disc 0 FALSE
 		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]}) {
 			/call use_glyph
 		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-			/call core_cast "${Epic}" item 0 FALSE
+			/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 		}
 
 	| RANGE
 	} else /if (${combat.Equal[RANGE]}) {
-		/if (${Me.CombatAbilityReady[${DiscRange}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-			/call core_cast "${DiscRange}" disc 0 FALSE
+		/if (!${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/if (${validate_cast[FALSE, disc, "${DiscRange}", ${Me.ID}]}) /call core_cast2 "${DiscRange}" disc 0 FALSE
 		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscRange}]}) {
 			/call use_glyph
 		}
@@ -241,32 +240,32 @@ sub synergy_RNG()
 	/call cast_AA_spire
 	
 	| proc
-	/if (${Me.AltAbilityReady[Imbued Ferocity]} && !${Bool[${Me.Buff[${RNGspire1}]}]}) {
-		/call core_cast "Imbued Ferocity" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Imbued Ferocity", ${Me.ID}]} && !${Bool[${Me.Buff[${RNGspire1}]}]}) {
+		/call core_cast2 "Imbued Ferocity" alt 0 FALSE
 	}
 
 	| cheeta
-	/if (${Me.AltAbilityReady[${RNGcheetah}]}) /call core_cast "${RNGcheetah}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${RNGcheetah}", ${Me.ID}]}) /call core_cast2 "${RNGcheetah}" alt 0 FALSE
 	
 	| att buffs
-	/if (${Me.AltAbilityReady[Outrider's Accuracy]} && !${Bool[${Me.Buff[Outrider's Attack]}]}) {
-		/call core_cast "Outrider's Accuracy" alt 0 FALSE
-	} else /if (${Me.AltAbilityReady[Outrider's Attack]}  && !${Bool[${Me.Song[Outrider's Accuracy]}]} && !${Me.AltAbilityReady[Outrider's Accuracy]} ) {
-		/call core_cast "Outrider's Attack" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Outrider's Accuracy", ${Me.ID}]} && !${Bool[${Me.Buff[Outrider's Attack]}]}) {
+		/call core_cast2 "Outrider's Accuracy" alt 0 FALSE
+	} else /if (${validate_cast[FALSE, alt, "Outrider's Attack", ${Me.ID}]} && !${Me.AltAbilityReady[Outrider's Accuracy]} ) {
+		/call core_cast2 "Outrider's Attack" alt 0 FALSE
 	}
 	
 	| guardian buff
-	/if (${Me.AltAbilityReady[Guardian of the Forest]} && !${Bool[${Me.Song[${RNGgroupguardian}]}]}) {  
-		/call core_cast "Guardian of the Forest" alt 0 FALSE
-	} else /if (${Me.AltAbilityReady[${RNGgroupguardian}]} && !${Bool[${Me.Song[Guardian of the Forest]}]} && !${Me.AltAbilityReady[Guardian of the Forest]}) {
-		/call core_cast "${RNGgroupguardian}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Guardian of the Forest", ${Me.ID}]} && !${Bool[${Me.Song[${RNGgroupguardian}]}]}) {  
+		/call core_cast2 "Guardian of the Forest" alt 0 FALSE
+	} else /if (${validate_cast[FALSE, alt, "${RNGgroupguardian}", ${Me.ID}]} && !${Bool[${Me.Song[Guardian of the Forest]}]} && !${Me.AltAbilityReady[Guardian of the Forest]}) {
+		/call core_cast2 "${RNGgroupguardian}" alt 0 FALSE
 	}
 		
 	| swarm
-	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Pack Hunt]}) /call core_cast "Pack Hunt" alt ${Target2Kill} FALSE   
+	/if (${validate_cast[FALSE, alt, "Pack Hunt", ${Target2Kill}]} && ${switchPcSwarm}) /call core_cast2 "Pack Hunt" alt ${Target2Kill} FALSE   
 	
 	| ae regen 
-	/if (!${Bool[${DiscHeal}]} && !${Bool[${Me.Song[Bladespur Reflection]}]} && ${Me.CombatAbilityReady[${DiscHeal}]}) /call core_cast "${DiscHeal}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscHeal}", ${Target2Kill}]} !${Bool[${DiscHeal}]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast2 "${DiscHeal}" disc ${Target2Kill} FALSE
 			
 	/call synergy_click_Circle
 	/call click_item_burn

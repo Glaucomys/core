@@ -311,7 +311,8 @@ sub fix_ini_current()
 		/ini "${INICore}" "Here" "combatRNG" NULL
 		/ini "${INICore}" "Here" "combatBRD" NULL
 		/ini "${INICore}" "Here" "combatMNK" NULL
-	
+		
+		
 	
 	| toon INI non specific class
 		| fix the range summon INI entries
@@ -320,6 +321,9 @@ sub fix_ini_current()
 	
 		| 20180429
 		/ini "${INIClass}" "Common" "combat" NULL	
+
+		| 20180506
+		/ini "${INIClass}" "Common" "ClassChannel" NULL	
 
 	| class Specific
 	

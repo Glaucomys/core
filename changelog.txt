@@ -10,13 +10,36 @@
  ** I swear to god. If you don't read this and ask me questions, /ignore
 
 
+-- migration from core_cast() to validate_cast() / core_cast2()
+  -- classes converted: Cleric, Ranger, Rogue, Paladin
+
+
+20180510
+- removed some debugging from validat_cast()
+- set_stop()
+  -- trying to speed it up. removed bool protection for switches
+  -- added in bard specific stop cause their fucking stubborn.
+- moved [common]->ClassChannel to [echo]->ClassChannel
+  -- if you are using it for echoing MGB for some classes. reset it to the proper #
+- New Mode: open - it opens a thing /shrug
+  -- decided to do table flipper slayer title again.
+  -- /mode [open]
+  -- core.ini->[mode]->ModeOpenItem=a_hollows_mushroom is the default
+  -- checks ever 1 second (timer is in the toons ini if you want to change it.)
+  -- pissed off all the noobs running petfarm at same time
+- /mode [forage]
+  -- should not try and forage in combat now
+- class.shm.inc
+  -- reversed HP check for cani.
+
+
 
 20180504
 HUDUPDATE
-- there is not a G in the buffs line for group buffing
+- there is now a G in the buffs line for group buffing
 ** WARNING...
 - the next two commands are rather obtrusive and intensive.
--- in order to varify a buff on a person not in your Netbots BC, they have to examin the toon, verify every buff with what they want to cast and then cast and set timers.
+-- in order to verify a buff on a person not in your Netbots BC, they have to examin the toon, verify every buff with what they want to cast and then cast and set timers.
 -- so your, at max, looking at 42 buff slots with 15 possible buffs in Core. so, up to 630 iterations per group member as a worst case senario.
 -- in the testing it was averaging about 2 seconds per toon. which isnt bad.
 -- i do not suggest setting this for a short timer. the default will be 5 min. adjust at your own peril.
@@ -63,10 +86,8 @@ HUDUPDATE
   -- gave them back their pets. shaman life gets lonely...
 - class.pal.inc
   -- converted to the new castign routines
-  
-
-
-
+ 
+ 
 20180503
 - /smartma is gone. use /setassist [g|r|1|2|f|x]
 - /bc smag, smar, smax are gone. use /bca //setassist [g|r|1|2|f|x]

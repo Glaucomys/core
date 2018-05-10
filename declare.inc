@@ -17,7 +17,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180504
+	/call setDeclare coreBuild											int			outer 20180510
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -123,6 +123,8 @@ sub set_declares()
 	/call setINIVar echoChannel											string	Echo FALSE
 	/call setINIVar relayTells											string	Echo FALSE
 	/call setINIVar verbose													bool		Echo TRUE
+	/call setINIVar ClassChannel										int			Echo FALSE
+
 
 	 	
 	| lists for .. you know..lists and stuff.
@@ -277,7 +279,7 @@ sub set_declares()
 	
 	
 	| mode control
-	/call setDeclare modeType												string	outer "|stop|agro|drag|drink|fish|forage|harvest|harvestcount|hunt|lush|petfarm|scorch|tradeskill|trainspell"
+	/call setDeclare modeType												string	outer "|stop|agro|drag|drink|fish|forage|harvest|harvestcount|hunt|lush|open|petfarm|scorch|tradeskill|trainspell"
 	/call setDeclare setMode												bool		outer FALSE
 	/call setDeclare switchModeStop									bool		outer FALSE
 	/call setDeclare switchModeAgro									bool		outer FALSE
@@ -299,7 +301,10 @@ sub set_declares()
 	/call setDeclare switchModeLush									bool		outer FALSE
 	/call setDeclare switchModeTrainspell						bool		outer FALSE
 	/call setDeclare switchModeTrainspellSPC				bool		outer FALSE
+	/call setDeclare switchModeOpen									bool		outer FALSE
+
 	/call DeclareCoreIniVar modeDrinkofChoice				string	mode FALSE
+	/call DeclareCoreIniVar modeOpenItem						string	mode FALSE
 
 
 	| burns
@@ -355,7 +360,6 @@ sub set_declares()
 	/call setINIVar ResidentMage										string	Common "|FALSE|FALSE"
 	/call setINIVar ResidentDruid						 				string	Common "|FALSE|FALSE"
 	/call setINIVar ResidentWizard									string	Common "|FALSE|FALSE"
-	/call setINIVar ClassChannel										int			Common FALSE
 	/call setINIVar switchSos												bool	 	Common FALSE
 
 
@@ -1039,6 +1043,7 @@ sub declare_timers()
 	/call setTimer tNuke_Delay											string	Timer	1			timer_Nuke_Delay
 	/call setTimer tWaste_Fireworks									string	Timer 15m		timer_Waste_Fireworks
 	/call setTimer tValidate_Zone										string	Timer 10s		timer_validate_zone
+	/call setTimer tMode_Open												string	Timer 1s		timer_mode_open
 
 
 	| mod rod/pet weapon recovered addicts
@@ -1403,7 +1408,7 @@ sub declare_NEC()
 	/call setINIVar DoT10Condition 									string	Spells FALSE
 
 	/call setINIVar DoNuke							 						int			Spells 1
-	/call setINIVar Nuke1					 									string	Spells "Combust Bones"	
+	/call setINIVar Nuke1					 									string	Spells FALSE	
 	/call setINIVar Nuke1Condition 									string	Spells FALSE
 	/call setINIVar Nuke2					 									string	Spells FALSE
 	/call setINIVar Nuke2Condition 									string	Spells FALSE

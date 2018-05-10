@@ -124,7 +124,7 @@ sub check_cani()
 	AMIDEAD
 	
 	| canni spell first...
-	/if (${Me.PctMana} <= ${CanniPctManna} && ${Me.PctHPs} <= ${CanniPctHPs}) {
+	/if (${Me.PctMana} <= ${CanniPctManna} && ${Me.PctHPs} >= ${CanniPctHPs}) {
 		/declare _cancast bool local FALSE
 	
 		/if (${spellCannibalization.Equal[Cannibalize]} && ${Me.CurrentHPs} > 50) /varset _cancast TRUE

@@ -660,7 +660,7 @@ sub check_buffs_self()
 	| check Unity AA buffs
 	/if (${Bool[${${Me.Class.ShortName}AAUnity}]}) {
 		DEBUG AA UNITY: ${${Me.Class.ShortName}AAUnity}
-		/for _count 1 to 6
+		/for _count 1 to 7
 			/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
 			UPDATEHUD "BUFF: AA Unity"
 			AMIDEAD
@@ -670,6 +670,7 @@ sub check_buffs_self()
 			/if (!${Me.AltAbilityReady[${${Me.Class.ShortName}AAUnity}]}) /break
 			/if (${Me.CurrentMana} < ${Spell[${${Me.Class.ShortName}AAUnity}].Mana}) /break
 			/if (!${Bool[${BuffAAUnity${_count}}]}) /continue
+			DEBUG spell:${BuffAAUnity${_count}} - Stacks:${Spell[${BuffAAUnity${_count}}].Stacks}
 			/if (!${Spell[${BuffAAUnity${_count}}].Stacks}) /continue
 			DEBUG _count: ${_count} - ${BuffAAUnity${_count}} = ${Me.Buff[${BuffAAUnity${_count}}].Duration}
 			/if (${Bool[${BuffAAUnity${_count}}]} && !${Bool[${Me.Buff[${BuffAAUnity${_count}}].Duration}]}) {
@@ -1182,7 +1183,14 @@ sub set_stop(bool _noecho)
 	UPDATEHUD "STOPPING"
 	/varset combat FALSE
 	/if (!${Bool[${_noecho}]}) VOUT I was told to ${cbad}STOP\ax !! 
-	/if (${Me.Casting.ID}) /stopcast
+	
+	| seriously. stop casting
+	/if (${Select[${Me.Class.ShortName},BRD]}) {
+		/call pulse_stop
+	} else {
+		/if (${Me.Casting.ID}) /stopcast
+	}
+	
 	| stop sticking to stuff
 	/if (${Bool[${Plugin[MQ2MoveUtils]}]}) {
 		/if (${Stick.Active}) /squelch /stick off
@@ -1190,8 +1198,12 @@ sub set_stop(bool _noecho)
 	/if (${Bool[${Plugin[MQ2Nav]}]}) {
 		/if (${Navigation.Active}) /squelch /nav stop
 	}	
-	/if (${Bool[${tempsnapstuck}]}) /varset tempsnapstuck FALSE
-	/if (${Bool[${SetTie}]}) /varset SetTie FALSE
+	/if (${tempsnapstuck}) {
+		/varset tempsnapstuck FALSE
+	}
+	/if (${SetTie}) {
+		/varset SetTie FALSE
+	}
 	
 	| stop advanced path
 	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
@@ -1329,7 +1341,7 @@ sub sort_cursor(bool _ignoreTimer)
  *	DES: XTARGET controls
  *	USE: its in the toons INI
  *	INI: umm several different places.
- *  NOTE: for healers its /healxtarget
+ *  NOTE: for healers its /heal xtarget
  ***|
 sub set_xtarget()
 	DEBUG ${cbug}set_xtarget()\ax 
@@ -2472,7 +2484,7 @@ sub cast_free_target(string _tmpSpell, int _tmpID)
 
 |***
  *	DES: use base melee discs
- *	USE: /call use_skill_melee
+ *	USE: /call use_skill_melee TARGET
  *	INI: toon -> [meleedisc] set the skill to TRUE to use.
  *  NOTE: 
  ***|
@@ -4977,7 +4989,7 @@ sub prep_combat()
 
 
 
-|***
+|*** ORIGINAL>> NO TOUCHING!!!
  *	DES: prep sub for all calsses to decide if they are going to be in combat and if its time to burn
  *	USE: /call prep_combat
  *	INI: NA
@@ -5017,38 +5029,6 @@ sub prep_combat()
 	/if (${_gokillstuff} && (!${SafeZone} && !${switchOverrideSafezone})) /call set_base_target_timers ${Target2Kill}
 /return ${_gokillstuff}
  ***|
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -5689,9 +5669,8 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
 		
-		| check for stacking issues
+		| stacking
 		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
-			DEBUG we made it to the buff routine...
 			/if (!${Spell[${_spell}].Stacks}) /return FALSE
 			/if (${Me.Buff[${_spell}].ID}) /return FALSE
 			/if (${Me.Song[${_spell}].ID}) /return FALSE		
@@ -5699,18 +5678,16 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	
 	| check disc
 	} else /if (${_type.Equal[disc]}) {
+		/if (!${Bool[${_spell}]}) /return FALSE
 		/if (!${Me.CombatAbilityReady[${_spell}]}) /return FALSE
 		/if (${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
 		/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
-		/if (${Me.Buff[${FindItem[${_spell}].Spell}].ID}) /return FALSE
-		/if (${Me.Song[${FindItem[${_spell}].Spell}].ID}) /return FALSE
-						
-		| check for stacking issues
+		/if (${Bool[${Me.Song[${${_spell}}].Duration}]}) /return FALSE
+		/if (${Bool[${Me.Buff[${_spell}].Duration}]}) /return FALSE		
+					
+		| stacking
 		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
-			DEBUG we made it to the buff routine...
 			/if (!${Spell[${_spell}].Stacks}) /return FALSE
-			/if (${Me.Buff[${_spell}].ID}) /return FALSE
-			/if (${Me.Song[${_spell}].ID}) /return FALSE		
 		}
 
 	| check item
@@ -5726,9 +5703,8 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 			/if (${Me.Song[${FindItem[=${_spell}].Spell}].ID}) /return FALSE
 		}
 					
-		| check for stacking issues
+		| stacking
 		/if (${Spell[${FindItem[=${_spell}].Spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
-			DEBUG we made it to the buff routine...
 			/if (!${Spell[${FindItem[=${_spell}].Spell}].Stacks}) /return FALSE
 		}
 		
@@ -5741,8 +5717,8 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		}
 		/if (${Me.Buff[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].ID}) /return FALSE
 		/if (${Me.Song[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].ID}) /return FALSE
+		
 		/if (${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
-			DEBUG we made it to the buff routine...
 			/if (!${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].Stacks}) /return FALSE
 		}
 
