@@ -109,7 +109,9 @@ sub disc_RNG()
 	}		
 
 	| reverse DS DOT
-	/if (${validate_cast[FALSE, spell, "${DoTSwarmDS}", ${Target2Kill}]} && ${switchCombatDoT} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast2 "${DoTSwarmDS}" 0 ${Target2Kill} FALSE
+	/if (${switchCombatDoT}) {
+		/if (${validate_cast[FALSE, spell, "${DoTSwarmDS}", ${Target2Kill}]} && !${Bool[${Spawn[${Target.Buff[${DoTSwarmDSdeBuff}].Caster}].ID}]}) /call core_cast2 "${DoTSwarmDS}" 0 ${Target2Kill} FALSE
+	}
 	/if (${validate_cast[FALSE, disc, "${BladeStorm}", ${Target2Kill}]}) /call core_cast2 "${BladeStorm}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscSqual}", ${Target2Kill}]}) /call core_cast2 "${DiscSqual}" disc ${Target2Kill} FALSE
 	
@@ -177,7 +179,7 @@ sub click_DPS_RNG()
 	
 	/if (!${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
 		| epic 2.0
-		/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+		/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]} && ${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	}
 	
 /return
@@ -193,7 +195,6 @@ sub click_DPS_RNG()
 sub cast_nuke_summer(int _tmpID)
 	DEBUGCLASS ${cbug}cast_nuke_summer(ID: ${_tmpID})\ax 
 	/if (${timer_cast_nuke_summer}) /return
-	/if (!${switchNukeSummer}) /return	
 	AMIDEAD
 	CHECKEXIT
 	/doevents

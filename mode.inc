@@ -226,7 +226,7 @@ sub mode_get_mob()
 sub mode_skill_train()
 	DEBUGMODE ${cbug}mode_skill_train()\ax
 	AMIDAD
-	UPDATEHUD "Mode: Train"
+	UPDATEHUD "Skill Train"
 	:looptrainingskills
 	/doevents
 	/delay 10
@@ -256,7 +256,7 @@ sub mode_skill_train()
 sub mode_fish()
 	DEBUGMODE ${cbug}mode_fish()\ax
 	AMIDEAD
-	UPDATEHUD "Mode: Fish"
+	UPDATEHUD "Fish"
 	/if (!${Me.Standing}) /stand
 	/if (${Me.ItemReady[Fisherman's Companion]} && !${Me.ItemReady[Brell's Fishin' Pole]}) {
 		DEBUGMODE Pole broke. Learn to play with your things better..
@@ -283,7 +283,7 @@ sub mode_forage()
 	DEBUGMODE ${cbug}mode_forage()\ax
 	/if (${Select[${Me.CombatState},COMBAT]}) /return
 	AMIDEAD
-	UPDATEHUD "Mode: Forage"
+	UPDATEHUD "Forage"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	/if (!${Me.Standing}) /stand
 	/doability forage
@@ -303,7 +303,7 @@ sub mode_drag()
 	DEBUGMODE ${cbug}mode_drag()\ax
 	/declare _count 		int local
 	/declare _corpseID 	int local
-	UPDATEHUD "Mode: Drag"
+	UPDATEHUD "Drag"
 	/doevents
 	AMIDEAD
 
@@ -337,7 +337,7 @@ sub mode_hunt()
 	/doevents
 	AMIDEAD
 
-	UPDATEHUD "Mode: Hunt"
+	UPDATEHUD "Hunt"
 	CLEARCURSOR TRUE
 	
 	/for _count 1 to ${HuntMobList.Count[|]}
@@ -391,7 +391,7 @@ sub mode_petfarm()
 	/varset switchOverrideEngageat TRUE
 	/varset switchOverrideLos TRUE
 	
-	UPDATEHUD "Mode: PetFarm"
+	UPDATEHUD "Pet Farm"
 	:loopfindmob
 	/doevents
 	/if (!${switchModePetfarm}) /return
@@ -497,7 +497,7 @@ sub mode_scorched_earth()
 	/call clear_combat
 	
 	:loopfindmob
-	UPDATEHUD "Mode: Scorch"
+	UPDATEHUD "Kill 'Em All"
 	/doevents
 	/if (!${switchModeScorch}) /return
 	/if (${SafeZone} && !${switchOverrideSafezone}) {
@@ -592,7 +592,7 @@ sub mode_harvest()
 	DEBUGMODE ${cbug}mode_harvest()\ax
 	AMIDEAD
 	/declare _count int local
-	UPDATEHUD "Mode: Harvest"
+	UPDATEHUD "Harvest"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 
 	CLEARCURSOR TRUE
@@ -739,7 +739,7 @@ sub mode_get_waisted()
 		/return
 	}
 
-	UPDATEHUD "Mode: Drink"
+	UPDATEHUD "Drink"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	| check max stats too ?
 	
@@ -772,7 +772,7 @@ sub mode_get_drunk()
 		/varset switchModeDrink FALSE
 		/return
 	}
-	UPDATEHUD "Mode: Drink"
+	UPDATEHUD "Drink"
 
 	| start drinking.
 	/while (${Me.Skill[Alcohol Tolerance]} < ${Skill[Alcohol Tolerance].SkillCap}) {
@@ -803,7 +803,7 @@ sub mode_get_drunk()
 sub mode_trainspell(string _type)
 	DEBUG ${cbug}mode_trainspell()\ax
 	AMIDEAD
-	UPDATEHUD "Mode: TrainSpell"
+	UPDATEHUD "Train Spell"
 	
 	/if (${_type.Equal[specialize]} && !${switchModeTrainspellSPC}) {
 		/echo specialize
@@ -856,7 +856,7 @@ sub mode_trainspell(string _type)
 sub mode_open(string _type)
 	DEBUG ${cbug}mode_trainspell()\ax
 	AMIDEAD
-	UPDATEHUD "Mode: Open"
+	UPDATEHUD "Open"
 
 	/call create_timer timer_mode_open ${tMode_Open}
 	/declare _tmpID int local

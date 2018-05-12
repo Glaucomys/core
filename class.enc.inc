@@ -95,28 +95,6 @@ sub core_ENC()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: Keeps chanter runed. cause the're fragile and shit.
  *	USE: /call check_rune or /rb
@@ -130,43 +108,41 @@ sub check_rune_ENC()
 	CHECKEXIT
 	UPDATEHUD "BUFF: Rune"
 
-
-
-	 /if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0 FALSE TRUE
-	| /if (${validate_cast[FALSE, alt, "${runeVeil}", ${Me.ID}]}) /call core_cast2 "${runeVeil}" alt 0 FALSE
+	| /if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0 FALSE TRUE
+	/if (${validate_cast[FALSE, alt, "${runeVeil}", ${Me.ID}]}) /call core_cast2 "${runeVeil}" alt 0 FALSE
 	
-	/if (${validate_buff[alt, rune, runeEldritch]}) /call core_cast "${runeEldritch}" 0 0 FALSE TRUE
-	| /if (${validate_cast[FALSE, alt, "${runeEldritch}", ${Me.ID}]}) /call core_cast2 "${runeEldritch}" alt 0 FALSE
+	| /if (${validate_buff[alt, rune, runeEldritch]}) /call core_cast "${runeEldritch}" 0 0 FALSE TRUE
+	/if (${validate_cast[FALSE, alt, "${runeEldritch}", ${Me.ID}]}) /call core_cast2 "${runeEldritch}" alt 0 FALSE
 	
-	/if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0 FALSE TRUE
-	| /if (${validate_cast[FALSE, alt, "${runeSpray}", ${Me.ID}]}) /call core_cast2 "${runeSpray}" alt 0 FALSE
+	| /if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0 FALSE TRUE
+	/if (${validate_cast[FALSE, alt, "${runeSpray}", ${Me.ID}]}) /call core_cast2 "${runeSpray}" alt 0 FALSE
 	
-	/if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0 FALSE TRUE
-	| /if (${validate_cast[FALSE, alt, "${runeReactive}", ${Me.ID}]}) /call core_cast2 "${runeReactive}" alt 0 FALSE
+	| /if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0 FALSE TRUE
+	/if (${validate_cast[FALSE, alt, "${runeReactive}", ${Me.ID}]}) /call core_cast2 "${runeReactive}" alt 0 FALSE
 	
-	/if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0 FALSE TRUE
-	| /if (${validate_cast[FALSE, alt, "${runeMind}", ${Me.ID}]}) /call core_cast2 "${runeMind}" alt 0 FALSE
+	| /if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0 FALSE TRUE
+	/if (${validate_cast[FALSE, alt, "${runeMind}", ${Me.ID}]}) /call core_cast2 "${runeMind}" alt 0 FALSE
 	
-	/if (${validate_buff[spell, rune, runeAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE TRUE
-	| /if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Me.ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
+	| /if (${validate_buff[spell, rune, runeAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Me.ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
 	
 	| /if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]}) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
 	| /if (${validate_cast[FALSE, spell, "${runeEntAuspice}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE
 	 
-	/if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0 FALSE TRUE
-	| /if (${validate_cast[FALSE, spell, "${runeWard}", ${Me.ID}]}) /call core_cast2 "${runeWard}" 0 0 FALSE
+	| /if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0 FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeWard}", ${Me.ID}]}) /call core_cast2 "${runeWard}" 0 0 FALSE
 	
-	/if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID} FALSE TRUE
-	| /if (${validate_cast[FALSE, spell, "${runePoly}", ${Me.ID}]}) /call core_cast2 "${runePoly}" ${buffGem} ${Me.ID} FALSE
+	| /if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID} FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runePoly}", ${Me.ID}]}) /call core_cast2 "${runePoly}" ${buffGem} ${Me.ID} FALSE
 	
-	/if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE TRUE
-	| /if (${validate_cast[FALSE, spell, "${runeBrimstone}", ${Me.ID}]}) /call core_cast2 "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE
+	| /if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeBrimstone}", ${Me.ID}]}) /call core_cast2 "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE
 	
-	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE TRUE
-	| /if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}) /call core_cast2 "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE
+	| /if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}) /call core_cast2 "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE
 	
-	/if (${validate_buff[spell, rune, runeLegion]} && ${FindItemCount[Peridot]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID} FALSE TRUE
-	|  /if (${validate_cast[FALSE, spell, "${runeLegion}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeLegion}" ${buffGem} ${Me.ID} FALSE
+	| /if (${validate_buff[spell, rune, runeLegion]} && ${FindItemCount[Peridot]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID} FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeLegion}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeLegion}" ${buffGem} ${Me.ID} FALSE
 
 
 	/call check_rune_auspice
@@ -233,9 +209,11 @@ sub disc_ENC()
 	CHECKTIE
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
-	/if (${Me.AltAbilityReady[Crippling Aurora]} ) /call core_cast "Crippling Aurora" alt 0 FALSE
-	/if (${Me.AltAbilityReady[Phantasmal Opponent]} && ${switchPcSwarm} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /call core_cast "Phantasmal Opponent" alt 0 FALSE
-	/if (${Me.AltAbilityReady[Chromatic Haze]}) /call core_cast "Chromatic Haze" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Crippling Aurora", ${Me.ID}]}) /call core_cast2 "Crippling Aurora" alt 0 FALSE
+	/if (${switchPcSwarm}) {
+		/if (${validate_cast[FALSE, alt, "Phantasmal Opponent", ${Me.ID}]} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /call core_cast2 "Phantasmal Opponent" alt 0 FALSE
+	}
+	/if (${validate_cast[FALSE, alt, "Chromatic Haze", ${Me.ID}]}) /call core_cast2 "Chromatic Haze" alt 0 FALSE
 /return
 
 
@@ -253,23 +231,31 @@ sub check_crystals()
 	/doevents
 	CHECKTIE
 
-	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]} && ${Me.AltAbilityReady[${mannaCrystal}]}) {
-		/call core_cast "${mannaCrystal}" alt 0 check_for_adds
+
+	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]}) {
+		/if (${validate_cast[FALSE, alt, "${mannaCrystal}", ${Me.ID}]}) /call core_cast2 "${mannaCrystal}" alt 0 check_for_adds
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${mannaCrystal}]}
+		/call sort_cursor TRUE
 	}
-	/call sort_cursor TRUE
 
-	/if (${Bool[${healCrystal}]} && !${FindItem[${healCrystal}].ID} && !${Cursor.Name.Equal[${healCrystal}]} && ${Me.AltAbilityReady[${healCrystal}]}) {
-		/call core_cast "${healCrystal}" alt 0 check_for_adds
+	/if (${Bool[${healCrystal}]} && !${FindItem[${healCrystal}].ID} && !${Cursor.Name.Equal[${healCrystal}]}) {
+		/if (${validate_cast[FALSE, alt, "${healCrystal}", ${Me.ID}]}) /call core_cast2 "${healCrystal}" alt 0 check_for_adds
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${healCrystal}]}
+		/call sort_cursor TRUE
 	}
-	/call sort_cursor TRUE
 
 	/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${Bool[${mannaCrystal}]} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) /call core_cast "${mannaCrystal} IV" item 0 FALSE
-	/if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Fundament: Second Spire of Enchantment]}) /call core_cast "Fundament: Second Spire of Enchantment" alt 0 FALSE
-	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Gather Mana]}) /call core_cast "Gather Mana" alt	0 FALSE
+	
+	| /if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Fundament: Second Spire of Enchantment]}) /call core_cast "Fundament: Second Spire of Enchantment" alt 0 FALSE
+
+	/call cast_AA_spire
+	
+	/if (${switchGather}) { 
+		/if (${validate_cast[FALSE, alt, "Gather Mana", ${Me.ID}]} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) /call core_cast2 "Gather Mana" alt 0 FALSE
+	}
+
 /return
 
 

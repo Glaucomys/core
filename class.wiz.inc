@@ -78,36 +78,37 @@ sub disc_WIZ()
 	
 	| debuff the mob
 	/if (${switchdeBuffCripple}) {
-		/if (!${Target.Buff[Lower Element].ID} && !${Target.Crippled.Duration}) /call core_cast "Lower Element" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Lower Element", ${Target2Kill}]} && !${Target.Buff[Lower Element].ID} && !${Target.Crippled.Duration}) /call core_cast2 "Lower Element" alt ${Target2Kill} FALSE
 	}
 
 	| agro control
 	/if (${switchAgro}) {
 	} else /if (!${switchAgro}) {
-		/if (${Me.PctAggro} > 30) /call core_cast "Arcane Whisper" alt ${Target2Kill} FALSE
-		/if (${Me.PctAggro} > 80) /call core_cast "Concussive Intuition" alt ${Target2Kill} FALSE
-		/if (${Me.PctAggro} > ${spellConcussionPct}) /call core_cast "${spellConcussion}" 0 ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Arcane Whisper", ${Target2Kill}]} && ${Me.PctAggro} > 30) /call core_cast2 "Arcane Whisper" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Mind Crash", ${Target2Kill}]} && ${Me.PctAggro} > 80 && ${NameList.Find[${Spawn[${Target2Kill}].DisplayName}]}) /call core_cast2 "Mind Crash" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Concussive Intuition", ${Target2Kill}]} && ${Me.PctAggro} > 80) /call core_cast2 "Concussive Intuition" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, spell, "${spellConcussion}", ${Target2Kill}]} && ${Me.PctAggro} > ${spellConcussionPct}) /call core_cast2 "${spellConcussion}" 0 ${Target2Kill} FALSE
 	}
 	
 	| filler DPS. used when inbetween/down spellgem casts
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
 	| aa Force of Flame
-	/if (${lineCurrent.Equal[Fire]} && ${Me.AltAbilityReady[Force of Flame]}) {
-		/if (${Me.CurrentMana} > ${Spell[Force of Flame].Mana}) {
-			/call core_cast "Force of Flame" alt ${Target2Kill} FALSE
+	/if (${lineCurrent.Equal[Fire]} && !${NoFireList.Find[${Spawn[${Target2Kill}].DisplayName}]}) {
+		/if (${validate_cast[FALSE, alt, "Force of Flame", ${Target2Kill}]}) {
+			/call core_cast2 "Force of Flame" alt ${Target2Kill} FALSE
 			/return
 		}
 	| aa Force of Ice
-	} else /if (${lineCurrent.Equal[Ice]} && ${Me.AltAbilityReady[Force of Ice]}) {
-		/if (${Me.CurrentMana} > ${Spell[Force of Ice].Mana}) {
-			/call core_cast "Force of Ice" alt ${Target2Kill} FALSE
+	} else /if (${lineCurrent.Equal[Ice]} && !${NoColdList.Find[${Spawn[${Target2Kill}].DisplayName}]}) {
+		/if (${validate_cast[FALSE, alt, "Force of Ice", ${Target2Kill}]}) {
+			/call core_cast2 "Force of Ice" alt ${Target2Kill} FALSE
 			/return
 		}
 	| aa Force of Will
-	} else /if (${lineCurrent.Equal[Magic]} && ${Me.AltAbilityReady[Force of Will]}) {
-		/if (${Me.CurrentMana} > ${Spell[Force of Will].Mana}) {
-			/call core_cast "Force of Will" alt ${Target2Kill} FALSE
+	} else /if (${lineCurrent.Equal[Magic]} && !${NoMagicList.Find[${Spawn[${Target2Kill}].DisplayName}]}) {
+		/if (${validate_cast[FALSE, alt, "Force of Will", ${Target2Kill}]}) {
+			/call core_cast2 "Force of Will" alt ${Target2Kill} FALSE
 			/return
 		}
 	}
@@ -145,19 +146,14 @@ sub check_harvest()
 	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID}) /return
 
 	/if (${switchGather}) {
-		/if (!${Me.SpellReady[${GatherSpell}]} && ${Me.AltAbilityReady[Forceful Rejuvenation]}) {
-			/call core_cast "Forceful Rejuvenation" alt 0 FALSE
+		/if (!${Me.SpellReady[${GatherSpell}]}) {
+			/if (${validate_cast[FALSE, alt, "Forceful Rejuvenation", ${Me.ID}]}) /call core_cast2 "Forceful Rejuvenation" alt 0 FALSE
 			/delay 5			
 		}
-		/if (${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.SpellReady[${GatherSpell}]}) {
-			/call core_cast "${GatherSpell}" 0 0 FALSE
-			/return
+		/if (${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) {
+			/if (${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
+			/if (${validate_cast[FALSE, alt, "Harvest of Druzzil", ${Me.ID}]}) /call core_cast2 "Harvest of Druzzil" alt 0 FALSE
 		}
-	}
-	
-	/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.AltAbilityReady[Harvest of Druzzil]}) {
-		/call core_cast "Harvest of Druzzil" alt 0 FALSE
-		/return
 	}
 /return
 
@@ -169,14 +165,14 @@ sub check_harvest()
  *	INI: 
  *  NOTE: 
  ***|
-#event gtfo			"#1# tells the group, 'gtfo'"
+#event gtfo "#1# tells the group, 'gtfo'"
 sub Event_gtfo(string line, string _sender)
 	/if (${Select[${Me.Class.ShortName},WIZ]}) {
 		CHECKSAFELIST
 	  /delay 10s ${Me.AltAbilityReady[Exodus]}
 	  /if (${Me.Invis}) /makemevisible
 	  ECHOCHANNEL Fuck this place in particular..
-	 	/call core_cast "Exodus" alt 0 FALSE
+	 	/if (${validate_cast[FALSE, alt, "Exodus", ${Me.ID}]}) /call core_cast2 "Exodus" alt 0 FALSE
 	}
 /return
 
@@ -209,10 +205,18 @@ sub check_rune_WIZ()
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
 	/call create_timer timer_check_runes ${tCheck_Runes}
-	/if (${validate_buff[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE TRUE
-	/if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
-	/if (${validate_buff[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE
-	/if (${validate_buff[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE TRUE
+	| /if (${validate_buff[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeMagiWard}", ${Me.ID}]} && ${FindItemCount[Peridot]} > 1) /call core_cast2 "${runeMagiWard}" ${buffGem} 0 FALSE TRUE
+
+	| /if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}}) /call core_cast2 "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
+
+	| /if (${validate_buff[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeCrystalwing}", ${Me.ID}]}) /call core_cast2 "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE
+
+	| /if (${validate_buff[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeGuard}", ${Me.ID}]}) /call core_cast2 "${runeGuard}" ${buffGem} 0 FALSE TRUE
+
 	UPDATEHUD FALSE
 /return
 
@@ -230,42 +234,43 @@ sub synergy_WIZ()
 	/doevents
 	
 	| shhhhh..
-	/if (${Me.AltAbilityReady[Silent Casting]}) /call core_cast "Silent Casting" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Silent Casting", ${Me.ID}]}) /call core_cast2 "Silent Casting" alt 0 FALSE
 
 	| next 45 spells +51% crit rate
-	/if (${Me.AltAbilityReady[Frenzied Devastation]}) /call core_cast "Frenzied Devastation" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Frenzied Devastation", ${Me.ID}]}) /call core_cast2 "Frenzied Devastation" alt 0 FALSE
 	| increase chance to land
-	/if (${Me.AltAbilityReady[Focus of Arcanum]}) /call core_cast "Focus of Arcanum" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Focus of Arcanum", ${Me.ID}]}) /call core_cast2 "Focus of Arcanum" alt 0 FALSE
 
 
 	| alternate twincast
-	/if (${Me.AltAbilityReady[Improved Twincast]} && !${Me.Buff[${TwincastSpell}].ID}) {
-		/call core_cast "Improved Twincast" alt 0 FALSE
-	} else /if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID}) {
-		/call core_cast "${TwincastSpell}" 0 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]} && !${Me.Buff[${TwincastSpell}].ID}) {
+		/call core_cast2 "Improved Twincast" alt 0 FALSE
+	} else /if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]} && !${Me.Buff[Improved Twincast].ID}) {
+		/call core_cast2 "${TwincastSpell}" 0 0 FALSE
 	}
 	
 	/call cast_AA_spire
 
 	| boost spell type damage
-	/if (${Me.AltAbilityReady[Fury of the Gods]}) /call core_cast "Fury of the Gods" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Fury of the Gods", ${Me.ID}]}) /call core_cast2 "Fury of the Gods" alt 0 FALSE
 
-	/if (${Me.AltAbilityReady[Arcane Destruction]}) /call core_cast "Arcane Destruction" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Arcane Destruction", ${Me.ID}]}) /call core_cast2 "Arcane Destruction" alt 0 FALSE
 	
 	| increase damage
-	/if (${Me.AltAbilityReady[Arcane Fury]}) /call core_cast "Arcane Fury" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Arcane Fury", ${Me.ID}}) /call core_cast2 "Arcane Fury" alt 0 FALSE
 	
 	| aww baby
-	/if (${switchManaBurn} && ${Me.AltAbilityReady[Mana Burn]} && (${Target.ID} != ${Me.ID})) /call core_cast "Mana Burn" alt ${Target2Kill} FALSE
+	/if (${switchManaBurn}) {
+		/if (${validate_cast[FALSE, alt, "Mana Burn", ${Target2Kill}]} && (${Target.ID} != ${Me.ID})) /call core_cast2 "Mana Burn" alt ${Target2Kill} FALSE
+	}
 
 	| swarm pet
-	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Call of Xuzl]}) /call core_cast "Call of Xuzl" alt ${Target2Kill} FALSE
+	/if (${switchPcSwarm}) {
+		/if (${validate_cast[FALSE, alt, "Call of Xuzl", ${Target2Kill}]}) /call core_cast2 "Call of Xuzl" alt ${Target2Kill} FALSE
+	}
 
-	| ditch agrgro on named
-	/if (!${switchAgro} && ${Me.PctAggro} > 80 && ${NameList.Find[${Target.DisplayName}]} && ${Me.AltAbilityReady[Mind Crash]}) /call core_cast "Mind Crash" alt ${Target2Kill} FALSE
-	
 	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 
 	/call use_glyph	
 	/call synergy_click_Circle
@@ -290,15 +295,16 @@ sub force_twincast_WIZ()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
 	/if (!${cast_condition[NukeTwincastCondition]}) /return
-	/if (${Me.SpellReady[${TwincastSpell}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
-		/call core_cast "${TwincastSpell}" 0 0 FALSE
+	/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
+		/call core_cast2 "${TwincastSpell}" 0 0 FALSE
 		/return
-	} else /if (!${Me.SpellReady[${NukeTwincast${lineCurrent}}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
-		/call core_cast "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
+	} else /if (${validate_cast[FALSE, spell, "${NukeTwincast${lineCurrent}}", ${Target2Kill}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
+		/call core_cast2 "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
 	}
 /return
 
 
+${validate_cast[FALSE, ]} && 
 
 |***
  *	DES: memorize spell line
@@ -341,8 +347,8 @@ sub cast_nuke_WIZ()
 	/if (${lineCurrent.Equal[off]}) /return
 	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
-	/declare _count 				int 		local 0
-	/declare _list		 			string 	local ${line${lineCurrent}}
+	/declare _count int local 0
+	/declare _list string local ${line${lineCurrent}}
 	
 	/for _count 1 to ${_list.Count[|]}
 		/if (!${Range.Between[1,${_list.Count[|]}:${Int[${_count}]}]}) /continue
@@ -351,10 +357,10 @@ sub cast_nuke_WIZ()
 		CHECKEXIT
 		
 		/if (${is_target_dead[${Target2Kill}]}) /return
-		/if (${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana} || ${Me.CurrentMana} < 2) /continue 
+		/if (${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana} || ${Me.PctMana} < 2) /continue 
 		/if (!${cast_condition[line${lineCurrent}Condition${_count}]}) /continue 
 		
-		/call core_cast "${Spell[${_list.Arg[${_count},|]}].RankName}" 0 ${Target2Kill} cast_break
+		/if (${validate_cast[FALSE, spell, "${Spell[${_list.Arg[${_count},|]}].RankName}", ${Target2Kill}]}) /call core_cast2 "${Spell[${_list.Arg[${_count},|]}].RankName}" 0 ${Target2Kill} cast_break
 		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 
 		| toons ini switch. maintain the loop of nuked till all are cycled.
@@ -369,11 +375,6 @@ sub cast_nuke_WIZ()
 
 
 
-
-
-
-
-
 |***
  *	DES: Make sure you are using the AA casting boost you want..
  *	USE: /call sort_mancy_lineAA
@@ -381,34 +382,13 @@ sub cast_nuke_WIZ()
  *  NOTE:
  ***|
 sub sort_mancy_lineAA()
-
-|**
-	/if (${lineCurrent.Equal[Fire]} && !${Me.Buff[${lineAAFire}].ID}) {
-		/if (${Me.Buff[${lineAAIce}].ID}) /squelch /removebuff ${lineAAIce}
-		/if (${Me.Buff[${lineAAMagic}].ID}) /squelch /removebuff ${lineAAMagic}
-		/if (${Me.Buff[${lineAAMix}].ID}) /squelch /removebuff ${lineAAMix}
-	} else /if (${lineCurrent.Equal[Ice]} && !${Me.Buff[${lineAAIce}].ID}) {
-		/if (${Me.Buff[${lineAAFire}].ID}) /squelch /removebuff ${lineAAFire}
-		/if (${Me.Buff[${lineAAMagic}].ID}) /squelch /removebuff ${lineAAMagic}
-		/if (${Me.Buff[${lineAAMix}].ID}) /squelch /removebuff ${lineAAMix}
-	} else /if (${lineCurrent.Equal[Magic]} && !${Me.Buff[${lineAAMagic}].ID}) {
-		/if (${Me.Buff[${lineAAFire}].ID}) /squelch /removebuff ${lineAAFire}
-		/if (${Me.Buff[${lineAAIce}].ID}) /squelch /removebuff ${lineAAIce}
-		/if (${Me.Buff[${lineAAMix}].ID}) /squelch /removebuff ${lineAAMix}
-	} else /if (${lineCurrent.Equal[Mix]}&& !${Me.Buff[${lineAAMix}].ID}) {
-		/if (${Me.Buff[${lineAAFire}].ID}) /squelch /removebuff ${lineAAFire}
-		/if (${Me.Buff[${lineAAIce}].ID}) /squelch /removebuff ${lineAAIce}
-		/if (${Me.Buff[${lineAAMagic}].ID}) /squelch /removebuff ${lineAAMagic}
-	}
-**|	
+	DEBUGCAST ${cbug}sort_mancy_lineAA(line ${lineCurrent})\ax
 	/if (${lineCurrent.Equal[Fire]} && ${Me.Buff[${lineAAFire}].ID}) /return TRUE
 	/if (${lineCurrent.Equal[Ice]} && ${Me.Buff[${lineAAIce}].ID}) /return TRUE
 	/if (${lineCurrent.Equal[Magic]} && ${Me.Buff[${lineAAMagic}].ID}) /return TRUE
 	/if (${lineCurrent.Equal[Mix]}&& ${Me.Buff[${lineAAMix}].ID}) /return TRUE
-	/call core_cast "${lineAA${lineCurrent}}" alt 0 FALSE	
+	/if (${validate_cast[FALSE, alt, "${lineAA${lineCurrent}}", ${Me.ID}]}) /call core_cast2 "${lineAA${lineCurrent}}" alt 0 FALSE	
 /return
-
-
 
 
 

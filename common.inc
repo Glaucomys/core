@@ -935,7 +935,7 @@ sub check_ammo()
 		/if (!${Bool[${FindItemCount[${RangeItemSummon.Arg[${_count},|]}]}]}) {
 			/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 			/if (${Me.Book[${RangeItem.Arg[${_count},|]}]}) /call core_cast "${RangeItem.Arg[${_count},|]}" ${buffGem} ${Me.ID} FALSE
-			/if (${Me.ItemReady[${RangeItem.Arg[${_count},|]}]}) /call core_cast "${RangeItem.Arg[${_count},|]}" item ${Me.ID} FALSE
+			/if (${Me.ItemReady[${RangeItem.Arg[${_count},|]}]}) /call core_cast "${RangeItem.Arg[${_count},|]}" item 0 FALSE
 			/if (${Me.AltAbilityReady[${RangeItem.Arg[${_count},|]}]}) /call core_cast "${RangeItem.Arg[${_count},|]}" alt ${Me.ID} FALSE
 			/if (${Me.CombatAbilityReady[${RangeItem.Arg[${_count},|]}]} || ${Select[${Me.Class.ShortName},BER]}) /call core_cast "${RangeItem.Arg[${_count},|]}" disc ${Me.ID} FALSE
 			/delay 10s !${Me.Casting.ID}
@@ -2623,7 +2623,7 @@ sub cast_nuke_servant()
 
 |***
  *	DES: preps toon for combat modes
- *	USE: /call set_combat [MELEE|RANGE|NUKE|HEAL]
+ *	USE: /call set_combat []
  *	INI: 
  *  NOTE: 
  ***|
@@ -2648,10 +2648,14 @@ sub set_combat(str _mode)
 		} else {
 			/if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind}) {
 				/if ((${Spawn[${Target2Kill}].LineOfSight} && !${switchOverrideLos}) && !${Me.AutoFire}) /squelch /autofire on
-				/if (${coreAuto} && ${switchCombatMelee}) /call stick_to_target ${Target2Kill}
+				/if (${coreAuto} && ${switchCombatMelee} && !${RangeList.Find[${Target.DisplayName}]}) /call stick_to_target ${Target2Kill}
 			} else /if ((${Target.Distance} <= 31 && ${switchCombatMelee}) || (${SetStickBehind} && ${Target.Distance} <= ${MobAgro} && ${switchCombatMelee})) {
-				/squelch /attack on
-				/if (${coreAuto} && ${switchCombatMelee}) /call stick_to_target ${Target2Kill}
+				/if (${NoMeleeList.Find[${Target.DisplayName}]}) {
+					/squelch /attack off
+				} else {
+					/squelch /attack on
+					/if (${coreAuto} && ${switchCombatMelee}) /call stick_to_target ${Target2Kill}
+				}
 			}
 		}
 	}
@@ -4679,8 +4683,9 @@ sub get_target()
 						/call core_cast "${RangeDisc}" disc ${Target2Kill} FALSE
 		
 					| range item pull mob
-					} else {				
-					 /range
+					} else {
+						/if (${FindItemCount[${RangeItemSummon.Arg[${_count},|]}]} <= ${RangeItemCount}) /return				
+					 	/range
 					}
 				}
 				
@@ -5627,6 +5632,9 @@ sub validate_buff(string _type, string _inisub, string _spell)
 sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	DEBUG ${cbug}validate_cast(error:${_error}, type:${_type}, name:${_spell}, ID:${_tmpID})\ax
 	
+	| _spell set to false
+	/if (!${Bool[${_spell}]}) /return FALSE
+	
 	/if (${_tmpID}) {
 		/if (!${Spawn[${_tmpID}].ID}) /return FALSE
 	}
@@ -6043,34 +6051,39 @@ sub cast_slow(int _tmpID)
 	UPDATEHUD "Slow"
 	
 	| necros only slow undead 
-	/if (${validate_class[FALSE, |NEC]} && !${Target.Body.Name.Equal[Undead]}) /return
+	/if (${validate_class[FALSE, |NEC]} && ${Target.Body.Name.NotEqual[Undead]}) /return
 
 	| get to business
 	/declare _spelltype string local FALSE
 	/declare _readytype string local FALSE
 
 	| spell not identified, using AA.
-	/if (${spellSlow.Equal[NULL]} || !${Bool[${spellSlow}]} || !${Bool[${Me.Gem[${spellSlow}]}]}) {
+	/if (${Bool[${Me.Gem[${spellSlow}]}]}) {
+		/varset _spelltype gem${Me.Gem[${spellSlow}]}
+		/varset _readytype SpellReady
+	} else /if (${spellSlow.Equal[NULL]} || !${Bool[${spellSlow}]} || !${Bool[${Me.Gem[${spellSlow}]}]}) {
 		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellSlow Dreary Deeds
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellSlow Turgur's Swarm
 		/if (${Select[${Me.Class.ShortName},BST]}) /varset spellSlow Sha's Reprisal
 		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellSlow Death's Malaise	
 		/varset _spelltype alt
-		/varset _readytype SpellReady
-	} else /if (${Bool[${Me.Gem[${spellSlow}]}]}) {
-		/varset _spelltype gem${Me.Gem[${spellSlow}]}
 		/varset _readytype AltAbilityReady
-	}	
+	}
 	
-	| check the things normal things	
+	| check the things	
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellSlow}]}) /return
+	
+	| wait for it to be ready
 	/delay 2.25s ${Me.${_readytype}[${spellSlow}]}	
 	/call core_cast "${spellSlow}" ${_spelltype} ${_tmpID} FALSE
+
+	| set time based upn cast return	
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 		/call create_timer timer_slow_${_tmpID} ${Spell[${spellSlow}].Duration.TotalSeconds}s
 	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
 		/call create_timer timer_slow_${_tmpID} 15s
 	}
+	
 	UPDATEHUD FALSE
 /return
 
@@ -6763,6 +6776,7 @@ sub buy_AA(String _name)
 sub validate_assist(bool _error, string _assist, string _name)
 	DEBUG ${cbug}validate_assist(ass:${_assist}, name:${_name})\ax
 
+
 	/if (!${Bool[${_assist}]} || ${_assist.Equal[info]}) {
 		/declare _assistMode string local |x|1 NAME|2 NAME|(g)roup|(r)aid|(f)orce
 		/declare _assM string local
@@ -6770,15 +6784,17 @@ sub validate_assist(bool _error, string _assist, string _name)
 		/declare _listout string local
 		/declare _sep bool local FALSE
 		
+
 		/for _count 1 to ${_assistMode.Count[|]}
-			| /varset _assM ${useSmartAssist${_assistMode.Arg[${_count},|]}}
 			DEBUG mode: ${_assistMode.Arg[${_count},|]} -- ${_assM}
-			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${useSmartAssist${_assistMode.Arg[${_count},|]}},${cgood}${_assistMode.Arg[${_count},|]}\ax,${cinfo}${_assistMode.Arg[${_count},|]}\ax]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_assistMode.Arg[${_count},|]}\ax
 			/varset _sep TRUE
 		/next _count
 		VOUT /setassist [${_listout}]
+
 		/return
 	}
+
 
 	/declare _pass bool local TRUE
 

@@ -93,16 +93,17 @@ sub disc_ROG()
 	
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${validate_cast[FALSE, alt, "Shadow's Flanking", ${Me.ID}]}) /call core_cast2 "Shadow's Flanking" alt 0 FALSE
-	/if (${validate_cast[,FALSE disc, "${DiscVision}", ${Me.ID}]}) /call core_cast2 "${DiscVision}" disc 0 FALSE
+	/if (${validate_cast[,FALSE disc, "${DiscVision}", ${Me.ID}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast2 "${DiscVision}" disc 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${TwistedShank}", ${Target2Kill}]}) /call core_cast2 "${TwistedShank}" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, alt, "${AbsorbingAgent}", ${Target2Kill}]}) /call core_cast2 "${AbsorbingAgent}" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscShadowHunter}", ${Target2Kill}]}) /call core_cast2 "${DiscShadowHunter}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscDisassociative}", ${Target2Kill}]}) /call core_cast2 "${DiscDisassociative}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscBleed}", ${Target2Kill}]}) /call core_cast2 "${DiscBleed}" disc ${Target2Kill} FALSE
 
-	|** hold for now..
 
 	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPlay}]} && ${Bool[${DiscPlay}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
+
+	|** hold for now..
 
 	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
 		/if (${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :skipDiscPlay
@@ -117,8 +118,8 @@ sub disc_ROG()
 	
 	
 	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
-		/if (!${NameList.Find[${Spawn[${Target2Kill}].DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
-			/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
+		/if (!${NameList.Find[${Spawn[${Target2Kill}].DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) {
+			/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
 		}
 	}
 
@@ -127,15 +128,12 @@ sub disc_ROG()
 	| }	
 	
 	
-	
-	
-	
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPhantom}]} && ${Bool[${DiscPhantom}]}) /call core_cast2 "${DiscPhantom}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscHiddenBlade}", ${Me.ID}]}) /call core_cast2 "${DiscHiddenBlade}" disc 0 FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscHack}", ${Target2Kill}]}) /call core_cast2 "${DiscHack}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscBladePoison}", ${Me.ID}]}) /call core_cast2 "${DiscBladePoison}" disc 0 FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscAggro}", ${Target2Kill}]}) /call core_cast2 "${DiscAggro}" disc ${Target2Kill} FALSE
-	/if (${validate_buff[FALSE, disc, "${DiscBlinding}", ${Target2Kill}]} && ${Target.Level} <= 110) /call core_cast2 "${DiscBlinding}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscBlinding}", ${Target2Kill}]} && ${Target.Level} <= 110) /call core_cast2 "${DiscBlinding}" disc ${Target2Kill} FALSE
 	
 /return
 

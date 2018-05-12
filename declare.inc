@@ -17,7 +17,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180510
+	/call setDeclare coreBuild											int			outer 20180511
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -350,6 +350,7 @@ sub set_declares()
 	/call setINIVar switchAApicker									bool 		Common FALSE
 	/call setINIVar RangeItem												string	Common "|FALSE|FALSE"
 	/call setINIVar RangeItemSummon									string	Common "|FALSE|FALSE"
+	/call setINIVar RangeItemCount									int			Common 5
 	/call setINIVar RangeSpell											string	Common FALSE
 	/call setINIVar RangeClickItem									string	Common FALSE
 	/call setINIVar RangeDisc												string	Common FALSE
@@ -3068,16 +3069,15 @@ sub Bind_watchspawn(string _spawn)
  *  NOTE: starts/ends overrides
  ***|
 #bind override /override
-sub Bind_override(string _overrideType)
+sub Bind_override(string _overrideType, string _verbage)
 	DEBUG ${cbug}Bind_override(type: ${_overrideType})\ax
 	/declare _count		int local
 	/declare _bind string local override
 	
-	
 	| override class checks. not documented.
 	/if (${_overrideType.Equal[classcheck]}) {
 		/varset switchOverrideClasscheck TRUE
-		OUT ${owarning} Overriding class checks.
+		OUT ${owarning} Overriding class checks ${sep} ur gonna break shit...
 		/return
 	}
 
@@ -3092,7 +3092,6 @@ sub Bind_override(string _overrideType)
 		/return
 	}	
 	/if (${Bool[${overrideType.Find[${_overrideType}]}]} && ${_overrideType.NotEqual[stop]}) {
-		| /echo switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}
 		/if (${Defined[switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}]}) {
 			/call writeINI switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower} Override ${If[${switchOverride${_overrideType.Left[1].Upper}${_overrideType.Right[-1].Lower}},FALSE,TRUE]}  
 		} 
@@ -3784,7 +3783,7 @@ sub Bind_petControl(string _pcType, string _verbage)
  *	USE: 
  *	INI: 
  *  NOTE: 
- ***| 	
+ 	
 #event SendPets "[MQ2] - SendPets: #1#"
 sub Event_SendPets(string line, int _tmpID)
 	DEBUG ${cbug}Event_SendPets()\ax
@@ -3794,7 +3793,7 @@ sub Event_SendPets(string line, int _tmpID)
 		/pet attack
 	}
 /return
-
+ ***|
 
 
 |***
@@ -4964,7 +4963,7 @@ sub Bind_echos(string _echoType, string _verbage)
  *	DES: random insult
  *	USE: /oof
  *	INI: 
- *  NOTE:
+ *  NOTE: not documented. why should i share everything!?!
  ***|
 #bind oof /oof
 sub Bind_oof(string _echoType, string _verbage)
@@ -4986,7 +4985,7 @@ sub Bind_oof(string _echoType, string _verbage)
 	/varset _rnd ${Math.Rand[${bitchcount}]}
 	/if (!${Range.Between[1,${bitchcount}:${_rnd}]}) /goto :loopgetrandom
  	/delay 1
- 	/em  looks around for the biggest fucking rock to hit ${_pronoun} head against.
+ 	/em looks around for the biggest fucking rock to hit ${_pronoun} head against.
 	/say ${bitch${_rnd}}
 /return
 
@@ -5001,8 +5000,7 @@ sub Bind_oof(string _echoType, string _verbage)
 #bind lesson /lesson
 sub Bind_lesson()
  	DEBUG ${cbug}Bind_lesson()\ax
-  /if (!${Me.AltAbilityReady[Lesson of the Devoted]}) /return
-  /call core_cast "Lesson of the Devoted" alt 0 FALSE
+  /if (${validate_cast[FALSE, alt, "Lesson of the Devoted", ${Me.ID}]}) /call core_cast2 "Lesson of the Devoted" alt 0 FALSE
 /return
 
 
@@ -5037,10 +5035,10 @@ sub Bind_grab(string _name)
 
 
 |***
- *	DES: navigates tot he name.target
+ *	DES: navigates to the name/target
  *	USE: /navto [NAME]
  *	INI: 
- *  NOTE: max range of 20
+ *  NOTE: 
  ***|
 #bind nav_to_target /navto
 sub Bind_nav_to_target (string _name)

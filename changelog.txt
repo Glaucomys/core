@@ -11,8 +11,29 @@
 
 
 -- migration from core_cast() to validate_cast() / core_cast2()
-  -- classes converted: Cleric, Ranger, Rogue, Paladin
+  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard
 
+
+20180511
+- summoned range items
+  -- no longer self targeting.
+  -- toon.ini->[general]->RangeItemCount=# (default 5) will not /range if that number or below.
+- Range Vs. Melee - place your bets
+  -- if a target is set to RangeList and your toon is set to both melee and range, you will no longer run to the mob, you will just range it
+  -- if the target is set to NoMeleeList, you will no longer melee it.
+- validate_assist()  /setassist
+  -- fixed an undefined variable locking out the command.
+- cast_slow()
+  -- reversed order to spell over alt abilities
+- class.wiz.inc
+  -- converted to new casting routines
+  -- reorganized the harvest routines. maybe someday it will actualy trigger Forceful Rejuvenation
+  -- fixed the skip casting on less then 2 manna. its now 2% manna /sigh
+  -- elemental Force AA nukes will obey the No[fire|ice|magic]List for that zone
+- clas.rng.inc
+  -- shouldn't blow their epics when the mob is not within their combat distance
+  -- nested a couple switches to speed it up
+  
 
 20180510
 - removed some debugging from validat_cast()
@@ -31,7 +52,6 @@
   -- should not try and forage in combat now
 - class.shm.inc
   -- reversed HP check for cani.
-
 
 
 20180504
