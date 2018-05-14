@@ -209,7 +209,7 @@ sub check_rune_WIZ()
 	/if (${validate_cast[FALSE, spell, "${runeMagiWard}", ${Me.ID}]} && ${FindItemCount[Peridot]} > 1) /call core_cast2 "${runeMagiWard}" ${buffGem} 0 FALSE TRUE
 
 	| /if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
-	/if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}}) /call core_cast2 "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
+	/if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}) /call core_cast2 "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
 
 	| /if (${validate_buff[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeCrystalwing}", ${Me.ID}]}) /call core_cast2 "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE

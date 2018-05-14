@@ -17,7 +17,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180511
+	/call setDeclare coreBuild											int			outer 20180514
 	/call setINIVar classBuild											int 		Common 0
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -159,6 +159,7 @@ sub set_declares()
 	/call DeclareCoreIniVar switchBuffinRest				string	General TRUE
 	/call DeclareCoreIniVar switchUseCLSinHUD				string	General FALSE
 	/call DeclareCoreIniVar switchUseADVL						string	General TRUE
+	/call DeclareCoreIniVar switchGlyphOutsideRaid	string	General FALSE
 	
 	/call setINIVar toonControl			 								string	Common FALSE
 	/call setINIVar autoRest 												int 		Common 90
@@ -1027,15 +1028,17 @@ sub declare_timers()
 	/call setTimer tCheck_status										string	Timer	2s 		timer_check_status
 	/call setTimer tPetfarm_delay										string	Timer	1s 		timer_Petfarm_delay	
 	/call setTimer tClear_Cursor										string	Timer 5s 		timer_clear_cursor   
-	/call setTimer tSelf_Buff												string	Timer 3m 		timer_check_buffs_self
+
 	/call setTimer tPet_Buff												string	Timer 1m 		timer_check_pet_buffs
+	/call setTimer tSelf_Buff												string	Timer 3m 		timer_check_buffs_self
 	/call setTimer tItem_Buff												string	Timer 1m 		timer_check_buffs_item
 	/call setTimer tBC_Buff													string	Timer 20s 	timer_check_buffs_BC
 	/call setTimer tRaid_Buff												string	Timer 20s 	timer_check_buffs_raid
 	/call setTimer tMerc_Buff												string	Timer 40s 	timer_check_buffs_merc
 	/call setTimer tGroup_Buff											string	Timer 5m	 	timer_check_buffs_group
-	/call setTimer tCheck_Aura											string	Timer 3m 		timer_check_aura
 	/call setTimer tTell_Buff												string	Timer	10s 	timer_check_buffs_tell
+
+	/call setTimer tCheck_Aura											string	Timer 3m 		timer_check_aura
 	/call setTimer tCheck_Ammo											string	Timer	5s 		timer_Check_Ammo
 	/call setTimer tHunt_delay											string	Timer	30s 	timer_wait_for_mob_to_kill
 	/call setTimer tAuto_Control_Toon								string	Timer	10s 	timer_auto_toon_control
@@ -2269,7 +2272,7 @@ sub set_alias()
   /if (!${Bool[${Alias[/sendpets]}]}) 						/squelch /alias /sendpets										VOUT SendPets: 
 	/if (!${Bool[${Alias[/killmob]}]}) 							/squelch /alias /killmob 										/bc killmob
 	/if (!${Bool[${Alias[/mirror]}]}) 							/squelch /alias /mirror 										/bc mirror
-	/if (!${Bool[${Alias[/stein]}]}) 								/squelch /alias /stein 											/bc stein
+	| /if (!${Bool[${Alias[/stein]}]}) 								/squelch /alias /stein 											/bcaa //stein
   /if (!${Bool[${Alias[/stop]}]}) 								/squelch /alias /stop 											/bc stop
 	/if (!${Bool[${Alias[/blurb]}]}) 								/squelch /alias /blurb 											VOUT Blurb: 
  	/if (!${Bool[${Alias[/clean]}]}) 								/squelch /alias /clean 											VOUT Clean this mess up.
@@ -2358,9 +2361,9 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
   /if (${_cmd.Equal[killmob]}) /call Bind_override engageat
  
-  /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item 0 FALSE
-  /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0 FALSE
-  /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
+  | /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item 0 FALSE
+  | /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0 FALSE
+  | /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
 
  
 	|** commands to control all assist targets.  
@@ -2755,6 +2758,7 @@ sub Event_Talk(string line, string _sender, string _chatText)
 	| Tells for buffs.
 	/if (${switchBuffTell} && ${Spawn[${_sender}].ID} && ${_sender.NotEqual[${Me.DisplayName}]}) {
     /call cast_buffs_queue "${_sender}" "${_chatText}"
+    /return
   }
   
 	| Remote kill execution. CHANGE THE CORE.INI
@@ -2799,13 +2803,12 @@ sub Bind_setCombatHere()
  *	USE: NA
  *	INI: NA
  *  NOTE: STILL NEEDED????
- ***| 	
+	
 #Event CantLoot "#*#may not loot this corpse#*#"
 sub Event_CantLoot
    DEBUG Event_CantLoot Can't loot ${Target.DisplayName} ${Target.ID}
-   | /varset CantLootID ${Target.ID}
 /return
-
+ ***| 
 
 
 |***
@@ -2835,14 +2838,22 @@ sub Event_Zone(string _line)
 	DEBUG ${cbug}Event_Zone(line: ${_line})\ax
 
 	| force a delay while zoning
+	:stillfuckingzoningOMG
 	/if (${switchDelayWhileZoning} && ${Me.Zoning}) {
-		/while (${Me.Zoning}) {
-			/delay 2s
-		}	
+		/delay 45s !${Me.Zoning}
+
+		| /while (${Me.Zoning}) {
+		| 	/delay 2s
+		| }	
+
 	}
 
-	/call validate_zone FALSE TRUE
-/return 
+	/if (${Me.Zoning}) {
+		/goto :stillfuckingzoningOMG
+	} else /if (!${Me.Zoning}) {
+		/call validate_zone FALSE TRUE
+	}
+/return FALSE
 
 
 
@@ -3034,6 +3045,42 @@ sub Bind_click_secondary_anchor()
 		/if (${Me.Invis}) /makemevisible
 		/if (${Me.Casting.ID}) /stopcast
 		/call core_cast "Secondary Anchor Transport Device" item 0 FALSE
+	}
+/return
+
+
+
+|***
+ *	DES: use Drunkard's Stein
+ *	USE: /stein
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind click_drunkards_stein /stein
+sub Bind_click_drunkards_stein()
+	/if (!${Me.ItemReady[Drunkard's Stein]}) /return
+	/if (${Me.Invis}) /makemevisible
+	/if (${Me.Casting.ID}) /stopcast
+	/if (${validate_cast[FALSE, item, "Drunkard's Stein", ${Me.ID}]}) {
+		/call core_cast2 "Drunkard's Stein" item 0 FALSE
+	}
+/return
+
+
+
+|***
+ *	DES: use Mirror Fragment of Anashti Sul
+ *	USE: /mirror
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind click_mirror_fragment /mirror
+sub Bind_click_mirror_fragment()
+	/if (!${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /return
+	/if (${Me.Invis}) /makemevisible
+	/if (${Me.Casting.ID}) /stopcast
+	/if (${validate_cast[FALSE, item, "Mirror Fragment of Anashti Sul", ${Me.ID}]}) {
+		/call core_cast2 "Mirror Fragment of Anashti Sul" item 0 FALSE
 	}
 /return
 

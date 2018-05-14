@@ -2149,12 +2149,15 @@ sub send_pet(int _tmpID)
 sub use_glyph()
 	DEBUGCAST ${cbug}use_glyph(${useGlyph})\ax
 	AMIDEAD
-	/if (!${Bool[${useGlyph}]} || !${Raid.Members}) /return
+	/if (!${Bool[${useGlyph}]} || !${Raid.Members} && !${switchGlyphOutsideRaid}) /return
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
 	/if (${Me.AltAbilityReady[${useGlyph}]}) /call core_cast "${useGlyph}" alt 0 FALSE
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
 /return
 
+
+
+switchGlyphOutsideRaid
 
 
 |***
@@ -3351,13 +3354,15 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
 
 |***
  *	DES: Cleric/Paladin AA Yaulp
- *	USE: /call cast_AA_yaulp
+ *	USE: /call cast_yaulp
  *	INI: [selfbuff] - doYaulp
  *  NOTE: if doYaulp is TRUE, will use at 98% manna or less.
+ *	NOTE: Pallys keep that shit up ALL the time
  ***|
 sub cast_yaulp()
 	DEBUGCAST ${cbug}cast_yaulp()\ax
-	/if (${Me.Sitting} || !${Select[${Me.CombatState},COMBAT]}) /return
+	/if (${Me.Sitting}) /return
+	/if (!${Select[${Me.CombatState},COMBAT]}) /return
 	AMIDEAD
 	CHECKEXIT
 	
@@ -3365,7 +3370,7 @@ sub cast_yaulp()
 	/if (${Bool[${spellYaulp}]} && ${Me.SpellReady[${spellYaulp}]} && ${Spell[${spellYaulp}].Stacks}) {
 		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride} || (${Me.Combat} && ${Select[${Me.Class.ShortName},PAL]})) /call core_cast "${spellYaulp}" 0 0 FALSE
 	
-	| use Donals Helm Yaulp
+	| use Donals Helm Yaulp (cleric only)
 	} else /if (${Select[${Me.Class.ShortName},CLR]} && ${Me.ItemReady[Darkened Donal's Helm of Mourning]}) {
 		/if (!${Spell[Yaulp XIV Rk. II].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
 		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride}) /call core_cast "Darkened Donal's Helm of Mourning" item 0 FALSE
@@ -3799,7 +3804,8 @@ sub set_combat_here()
 	/if (${switchBuffRaid}) /call create_timer timer_check_buffs_raid ${defaultTimerDelay}
 	/if (${switchBuffBc}) /call create_timer timer_check_buffs_BC ${defaultTimerDelay}
 	/if (${switchBuffPet}) /call create_timer timer_check_pet_buffs ${defaultTimerDelay}
-	/if (${switchBuffMerc}) /call create_timer timer_check_merc_buffs ${defaultTimerDelay}
+	/if (${switchBuffMerc}) /call create_timer timer_check_buffs_merc ${defaultTimerDelay}
+	/if (${switchBuffGroup}) /call create_timer timer_check_buffs_group ${defaultTimerDelay}
 	/if (${Bool[${Aura1Buff}]} || ${Bool[${Aura2Buff}]}) /call create_timer timer_check_aura ${defaultTimerDelay}
 	/if (${switchBuffTell}) /call create_timer timer_check_buffs_tell ${defaultTimerDelay}
 	
@@ -3836,7 +3842,6 @@ sub set_combat_here()
 		/keypress forward
 		/keypress back
 	}
-	
 
 	| fix zone
  	/call check_zone_INI FALSE
@@ -5698,6 +5703,26 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 			/if (!${Spell[${_spell}].Stacks}) /return FALSE
 		}
 
+
+	| check disc that requires running disc slot
+	} else /if (${_type.Equal[discR]}) {
+		/if (${_error}) OUT ${cbug}validate_cast(error:${_error}, type:${_type}, name:${_spell}, RunningDisc:${Bool[${Me.ActiveDisc}]})\ax
+		/if (!${Bool[${_spell}]}) /return FALSE
+		/if (${Bool[${Me.ActiveDisc}]}) /return FALSE
+		/if (!${Me.CombatAbilityReady[${_spell}]}) /return FALSE
+		/if (${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
+		| /if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].Range}) /return FALSE
+		| /if (${Bool[${Me.Song[${${_spell}}].Duration}]}) /return FALSE
+		| /if (${Bool[${Me.Buff[${_spell}].Duration}]}) /return FALSE		
+					
+		| stacking
+		| /if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
+		| 	/if (!${Spell[${_spell}].Stacks}) /return FALSE
+		| }
+
+
+
+
 	| check item
 	} else /if (${_type.Equal[item]}) {
 		/if (${_error}) OUT ${cbug}validate_cast(error:${_error}, type:${_type}, name:"${_spell}", ID:${_tmpID})\ax
@@ -6934,3 +6959,5 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
 
 	/call create_timer ${_my_timer} 1
 /return
+
+

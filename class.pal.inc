@@ -80,7 +80,7 @@ sub disc_PAL()
 		/declare _count int local 0
 		/for _count 1 to 3
 			/if (${Bool[${Me.ActiveDisc}]}) /break
-			/if (${validate_cast[FALSE, disc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
+			/if (${validate_cast[FALSE, discR, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
 				/call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 				/break
 			}			
@@ -113,7 +113,7 @@ sub disc_PAL()
 	}
 	
 	| Yaulp.. all the time!!
-	/if (!${Me.Sitting} && ${doYaulp}) /call cast_yaulp
+	/if (${doYaulp}) /call cast_yaulp
 	
 /return
 
@@ -219,7 +219,7 @@ sub click_DPS_PAL()
 	CHECKEXIT
 	/doevents
 	/call click_horn_of_unity 	
-	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]} && ${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 
 /return
 

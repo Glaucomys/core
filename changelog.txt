@@ -14,14 +14,19 @@
   -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard
 
 
-20180511
+20180514
+- glyphs
+  -- core.ini->[general]->switchGlyphOutsideRaid=FALSE
+  -- set to TRUE to enable using glyphs while not in a raid
+  -- still only trigger in burns
+  -- can eat your AAs. you've beeen warned
 - summoned range items
   -- no longer self targeting.
   -- toon.ini->[general]->RangeItemCount=# (default 5) will not /range if that number or below.
 - Range Vs. Melee - place your bets
   -- if a target is set to RangeList and your toon is set to both melee and range, you will no longer run to the mob, you will just range it
   -- if the target is set to NoMeleeList, you will no longer melee it.
-- validate_assist()  /setassist
+- validate_assist() /setassist
   -- fixed an undefined variable locking out the command.
 - cast_slow()
   -- reversed order to spell over alt abilities
@@ -33,6 +38,12 @@
 - clas.rng.inc
   -- shouldn't blow their epics when the mob is not within their combat distance
   -- nested a couple switches to speed it up
+- class.pal.inc
+  -- shouldnt use epic while ranging
+- class.rog.inc
+  -- fixed the knifeplay issues
+- /mode [petfarm]
+  -- fixed a call error for classes that dont get pets trying to use the mode
   
 
 20180510

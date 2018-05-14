@@ -397,7 +397,7 @@ sub mode_petfarm()
 	/if (!${switchModePetfarm}) /return
 	/if (!${Select[${Me.Class.ShortName},MAG,ENC,NEC,BST,SHD,SHM,RNG,DRU]} || (${SafeZone} && !${switchOverrideSafezone})) {
 		/call echos failboat 0 0 0 0
-		/call mode_clear_all
+		/call switch_clear_mode
 		/return
 	}
 	/call check_watch_spawn

@@ -118,10 +118,19 @@ sub disc_ROG()
 	
 	
 	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
-		/if (!${NameList.Find[${Spawn[${Target2Kill}].DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) {
-			/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
-		}
+		/if (${NameList.Find[${Spawn[${Target2Kill}].DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :skipDiscPlay
+		/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
+		:skipDiscPlay
 	}
+	
+	/if (!${NameList.Find[${Target.DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
+		/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
+	}		
+	
+	
+	
+	
+	
 
 	| /if (!${NameList.Find[${Target.DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
 	| 	/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
