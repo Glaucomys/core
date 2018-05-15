@@ -374,7 +374,7 @@ sub mode_hunt()
 
 
 |***
- *	DES: Pet Farm Mode
+ *	DES: Pet Farm
  *	USE: /call mode_petfarm | /mode petfarm
  *	INI: 
  *  NOTE: Use with caution. For static pet classes only.

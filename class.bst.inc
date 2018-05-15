@@ -21,8 +21,7 @@ sub core_BST()
 
 	/if (${coreAuto} && !${Me.Invis}) {
 		/call cast_AA_focused_paragon
-		/call check_engaged
-		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
+		/if (!${check_engaged[]} && ${switchPcPet}) /call check_pet
 	}
 
 	:killtarget
@@ -110,7 +109,7 @@ sub cast_AA_focused_paragon()
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/declare _count 							int 	local 0
+	/declare _count 						int 	local 0
 	/declare _tmpID 						int 	local 0
 	/declare _tmpTarget2Kill		int		local 0
 	

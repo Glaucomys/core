@@ -95,22 +95,16 @@ sub disc_WIZ()
 	
 	| aa Force of Flame
 	/if (${lineCurrent.Equal[Fire]} && !${NoFireList.Find[${Spawn[${Target2Kill}].DisplayName}]}) {
-		/if (${validate_cast[FALSE, alt, "Force of Flame", ${Target2Kill}]}) {
-			/call core_cast2 "Force of Flame" alt ${Target2Kill} FALSE
-			/return
-		}
+		/if (${validate_cast[FALSE, alt, "Force of Flame", ${Target2Kill}]}) /call core_cast2 "Force of Flame" alt ${Target2Kill} FALSE
+		/return
 	| aa Force of Ice
 	} else /if (${lineCurrent.Equal[Ice]} && !${NoColdList.Find[${Spawn[${Target2Kill}].DisplayName}]}) {
-		/if (${validate_cast[FALSE, alt, "Force of Ice", ${Target2Kill}]}) {
-			/call core_cast2 "Force of Ice" alt ${Target2Kill} FALSE
-			/return
-		}
+		/if (${validate_cast[FALSE, alt, "Force of Ice", ${Target2Kill}]}) /call core_cast2 "Force of Ice" alt ${Target2Kill} FALSE
+		/return
 	| aa Force of Will
 	} else /if (${lineCurrent.Equal[Magic]} && !${NoMagicList.Find[${Spawn[${Target2Kill}].DisplayName}]}) {
-		/if (${validate_cast[FALSE, alt, "Force of Will", ${Target2Kill}]}) {
-			/call core_cast2 "Force of Will" alt ${Target2Kill} FALSE
-			/return
-		}
+		/if (${validate_cast[FALSE, alt, "Force of Will", ${Target2Kill}]}) /call core_cast2 "Force of Will" alt ${Target2Kill} FALSE
+		/return
 	}
 /return
 
@@ -205,18 +199,10 @@ sub check_rune_WIZ()
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
 	/call create_timer timer_check_runes ${tCheck_Runes}
-	| /if (${validate_buff[spell, rune, runeMagiWard]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeMagiWard}" ${buffGem} 0 FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeMagiWard}", ${Me.ID}]} && ${FindItemCount[Peridot]} > 1) /call core_cast2 "${runeMagiWard}" ${buffGem} 0 FALSE TRUE
-
-	| /if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}) /call core_cast2 "${runeShieldofFate}" ${buffGem} 0 FALSE TRUE
-
-	| /if (${validate_buff[spell, rune, runeCrystalwing]}) /call core_cast "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeCrystalwing}", ${Me.ID}]}) /call core_cast2 "${runeCrystalwing}" ${buffGem} 0 FALSE TRUE
-
-	| /if (${validate_buff[spell, rune, runeGuard]}) /call core_cast "${runeGuard}" ${buffGem} 0 FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeGuard}", ${Me.ID}]}) /call core_cast2 "${runeGuard}" ${buffGem} 0 FALSE TRUE
-
 	UPDATEHUD FALSE
 /return
 
@@ -243,10 +229,10 @@ sub synergy_WIZ()
 
 
 	| alternate twincast
-	/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]} && !${Me.Buff[${TwincastSpell}].ID}) {
-		/call core_cast2 "Improved Twincast" alt 0 FALSE
-	} else /if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]} && !${Me.Buff[Improved Twincast].ID}) {
-		/call core_cast2 "${TwincastSpell}" 0 0 FALSE
+	/if (!${Me.Buff[${TwincastSpell}].ID}) {
+		/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]}) /call core_cast2 "Improved Twincast" alt 0 FALSE
+	} else /if (!${Me.Buff[Improved Twincast].ID} && !${Me.AltAbilityReady[Improved Twincast]}) {
+		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
 	}
 	
 	/call cast_AA_spire
@@ -295,16 +281,15 @@ sub force_twincast_WIZ()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
 	/if (!${cast_condition[NukeTwincastCondition]}) /return
-	/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
-		/call core_cast2 "${TwincastSpell}" 0 0 FALSE
+	/if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
+		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
 		/return
-	} else /if (${validate_cast[FALSE, spell, "${NukeTwincast${lineCurrent}}", ${Target2Kill}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
-		/call core_cast2 "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
+	} else /if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
+		/if (${validate_cast[FALSE, spell, "${NukeTwincast${lineCurrent}}", ${Target2Kill}]}) /call core_cast2 "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
 	}
 /return
 
 
-${validate_cast[FALSE, ]} && 
 
 |***
  *	DES: memorize spell line
@@ -357,7 +342,7 @@ sub cast_nuke_WIZ()
 		CHECKEXIT
 		
 		/if (${is_target_dead[${Target2Kill}]}) /return
-		/if (${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana} || ${Me.PctMana} < 2) /continue 
+		/if (${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana} || ${Me.PctMana} < 2) /break 
 		/if (!${cast_condition[line${lineCurrent}Condition${_count}]}) /continue 
 		
 		/if (${validate_cast[FALSE, spell, "${Spell[${_list.Arg[${_count},|]}].RankName}", ${Target2Kill}]}) /call core_cast2 "${Spell[${_list.Arg[${_count},|]}].RankName}" 0 ${Target2Kill} cast_break

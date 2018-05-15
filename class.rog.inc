@@ -100,23 +100,6 @@ sub disc_ROG()
 	/if (${validate_cast[FALSE, disc, "${DiscDisassociative}", ${Target2Kill}]}) /call core_cast2 "${DiscDisassociative}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscBleed}", ${Target2Kill}]}) /call core_cast2 "${DiscBleed}" disc ${Target2Kill} FALSE
 
-
-	| /if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPlay}]} && ${Bool[${DiscPlay}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
-
-	|** hold for now..
-
-	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
-		/if (${NameList.Find[${Target.DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :skipDiscPlay
-		/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
-		:skipDiscPlay
-	}
-
-	/if (!${NameList.Find[${Target.DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
-		/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
-	}	
-	**|
-	
-	
 	/if (${Me.CombatAbilityReady[${DiscPlay}]}) {
 		/if (${NameList.Find[${Spawn[${Target2Kill}].DisplayName}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) /goto :skipDiscPlay
 		/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
@@ -127,16 +110,6 @@ sub disc_ROG()
 		/if (${validate_cast[FALSE, disc, "${DiscPlay}", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast2 "${DiscPlay}" disc 0 FALSE
 	}		
 	
-	
-	
-	
-	
-
-	| /if (!${NameList.Find[${Target.DisplayName}]} && !${Me.CombatAbilityReady[${DiscFrenzy}]}) {
-	| 	/if (${validate_buff[disc, discs, DiscPlay]} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscPlay}" disc 0 FALSE
-	| }	
-	
-	
 	/if (${Target.ID} && ${Me.CombatAbilityReady[${DiscPhantom}]} && ${Bool[${DiscPhantom}]}) /call core_cast2 "${DiscPhantom}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscHiddenBlade}", ${Me.ID}]}) /call core_cast2 "${DiscHiddenBlade}" disc 0 FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscHack}", ${Target2Kill}]}) /call core_cast2 "${DiscHack}" disc ${Target2Kill} FALSE
@@ -145,7 +118,6 @@ sub disc_ROG()
 	/if (${validate_cast[FALSE, disc, "${DiscBlinding}", ${Target2Kill}]} && ${Target.Level} <= 110) /call core_cast2 "${DiscBlinding}" disc ${Target2Kill} FALSE
 	
 /return
-
 
 
 
@@ -177,7 +149,7 @@ sub patch_heal_ROG()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${Me.AltAbilityReady[Tumble]} && ${validate_cast[FALSE, alt, "Tumble", ${Me.ID}]}) /call core_cast2 "Tumble" alt 0 FALSE
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Tumble", ${Me.ID}]}) /call core_cast2 "Tumble" alt 0 FALSE
 	/call click_item_heal
 /return
 
@@ -246,7 +218,9 @@ sub click_poison()
 		/doevents
 		/if (${Bool[${Me.Buff[${clickPoisonBuff.Arg[${_count},|]}]}]}) /varset _found TRUE
 	/next _count		
-	/if (!${_found} && ${validate_cast[FALSE, item, "${clickPoisonItem}", ${Me.ID}]}) /call core_cast2 "${clickPoisonItem}" item ${Me.ID} FALSE
+	/if (!${_found}) {
+		/if (${validate_cast[FALSE, item, "${clickPoisonItem}", ${Me.ID}]}) /call core_cast2 "${clickPoisonItem}" item ${Me.ID} FALSE
+	}
 	/call create_timer timer_click_poison ${tClick_Poison}
 /return
 
@@ -292,8 +266,8 @@ sub synergy_ROG()
 	/if (${validate_cast[FALSE, disc, "${DiscMark}", ${Target2Kill}]} && ${Me.PctEndurance} > 15) /call core_cast2 "${DiscMark}" disc ${Target2Kill} FALSE
 	/call cast_AA_spire
 	/if (${validate_cast[FALSE, alt, "Intensity of the Resolute", ${Me.ID}]} && ${Raid.Members}) /call core_cast2 "Intensity of the Resolute" alt 0 FALSE
-  /if (${validate_cast[FALSE, disc, "${DiscFrenzy}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) {
-  	/call core_cast2 "${DiscFrenzy}" disc 0 FALSE
+  /if (!${Me.ActiveDisc.ID}) {
+  	/if (${validate_cast[FALSE, disc, "${DiscFrenzy}", ${Me.ID}]}) /call core_cast2 "${DiscFrenzy}" disc 0 FALSE
   	/delay 2
   }
   /if (${validate_cast[FALSE, disc, "${DiscTwistedChance}", ${Me.ID}]} && !${Me.ActiveDisc.ID}) /call core_cast2 "${DiscTwistedChance}" disc 0 FALSE

@@ -219,10 +219,10 @@ sub synergy_RNG()
 	
 	| MELEE
 	/if (${combat.Equal[MELEE]}) {
-		/if (${validate_cast[FALSE, alt, "Empowered Blades", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-			/call core_cast2 "Empowered Blades" alt 0 FALSE
-		} else /if (${validate_cast[FALSE, disc, "${DiscMele}", ${Me.ID}]} && !${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
-			/call core_cast2 "${DiscMele}" disc 0 FALSE
+		/if (!${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/if (${validate_cast[FALSE, alt, "Empowered Blades", ${Me.ID}]}) /call core_cast2 "Empowered Blades" alt 0 FALSE
+		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
+			/if (${validate_cast[FALSE, disc, "${DiscMele}", ${Me.ID}]}) /call core_cast2 "${DiscMele}" disc 0 FALSE
 		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]}) {
 			/call use_glyph
 		} else /if (!${Bool[${Me.ActiveDisc}]} && !${Me.CombatAbilityReady[${DiscMele}]} && !${Me.AltAbilityReady[Empowered Blades]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
@@ -249,17 +249,17 @@ sub synergy_RNG()
 	/if (${validate_cast[FALSE, alt, "${RNGcheetah}", ${Me.ID}]}) /call core_cast2 "${RNGcheetah}" alt 0 FALSE
 	
 	| att buffs
-	/if (${validate_cast[FALSE, alt, "Outrider's Accuracy", ${Me.ID}]} && !${Bool[${Me.Buff[Outrider's Attack]}]}) {
-		/call core_cast2 "Outrider's Accuracy" alt 0 FALSE
-	} else /if (${validate_cast[FALSE, alt, "Outrider's Attack", ${Me.ID}]} && !${Me.AltAbilityReady[Outrider's Accuracy]} ) {
-		/call core_cast2 "Outrider's Attack" alt 0 FALSE
+	/if (${Me.AltAbilityReady[Outrider's Accuracy]} && !${Bool[${Me.Buff[Outrider's Attack]}]}) {
+		/if (${validate_cast[FALSE, alt, "Outrider's Accuracy", ${Me.ID}]}) /call core_cast2 "Outrider's Accuracy" alt 0 FALSE
+	} else /if (${Me.AltAbilityReady[Outrider's Attack]} && !${Bool[${Me.Song[Outrider's Accuracy]}]} && !${Me.AltAbilityReady[Outrider's Accuracy]} ) {
+		/if (${validate_cast[FALSE, alt, "Outrider's Attack", ${Me.ID}]}) /call core_cast2 "Outrider's Attack" alt 0 FALSE
 	}
 	
 	| guardian buff
-	/if (${validate_cast[FALSE, alt, "Guardian of the Forest", ${Me.ID}]} && !${Bool[${Me.Song[${RNGgroupguardian}]}]}) {  
-		/call core_cast2 "Guardian of the Forest" alt 0 FALSE
-	} else /if (${validate_cast[FALSE, alt, "${RNGgroupguardian}", ${Me.ID}]} && !${Bool[${Me.Song[Guardian of the Forest]}]} && !${Me.AltAbilityReady[Guardian of the Forest]}) {
-		/call core_cast2 "${RNGgroupguardian}" alt 0 FALSE
+	/if (!${Bool[${Me.Song[${RNGgroupguardian}]}]}) {  
+		/if (${validate_cast[FALSE, alt, "Guardian of the Forest", ${Me.ID}]}) /call core_cast2 "Guardian of the Forest" alt 0 FALSE
+	} else /if (!${Bool[${Me.Song[Guardian of the Forest]}]} && !${Me.AltAbilityReady[Guardian of the Forest]}) {
+		/if (${validate_cast[FALSE, alt, "${RNGgroupguardian}", ${Me.ID}]}) /call core_cast2 "${RNGgroupguardian}" alt 0 FALSE
 	}
 		
 	| swarm

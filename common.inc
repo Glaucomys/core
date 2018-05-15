@@ -170,7 +170,7 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 /return
 
 
- 
+
 |***
  *	DES: Check to see if toon is engaged in any way.
  *	USE: /call check_engaged
@@ -179,17 +179,33 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
  ***|
 sub check_engaged()
 	DEBUG ${cbug}check_engaged()\ax
-	AMIDEAD
-	/doevents
-	/declare _isEngaged		bool local FALSE
-	/if (${Me.Invis}) /varset _isEngaged TRUE
-	/if (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /varset _isEngaged FALSE
-	/if (${Bool[${Me.Casting}]} || ${Me.Casting.ID}) /varset _isEngaged TRUE
-	/if (${Me.Moving} || ${Stick.Active}) /varset _isEngaged TRUE
-	/if (${Me.Combat} || ${Me.AutoFire}) /varset _isEngaged TRUE
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} && !${switchBuffCombat}) /varset _isEngaged TRUE
-	/if (((${switchPull} && ${switchAgro}) || ${Group.MainAssist.Name.Equal[${Me.DisplayName}]} || ${Group.MainTank.Name.Equal[${Me.DisplayName}]}) && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /varset _isEngaged TRUE
-/return ${_isEngaged}
+	| rogue SOS .. 
+	/if (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /return FALSE
+	
+	| invis
+	/if (${Me.Invis}) /return TRUE
+	
+	| spawn count
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} && !${switchBuffCombat}) /return TRUE
+
+	| spell cast'in. songs as well
+	/if (${Me.Casting.ID}) /return TRUE
+
+	| movement
+	/if (${Me.Moving}) /return TRUE
+	/if (${Stick.Active}) /return TRUE
+	
+	| combat
+	/if (${Me.Combat}) /return TRUE
+	/if (${Me.AutoFire}) /return TRUE
+	
+	| am i the puller or main agro with mobs in range?
+	| /if (((${switchPull} && ${switchAgro}) || ${Group.MainAssist.Name.Equal[${Me.DisplayName}]} || ${Group.MainTank.Name.Equal[${Me.DisplayName}]}) && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
+	/if (${switchPull} && ${switchAgro} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
+	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
+	/if (${Group.MainTank.Name.Equal[${Me.DisplayName}]}) && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
+
+/return FALSE
 
 
 

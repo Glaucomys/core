@@ -14,6 +14,23 @@
   -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard
 
 
+
+
+
+20180515
+- check_engaged()
+  -- rewrite to exit faster
+  -- ${check_engaged[]}
+- class.rng.inc
+  -- adjusted logic flow for validations trying to prevent some crashes
+- class.wiz.inc
+  -- adjusted logic flow for validations trying to prevent some crashes
+- class.clr.inc
+  -- adjusted logic flow for validations trying to prevent some crashes
+- class.rog.inc
+  -- adjusted logic flow for validations trying to prevent some crashes
+
+
 20180514
 - glyphs
   -- core.ini->[general]->switchGlyphOutsideRaid=FALSE

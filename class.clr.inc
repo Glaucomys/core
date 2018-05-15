@@ -236,9 +236,8 @@ sub check_heal_group_CLR()
 	
   | AA Spire
 	/if (!${Bool[${Raid.Members}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
-    /if (${validate_cast[FALSE, alt, "${CLRspire3}", ${WorstHurt}]}) {
-    	/call core_cast2 "${CLRspire3}" alt ${WorstHurt} FALSE
-    }
+    /if (${validate_cast[FALSE, alt, "${CLRspire3}", ${WorstHurt}]}) /call core_cast2 "${CLRspire3}" alt ${WorstHurt} FALSE
+
   }	
   
 	| Dichotomic Heal
@@ -256,7 +255,7 @@ sub check_heal_group_CLR()
   /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} < ${Spell[${healPanic}].MyRange}) {
   	DEBUG WorstHurt ID:${WorstHurt} .. ME ID:${Me.ID}  .. Target ID:${Target.ID}
 		/if (${validate_cast[FALSE, alt, "Burst of Life", ${WorstHurt}]}) /call core_cast2 "Burst of Life" alt ${WorstHurt} FALSE
-   	/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]})  /call core_cast2 "${healPanic}" 0 ${WorstHurt} FALSE
+   	/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]}) /call core_cast2 "${healPanic}" 0 ${WorstHurt} FALSE
   }
 
 	| Arbitration
