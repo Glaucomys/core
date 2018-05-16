@@ -15,6 +15,10 @@
 
 
 
+20180516
+- check_engaged()
+  -- misssed a )
+
 
 
 20180515

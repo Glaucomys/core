@@ -203,7 +203,7 @@ sub check_engaged()
 	| /if (((${switchPull} && ${switchAgro}) || ${Group.MainAssist.Name.Equal[${Me.DisplayName}]} || ${Group.MainTank.Name.Equal[${Me.DisplayName}]}) && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
 	/if (${switchPull} && ${switchAgro} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
 	/if (${Group.MainAssist.Name.Equal[${Me.DisplayName}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
-	/if (${Group.MainTank.Name.Equal[${Me.DisplayName}]}) && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
+	/if (${Group.MainTank.Name.Equal[${Me.DisplayName}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${CombatDistance}*2 playerstate 4]}) /return TRUE
 
 /return FALSE
 
