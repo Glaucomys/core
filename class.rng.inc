@@ -289,6 +289,7 @@ sub Bind_setRNG(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare rngType string	local |fastheal|healpoint|spice|spiregroup|spireraid|summer
 
 	| get help
 	/if (${_classType.Equal[info]}) {

@@ -565,6 +565,7 @@ sub Bind_setBRD(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare brdType string	local |healpoint|intimidkick|line|restsong|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {

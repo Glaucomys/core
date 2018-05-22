@@ -70,7 +70,7 @@
 
 ***|
 
-#turbo 60
+| #turbo 60
 | #warning
 #define DEBUG "/if (${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGCAST "/if (${switchDebugCasting} || ${switchDebugCore}) /echo [\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax]"
@@ -134,14 +134,22 @@
  ***|
 sub main()
 	/call initialize_core
-  
+	  
 	:loopmain
   	DEBUG ${cbug}:loopmain (Core: ${coreBuild})\ax
+
+		| locked in maintenance mode ?
+		/if (${maintenance.Find[${Me.DisplayName}]}) {
+			/delay 5
+			/goto :loopmain
+		} 
 	  AMIDEAD
 	  /doevents
   
 		/if (!${timer_check_EQBC}) /call check_one_mind
 		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
+		
+
 		
 		| what is this for??
 		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}
@@ -169,7 +177,9 @@ sub main()
 			/if (${HomeSet}) /squelch /makecamp mpause
 			
 			| keep an eye out for real rezes
-			/if (${flagCallNeedRez} && ${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
+			/if (${flagCallNeedRez}) {
+				/if (${Window[ConfirmationDialogBox].Open}) /varset markerDead TRUE
+			}
 			
 			/call check1offBuffs
 			AMIDEAD
@@ -210,10 +220,14 @@ sub main()
 		}
 
 		| use those AA.. hoarding bastard
-		/if (${switchAAFireworks} && !${timer_Waste_Fireworks}) /call cast_AA_fireworks
+		/if (${switchAAFireworks}) {
+			/if (!${timer_Waste_Fireworks}) /call cast_AA_fireworks
+		}
 
 		| watch for spawn
-		/if (${Bool[${watchSpawn}]} && !${timer_check_watch_spawn}) /call check_watch_spawn
+		/if (${Bool[${watchSpawn}]}) {
+			/if (!${timer_check_watch_spawn}) /call check_watch_spawn
+		}
 
 		| guns need ammo
 		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
@@ -284,6 +298,7 @@ sub initialize_core()
 	LOG .. Initialize Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
   /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
 	/if (${switchDispInfo}) VOUT Commands ${sep} ${cinfo}/info\ax
+	/if (${maintenance.Find[${Me.DisplayName}]}) VOUT ${owarning} maintenance ${sep} ${cinfo}${Me.DisplayName}\ax
 	OUT ${cgood}Ready\ax
 /return
 
@@ -293,34 +308,22 @@ sub initialize_core()
  *	DES: Settings I like to use. 
  *	USE: /call base_preperation
  *	INI: varries
- *  NOTE: You are free to adjust these. If you do not like, simply comment them out. it will not "hurt" the script.
+ *  NOTE: 
  ***|
 sub base_preperation()
 
 	| reset some of the variables so the toons dont act all stupid.
 	/if (!${Bool[${Raid.Members}]}) /call Event_noRaid
 	
-	| set me some xtargets
- 	/if (${validate_expansion[TRUE, |16]} && !${Bool[${Group.Members}]} && !${Bool[${Raid.Members}]}) {
- 		 /xtarget set 1 Autohater
- 	} else /if (${Bool[${Group.Members}]} && !${Bool[${Raid.Members}]}) {
- 		 /xtarget set 1 Groupassisttarget
- 	}
- 	
- 	
-	/if (${validate_expansion[TRUE, |16]} && ${Bool[${Raid.Members}]}) {
-		/xtarget set 1 Raidassist1target
-		/xtarget set 2 Autohater
-	}
-	
 	| fuck these plugins in particular
 	/if (${validate_plugin[FALSE, |MQ2Bucles]}) /plugin MQ2Bucles unload
 
-
 	| disable smart assists for TLP w/o underfoot
 	/if (!${validate_expansion[TRUE, |16]}) {
-		/if (${useSmartAssistR}) /call writeIni useSmartAssistR FALSE
-		/if (${useSmartAssistG}) /call writeIni useSmartAssistG FALSE
+		/if (${useSmartAssistG}) /call writeIni useSmartAssistR FALSE
+		/if (${useSmartAssist1}) /call writeIni useSmartAssist1 FALSE
+		/if (${useSmartAssist2}) /call writeIni useSmartAssist2 FALSE
+		/if (${useSmartAssist3}) /call writeIni useSmartAssist3 FALSE
 	}
 	
 	| clear the spawn watch
@@ -343,9 +346,11 @@ sub base_preperation()
 	}
 
 	| bard stuffs
-	/if (${validate_plugin[FALSE, |mq2twist]} && ${validate_class[FALSE, |BRD]}) {
-		/squelch /twist clear
-		/squelch /twist quiet
+	/if (${validate_class[FALSE, |BRD]}) {
+		/if (${validate_plugin[FALSE, |mq2twist]}) {
+			/squelch /twist clear
+			/squelch /twist quiet
+		}
 	}
 
 	| cpu stuffs
@@ -365,7 +370,9 @@ sub base_preperation()
 	/squelch /loadhud ${HudName}
 			
 	| force sos switch FALSE for non rogues
-	/if (${switchSos} && !${validate_class[FALSE, |ROG]}) /call writeINI switchSos Common FALSE
+	/if (!${validate_class[FALSE, |ROG]}) {
+		/if (${switchSos}) /call writeINI switchSos Common FALSE
+	}
 		
 	| check debuffs	switches	
 	/call validate_debuff FALSE mezz

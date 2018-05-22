@@ -68,7 +68,7 @@ sub core_PAL()
  *  NOTE: 
  ***|
 sub disc_PAL()
-	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
+	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -76,15 +76,16 @@ sub disc_PAL()
 	CHECKTIE
 
 	| defensive	
-	/if (${coreAuto} && ${switchAgro} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} >= ${defCount}) {
-		/declare _count int local 0
-		/for _count 1 to 3
-			/if (${Bool[${Me.ActiveDisc}]}) /break
-			/if (${validate_cast[FALSE, discR, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
-				/call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
-				/break
-			}			
-		/next _count
+	/if (${coreAuto} && !${Bool[${Me.ActiveDisc}]}) {
+		/if (${switchAgro} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} >= ${defCount}) {
+			/declare _count int local 0
+			/for _count 1 to 3
+				/if (${validate_cast[FALSE, activedisc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
+					/call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
+					/break
+				}
+			/next _count
+		}
 	}
 	
 	| check challenge
@@ -92,7 +93,7 @@ sub disc_PAL()
 	
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 	
-	/if (${validate_cast[FALSE, disc, "${DiscFastRune}", ${Me.ID}]}) /call core_cast2 "${DiscFastRune}" disc 0 FALSE
+	/if (${validate_cast[FALSE, activedisc, "${DiscFastRune}", ${Me.ID}]}) /call core_cast2 "${DiscFastRune}" disc 0 FALSE
 	
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
@@ -190,13 +191,16 @@ sub get_agro_PAL()
 	}
 
 	| snap hate
-	/if ((${Me.PctAggro} < 60 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && !${Raid.Members}) {
-		/if (${validate_cast[FALSE, alt, "Ageless Enmity", ${Target2Kill}]}) /call core_cast2 "Ageless Enmity" alt ${Target2Kill} cast_break
+	/if (!${Raid.Members}) {
+		/if (${Me.PctAggro} < 60 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+			/if (${validate_cast[FALSE, alt, "Ageless Enmity", ${Target2Kill}]}) /call core_cast2 "Ageless Enmity" alt ${Target2Kill} cast_break
+		}
 	}
 
 	| named fake hate
 	/if (${Me.PctAggro} < 80 && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]} && ${NameList.Find[${Target.DisplayName}]}) {
-		/disc ${DiscUnflinching}
+		/if (${validate_cast[FALSE, disc, "${DiscUnflinching}", ${Target2Kill}]}) /call core_cast2 "${DiscUnflinching}" disc ${Target2Kill} cast_break
+		| /disc ${DiscUnflinching}
 	}
 
 	| Valiant Defense. agro+heal
@@ -405,6 +409,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare palType string	local |defcount|groupheal|harmonious|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {

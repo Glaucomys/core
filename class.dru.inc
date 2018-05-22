@@ -405,6 +405,7 @@ sub Bind_setDRU(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare druType string	local |groupheal|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
 
 	| get help
 	/if (${_classType.Equal[info]}) {

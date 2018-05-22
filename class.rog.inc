@@ -297,6 +297,7 @@ sub Bind_setROG(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare rogType string	local |ae|autosos|healpoint|poison|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {

@@ -403,7 +403,7 @@ sub mode_petfarm()
 	/call check_watch_spawn
 	/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
 	
-	/if (${Select[${Me.Class.ShortName},MAG]} && ${switchdHealPet}) /call pet_heal_MAG
+	/if (${Select[${Me.Class.ShortName},MAG]} && ${switchHealPet}) /call pet_heal_MAG
 
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius} targetable]}) {
 		/varset _spawnCount ${SpawnCount[npccorpse ${If[${switchOverrideLos},,los]} radius ${MobAgro} zradius ${zradius}]}	

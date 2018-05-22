@@ -108,42 +108,21 @@ sub check_rune_ENC()
 	CHECKEXIT
 	UPDATEHUD "BUFF: Rune"
 
-	| /if (${validate_buff[alt, rune, runeVeil]}) /call core_cast "${runeVeil}" 0 0 FALSE TRUE
 	/if (${validate_cast[FALSE, alt, "${runeVeil}", ${Me.ID}]}) /call core_cast2 "${runeVeil}" alt 0 FALSE
-	
-	| /if (${validate_buff[alt, rune, runeEldritch]}) /call core_cast "${runeEldritch}" 0 0 FALSE TRUE
 	/if (${validate_cast[FALSE, alt, "${runeEldritch}", ${Me.ID}]}) /call core_cast2 "${runeEldritch}" alt 0 FALSE
-	
-	| /if (${validate_buff[alt, rune, runeSpray]}) /call core_cast "${runeSpray}" 0 0 FALSE TRUE
 	/if (${validate_cast[FALSE, alt, "${runeSpray}", ${Me.ID}]}) /call core_cast2 "${runeSpray}" alt 0 FALSE
-	
-	| /if (${validate_buff[alt, rune, runeReactive]}) /call core_cast "${runeReactive}" 0 0 FALSE TRUE
 	/if (${validate_cast[FALSE, alt, "${runeReactive}", ${Me.ID}]}) /call core_cast2 "${runeReactive}" alt 0 FALSE
-	
-	| /if (${validate_buff[alt, rune, runeMind]}) /call core_cast "${runeMind}" 0 0 FALSE TRUE
 	/if (${validate_cast[FALSE, alt, "${runeMind}", ${Me.ID}]}) /call core_cast2 "${runeMind}" alt 0 FALSE
-	
-	| /if (${validate_buff[spell, rune, runeAuspice]} && ${FindItemCount[Peridot]} > 1) /call core_cast "${runeAuspice}" 0 ${Me.ID} FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Me.ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
 	
 	| /if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]}) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
 	| /if (${validate_cast[FALSE, spell, "${runeEntAuspice}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE
 	 
-	| /if (${validate_buff[spell, rune, runeWard]}) /call core_cast "${runeWard}" 0 0 FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeWard}", ${Me.ID}]}) /call core_cast2 "${runeWard}" 0 0 FALSE
-	
-	| /if (${validate_buff[spell, rune, runePoly]}) /call core_cast "${runePoly}" ${buffGem} ${Me.ID} FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runePoly}", ${Me.ID}]}) /call core_cast2 "${runePoly}" ${buffGem} ${Me.ID} FALSE
-	
-	| /if (${validate_buff[spell, rune, runeBrimstone]}) /call core_cast "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeBrimstone}", ${Me.ID}]}) /call core_cast2 "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE
-	
-	| /if (${validate_buff[spell, rune, runeShieldofFate]}) /call core_cast "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}) /call core_cast2 "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE
-	
-	| /if (${validate_buff[spell, rune, runeLegion]} && ${FindItemCount[Peridot]}) /call core_cast "${runeLegion}" ${buffGem} ${Me.ID} FALSE TRUE
 	/if (${validate_cast[FALSE, spell, "${runeLegion}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeLegion}" ${buffGem} ${Me.ID} FALSE
-
 
 	/call check_rune_auspice
 	UPDATEHUD FALSE
@@ -189,7 +168,7 @@ sub check_rune_auspice()
 	UPDATEHUD "BUFF: BC Auspice"
 	DEBUGCLASS BC Buffing ${sep} ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
 
-	/call core_cast "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
+	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${NetBots[${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
 	UPDATEHUD FALSE
 /return
 
@@ -246,9 +225,11 @@ sub check_crystals()
 		/call sort_cursor TRUE
 	}
 
-	/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${Bool[${mannaCrystal}]} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) /call core_cast "${mannaCrystal} IV" item 0 FALSE
-	
-	| /if (${Me.PctMana} < 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Fundament: Second Spire of Enchantment]}) /call core_cast "Fundament: Second Spire of Enchantment" alt 0 FALSE
+	/if (${Bool[${mannaCrystal}]}) {
+		/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) {
+			/if (${validate_cast[FALSE, alt , "${mannaCrystal} IV", ${Me.ID}]}) /call core_cast2 "${mannaCrystal} IV" item 0 FALSE
+		}
+	}
 
 	/call cast_AA_spire
 	
@@ -304,11 +285,11 @@ sub patch_heal_ENC()
 			/if (${Bool[${Macro.Return}]}) {
 				| /if (${Me.SpellReady[${spellStun}]}) /call core_cast "${stunSpell}" 0 0
 				| /if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.AltAbilityReady[Color Shock]}) /call core_cast "Color Shock" alt
-				/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${Me.AltAbilityReady[Doppelganger]}) /call core_cast "Doppelganger" alt ${Me.ID} FALSE
+				/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Doppelganger", ${Me.ID}]}) /call core_cast2 "Doppelganger" alt ${Me.ID} FALSE
 				| /if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Banishment]} && ${SpawnCount[npc radius 20]} > 2) /call core_cast "Beguiler's Banishment" alt
 				| /if (${Me.PctHPs} <= 40*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Directed Banishment]}) /call core_cast "Beguiler's Directed Banishment" alt ${Target2Kill} FALSE
-				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Nightmare Stasis]} && ${Target.Level} < 76) /call core_cast "Nightmare Stasis" alt alt ${Target2Kill} FALSE
-				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Dimensional Shield]}) /call core_cast "Dimensional Shield" alt ${Me.ID} FALSE
+				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Nightmare Stasis", ${Target2Kill}]} && ${Target.Level} < 76) /call core_cast2 "Nightmare Stasis" alt ${Target2Kill} FALSE
+				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Dimensional Shield", ${Me.ID}]}) /call core_cast2 "Dimensional Shield" alt ${Me.ID} FALSE
 				/if (${Defined[timer_mez_${Target.ID}]} && ${timer_mez_${Target.ID}} != -1) {
 					/varset timer_mez_${Target.ID} 20
 				} else /if (!${Defined[timer_mez_${Target.ID}]}) {
@@ -352,22 +333,24 @@ sub mez_adds()
 			/if (${SpawnCount[npc los radius 30 zradius 15 targetable]} > 1 ) {
 				VOUT ${sepO} ${cinfo}${SpawnCount[npc radius 30 zradius 15]}\ax ${sepC} ${If[${SpawnCount[npc los radius 30 zradius 15 targetable]} == 1,Target,Targets]} in point blank range.
 
-				/if (${switchdeBuffTash} && ${Me.AltAbilityReady[Bite of Tashani]}) /call core_cast "Bite of Tashani" alt 0 check_for_adds
+				/if (${switchdeBuffTash}) {
+					/if (${validate_cast[FALSE, alt, "Bite of Tashani", ${Me.ID}]}) /call core_cast2 "Bite of Tashani" alt 0 check_for_adds
+				}
 				
 				/if (${Me.Gem[${spellpbaeMez}]} && ${Me.SpellReady[${spellpbaeMez}]}) {
 					/if (${Me.Casting.Name.NotEqual[${spellpbaeMez}]}) /call interrupt
-					/call core_cast "${spellpbaeMez}" 0 0 check_for_adds
+					/if (${validate_cast[FALSE, spell, "${spellpbaeMez}", ${Me.ID}]}) /call core_cast2 "${spellpbaeMez}" 0 0 check_for_adds
 				}
 				/if (${Me.Gem[${spellStun}]} && ${Me.SpellReady[${spellStun}]}) {
 					/if (${Me.Casting.Name.NotEqual[${spellStun}]}) /call interrupt
-					/call core_cast "${spellStun}" 0 0 check_for_adds
+					/if (${validate_cast[FALSE, spell, "${spellStun}", ${Me.ID}]}) /call core_cast2 "${spellStun}" 0 0 check_for_adds
 				}
 			}
 			/if (${Spawn[${_tmpID}].NearestSpawn[3,npc radius 30].ID} && ${Spawn[${_tmpID}].Distance3D} <= 200 && ${Spawn[${_tmpID}].Distance3D} >= ${MobAgro}*.5) {
 				/if (${Me.AltAbilityReady[Beam of Slumber]}) {
 					/if (${Me.Casting.ID}) /call interrupt
 					/face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
-					/call core_cast "Beam of Slumber" alt 0				
+					/if (${validate_cast[FALSE, alt, "Beam of Slumber", ${Me.ID}]}) /call core_cast2 "Beam of Slumber" alt 0				
 				} 
 			}
 			/if (!${timer_mez_${_tmpID}}) /call cast_mez ${_tmpID}
@@ -396,7 +379,10 @@ sub cast_mez(int _tmpID)
 	:loopmez
 	AMIDEAD
 	/doevents
-	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
+	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /return
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]}) /return
+	/if (!${Spawn[${_tmpID}].ID}) /return
+	/if (!${Target.LineOfSight}) /return
 
 	| check for mez immune list mobs
 	/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
@@ -415,9 +401,9 @@ sub cast_mez(int _tmpID)
 		VOUT [${ctar}${Target.DisplayName}\ax] is being attacked!
 		/return
 	}
-	/if (${Me.CurrentMana} > ${Spell[${spellMez}].Mana}) {
+	| /if (${Me.CurrentMana} > ${Spell[${spellMez}].Mana}) {
 		/delay 2.25s ${Me.SpellReady[${spellMez}]}
-		/call core_cast "${spellMez}" 0 ${_tmpID} check_for_adds
+		/if (${validate_cast[FALSE, spell, "${spellMez}", ${_tmpID}]}) /call core_cast2 "${spellMez}" 0 ${_tmpID} check_for_adds
 		DEBUG ${spellMez} -> ${castReturn}
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
@@ -435,7 +421,7 @@ sub cast_mez(int _tmpID)
 	| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
 
 		/goto :loopmez
-	}
+	| }
 /return
 
 
@@ -453,7 +439,12 @@ sub cast_tash(int _tmpID)
 	CHECKEXIT
 	/doevents
 	CHECKTIE
-	/if (!${Target.LineOfSight} || ${ExcludeList.Find[${Target.DisplayName}]} || ${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
+
+	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /return
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]}) /return
+	/if (!${Spawn[${_tmpID}].ID}) /return
+	/if (!${Target.LineOfSight}) /return
+
 
 	| if it's tashed, mark it and move on. better things to do
 	/if (${Target.Tashed.Duration} && !${Target.Buff[Bite of Tashani].ID}) {
@@ -462,13 +453,13 @@ sub cast_tash(int _tmpID)
 		/return
 	}
 	
-	/if (${Target.Distance} <= ${Spell[${spellTash}].MyRange} && ${Target.LineOfSight} && ${Me.Gem[${spellTash}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} == 1) {
-		/call core_cast "${spellTash}" 0 ${_tmpID} check_for_adds
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} == 1) {
+		/if (${validate_cast[FALSE, spell, "${spellTash}", ${_tmpID}]}) /call core_cast2 "${spellTash}" 0 ${_tmpID} check_for_adds
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
 		}
-	} else /if (${Me.AltAbilityReady[Bite of Tashani]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} > 1) {
-		/call core_cast "Bite of Tashani" alt 0 FALSE
+	} else /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} > 1) {
+		/if (${validate_cast[FALSE, alt, "Bite of Tashani", ${Me.ID}]}) /call core_cast2 "Bite of Tashani" alt 0 FALSE
 	}
 
 /return
@@ -554,13 +545,14 @@ sub synergy_ENC()
 	CHECKEXIT
 	/doevents
 	
-	/if (${Me.AltAbilityReady[${ENCIoG}]}) /call core_cast "${ENCIoG}" alt 0
+	/if (${validate_cast[FALSE, alt, "${ENCIoG}", ${Me.ID}]}) /call core_cast2 "${ENCIoG}" alt 0
 	/call cast_AA_spire
-	/if (${Me.AltAbilityReady[Dimensional Shield]} && ${Spell[Dimensional Shield].Stacks}) /call core_cast "Dimensional Shield" alt 0
-	/if (${Me.AltAbilityReady[Calculated Insanity]} && ${Spell[Calculated Insanity].Stacks}) /call core_cast "Calculated Insanity" alt 0
+	/if (${validate_cast[FALSE, alt, "Dimensional Shield", ${Me.ID}]}) /call core_cast2 "Dimensional Shield" alt 0
+	/if (${validate_cast[FALSE, alt, "Calculated Insanity", ${Me.ID}]}) /call core_cast2 "Calculated Insanity" alt 0
 
 	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	| /if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
 
 	
 	/call use_glyph
@@ -595,12 +587,12 @@ sub find_mob_to_charm()
 
 				/squelch /target ID ${_tmpID}
 				/if (!${Target.Tashed.Duration}) /call cast_tash ${_tmpID}
-				/call core_cast "${spellpbaeMez}" 0 0 check_for_adds
+				/if (${validate_cast[FALSE, spell, "${spellpbaeMez}", ${Me.ID}]}) /call core_cast2 "${spellpbaeMez}" 0 0 check_for_adds
 
-				/if (${Target.Level} <= 46  && ${Me.AltAbilityReady[Dire Charm]}) {
-					/call core_cast "Dire Charm" alt ${_tmpID} FALSE					
+				/if (${Target.Level} <= 46) {
+					/if (${validate_cast[FALSE, alt, "Dire Charm", ${_tmpID}]}) /call core_cast2 "Dire Charm" alt ${_tmpID} FALSE					
 				} else {
-					/call core_cast "${spellCharm}" 0 ${_tmpID} FALSE
+					/if (${validate_cast[FALSE, spell, "${spellCharm}", ${_tmpID}]}) /call core_cast2 "${spellCharm}" 0 ${_tmpID} FALSE
 				}
 				
 				/if (${Defined[timer_mez_${_tmpID}]}) /deletevar timer_mez_${_tmpID}
@@ -627,6 +619,8 @@ sub Bind_setENC(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare encType string	local |charm|gather|healpoint|spiregroup|spireraid
+
 
 	| get help
 	/if (${_classType.Equal[info]}) {

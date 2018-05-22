@@ -266,6 +266,7 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare shdType string	local |defcount|harmonious|healpoint|skin|spiregroup|spireraid|stance
 
 	| get help
 	/if (${_classType.Equal[info]}) {

@@ -17,8 +17,8 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											int			outer 20180516
-	/call setINIVar classBuild											int 		Common 0
+	/call setDeclare coreBuild											string	outer 20180521.01
+	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
 	/declare _count 																int 		local 0
@@ -55,7 +55,26 @@ sub set_declares()
 	/call DeclareCoreIniVar smartasserrors					string	General TRUE
 	/call DeclareCoreIniVar forceNukeLoop						string	General FALSE
 	/call DeclareCoreIniVar autoAddNameList					string	General TRUE
+	/call DeclareCoreIniVar maintenance							string	General "|FALSE|FALSE"
  			
+
+	| broadcast switches
+	| default on
+	/call DeclareCoreIniVar broadcastZonereset			bool	Broadcast TRUE
+	/call DeclareCoreIniVar broadcastStop						bool	Broadcast TRUE
+	/call DeclareCoreIniVar broadcastHere						bool	Broadcast TRUE
+
+	| default off
+	/call DeclareCoreIniVar broadcastTake						bool	Broadcast FALSE
+	/call DeclareCoreIniVar broadcastDoor						bool	Broadcast FALSE
+	/call DeclareCoreIniVar broadcastInvis					bool	Broadcast FALSE
+	/call DeclareCoreIniVar broadcastKillmob				bool	Broadcast FALSE
+	/call DeclareCoreIniVar broadcastClean					bool	Broadcast FALSE
+	/call DeclareCoreIniVar broadcastAnchor					bool	Broadcast FALSE
+
+
+
+
 		|** Output Color Display 
 			Default			\ax							Black				\ab
 			Blue				\au							Brown				\a-o
@@ -125,7 +144,6 @@ sub set_declares()
 	/call setINIVar verbose													bool		Echo TRUE
 	/call setINIVar ClassChannel										int			Echo FALSE
 
-
 	 	
 	| lists for .. you know..lists and stuff.
 	/call setDeclare AllClassList										string 	outer "|WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU"
@@ -139,7 +157,7 @@ sub set_declares()
 		
 		
 	| core control
-	/call setDeclare coreType 											string 	outer "|auto|control|events|expadjust|expmaintain|explevel|fireworks|fixini|takeraidinvite|takegroupinvite|giveraidinvite|killcode|dbcash|reset|rest|whitewash"
+	/call setDeclare coreType 											string 	outer "|auto|control|events|expadjust|expmaintain|explevel|fireworks|fixini|takeraidinvite|takegroupinvite|giveraidinvite|killcode|dbcash|reset|rest|whitewash|zonereset"
 	/call setDeclare coreObscure										bool		outer FALSE
 	/call setINIVar coreAuto				 								bool	 	Common FALSE
 	/call DeclareCoreIniVar remoteKillKey						string	General "CHANGE ME" 
@@ -340,7 +358,6 @@ sub set_declares()
 
 	/call setINIVar autoControl			 								bool		Common FALSE 
 	/call setINIVar noCastWith											string	Common "|Quick Defense|Protection of Bayle|Interrogation Intimidation|Energy Charge|Cloud of Terror|Faith"
-	/call setDeclare canCast												bool		outer	TRUE
 	/call setINIVar noMeleeWith											string	Common "|Itching Poison"
 	/call setDeclare canMelee												bool		outer TRUE
 	
@@ -371,212 +388,10 @@ sub set_declares()
 	/call setINIVar spireRaid												int 	Buffs 0
 	/call setINIVar spireGroup											int 	Buffs 0
 
-
-	| Bard
-	/call setDeclare BRDspire1											string	outer "Fundament: First Spire of the Minstrel"
-	/call setDeclare BRDspire2											string	outer "Fundament: Second Spire of the Minstrel"
-	/call setDeclare BRDspire3											string	outer "Fundament: Third Spire of the Minstrel"
-	/call setDeclare BRDsynergyAA										string	outer "Troubadour's Synergy"
-	/call setDeclare BRDEpic1												string	outer "Singing Short Sword"
-	/call setDeclare BRDEpic15											string	outer "Prismatic Dragon Blade"
-	/call setDeclare BRDEpic2												string	outer "Prismatic Dragon Blade"
-	/call setDeclare BRDAlliance										string	outer "Alliance of Sticks and Stones"
-	/call setDeclare BRDAAUnity											string	outer FALSE
-	/call setDeclare BRDAAFade											string	outer 
-
-	| Beastlord
-	/call setDeclare BSTspire1											string	outer "Fundament: First Spire of the Savage Lord"
-	/call setDeclare BSTspire2											string	outer "Fundament: Second Spire of the Savage Lord"
-	/call setDeclare BSTspire3											string	outer "Fundament: Third Spire of the Savage Lord"
-	/call setDeclare BSTsynergyAA										string	outer "Primalist's Synergy"
-	/call setDeclare BSTEpic1												string	outer "Claw of the Savage Spirit"
-	/call setDeclare BSTEpic15											string	outer "Savage Lord's Totem"
-	/call setDeclare BSTEpic2												string	outer "Spiritcaller Totem of the Feral"
-	/call setDeclare BSTAlliance										string	outer "Venomous Alliance"
-	/call setDeclare BSTAAUnity											string	outer "Feralist's Unity"
-	/call setDeclare BSTAAFade											string	outer 
-
-	| Berzerker
-	/call setDeclare BERspire1											string	outer "Fundament: First Spire of Savagery"
-	/call setDeclare BERspire2											string	outer "Fundament: Second Spire of Savagery"
-	/call setDeclare BERspire3											string	outer "Fundament: Third Spire of Savagery"
-	/call setDeclare BERsynergyAA										string	outer "Fury's Synergy"
-	/call setDeclare BEREpic1												string	outer "Kerasian Axe of Ire"
-	/call setDeclare BEREpic15											string	outer "Raging Taelosian Alloy Axe"
-	/call setDeclare BEREpic2												string	outer "Vengeful Taelosian Blood Axe"
-	/call setDeclare BERAlliance										string	outer "Demolisher's Alliance"
-	/call setDeclare BERAAUnity											string	outer FALSE
-	/call setDeclare BERAAFade											string	outer 
-
-	| Cleric
-	/call setDeclare CLRspire1											string	outer "Fundament: First Spire of Divinity"
-	/call setDeclare CLRspire2											string	outer "Fundament: Second Spire of Divinity"
-	/call setDeclare CLRspire3											string	outer "Fundament: Third Spire of Divinity"
-	/call setDeclare CLRsynergyAA										string	outer "Templar's Synergy"
-	/call setDeclare CLREpic1												string	outer "Water Sprinkler of Nem Ankh"
-	/call setDeclare CLREpic15											string	outer "Harmony of the Soul"
-	/call setDeclare CLREpic2												string	outer "Aegis of Superior Divinity"
-	/call setDeclare CLRAlliance										string	outer "Divine Alliance"
-	/call setDeclare CLRAAUnity											string	outer "Saint's Unity"
-	/call setDeclare CLRAAFade											string	outer "Divine Peace"
-
-	| Druid
-	/call setDeclare DRUspire1											string	outer "Fundament: First Spire of Nature"
-	/call setDeclare DRUspire2											string	outer "Fundament: Second Spire of Nature"
-	/call setDeclare DRUspire3											string	outer "Fundament: Third Spire of Nature"
-	/call setDeclare DRUsynergyAA										string	outer "Preserver's Synergy"
-	/call setDeclare DRUEpic1												string	outer "Nature Walker's Scimitar"
-	/call setDeclare DRUEpic15											string	outer "Staff of Living Brambles"
-	/call setDeclare DRUEpic2												string	outer "Staff of Everliving Brambles"
-	/call setDeclare DRUAlliance										string	outer "Bosquetender's Alliance"
-	/call setDeclare DRUAAUnity											string	outer "Wildtender's Unity"
-	/call setDeclare DRUAAFade											string	outer 
-	
-	| Enchanter	
-	/call setDeclare ENCspire1											string	outer "Fundament: First Spire of Enchantment"
-	/call setDeclare ENCspire2											string	outer "Fundament: Second Spire of Enchantment"
-	/call setDeclare ENCspire3											string	outer "Fundament: Third Spire of Enchantment"
-	/call setDeclare ENCIoG													string	outer "Illusions of Grandeur"
-	/call setDeclare ENCMC													string	outer "Mental Contortion"
-	/call setDeclare ENCsynergyAA										string	outer "Begulier's Synergy"
-	/call setDeclare ENCEpic1												string	outer "Staff of the Serpent"
-	/call setDeclare ENCEpic15											string	outer "Oculus of Persuasion"
-	/call setDeclare ENCEpic2												string	outer "Staff of Eternal Eloquence"
-	/call setDeclare ENCAlliance										string	outer "Chromatic Alliance"
-	/call setDeclare ENCAAUnity											string	outer "Orator's Unity"
-	/call setDeclare ENCAAFade											string	outer "Self Stasis"
-
-	| Magician
-	/call setDeclare MAGspire1											string	outer "Fundament: First Spire of the Elements"
-	/call setDeclare MAGspire2											string	outer "Fundament: Second Spire of the Elements"
-	/call setDeclare MAGspire3											string	outer "Fundament: Third Spire of the Elements"
-	/call setDeclare MAGsynergyAA										string	outer "Conjurer's Synergy"
-	/call setDeclare MAGEpic1												string	outer "Orb of Mastery"
-	/call setDeclare MAGEpic15											string	outer "Staff of Elemental Essence"
-	/call setDeclare MAGEpic2												string	outer "Focus of Primal Elements"
-	/call setDeclare MAGAlliance										string	outer "Firebound Alliance"
-	/call setDeclare MAGAAUnity											string	outer "Thaumaturge's Unity"
-	/call setDeclare MAGAAFade											string	outer "Drape of Shadows"
-
-	| Monk
-	/call setDeclare MNKspire1											string	outer "Fundament: First Spire of the Sensei"
-	/call setDeclare MNKspire2											string	outer "Fundament: Second Spire of the Sensei"
-	/call setDeclare MNKspire3											string	outer "Fundament: Third Spire of the Sensei"
-	/call setDeclare MNKsynergyAA										string	outer "Calanin's Synergy"
-	/call setDeclare MNKEpic1												string	outer "Celestial Fists"
-	/call setDeclare MNKEpic15											string	outer "Fistwraps of Celestial Discipline"
-	/call setDeclare MNKEpic2												string	outer "Transcended Fistwraps of Immortality"
-	/call setDeclare MNKAlliance										string	outer "Doomwalker's Alliance"
-	/call setDeclare MNKAAUnity											string	outer FALSE
-	/call setDeclare MNKAAFade											string	outer 
-		
-	| Necromancer
-	/call setDeclare NECspire1											string	outer "Fundament: First Spire of Necromancy"
-	/call setDeclare NECspire2											string	outer "Fundament: Second Spire of Necromancy"
-	/call setDeclare NECspire3											string	outer "Fundament: Third Spire of Necromancy"
-	/call setDeclare NECsynergyAA										string	outer "Defiler's Synergy"
-	/call setDeclare NECEpic1												string	outer "Scythe of the Shadowed Soul"
-	/call setDeclare NECEpic15											string	outer "Soulwhisper"
-	/call setDeclare NECEpic2												string	outer "Deathwhisper"
-	/call setDeclare NECAlliance										string	outer "Malevolent Alliance"
-	/call setDeclare NECAAUnity											string	outer "Mortifier's Unity"
-	/call setDeclare NECAAFade											string	outer 
-
-	| Paladin
-	/call setDeclare PALspire1											string	outer "Fundament: First Spire of Holiness"
-	/call setDeclare PALspire2											string	outer "Fundament: Second Spire of Holiness"
-	/call setDeclare PALspire3											string	outer "Fundament: Third Spire of Holiness"
-	/call setDeclare PALsynergyAA										string	outer "Knight's Synergy"
-	/call setDeclare PALEpic1												string	outer "Fiery Defender"
-	/call setDeclare PALEpic15											string	outer "Heartwood Blade"
-	/call setDeclare PALEpic2												string	outer "Nightbane, Sword of the Valiant"
-	/call setDeclare PALAlliance										string	outer "Holy Alliance"
-	/call setDeclare PALAAUnity											string	outer "Divine Protector's Unity"
-	/call setDeclare PALAAFade											string	outer "Balefire Burst"
-
-	| Ranger
-	/call setDeclare RNGspire1											string	outer "Fundament: First Spire of the Pathfinders"
-	/call setDeclare RNGspire2											string	outer "Fundament: Second Spire of the Pathfinders"
-	/call setDeclare RNGspire3											string	outer "Fundament: Third Spire of the Pathfinders"
-	/call setDeclare RNGauspice											string	outer "Auspice of the Hunter"
-	/call setDeclare RNGcheetah											string	outer "Scarlet Cheetah's Fang"
-	/call setDeclare RNGgroupguardian								string	outer "Group Guardian of the Forest"
-	/call setDeclare RNGsynergyAA										string	outer "Outrider's Synergy"
-	/call setDeclare RNGEpic1												string	outer "Earthcaller"
-	/call setDeclare RNGEpic15											string	outer "Heartwood Blade"
-	/call setDeclare RNGEpic2												string	outer "Aurora, the Heartwood Blade"
-	/call setDeclare RNGAlliance										string	outer "Bosquestalker's Alliance"
-	/call setDeclare RNGAAUnity											string	outer "Wildstalker's Unity (Azia)"
-	/call setDeclare RNGAAFade											string	outer "Cover Tracks"
-
-	| Rogue
-	/call setDeclare ROGspire1											string	outer "Fundament: First Spire of the Rake"
-	/call setDeclare ROGspire2											string	outer "Fundament: Second Spire of the Rake"
-	/call setDeclare ROGspire3											string	outer "Fundament: Third Spire of the Rake"
-	/call setDeclare ROGsynergyAA										string	outer "Blackguard's Synergy"
-	/call setDeclare ROGEpic1												string	outer "Ragebringer"
-	/call setDeclare ROGEpic15											string	outer "Fatestealer"
-	/call setDeclare ROGEpic2												string	outer "Nightshade, Blade of Entropy"
-	/call setDeclare ROGAlliance										string	outer "Poisonous Alliance"
-	/call setDeclare ROGAAUnity											string	outer FALSE
-	/call setDeclare ROGAAFade											string	outer "Escape"
-
-	| Shadow Knight
-	/call setDeclare SHDspire1											string	outer "Fundament: First Spire of the Reavers"
-	/call setDeclare SHDspire2											string	outer "Fundament: Second Spire of the Reavers"
-	/call setDeclare SHDspire3											string	outer "Fundament: Third Spire of the Reavers"
-	/call setDeclare SHDsynergyAA										string	outer "Knight's Synergy"
-	/call setDeclare SHDEpic1												string	outer "Innoruuk's Curse"
-	/call setDeclare SHDEpic15											string	outer "Innoruuk's Voice"
-	/call setDeclare SHDEpic2												string	outer "Innoruuk's Dark Blessing"
-	/call setDeclare SHDAlliance										string	outer "Bloodletting Alliance"
-	/call setDeclare SHDAAUnity											string	outer "Dark Lord's Unity (Beza)"
-	/call setDeclare SHDAAFade											string	outer "Death Peace"
-
-	| Shaman
-	/call setDeclare SHMspire1											string	outer "Fundament: First Spire of Ancestors"
-	/call setDeclare SHMspire2											string	outer "Fundament: Second Spire of Ancestors"
-	/call setDeclare SHMspire3											string	outer "Fundament: Third Spire of Ancestors"
-	/call setDeclare SHMsynergyAA										string	outer "Luminary's Synergy"
-	/call setDeclare SHMEpic1												string	outer "Spear of Fate"
-	/call setDeclare SHMEpic15											string	outer "Crafted Talisman of Fates"
-	/call setDeclare SHMEpic2												string	outer "Blessed Spiritstaff of the Heyokah"
-	/call setDeclare SHMAlliance										string	outer "Ancient Alliance"
-	/call setDeclare SHMAAUnity											string	outer "Visionary's Unity"
-	/call setDeclare SHMAAFade											string	outer 
-
-	| Warrior
-	/call setDeclare WARspire1											string	outer "Fundament: First Spire of the Warlord"
-	/call setDeclare WARspire2											string	outer "Fundament: Second Spire of the Warlord"
-	/call setDeclare WARspire3											string	outer "Fundament: Third Spire of the Warlord"
-	/call setDeclare WARsynergyAA										string	outer "Myrmidon's Synergy"
-	/call setDeclare WAREpic1												string	outer "Jagged Blade of War"
-	/call setDeclare WAREpic15											string	outer "Champion's Sword of Eternal Power"
-	/call setDeclare WAREpic2												string	outer "Kreljnok's Sword of Eternal Power"
-	/call setDeclare WARAlliance										string	outer FALSE
-	/call setDeclare WARAAUnity											string	outer FALSE
-	/call setDeclare WARAAFade											string	outer 
-
-	| Wizard 
-	/call setDeclare WIZspire1											string	outer "Fundament: First Spire of Arcanum"
-	/call setDeclare WIZspire2											string	outer "Fundament: Second Spire of Arcanum"
-	/call setDeclare WIZspire3											string	outer "Fundament: Third Spire of Arcanum"
-	/call setDeclare WIZmannaburn										string	outer "Manna Burn"
-	/call setDeclare WIZsynergyAA										string	outer "Evoker's Synergy"
-	/call setDeclare WIZEpic1												string	outer "Staff of the Four"
-	/call setDeclare WIZEpic15											string	outer "Staff of Prismatic Power"
-	/call setDeclare WIZEpic2												string	outer "Staff of Phenomenal Power"
-	/call setDeclare WIZAlliance										string	outer "Frostbound Alliance"
-	/call setDeclare WIZAAUnity											string	outer "Etherealist's Unity"
-	/call setDeclare WIZAAFade											string	outer "A Hole in Space"
-
-
-	| set AA Unity Buffs
-	/if (${Bool[${${Me.Class.ShortName}AAUnity}]}) {
-		/for _count 1 to 7
-			/call setINIVar BuffAAUnity${_count}		string	Buffs FALSE
-		/next _count
-	}
+	| unity buffs
+	/for _count 1 to 7
+		/call setINIVar BuffAAUnity${_count}		string	Buffs FALSE
+	/next _count
 
 
 	| combat controls
@@ -587,7 +402,9 @@ sub set_declares()
 	/call setINIVar engageAt 												int 		Common 98
 	/call setINIVar smartengageAt 									int 		Common 98
 	/call setINIVar	useSmartAssistG									bool		Common FALSE
-	/call setINIVar	useSmartAssistR									bool		Common FALSE
+	/call setINIVar	useSmartAssist1									bool		Common FALSE
+	/call setINIVar	useSmartAssist2									bool		Common FALSE
+	/call setINIVar	useSmartAssist3									bool		Common FALSE
 	/call setINIVar	useForceAssist									bool		Common FALSE
 	/call setINIVar switchAgro											bool		Common FALSE 
 	/call setINIVar switchPull											bool		Common FALSE
@@ -701,7 +518,6 @@ sub set_declares()
 	/call setINIVar clickItemSwarm4									string	Items FALSE 	
 
 
-	
 	/call setINIVar clickOddItem1										string	Odds FALSE 
 	/call setINIVar clickOddItem2										string	Odds FALSE 
 	/call setINIVar clickOddItem3										string	Odds FALSE 
@@ -933,24 +749,6 @@ sub set_declares()
 	| tradeskill control
   /call setDeclare 		tsType											string	outer "|movebank"
 	
-	| CLASS controls
-  /call setDeclare brdType												string	outer "|healpoint|intimidkick|line|restsong|spiregroup|spireraid"
-  /call setDeclare berType												string	outer "|ae|healpoint|spiregroup|spireraid"
-  /call setDeclare bstType												string	outer "|fastheal|healpoint|spiregroup|spireraid"
-  /call setDeclare clrType												string	outer "|aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp"
-  /call setDeclare druType												string	outer "|groupheal|healpoint|rampage|spiregroup|spireraid|xtradius|xttime"
-  /call setDeclare encType												string	outer "|charm|gather|healpoint|spiregroup|spireraid"
-  /call setDeclare magType												string	outer "|fade|forcetwincast|gather|healpoint|mana|rods|spiregroup|spireraid"
-  /call setDeclare mnkType												string	outer "|fdpct|healpoint|spiregroup|spireraid|trainmelee"
-  /call setDeclare necType												string	outer "|healpoint|spiregroup|spireraid"
-  /call setDeclare palType												string	outer "|defcount|groupheal|harmonious|healpoint|mg|rampage|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp"
-  /call setDeclare rogType												string	outer "|ae|autosos|healpoint|poison|spiregroup|spireraid"
-  /call setDeclare rngType												string	outer "|fastheal|healpoint|spice|spiregroup|spireraid|summer"
-  /call setDeclare shdType												string	outer "|defcount|harmonious|healpoint|skin|spiregroup|spireraid|stance"
-  /call setDeclare shmType												string	outer "|cannihps|cannimanna|groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|talisman|xtradius|xttime"
-  /call setDeclare warType												string	outer "|healpoint|spiregroup|spireraid"
-  /call setDeclare wizType												string	outer "|forcetwincast|gather|healpoint|line|manaburn|spiregroup|spireraid"
-    
 	| cursor
   /call setDeclare cursorType											string	outer "|announce|auto|destroy|ignore|keep|leave|pass|pause|sell|what"
 	/call setINIVar switchAutoCursor								bool		Common TRUE	
@@ -1069,6 +867,17 @@ sub declare_timers()
  *  NOTE: 
  ***|   
 sub declare_MAG()
+	/call setDeclare MAGspire1											string	outer "Fundament: First Spire of the Elements"
+	/call setDeclare MAGspire2											string	outer "Fundament: Second Spire of the Elements"
+	/call setDeclare MAGspire3											string	outer "Fundament: Third Spire of the Elements"
+	/call setDeclare MAGsynergyAA										string	outer "Conjurer's Synergy"
+	/call setDeclare MAGEpic1												string	outer "Orb of Mastery"
+	/call setDeclare MAGEpic15											string	outer "Staff of Elemental Essence"
+	/call setDeclare MAGEpic2												string	outer "Focus of Primal Elements"
+	/call setDeclare MAGAlliance										string	outer "Firebound Alliance"
+	/call setDeclare MAGAAUnity											string	outer "Thaumaturge's Unity"
+	/call setDeclare MAGAAFade											string	outer "Drape of Shadows"
+	
 	/call setINIVar ServantNuke 										string 	Pet "Remorseless Servant"
 	/call setTimer tCauldron_use										string 	Timer 360m timer_caldron_use
 	/call setTimer tForce_Twincast									string	Timer 5s timer_force_twincast
@@ -1124,6 +933,17 @@ sub declare_MAG()
  *  NOTE: 
  ***|
 sub declare_WIZ()
+	/call setDeclare WIZspire1											string	outer "Fundament: First Spire of Arcanum"
+	/call setDeclare WIZspire2											string	outer "Fundament: Second Spire of Arcanum"
+	/call setDeclare WIZspire3											string	outer "Fundament: Third Spire of Arcanum"
+	/call setDeclare WIZmannaburn										string	outer "Manna Burn"
+	/call setDeclare WIZsynergyAA										string	outer "Evoker's Synergy"
+	/call setDeclare WIZEpic1												string	outer "Staff of the Four"
+	/call setDeclare WIZEpic15											string	outer "Staff of Prismatic Power"
+	/call setDeclare WIZEpic2												string	outer "Staff of Phenomenal Power"
+	/call setDeclare WIZAlliance										string	outer "Frostbound Alliance"
+	/call setDeclare WIZAAUnity											string	outer "Etherealist's Unity"
+	/call setDeclare WIZAAFade											string	outer "A Hole in Space"
 
 	/declare _count int local 0
 	/declare _list int local 0
@@ -1299,6 +1119,19 @@ sub declare_WIZ()
  *  NOTE: 
  ***|
 sub declare_ENC()
+	/call setDeclare ENCspire1											string	outer "Fundament: First Spire of Enchantment"
+	/call setDeclare ENCspire2											string	outer "Fundament: Second Spire of Enchantment"
+	/call setDeclare ENCspire3											string	outer "Fundament: Third Spire of Enchantment"
+	/call setDeclare ENCIoG													string	outer "Illusions of Grandeur"
+	/call setDeclare ENCMC													string	outer "Mental Contortion"
+	/call setDeclare ENCsynergyAA										string	outer "Begulier's Synergy"
+	/call setDeclare ENCEpic1												string	outer "Staff of the Serpent"
+	/call setDeclare ENCEpic15											string	outer "Oculus of Persuasion"
+	/call setDeclare ENCEpic2												string	outer "Staff of Eternal Eloquence"
+	/call setDeclare ENCAlliance										string	outer "Chromatic Alliance"
+	/call setDeclare ENCAAUnity											string	outer "Orator's Unity"
+	/call setDeclare ENCAAFade											string	outer "Self Stasis"
+	
 	/call setDeclare mobList												string	outer
 	/call setDeclare addList 												string 	outer
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer "|5|8|12|17|18|42|44|80|106|129|144"
@@ -1372,12 +1205,26 @@ sub declare_ENC()
  *  NOTE: 
  ***|
 sub declare_NEC()
+	/call setDeclare NECspire1											string	outer "Fundament: First Spire of Necromancy"
+	/call setDeclare NECspire2											string	outer "Fundament: Second Spire of Necromancy"
+	/call setDeclare NECspire3											string	outer "Fundament: Third Spire of Necromancy"
+	/call setDeclare NECsynergyAA										string	outer "Defiler's Synergy"
+	/call setDeclare NECEpic1												string	outer "Scythe of the Shadowed Soul"
+	/call setDeclare NECEpic15											string	outer "Soulwhisper"
+	/call setDeclare NECEpic2												string	outer "Deathwhisper"
+	/call setDeclare NECAlliance										string	outer "Malevolent Alliance"
+	/call setDeclare NECAAUnity											string	outer "Mortifier's Unity"
+	/call setDeclare NECAAFade											string	outer 
+
+
 	/call setTimer tCheck_Blood											string	Timer 8s	timer_check_blood
 
 	/call setINIVar spellMalo												string 	Spells "Scent of Terris"
 	/call setINIVar spellBlood											string 	Spells "Impose for Blood"
 	/call setINIVar spellSlow		 										string	Spells "Scent of Terris"
 	/call setINIVar spellCripple 										string 	Spells FALSE
+	/call setINIVar switchGather					 					bool		Spells TRUE
+	/call setINIVar GatherPercent			 							int			Spells 60
 	
 	/call setINIVar DoDoT								 						int			Spells 0
 	/call setINIVar DoT1							 							string	Spells FALSE
@@ -1435,6 +1282,17 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
+	/call setDeclare SHDspire1											string	outer "Fundament: First Spire of the Reavers"
+	/call setDeclare SHDspire2											string	outer "Fundament: Second Spire of the Reavers"
+	/call setDeclare SHDspire3											string	outer "Fundament: Third Spire of the Reavers"
+	/call setDeclare SHDsynergyAA										string	outer "Knight's Synergy"
+	/call setDeclare SHDEpic1												string	outer "Innoruuk's Curse"
+	/call setDeclare SHDEpic15											string	outer "Innoruuk's Voice"
+	/call setDeclare SHDEpic2												string	outer "Innoruuk's Dark Blessing"
+	/call setDeclare SHDAlliance										string	outer "Bloodletting Alliance"
+	/call setDeclare SHDAAUnity											string	outer "Dark Lord's Unity (Beza)"
+	/call setDeclare SHDAAFade											string	outer "Death Peace"
+	
 	/call setTimer tcheck_Skin											string 	Timer 45s timer_check_Skin
 	/call setTimer tcheck_Stance										string 	Timer 3m timer_check_Stance
 
@@ -1503,7 +1361,18 @@ sub declare_SHD()
  *  NOTE: 
  ***|
 sub declare_PAL()
-	/call setTimer	tcheck_MG												string	Timer	10s timer_check_MG
+	/call setDeclare PALspire1											string	outer "Fundament: First Spire of Holiness"
+	/call setDeclare PALspire2											string	outer "Fundament: Second Spire of Holiness"
+	/call setDeclare PALspire3											string	outer "Fundament: Third Spire of Holiness"
+	/call setDeclare PALsynergyAA										string	outer "Knight's Synergy"
+	/call setDeclare PALEpic1												string	outer "Fiery Defender"
+	/call setDeclare PALEpic15											string	outer "Heartwood Blade"
+	/call setDeclare PALEpic2												string	outer "Nightbane, Sword of the Valiant"
+	/call setDeclare PALAlliance										string	outer "Holy Alliance"
+	/call setDeclare PALAAUnity											string	outer "Divine Protector's Unity"
+	/call setDeclare PALAAFade											string	outer "Balefire Burst"
+	
+	/call setTimer tcheck_MG												string	Timer	10s timer_check_MG
 	/call setTimer tcheck_Steel											string 	Timer 2m timer_check_Steel
 	/call setTimer tcheck_Stance										string 	Timer 7.5m timer_check_Stance
 
@@ -1610,6 +1479,17 @@ sub declare_PAL()
  *  NOTE: 
  ***|
 sub declare_WAR()
+	/call setDeclare WARspire1											string	outer "Fundament: First Spire of the Warlord"
+	/call setDeclare WARspire2											string	outer "Fundament: Second Spire of the Warlord"
+	/call setDeclare WARspire3											string	outer "Fundament: Third Spire of the Warlord"
+	/call setDeclare WARsynergyAA										string	outer "Myrmidon's Synergy"
+	/call setDeclare WAREpic1												string	outer "Jagged Blade of War"
+	/call setDeclare WAREpic15											string	outer "Champion's Sword of Eternal Power"
+	/call setDeclare WAREpic2												string	outer "Kreljnok's Sword of Eternal Power"
+	/call setDeclare WARAlliance										string	outer FALSE
+	/call setDeclare WARAAUnity											string	outer FALSE
+	/call setDeclare WARAAFade											string	outer 
+	
 	/call setINIVar DiscInsult 											string 	Discs "Insult"
 	/call setINIVar DiscCyclone			 								string	Discs "Cyclone Roar"
 	/call setINIVar DiscWade				 								string	Discs "Wade In To Battle"
@@ -1655,6 +1535,17 @@ sub declare_WAR()
  *  NOTE: 
  ***|
 sub declare_BER()
+	/call setDeclare BERspire1											string	outer "Fundament: First Spire of Savagery"
+	/call setDeclare BERspire2											string	outer "Fundament: Second Spire of Savagery"
+	/call setDeclare BERspire3											string	outer "Fundament: Third Spire of Savagery"
+	/call setDeclare BERsynergyAA										string	outer "Fury's Synergy"
+	/call setDeclare BEREpic1												string	outer "Kerasian Axe of Ire"
+	/call setDeclare BEREpic15											string	outer "Raging Taelosian Alloy Axe"
+	/call setDeclare BEREpic2												string	outer "Vengeful Taelosian Blood Axe"
+	/call setDeclare BERAlliance										string	outer "Demolisher's Alliance"
+	/call setDeclare BERAAUnity											string	outer FALSE
+	/call setDeclare BERAAFade											string	outer 
+	
 	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 	/call setINIVar DiscSnare 											string 	Discs FALSE
 	/call setINIVar SnareAxe 												string 	Discs FALSE
@@ -1718,6 +1609,20 @@ sub declare_BER()
  *  NOTE: 
  ***|
 sub declare_RNG()
+	/call setDeclare RNGspire1											string	outer "Fundament: First Spire of the Pathfinders"
+	/call setDeclare RNGspire2											string	outer "Fundament: Second Spire of the Pathfinders"
+	/call setDeclare RNGspire3											string	outer "Fundament: Third Spire of the Pathfinders"
+	/call setDeclare RNGauspice											string	outer "Auspice of the Hunter"
+	/call setDeclare RNGcheetah											string	outer "Scarlet Cheetah's Fang"
+	/call setDeclare RNGgroupguardian								string	outer "Group Guardian of the Forest"
+	/call setDeclare RNGsynergyAA										string	outer "Outrider's Synergy"
+	/call setDeclare RNGEpic1												string	outer "Earthcaller"
+	/call setDeclare RNGEpic15											string	outer "Heartwood Blade"
+	/call setDeclare RNGEpic2												string	outer "Aurora, the Heartwood Blade"
+	/call setDeclare RNGAlliance										string	outer "Bosquestalker's Alliance"
+	/call setDeclare RNGAAUnity											string	outer "Wildstalker's Unity (Azia)"
+	/call setDeclare RNGAAFade											string	outer "Cover Tracks"
+	
 	/call setTimer tNuke_Summer											string	Timer 3s timer_cast_nuke_summer
 
 	/call setINIVar DoNuke					 								int			Spells 5
@@ -1785,6 +1690,17 @@ sub declare_RNG()
  *  NOTE: 
  ***|
 sub declare_DRU()
+	/call setDeclare DRUspire1											string	outer "Fundament: First Spire of Nature"
+	/call setDeclare DRUspire2											string	outer "Fundament: Second Spire of Nature"
+	/call setDeclare DRUspire3											string	outer "Fundament: Third Spire of Nature"
+	/call setDeclare DRUsynergyAA										string	outer "Preserver's Synergy"
+	/call setDeclare DRUEpic1												string	outer "Nature Walker's Scimitar"
+	/call setDeclare DRUEpic15											string	outer "Staff of Living Brambles"
+	/call setDeclare DRUEpic2												string	outer "Staff of Everliving Brambles"
+	/call setDeclare DRUAlliance										string	outer "Bosquetender's Alliance"
+	/call setDeclare DRUAAUnity											string	outer "Wildtender's Unity"
+	/call setDeclare DRUAAFade											string	outer 
+	
 	/call setINIVar debuffRo			 									string	Spells "Blessing of Ro"	
 	/call setINIVar WoodTXT													string	Spells "SoWood cast."
                                         		
@@ -1896,6 +1812,17 @@ sub declare_DRU()
  *  NOTE: 
  ***|
 sub declare_SHM()
+	/call setDeclare SHMspire1											string	outer "Fundament: First Spire of Ancestors"
+	/call setDeclare SHMspire2											string	outer "Fundament: Second Spire of Ancestors"
+	/call setDeclare SHMspire3											string	outer "Fundament: Third Spire of Ancestors"
+	/call setDeclare SHMsynergyAA										string	outer "Luminary's Synergy"
+	/call setDeclare SHMEpic1												string	outer "Spear of Fate"
+	/call setDeclare SHMEpic15											string	outer "Crafted Talisman of Fates"
+	/call setDeclare SHMEpic2												string	outer "Blessed Spiritstaff of the Heyokah"
+	/call setDeclare SHMAlliance										string	outer "Ancient Alliance"
+	/call setDeclare SHMAAUnity											string	outer "Visionary's Unity"
+	/call setDeclare SHMAAFade											string	outer 
+	
 	/call setDeclare MajorHurt 											int 		outer 0
 	/call setDeclare WorstHurt 											string 	outer FALSE
 	/call setDeclare WorstHurtID 										int 		outer ${Me.ID}
@@ -1976,6 +1903,17 @@ sub declare_SHM()
  *  NOTE: 
  ***|
 sub declare_BRD()
+	/call setDeclare BRDspire1											string	outer "Fundament: First Spire of the Minstrel"
+	/call setDeclare BRDspire2											string	outer "Fundament: Second Spire of the Minstrel"
+	/call setDeclare BRDspire3											string	outer "Fundament: Third Spire of the Minstrel"
+	/call setDeclare BRDsynergyAA										string	outer "Troubadour's Synergy"
+	/call setDeclare BRDEpic1												string	outer "Singing Short Sword"
+	/call setDeclare BRDEpic15											string	outer "Prismatic Dragon Blade"
+	/call setDeclare BRDEpic2												string	outer "Prismatic Dragon Blade"
+	/call setDeclare BRDAlliance										string	outer "Alliance of Sticks and Stones"
+	/call setDeclare BRDAAUnity											string	outer FALSE
+	/call setDeclare BRDAAFade											string	outer 
+
 	/call setDeclare mobList												string 	outer
 	/call setDeclare addList 												string 	outer
 		
@@ -2022,6 +1960,17 @@ sub declare_BRD()
  *  NOTE: 
  ***|
 sub declare_BST()
+	/call setDeclare BSTspire1											string	outer "Fundament: First Spire of the Savage Lord"
+	/call setDeclare BSTspire2											string	outer "Fundament: Second Spire of the Savage Lord"
+	/call setDeclare BSTspire3											string	outer "Fundament: Third Spire of the Savage Lord"
+	/call setDeclare BSTsynergyAA										string	outer "Primalist's Synergy"
+	/call setDeclare BSTEpic1												string	outer "Claw of the Savage Spirit"
+	/call setDeclare BSTEpic15											string	outer "Savage Lord's Totem"
+	/call setDeclare BSTEpic2												string	outer "Spiritcaller Totem of the Feral"
+	/call setDeclare BSTAlliance										string	outer "Venomous Alliance"
+	/call setDeclare BSTAAUnity											string	outer "Feralist's Unity"
+	/call setDeclare BSTAAFade											string	outer 
+	
 	/call setINIVar DiscForay 											string 	Spells "Pummel"
 	/call setINIVar DiscFocusClaws 									string 	Spells "Focused Clamor of Claws"
 	/call setINIVar DiscSavage 											string 	Spells "Savage Rage"
@@ -2089,6 +2038,17 @@ sub declare_BST()
  *  NOTE: 
  ***|
 sub declare_MNK()
+	/call setDeclare MNKspire1											string	outer "Fundament: First Spire of the Sensei"
+	/call setDeclare MNKspire2											string	outer "Fundament: Second Spire of the Sensei"
+	/call setDeclare MNKspire3											string	outer "Fundament: Third Spire of the Sensei"
+	/call setDeclare MNKsynergyAA										string	outer "Calanin's Synergy"
+	/call setDeclare MNKEpic1												string	outer "Celestial Fists"
+	/call setDeclare MNKEpic15											string	outer "Fistwraps of Celestial Discipline"
+	/call setDeclare MNKEpic2												string	outer "Transcended Fistwraps of Immortality"
+	/call setDeclare MNKAlliance										string	outer "Doomwalker's Alliance"
+	/call setDeclare MNKAAUnity											string	outer FALSE
+	/call setDeclare MNKAAFade											string	outer 
+	
 	/call setINIVar spellCripple 										string 	Spells FALSE
 	/call setINIVar switchMNKTrainMelee							bool		Common FALSE
 	/call setINIVar buffGem 												string 	Spells "gem8"
@@ -2107,6 +2067,17 @@ sub declare_MNK()
  *  NOTE: 
  ***|
 sub declare_ROG()
+	/call setDeclare ROGspire1											string	outer "Fundament: First Spire of the Rake"
+	/call setDeclare ROGspire2											string	outer "Fundament: Second Spire of the Rake"
+	/call setDeclare ROGspire3											string	outer "Fundament: Third Spire of the Rake"
+	/call setDeclare ROGsynergyAA										string	outer "Blackguard's Synergy"
+	/call setDeclare ROGEpic1												string	outer "Ragebringer"
+	/call setDeclare ROGEpic15											string	outer "Fatestealer"
+	/call setDeclare ROGEpic2												string	outer "Nightshade, Blade of Entropy"
+	/call setDeclare ROGAlliance										string	outer "Poisonous Alliance"
+	/call setDeclare ROGAAUnity											string	outer FALSE
+	/call setDeclare ROGAAFade											string	outer "Escape"
+	
 	| keep on cooldown
 	/call setTimer tClick_Poison										string	Timer 30s 	timer_click_poison
 	/call setINIVar AEMelee					 								bool	 	Discs FALSE
@@ -2160,6 +2131,17 @@ sub declare_ROG()
  ***|
 sub declare_CLR()
 	DEBUG ${cbug}declare_CLR()\ax
+	/call setDeclare CLRspire1											string	outer "Fundament: First Spire of Divinity"
+	/call setDeclare CLRspire2											string	outer "Fundament: Second Spire of Divinity"
+	/call setDeclare CLRspire3											string	outer "Fundament: Third Spire of Divinity"
+	/call setDeclare CLRsynergyAA										string	outer "Templar's Synergy"
+	/call setDeclare CLREpic1												string	outer "Water Sprinkler of Nem Ankh"
+	/call setDeclare CLREpic15											string	outer "Harmony of the Soul"
+	/call setDeclare CLREpic2												string	outer "Aegis of Superior Divinity"
+	/call setDeclare CLRAlliance										string	outer "Divine Alliance"
+	/call setDeclare CLRAAUnity											string	outer "Saint's Unity"
+	/call setDeclare CLRAAFade											string	outer "Divine Peace"
+	
 	/call setTimer tHealWard												string	Timer 185s timer_heal_ward
 	/call setINIVar switchLockMA										bool 		Heal FALSE
 		
@@ -2264,21 +2246,20 @@ sub declare_CLR()
  ***|
 sub set_alias()
 	DEBUG ${cbug}set_alias()\ax Setting Aliases
-	/if (!${Bool[${Alias[/take]}]}) 								/squelch /alias /take 											/bc take
-	/if (!${Bool[${Alias[/door]}]}) 								/squelch /alias /door 											/bc door
-	/if (!${Bool[${Alias[/stack]}]}) 								/squelch /alias /stack 											/bcaa //invis
-	/if (!${Bool[${Alias[/here]}]}) 								/squelch /alias /here 											/bca //setcombathere
+	| /if (!${Bool[${Alias[/take]}]}) 								/squelch /alias /take 											/bc take
+	| /if (!${Bool[${Alias[/door]}]}) 								/squelch /alias /door 											/bc door
+	| /if (!${Bool[${Alias[/stack]}]}) 								/squelch /alias /stack 											/bcaa //invis
+	| /if (!${Bool[${Alias[/here]}]}) 								/squelch /alias /here 											/bca //setcombathere
 	                                          			
   /if (!${Bool[${Alias[/sendpets]}]}) 						/squelch /alias /sendpets										VOUT SendPets: 
-	/if (!${Bool[${Alias[/killmob]}]}) 							/squelch /alias /killmob 										/bc killmob
-	/if (!${Bool[${Alias[/mirror]}]}) 							/squelch /alias /mirror 										/bc mirror
+	| /if (!${Bool[${Alias[/killmob]}]}) 							/squelch /alias /killmob 										/bc killmob
+	| /if (!${Bool[${Alias[/mirror]}]}) 							/squelch /alias /mirror 										/bc mirror
 	| /if (!${Bool[${Alias[/stein]}]}) 								/squelch /alias /stein 											/bcaa //stein
   /if (!${Bool[${Alias[/stop]}]}) 								/squelch /alias /stop 											/bc stop
 	/if (!${Bool[${Alias[/blurb]}]}) 								/squelch /alias /blurb 											VOUT Blurb: 
- 	/if (!${Bool[${Alias[/clean]}]}) 								/squelch /alias /clean 											VOUT Clean this mess up.
+ 	| /if (!${Bool[${Alias[/clean]}]}) 								/squelch /alias /clean 											VOUT Clean this mess up.
   /if (!${Bool[${Alias[/bcsay]}]}) 								/squelch /alias /bcsay 											/bc bcsay
-  /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
-  /if (!${Bool[${Alias[/autologin]}]}) 						/squelch /alias /autologin									/plugin mq2autologin unload
+  | /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
                                             			
 	| quick cleric cure commands              			
 	/if (!${Bool[${Alias[/rc]}]}) 									/squelch /alias /rc 												/bc rc
@@ -2289,13 +2270,20 @@ sub set_alias()
                                             			
 	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/bca //core auto on
 	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /bca //core auto off
-	/if (!${Bool[${Alias[/zonereset]}]}) 						/noparse /squelch /alias /zonereset			    /bc zonereset
+	| /if (!${Bool[${Alias[/zonereset]}]}) 						/noparse /squelch /alias /zonereset			    /bc zonereset
                                             			
 	/if (!${Bool[${Alias[/givecoin]}]}) 						/noparse /squelch /alias /givecoin			    VOUT Bribe Time:
                                             			
-	/if (!${Bool[${Alias[/oneoff]}]}) 							/noparse /squelch /alias /oneoff   					/bc oneoff
+	| /if (!${Bool[${Alias[/oneoff]}]}) 							/noparse /squelch /alias /oneoff   					/bc oneoff
                                             			
 	/if (!${Bool[${Alias[/gtfo]}]}) 								/noparse /squelch /alias /gtfo    			 		/bc gtfo
+	
+	
+	| utility
+	| /if (!${Bool[${Alias[/checkvar]}]}) 						/noparse /squelch /alias /checkvar 			 		/invoke ${Macro.Undeclared}
+  | /if (!${Bool[${Alias[/autologin]}]}) 						/squelch /alias /autologin									/plugin mq2autologin unload
+
+	
 /return
 
 
@@ -2359,107 +2347,39 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	DEBUG cmd: ${_cmd} _sender ${_sender}
 
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
-  /if (${_cmd.Equal[killmob]}) /call Bind_override engageat
  
-  | /if (${_cmd.Equal[mirror]} && ${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /call core_cast "Mirror Fragment of Anashti Sul" item 0 FALSE
-  | /if (${_cmd.Equal[stein]} && ${Me.ItemReady[Drunkard's Stein]}) /call core_cast "Drunkard's Stein" item 0 FALSE
-  | /if (${_cmd.Equal[oneoff]}) /call check1offBuffs
-
- 
-	|** commands to control all assist targets.  
-  /if (${_cmd.Equal[sma1]} && !${switchPull}) {
-		/call Bind_setCombatControl smartma R
-  } else /if (${_cmd.Equal[smag]} && !${switchPull}) {
-		/call Bind_setCombatControl smartma G
-	} else /if (${_cmd.Equal[smax]}) {
-		/call Bind_setCombatControl smartma X
-	}
-	**|
-
 	| group bail stuff
   /if (${_cmd.Equal[gtfo]}) {
   	/if (${Bool[${GTFO}]}) {
   		/call sort_cursor TRUE
-  		/call set_stop TRUE
+  		/call set_stop NOECHO
   		/call clear_combat
   		/docommand /makemevisible
-  		/if (${Me.ItemReady[${GTFO}]}) /call MQ2Cast "${GTFO}" item 0
-   		/if (${Me.SpellReady[${GTFO}]}) /call MQ2Cast "${GTFO}" 0 0
-   		/if (${Me.AltAbility[${GTFO}].ID}) /call MQ2Cast "${GTFO}" alt 0
+  		/if (${Me.ItemReady[${GTFO}]}) {
+  			/if (${validate_cast[FALSE, item, ${GTFO}, ${Me.ID}]}) /call core_cast2 "${GTFO}" item 0
+   		} else /if (${Me.SpellReady[${GTFO}]}) {
+  			/if (${validate_cast[FALSE, spell, ${GTFO}, ${Me.ID}]}) /call core_cast2 "${GTFO}" 0 0
+   		} else /if (${Me.AltAbility[${GTFO}].ID}) {
+  			/if (${validate_cast[FALSE, alt, ${GTFO}, ${Me.ID}]}) /call core_cast2 "${GTFO}" alt 0
+   		}
   	}
+  	/return
   }
 
-	|***
-	 *	DES: Tell toon to take ports: translocate, banner, Guild Hall TL, Task Acceptance
-	 *	USE: /take, /bc take
-	 ***|
-	/if (${_cmd.Equal[take]}) {
-		| take ports
-		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find[${Spawn[${Me}].Guild}]} || ${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["Guild Hall"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
-		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["be translocated by"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
-		/if (${Window[LargeDialogWindow].Child[LDW_TextBox].Text.Find["Would you like to travel"]}) /nomodkey /notify LargeDialogWindow LDW_YesButton leftmouseup 
-
-		| take taskadds/missions/HA
-		/if (${Window[LargeDialogWindow].Child[LDW_TextBox].Text.Find["Would you like to take on the challenge"]}) /nomodkey /notify LargeDialogWindow LDW_YesButton leftmouseup 
-		/if (${Window[ConfirmationDialogBox].Child[CD_TextOutPut].Text.Find["Join the expedition"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup 
-		/if (${Window[LargeDialogWindow].Child[LDW_TextBox].Text.Find["You have a heroic adventure"]}) /nomodkey /notify LargeDialogWindow LDW_YesButton leftmouseup
-		/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["has asked you to join the shared task"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
-		
-		| trade window
-		/if (${Window[Tradewnd].HisTradeReady}) {
-			/nomodkey /notify Tradewnd TRDW_Trade_Button leftmouseup
-			/delay 1s ${Cursor.ID}
-			/call sort_cursor TRUE
-		}		
-		/return TRUE
-	}
-
-	|***
-	 *	DES: Tell toon to take doors
-	 *	USE: /door, /bc door
-	 ***|
-	/if (${_cmd.Equal[door]}) {
-		/call create_timer timer_try_door 4s
-		:retrydoortarget
-		/if (!${timer_try_door}) /return
-		/doortarget 
-		/delay 1
-		/if (!${Switch.ID}) /goto :retrydoortarget
-		:retryopendoor
-		/if (!${timer_try_door}) /return
-		/if (!${Switch.Open}) {
-			/click left door
-			/delay 1s
-			/doevents flush
-		}
-		/return TRUE
-	}
 
 	|***
 	* DES: Tell toon to campfire clickie
 	* USE: /bc campfire
 	***|
-	/if (${_cmd.Equal[campfire]} && ${Me.ItemReady[Fellowship Registration Insignia]}) {
+	/if (${_cmd.Equal[campfire]}) {
 		/if (${Me.Invis}) /makemevisible
 		/delay 1s !${Me.Invis}
-		/if (${Me.Casting.ID}) /stopcast
+  	/call set_stop NOECHO
 		/delay 1s !${Me.Casting.ID}
-		| /call core_cast  "Fellowship Registration Insignia" item 0 FALSE
-		/useitem Fellowship Registration Insignia
-		/return TRUE
+		/if (${validate_cast[FALSE, item, "Fellowship Registration Insignia", ${Me.ID}]}) /call core_cast2 "Fellowship Registration Insignia" item 0 FALSE
+		/return
 	}
 
-	|***
-	* DES: reset the core.zone.ini for all toons in BC if you make a change to the file.
-	* USE: /bc zonereset
-	***|
-	/if (${_cmd.Equal[zonereset]}) {
-		/if (!${Spawn[pc ${_sender}].ID}) /return
-		/call echos zone 0 0 0 0
-		/call check_zone_INI ${_sender}
-		/if (${coreAuto} && ${switchShrink}) /call check_shrink
-		/return TRUE
-	}
 
 	|***
 	* DES: casts AA radient cure
@@ -2470,9 +2390,9 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 		/if (!${Me.AltAbilityReady[Radiant Cure]}) /return FALSE
 		/if (${Me.Casting.ID}) /stopcast
 		/delay 1s !${Me.Casting.ID}
-		/call core_cast "Radiant Cure" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 		ECHOCHANNEL Radiant Cure
-		/return TRUE
+		/return
 	}
 		
 	|***
@@ -2484,9 +2404,9 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 		/if (!${Me.AltAbilityReady[Purified Spirits]}) /return FALSE
 		/if (${Me.Casting.ID}) /stopcast
 		/delay 1s !${Me.Casting.ID}
-		/call core_cast "Purified Spirits" alt ${Spawn[pc ${_sender}].ID} FALSE
+		/if (${validate_cast[FALSE, alt, "Purified Spirits", ${Spawn[pc ${_sender}].ID}]}) /call core_cast2 "Purified Spirits" alt ${Spawn[pc ${_sender}].ID} FALSE
 		ECHOCHANNEL Purified Spirits: ${Spawn[pc ${_sender}].Name}
-		/return TRUE
+		/return
 	}
 	
 	|***
@@ -2498,8 +2418,8 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	  /delay 15s ${Me.AltAbilityReady[Call of the Hero]}
 	  /if (${Me.Invis}) /makemevisible
 	  ECHOCHANNEL Calling ... ${_sender}
-	 	/call core_cast "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
-		/return TRUE
+	 	/if (${validate_cast[FALSE, alt, "Call of the Hero", ${Me.ID}]}) /call core_cast2 "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
+		/return
 	}
 	
 /return
@@ -2786,19 +2706,6 @@ sub Event_Talk(string line, string _sender, string _chatText)
 
 
 |***
- *	DES: entry point for prep here command
- *	USE: /here 
- *	INI: 
- *  NOTE: 
- ***| 	
-#bind setCombatHere /setcombathere 
-sub Bind_setCombatHere()
-	/call set_combat_here
-/return
-
-
-
-|***
  *	DES: 
  *	USE: NA
  *	INI: NA
@@ -2892,27 +2799,6 @@ sub Event_sellstuff(string line, string _itemtoSell)
 
 
 |***
- *	DES: ocd shit
- *	USE: 
- *	INI: 
- *  NOTE: 
- ***| 	
-#event clean "[MQ2] - Clean this mess up."
-sub Event_clean()
-	DEBUG ${cbug}Event_clean()\ax
-	/if (${Cursor.ID}) /call sort_cursor TRUE
-	/if (${hideAll}) /hidecorpse all
-	/if (${hideAlways}) /hidecorpse always
-	/if (${hideLooted}) /hidecorpse looted
-	/if (${hideAllButGroup}) /hidecorpse allbutgroup
-	/if (${hideNPC}) /hidecorpse npc
-	/if (${hideListed}) /hidecorpse listed
-	/if (${hideListedUnlocked}) /hidecorpse listedunlocked  
-/return
-
-
-
-|***
  *	DES: rez emote
  *	USE: 
  *	INI: 
@@ -2927,7 +2813,7 @@ sub Event_resurrection_exp_gain()
 	DEBUGREZ clear HUD tmpMode variable
 	/varset tmpMode FALSE
 	DEBUGREZ Exit rez, clear event marker
-	/call set_stop TRUE
+	/call set_stop NOECHO
 	/call clear_combat
 	/varset switchAmIDead FALSE
 /return
@@ -2982,41 +2868,6 @@ sub Bind_setstop()
 
 
 |***
- *	DES: stack invis
- *	USE: /invis
- *	INI: 
- *  NOTE:
- ***| 
-#bind cast_AA_invis /invis
-sub Bind_cast_AA_invis()
-	/if (${Me.AltAbilityReady[Shauri's Sonorous Clouding]} && ${Select[${Me.Class.ShortName},BRD]}) {
-		/call pulse_stop
-		/call MQ2Cast "Shauri's Sonorous Clouding" alt -targetid|${Me.ID}
-		ECHOCHANNEL AA: Shauri's Sonorous Clouding
-		/return
-	}
-	/if (${Me.AltAbilityReady[Group Perfected Invisibility]} && ${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
-		/call MQ2Cast "Group Perfected Invisibility" alt -targetid|${Me.ID}
-		ECHOCHANNEL AA: Group Perfected Invisibility
-		/return
-	}  
-	/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},CLR,SHD,NEC,PAL]}) {
-		/delay 3
-		/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
-		ECHOCHANNEL AA: Group Perfected Invisibility to Undead
-		/return
-	}
-	/if (${Me.AltAbilityReady[Group Silent Presence]} && ${Select[${Me.Class.ShortName},SHM]}) {
-		/delay 5
-		/call MQ2Cast "Group Silent Presence" alt -targetid|${Me.ID}
-		ECHOCHANNEL AA: Group Silent Presence
-		/return
-	}	
-/return		
-
-
-
-|***
  *	DES: use primary anchor.
  *	USE: /primary
  *	INI: 
@@ -3026,8 +2877,10 @@ sub Bind_cast_AA_invis()
 sub Bind_click_primary_anchor()
 	/if (${Me.ItemReady[Primary Anchor Transport Device]}) {
 		/if (${Me.Invis}) /makemevisible
-		/if (${Me.Casting.ID}) /stopcast
-		/call core_cast "Primary Anchor Transport Device" item 0 FALSE
+		/call switch_clear_mode
+		/call set_stop NOECHO
+		/call clear_combat
+		/if (${validate_cast[FALSE, item, "Primary Anchor Transport Device", ${Me.ID}]}) /call core_cast2 "Primary Anchor Transport Device" item 0 FALSE
 	}
 /return
 
@@ -3043,8 +2896,42 @@ sub Bind_click_primary_anchor()
 sub Bind_click_secondary_anchor()
 	/if (${Me.ItemReady[Secondary Anchor Transport Device]}) {
 		/if (${Me.Invis}) /makemevisible
-		/if (${Me.Casting.ID}) /stopcast
-		/call core_cast "Secondary Anchor Transport Device" item 0 FALSE
+		/call switch_clear_mode
+		/call set_stop NOECHO
+		/call clear_combat
+		/if (${validate_cast[FALSE, item, "Secondary Anchor Transport Device", ${Me.ID}]}) /call core_cast2 "Secondary Anchor Transport Device" item 0 FALSE
+	}
+/return
+
+
+
+|***
+ *	DES: will use which ever anchor is available
+ *	USE: /anchor
+ *	INI: 
+ *  NOTE:
+ ***| 
+#bind anchor /anchor
+sub Bind_anchor()
+	/if (${broadcastAnchor}) {
+		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
+			/bca //prisec_anchor
+		}
+	} 
+	/call Bind_prisec_anchor
+/return
+
+|***
+ *	DES: sub for /anchor
+ ***| 
+#bind prisec_anchor /prisec_anchor
+sub Bind_prisec_anchor()
+	/if (${Me.ItemReady[Primary Anchor Transport Device]}) {
+		/call Bind_click_primary_anchor
+		/return
+	} else /if (${Me.ItemReady[Secondary Anchor Transport Device]}) {
+		/call Bind_click_secondary_anchor
+		/return			
 	}
 /return
 
@@ -3059,11 +2946,11 @@ sub Bind_click_secondary_anchor()
 #bind click_drunkards_stein /stein
 sub Bind_click_drunkards_stein()
 	/if (!${Me.ItemReady[Drunkard's Stein]}) /return
-	/if (${Me.Invis}) /makemevisible
-	/if (${Me.Casting.ID}) /stopcast
-	/if (${validate_cast[FALSE, item, "Drunkard's Stein", ${Me.ID}]}) {
-		/call core_cast2 "Drunkard's Stein" item 0 FALSE
-	}
+		/if (${Me.Invis}) /makemevisible
+		/call switch_clear_mode
+		/call set_stop NOECHO
+		/call clear_combat
+	/if (${validate_cast[FALSE, item, "Drunkard's Stein", ${Me.ID}]}) /call core_cast2 "Drunkard's Stein" item 0 FALSE
 /return
 
 
@@ -3077,11 +2964,11 @@ sub Bind_click_drunkards_stein()
 #bind click_mirror_fragment /mirror
 sub Bind_click_mirror_fragment()
 	/if (!${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /return
-	/if (${Me.Invis}) /makemevisible
-	/if (${Me.Casting.ID}) /stopcast
-	/if (${validate_cast[FALSE, item, "Mirror Fragment of Anashti Sul", ${Me.ID}]}) {
-		/call core_cast2 "Mirror Fragment of Anashti Sul" item 0 FALSE
-	}
+		/if (${Me.Invis}) /makemevisible
+		/call switch_clear_mode
+		/call set_stop NOECHO
+		/call clear_combat
+	/if (${validate_cast[FALSE, item, "Mirror Fragment of Anashti Sul", ${Me.ID}]}) /call core_cast2 "Mirror Fragment of Anashti Sul" item 0 FALSE
 /return
 
 
@@ -3665,9 +3552,9 @@ sub Bind_listControl(string _list, string _verbage)
 	| do we need to reset the zone
 	/if (${_listchanged}) {
 		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bc zonereset
+			/bcaa //core zonereset
 		} else {
-			/zonereset
+			/core zonereset
 		}
 	}
 /return
@@ -3757,12 +3644,12 @@ sub Bind_petControl(string _pcType, string _verbage)
 		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/if (!${Bool[${_verbage}]}) {
 			/call writeINI switchPcPet Pet ${If[${switchPcPet},FALSE,TRUE]}
-			/call echos switch "Use Pet" switchPcPet 0 0
+			| /call echos switch "Use Pet" switchPcPet 0 0
 			/if (!${switchPcPet} && ${Pet.ID}) {
 				/if (${Me.AltAbilityReady[Suspended Minion]}) {
-					/call core_cast "Suspended Minion" alt 0 FALSE
+					/if (${validate_cast[FALSE, alt, "Suspended Minion", ${Me.ID}]}) /call core_cast2 "Suspended Minion" alt 0 FALSE
 				} else /if (${Me.AltAbilityReady[Companion's Suspension]}) {
-					/call core_cast "Companion's Suspension" alt 0 FALSE
+					/if (${validate_cast[FALSE, alt, "Companion's Suspension", ${Me.ID}]}) /call core_cast2 "Companion's Suspension" alt 0 FALSE
 				} else {
 					/pet leave
 				}
@@ -3786,7 +3673,7 @@ sub Bind_petControl(string _pcType, string _verbage)
 			/return
 		}
 		
-	| pc tank
+	| pc tank  This is not working atm. sorry...
 	} else /if (${Bool[${_pcType.Equal[tank]}]}) {
 		/return
 		/if (!${validate_class[TRUE, ${PetList}]}) /return
@@ -4064,7 +3951,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 		}
 		/varset combat ${If[${coreAuto},COMBAT,FALSE]}  
 		/if (!${coreAuto}) { 
-			/call set_stop TRUE
+			/call set_stop NOECHO
 			/call clear_combat
 		}
 		VOUT /${_bind} auto ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
@@ -4108,6 +3995,18 @@ sub Bind_setCore(string _coreType, string _verbage)
 	} else /if (${Bool[${_coreType.Equal[reset]}]}) {
 		/call initialize_core
 		/return
+		
+	| reset zone load INI
+	} else /if (${Bool[${_coreType.Equal[zonereset]}]}) {
+		/call validate_zone FALSE TRUE
+		| /call echos zone 0 0 0 0
+		| /call check_zone_INI ${_verbage}
+		/if (${switchShrink}) {
+			/if (${coreAuto}) /call check_shrink
+		}		
+		/return
+		
+	
 
 	| set control toon
 	} else /if (${Bool[${_coreType.Equal[control]}]}) {
@@ -4327,7 +4226,7 @@ sub Bind_ts(string _tsType)
 
 |***
  *	DES: simple shortcut to the  /cc smartma command
- *	USE: /setassist [X|R,Raid|G,Group|F,Force|1,MA1|2,MA2|NULL]
+ *	USE: /setassist [X|G|1|2|3|F|MA1|MA2|NULL]
  *	INI: 
  *  NOTE: 
  ***| 	
@@ -4434,7 +4333,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[pull]}]}) {
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
 		VOUT /${_bind} pull ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
-		/if (${switchPull}) /call validate_assist FALSE x
+		/if (${switchPull}) /call validate_assist NOECHO x
 		/return
 		
 	| delay in nuking	
@@ -4824,7 +4723,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 				VOUT Go outside..
 				/return
 			}			
-			/if (${Me.ItemReady[${mount}]}) /call core_cast "${mount}" item 0 FALSE
+			/if (${validate_cast[FALSE, item, "${mount}", ${Me.ID}]}) /call core_cast2 "${mount}" item 0 FALSE
 		}
 		
 	}
@@ -5013,7 +4912,7 @@ sub Bind_echos(string _echoType, string _verbage)
  *  NOTE: not documented. why should i share everything!?!
  ***|
 #bind oof /oof
-sub Bind_oof(string _echoType, string _verbage)
+sub Bind_oof()
  	DEBUG ${cbug}Bind_oof(type ${_echoType}, verbage ${_verbage})\ax
  	
  	/declare _pronoun 			string 	local FALSE
@@ -5088,13 +4987,309 @@ sub Bind_grab(string _name)
  *  NOTE: 
  ***|
 #bind nav_to_target /navto
-sub Bind_nav_to_target (string _name)
+sub Bind_nav_to_target(string _name)
 	/call Bind_setMovementControls goto ${_name}
 /return
 
 
 
+|***
+ *	DES: nclicks yes on a window option for some form of travel
+ *	USE: /take
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind broadcast_take /take
+sub Bind_broadcast_take()
+	/if (${broadcastTake}) {
+		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
+			/bca //click_window_option
+		}
+	}
+	/call Bind_click_window_option
+/return
+
+|***
+ *	DES: take window option sub
+ ***|
+#bind click_window_option /click_window_option
+sub Bind_click_window_option()
+
+	| take ports
+	/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find[${Spawn[${Me}].Guild}]} || ${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["Guild Hall"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
+	/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["be translocated by"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
+	/if (${Window[LargeDialogWindow].Child[LDW_TextBox].Text.Find["Would you like to travel"]}) /nomodkey /notify LargeDialogWindow LDW_YesButton leftmouseup 
+
+	| take taskadds/missions/HA
+	/if (${Window[LargeDialogWindow].Child[LDW_TextBox].Text.Find["Would you like to take on the challenge"]}) /nomodkey /notify LargeDialogWindow LDW_YesButton leftmouseup 
+	/if (${Window[ConfirmationDialogBox].Child[CD_TextOutPut].Text.Find["Join the expedition"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup 
+	/if (${Window[LargeDialogWindow].Child[LDW_TextBox].Text.Find["You have a heroic adventure"]}) /nomodkey /notify LargeDialogWindow LDW_YesButton leftmouseup
+	/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["has asked you to join the shared task"]}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
+	
+	| trade window
+	/if (${Window[Tradewnd].HisTradeReady}) {
+		/nomodkey /notify Tradewnd TRDW_Trade_Button leftmouseup
+		/delay 1s ${Cursor.ID}
+		/call sort_cursor TRUE
+	}		
+/return
+
+
+
+|***
+ *	DES: nclicks yes on a window option for some form of travel
+ *	USE: /take
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind broadcast_invis /invis
+sub Bind_broadcast_invis()
+	/if (${broadcastInvis}) {
+		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
+			/bca //cast_AA_invis
+		}
+	} 
+	/call Bind_cast_AA_invis
+/return
+
+|***
+ *	DES: sub for invis command
+ ***| 
+#bind cast_AA_invis /cast_AA_invis
+sub Bind_cast_AA_invis()
+	/if (${Me.AltAbilityReady[Shauri's Sonorous Clouding]} && ${Select[${Me.Class.ShortName},BRD]}) {
+		/call pulse_stop
+		/call MQ2Cast "Shauri's Sonorous Clouding" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Shauri's Sonorous Clouding
+		/return
+	}
+	/if (${Me.AltAbilityReady[Group Perfected Invisibility]} && ${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
+		/call MQ2Cast "Group Perfected Invisibility" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Group Perfected Invisibility
+		/return
+	}  
+	/if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},CLR,SHD,NEC,PAL]}) {
+		/delay 3
+		/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Group Perfected Invisibility to Undead
+		/return
+	}
+	/if (${Me.AltAbilityReady[Group Silent Presence]} && ${Select[${Me.Class.ShortName},SHM]}) {
+		/delay 5
+		/call MQ2Cast "Group Silent Presence" alt -targetid|${Me.ID}
+		ECHOCHANNEL AA: Group Silent Presence
+		/return
+	}	
+/return
 
 
 
 
+|***
+ *	DES: clicks a door or lever to open or zone
+ *	USE: /take
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind broadcast_door /enter
+sub Bind_broadcast_door()
+SDEBUG DOOR
+	/if (${broadcastDoor}) {
+		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
+			/bca //click_door
+		}
+	}
+	/call Bind_click_door
+/return
+
+|***
+ *	DES: sub for door/lever clicking
+ ***|
+#bind click_door /click_door
+sub Bind_click_door()
+
+	/call create_timer timer_try_door 4s
+
+	:retrydoortarget
+	/if (!${timer_try_door}) /return
+	/doortarget 
+	/delay 1
+	/if (!${Switch.ID}) /goto :retrydoortarget
+
+	/if (!${timer_try_door}) /return
+
+	/if (!${Switch.Open}) {
+		/click left door
+		/delay 1s
+		/doevents flush
+	}
+/return
+
+
+
+|***
+ *	DES: deal with corpses
+ *	USE: /cls
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind cls /cls
+sub Bind_cls()
+	/call Bind_clear_corpse_sub
+	/if (${broadcastClean}) {
+		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
+			/bca //clear_corpse_sub
+		}
+	} 
+/return
+
+|***
+ *	DES: sub for dealing with corpses
+ ***|
+#bind  clear_corpse_sub /clear_corpse_sub
+sub Bind_clear_corpse_sub()
+	/if (${Cursor.ID}) /call sort_cursor TRUE
+	/if (${hideAll}) /hidecorpse all
+	/if (${hideAlways}) /hidecorpse always
+	/if (${hideLooted}) /hidecorpse looted
+	/if (${hideAllButGroup}) /hidecorpse allbutgroup
+	/if (${hideNPC}) /hidecorpse npc
+	/if (${hideListed}) /hidecorpse listed
+	/if (${hideListedUnlocked}) /hidecorpse listedunlocked  
+/return
+
+
+	
+|***
+ *	DES: will set your group to combat ready with 1 key.
+ *	USE: /here  
+ *	INI: 
+ *  NOTE: this is designed for a fast group set due to agro while traveling. This will not affect the sender of the command
+ ***|
+#bind broadcast_here /here
+sub Bind_broadcast_here()
+	/if (${broadcastHere}) {
+		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
+			/bca //set_combat_here
+		}
+	}
+/return
+
+|***
+ *	DES: sub for /here command
+ ***|
+#bind set_combat_here /set_combat_here 
+sub Bind_set_combat_here()
+ 	DEBUG ${cbug}Bind_set_combat_here()\ax
+ 	AMIDEAD
+	/if (!${Bool[${Group.Members}]}) /return
+	UPDATEHUD "Combat Now"
+
+	VOUT ${owarning} ${sep} COMBAT ${sep} Right NOW!
+	
+	| shut the bard up..
+	/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
+
+	| clear all pending events
+	/doevents flush
+
+	| clear all other modes
+	/call switch_clear_mode
+	
+	| reset timers for safety
+	/if (${switchBuffItem}) /call create_timer timer_check_buffs_item ${defaultTimerDelay}
+	/if (${switchBuffSelf}) /call create_timer timer_check_buffs_self ${defaultTimerDelay}
+	/if (${switchBuffRaid}) /call create_timer timer_check_buffs_raid ${defaultTimerDelay}
+	/if (${switchBuffBc}) /call create_timer timer_check_buffs_BC ${defaultTimerDelay}
+	/if (${switchBuffPet}) /call create_timer timer_check_pet_buffs ${defaultTimerDelay}
+	/if (${switchBuffMerc}) /call create_timer timer_check_buffs_merc ${defaultTimerDelay}
+	/if (${switchBuffGroup}) /call create_timer timer_check_buffs_group ${defaultTimerDelay}
+	/if (${Bool[${Aura1Buff}]} || ${Bool[${Aura2Buff}]}) /call create_timer timer_check_aura ${defaultTimerDelay}
+	/if (${switchBuffTell}) /call create_timer timer_check_buffs_tell ${defaultTimerDelay}
+	
+	/if (${Select[${Me.Class.ShortName},CLR]}) {
+		/call create_timer timer_heal_ward ${tHealWard}
+	}
+
+	/if (${Me.Casting.ID}) /stopcast
+	
+	| stop 'all' the movement options
+	AMIDEAD
+	| stop sticking to stuff
+	/if (${tempsnapstuck}) /varset tempsnapstuck FALSE
+	/if (${SetTie}) /varset SetTie FALSE
+	
+	| stop advanced path
+	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
+		/if (${AdvPath.Following}) /squelch /afollow off
+	}
+
+	| stop stick
+	/if (${Bool[${Plugin[MQ2MoveUtils]}]}) {
+		/if (${Stick.Active}) /squelch /stick off
+	}
+
+	| stop mq2nav
+	/if (${Bool[${Plugin[MQ2Nav]}]}) {
+		/if (${Navigation.Active}) /squelch /nav stop
+	}	
+
+	| stop moving
+	/if (${Me.Moving}) {
+		/keypress forward
+		/keypress back
+	}
+
+	| fix zone
+ 	/call check_zone_INI FALSE
+ 	
+	| /call clear_combat
+	/if (${switchPcPet} && ${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
+
+	| make us visible 
+	/if (${makeVisible} && ${Me.Invis}) /makemevisible
+	
+	| get shit out of our hands
+	/call sort_cursor TRUE
+	
+	| clear the current target
+	/if (${clearTarget} && ${Target.ID}) /squelch /target clear
+	
+	| make sure we are turned on  !?!?!
+	/if (!${coreAuto}) /call writeINI coreAuto Common TRUE
+	
+	| wake the Main Assist up from its nap, set him in place and group assists
+	/if (${Me.DisplayName.Equal[${${MacroQuest.Server}Assist}]}) {
+		/if (!${HomeSet}) {
+			/call writeINI HomeSet Movement TRUE
+			/call set_home
+		}
+		| cut the agro way down for safety
+		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro}]} > 2) {
+			/if (${baseAgroRange} && ${MobAgro} > ${baseAgroRange}) /agro ${baseAgroRange}
+		}	
+		/if (!${switchAgro}) /call writeINI switchAgro Common TRUE 
+		/if (!${switchPull} && !${useForceAssist}) /call writeINI switchPull Common TRUE 
+		/if (${zradius} != ${hereZRadius}) /cc zradius ${hereZRadius}	
+	} 
+
+	UPDATEHUD FALSE	
+/return
+
+
+
+|***
+ *	DES: deal with corpses
+ *	USE: /cls
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind killmob /killmob
+sub Bind_killmob()
+	/call Bind_override engageat
+	/if (${broadcastKillmob}) {
+		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
+			/bca //override engageat
+		}
+	} 
+/return

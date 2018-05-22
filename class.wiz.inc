@@ -127,7 +127,7 @@ sub click_DPS_WIZ()
 
 |***
  *	DES: We want Mana
- *	USE: /gather #
+ *	USE: /wiz gather #
  *	INI: 
  *  NOTE: 
  ***|
@@ -231,7 +231,7 @@ sub synergy_WIZ()
 	| alternate twincast
 	/if (!${Me.Buff[${TwincastSpell}].ID}) {
 		/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]}) /call core_cast2 "Improved Twincast" alt 0 FALSE
-	} else /if (!${Me.Buff[Improved Twincast].ID} && !${Me.AltAbilityReady[Improved Twincast]}) {
+	} else /if (!${Me.Buff[Improved Twincast].ID} && !${Me.AltAbilityReady[Improved Twincast]} && ${Me.SpellReady[${TwincastSpell}]}) {
 		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
 	}
 	
@@ -243,7 +243,7 @@ sub synergy_WIZ()
 	/if (${validate_cast[FALSE, alt, "Arcane Destruction", ${Me.ID}]}) /call core_cast2 "Arcane Destruction" alt 0 FALSE
 	
 	| increase damage
-	/if (${validate_cast[FALSE, alt, "Arcane Fury", ${Me.ID}}) /call core_cast2 "Arcane Fury" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Arcane Fury", ${Me.ID}]}) /call core_cast2 "Arcane Fury" alt 0 FALSE
 	
 	| aww baby
 	/if (${switchManaBurn}) {
@@ -281,7 +281,7 @@ sub force_twincast_WIZ()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
 	/if (!${cast_condition[NukeTwincastCondition]}) /return
-	/if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
+	/if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID} && ${Me.SpellReady[${TwincastSpell}]}) {
 		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
 		/return
 	} else /if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
@@ -392,6 +392,7 @@ sub Bind_setWIZ(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare wizType string local |forcetwincast|gather|healpoint|line|manaburn|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {

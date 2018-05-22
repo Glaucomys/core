@@ -199,6 +199,7 @@ sub Bind_setWAR(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare warType string	local |healpoint|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {

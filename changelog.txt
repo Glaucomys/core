@@ -1,7 +1,7 @@
 |***
  * changelog.txt
  * Core Change Log
- * Timestamp: YYYYMMDD
+ * Timestamp: MMDD.##
  *
  * HUDUPDATE means you need to do a '/hc delete' then a '/hc update' to make needed changes to the MQ2Hud.INI
  *
@@ -9,16 +9,71 @@
 
  ** I swear to god. If you don't read this and ask me questions, /ignore
 
-
 -- migration from core_cast() to validate_cast() / core_cast2()
-  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard
+  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard, Magician
 
 
 
-20180516
+20180521.01
+HUDUPDATE
+BUILD ## change.
+-- had to change bulid type. MQ doesnt support float int as long as i need .. meh
+- HUD
+  -- some cosmetic changes 
+  -- got rid of the word NONE. changed to ----
+  -- corrected the % engage display settings for a few things
+  -- adjusted to show all the assists
 - check_engaged()
   -- misssed a )
-
+- /mode [petfarm]
+  -- typo in pet heal switch
+- Alias changes to binds
+  -- /mirror
+  -- /stein
+  -- /take
+  -- /stack is now /invis
+  -- /door is now /enter (/door reserved by MQ2Nav)
+  -- /clean is now /cls
+  -- /here
+  -- /anchor
+  -- /killmob
+- non pet classes shouldn't think they can ask mages for weapons
+- removed validate_buff(). no longer needed
+- [NOECHO] added too
+  -- set_stop()
+  -- whitewash()
+  -- validate_assist()
+- ASSISTING
+ -- can now use raid assist 1, 2, and 3 as well as group, MA1, MA2 and forced  
+ -- /setassist [x|g|1|2|3|ma1 NAME|ma2 NAME|f]
+ -- echos like other / commands do for core (cosmetic)
+- Zone and /lc commands
+	--- /core [zonereset]
+  -- force resets the current zone INI load
+	- /lc [any command]
+	  -- changed to use the new validate_zone routine when there is a change.
+	  -- changing the zonereset to a bind and not a bc (alias) command. trying to catch a crash upon issuing a /lc command while in combat.
+Broadcast commands...  you should read this ....
+- core.ini->[broadcast]-> ???
+  -- any command issued in this sub category that is set to true will be echoed across your BC
+  -- for example /take. if you have broadcastTake=FALSE and you issue the command /take, only you will click the yes button for the nav/port window.
+  -- if you have it set to TRUE, everyone will take it.
+  -- commands changed to use the new broadcast
+    -- /take
+    -- /invis
+    -- /enter
+    -- /cls
+    -- /here
+    -- /anchor
+    -- /killmob
+- class.mag.inc
+  -- converted to new casting routines  
+- class.wiz.inc
+  -- typo in the burn routine
+  -- adjustment to twincast alternation, was trying to cast the spell when it wasnt ready
+- class.nec.inc
+  -- can use gatherspell now
+	-- this is gonna need some work
 
 
 20180515

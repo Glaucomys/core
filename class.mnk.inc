@@ -238,6 +238,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare mnkType string	local |fdpct|healpoint|spiregroup|spireraid|trainmelee
 
 	| get help
 	/if (${_classType.Equal[info]}) {

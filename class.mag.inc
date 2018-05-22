@@ -169,9 +169,9 @@ sub pet_heal_MAG()
 	DEBUGCLASS ${cbug}pet_heal_${Me.Class.ShortName}()${citem}
 	CHECKEXIT
 	CHECKTIE
-	/if (${validate_cast[FALSE, alt, "${PetAAHeal}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 40) /call core_cast "${PetAAHeal}" alt ${Me.Pet.ID} FALSE
-	/if (${validate_cast[FALSE, spell, "${PetHealSpell}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 60) /call core_cast "${PetHealSpell}" ${PetHealType} ${Me.Pet.ID} FALSE
-	/if (${validate_cast[FALSE, spell, "${PetRenewalSpell}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 80) /call core_cast "${PetRenewalSpell}" ${PetRenewalType} ${Me.Pet.ID} FALSE
+	/if (${validate_cast[FALSE, alt, "${PetAAHeal}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 40) /call core_cast2 "${PetAAHeal}" alt ${Me.Pet.ID} FALSE
+	/if (${validate_cast[FALSE, spell, "${PetHealSpell}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 60) /call core_cast2 "${PetHealSpell}" ${PetHealType} ${Me.Pet.ID} FALSE
+	/if (${validate_cast[FALSE, spell, "${PetRenewalSpell}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 80) /call core_cast2 "${PetRenewalSpell}" ${PetRenewalType} ${Me.Pet.ID} FALSE
 /return
 
 
@@ -206,9 +206,9 @@ sub synergy_MAG()
 	
 	| twincast
 	/if (${Me.AltAbilityReady[Improved Twincast]} && !${Me.Buff[Twincast].ID}) {
-		/call core_cast "Improved Twincast" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]}) /call core_cast2 "Improved Twincast" alt 0 FALSE
 	} else /if (${Me.SpellReady[Twincast]} && !${Me.Buff[Improved Twincast].ID}) {
-		/call core_cast "Twincast" 0 0 FALSE
+		/if (${validate_cast[FALSE, spell, "Twincast", ${Me.ID}]}) /call core_cast2 "Twincast" 0 0 FALSE
 	}
 	
 	/if (${Target.PctHPs}) > 20) {
@@ -217,10 +217,10 @@ sub synergy_MAG()
 	
 	| direct damage bonus
 	/if (${Target.PctHPs} > 10) {
-		/if (${validate_cast[FALSE, alt, "Heart of Flames", ${Me.ID}]} && !${Bool[${Me.Buff[Elemental Union]}]}) {
-			/call core_cast2 "Heart of Flames" alt 0 FALSE
-		} else /if (${validate_cast[FALSE, alt, "Elemental Union", ${Me.ID}]} && !${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Heart of Flames]}) {
-			/call core_cast2 "Elemental Union" alt 0 FALSE
+		/if (${Bool[${Me.Buff[Elemental Union]}]}) {
+			/if (${validate_cast[FALSE, alt, "Heart of Flames", ${Me.ID}]}) /call core_cast2 "Heart of Flames" alt 0 FALSE
+		} else /if (!${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Heart of Flames]}) {
+			/if (${validate_cast[FALSE, alt, "Elemental Union", ${Me.ID}]}) /call core_cast2 "Elemental Union" alt 0 FALSE
 		} else /if (!${Me.AltAbilityReady[Heart of Flames]} && !${Bool[${Me.Buff[Heart of Flames]}]} && !${Me.AltAbilityReady[Elemental Union]} && !${Bool[${Me.Buff[Elemental Union]}]}) {
 			/call use_glyph
 		}
@@ -240,10 +240,7 @@ sub synergy_MAG()
 	}
 
 	| epic 2.0
-	| /if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
 	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
-
-
 
 	/call synergy_click_Circle
 	/call click_item_burn
@@ -288,6 +285,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare magType string	local |fade|forcetwincast|gather|healpoint|mana|rods|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -333,10 +331,8 @@ sub Bind_setMAG(string _classType, string _verbage)
 		| self mod rod
 		/if (${Bool[${SelfRodName}]}) {
 			/if (!${FindItem[${SelfRodName}].ID}) {
-				/if (!${Cursor.Name.Equal[${SelfRodName}]} && ${Me.CurrentMana} >= ${Spell[${SelfRodSpell}].Mana}) {
-					/call core_cast "${SelfRodSpell}" ${buffGem} ${Me.ID} FALSE
-					/call sort_cursor TRUE
-				}
+				/if (${validate_cast[FALSE, spell, "${SelfRodSpell}", ${Me.ID}]}) /call core_cast2 "${SelfRodSpell}" ${buffGem} ${Me.ID} FALSE
+				/call sort_cursor TRUE
 			}
 		}
 			
@@ -344,22 +340,22 @@ sub Bind_setMAG(string _classType, string _verbage)
 		| group mod rod
 		/if (${Bool[${ModRodName}]} && !${FindItem[${ModRodName}].ID} && !${Cursor.Name.Equal[${ModRodName}]}) {
 			| /target ID ${Me.ID}
-			/call core_cast "${ModRodSpell}" alt 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${ModRodSpell}", ${Me.ID}]}) /call core_cast2 "${ModRodSpell}" alt 0 FALSE
 			/call sort_cursor TRUE
 		}
 		| paradox rod	
 		/if (${Bool[${ParadoxRodName}]} && !${Bool[${FindItem[${ParadoxRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ParadoxRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ParadoxSpell}].Mana}) {
-			/call core_cast "${ParadoxSpell}" ${buffGem} ${Me.ID} FALSE
+			/if (${validate_cast[FALSE, spell, "${ParadoxSpell}", ${Me.ID}]}) /call core_cast2 "${ParadoxSpell}" ${buffGem} ${Me.ID} FALSE
 			/call sort_cursor TRUE
 		}
 		| elemental orb
 		/if (${Bool[${OrbName}]} && !${Bool[${FindItem[${OrbName}]}]} && !${Bool[${Cursor.Name.Equal[${OrbName}]}]} && ${Me.CurrentMana} >= ${Spell[${OrbSpell}].Mana}) {
-			/call core_cast "${OrbSpell}" ${buffGem} 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${OrbSpell}", ${Me.ID}]}) /call core_cast2 "${OrbSpell}" ${buffGem} 0 FALSE
 			/call sort_cursor TRUE
 		}
 		| elemental rod
 		/if (${Bool[${ElementRodName}]} && !${Bool[${FindItem[${ElementRodName}]}]} && !${Bool[${Cursor.Name.Equal[${ElementRodName}]}]} && ${Me.CurrentMana} >= ${Spell[${ElementRodSpell}].Mana}) {
-			/call core_cast "${ElementRodSpell}" ${buffGem} 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${ElementRodSpell}", ${Me.ID}]}) /call core_cast2 "${ElementRodSpell}" ${buffGem} 0 FALSE
 			/call sort_cursor TRUE
 		}
 		/return
@@ -382,14 +378,14 @@ sub Bind_setMAG(string _classType, string _verbage)
 
 		:checkgather
 		/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) {
-			/if (${Bool[${SelfRodName}]} && ${Me.ItemReady[${SelfRodName}]}) /call core_cast "${SelfRodName}" item 0 FALSE
-			/if (${Bool[${ModRodName}]} && ${Me.ItemReady[${ModRodName}]}) /call core_cast "${ModRodName}" item 0 FALSE
-			/if (${Me.PctMana} <= 19 && ${Me.AltAbilityReady[Mana Reserve]}) /call core_cast "Mana Reserve" alt 0 FALSE
+			/if (${Bool[${SelfRodName}]} && ${validate_cast[FALSE, item, "${SelfRodName}", ${Me.ID}]}) /call core_cast2 "${SelfRodName}" item 0 FALSE
+			/if (${Bool[${ModRodName}]} && ${validate_cast[FALSE, item, "${ModRodName}", ${Me.ID}]}) /call core_cast2 "${ModRodName}" item 0 FALSE
+			/if (${Me.PctMana} <= 19 && ${validate_cast[FALSE, alt, "Mana Reserve", ${Me.ID}]}) /call core_cast2 "Mana Reserve" alt 0 FALSE
 
-		  /if (${Bool[${GatherSpell}]} && ${Me.SpellReady[${GatherSpell}]}) /call core_cast "${GatherSpell}" 0 0 FALSE
+		  /if (${Bool[${GatherSpell}]} && ${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
 		  
-			/if (${Me.AltAbilityReady[Forceful Rejuvenation]} && !${Me.SpellReady[${GatherSpell}]}) {
-				/call core_cast "Forceful Rejuvenation" alt 0 FALSE
+			/if (!${Me.SpellReady[${GatherSpell}]}) {
+				/if (${validate_cast[FALSE, alt, "Forceful Rejuvenation", ${Me.ID}]}) /call core_cast2 "Forceful Rejuvenation" alt 0 FALSE
 				/delay 2
 				/goto :checkgather
 			}

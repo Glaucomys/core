@@ -292,6 +292,7 @@ sub Bind_setBST(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare bstType string	local |fastheal|healpoint|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {

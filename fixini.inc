@@ -10,12 +10,12 @@
  
 |***
  *	DES: This will clear all store alises that core has created in your MacroQuest2.INI file. or those with matching names.
- *	USE: /core whitewash
+ *	USE: /core whitewash [NOECHO]
  *	INI: MacroQuest2.INI
  *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry it's slow as fuck.
  ***|
-sub whitewash(bool _silent)
-	/if (!${_silent}) VOUT ${owarning} ${sep} Deleting all Core ${cinfo}${coreBuild}\ax aliases. ${cbad}Please Wait\ax
+sub whitewash(string _echo)
+	/if (!${_echo.Equal[NOECHO]}) VOUT ${owarning} ${sep} Deleting all Core ${cinfo}${Float[${coreBuild}].Precision[2]}\ax aliases. ${cbad}Please Wait\ax
 	/declare _count 				int local 0
 	/declare _todelete[1] 	string local
 	/declare _index 				int local 0
@@ -34,20 +34,19 @@ sub whitewash(bool _silent)
 	| /varset _todelete[xx] |here|take|homeradius|homeleash
 		
 	| core aliases
-	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson
-
+	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson|clean
 	
 	/for _count 1 to ${_todelete.Size}
 		DEBUG _count: ${_count}-${_todelete.Size}
 		/for _index 1 to ${_todelete[${_count}].Count[|]}
 			DEBUG _index: ${_count}-${_todelete.Size}: ${_index} ${_todelete[${_count}].Arg[${_index},|]}
-			/if (!${_silent}) VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
+			/if (!${_echo.Equal[NOECHO]}) VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
 			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
 			/varcalc _increment ${_increment}+1
 		/next _index	
 	/next _count
 	
-	/if (!${_silent}) {
+	/if (!${_echo.Equal[NOECHO]}) {
 		/call echos ending
 		/endm
 	}

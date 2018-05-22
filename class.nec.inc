@@ -19,12 +19,15 @@ sub core_NEC()
 	AMIDEAD
 	CHECKTIE
 	CHECKREZ
-	/if (${coreAuto} && !${Me.Invis}) {
+
+	/if (${coreAuto}) {
+		/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_bloom
 		/call check_engaged
 		/if (!${Macro.Return}) {
 			/if (${switchPcPet}) /call check_pet
 		}
 	}
+	
 
 	:killtarget
 	CHECKREZ
@@ -155,6 +158,33 @@ sub sac_toon()
 	}
 /return
  ***|
+ 
+ 
+|***
+ *	DES: We want Mana
+ *	USE: /nec gather #
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_bloom()
+	DEBUGCLASS ${cbug}check_harvest()\ax
+	CHECKEXIT
+	/doevents
+	CHECKTIE
+
+	/if (${switchGather}) {
+		/if (!${Me.SpellReady[${GatherSpell}]}) {
+			/if (${validate_cast[FALSE, alt, "Forceful Rejuvenation", ${Me.ID}]}) /call core_cast2 "Forceful Rejuvenation" alt 0 FALSE
+			/delay 5			
+		}
+		/if (${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) {
+			/if (${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
+			/if (${validate_cast[FALSE, alt, "Death Bloom", ${Me.ID}]}) /call core_cast2 "Death Bloom" alt 0 FALSE
+		}
+	}
+/return
+ 
+ 
 
 
 
@@ -198,6 +228,7 @@ sub Bind_setNEC(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare necType string	local |gather|healpoint|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -222,6 +253,19 @@ sub Bind_setNEC(string _classType, string _verbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		/return
+		
+	| gather enable/disable /pct
+	/if (${Bool[${_classType.Find[gather]}]}) {
+		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI GatherPercent Spells ${_verbage} 
+		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}	else /if (!${Bool[${_classVerbage}]}) {
+			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
+			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) ${sep} ${If[${switchGather},${oenabled},${odisabled}]}
+			/return
+		}		
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
@@ -238,6 +282,7 @@ sub Bind_setNEC(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

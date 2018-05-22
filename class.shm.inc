@@ -534,6 +534,7 @@ sub Bind_setSHM(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare shmType string	local |cannihps|cannimanna|groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|talisman|xtradius|xttime
 
 	| get help
 	/if (${_classType.Equal[info]}) {
