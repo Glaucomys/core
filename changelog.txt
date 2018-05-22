@@ -1,7 +1,7 @@
 |***
  * changelog.txt
  * Core Change Log
- * Timestamp: MMDD.##
+ * Timestamp: YYYMMDD.##
  *
  * HUDUPDATE means you need to do a '/hc delete' then a '/hc update' to make needed changes to the MQ2Hud.INI
  *
@@ -10,7 +10,27 @@
  ** I swear to god. If you don't read this and ask me questions, /ignore
 
 -- migration from core_cast() to validate_cast() / core_cast2()
-  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard, Magician
+  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard, Magician, Necromancer, Monk
+
+
+
+20180522.00
+I think i got the wiki up to date.. well maybe..
+- check_pet_buff()
+  - it kind of wasnt checking to see if the buff was already on the pet. it's checking now
+- set_combat()
+  -- adjusted it to try and prevent mixed melee/range settings from running of like an ass to the mob when it should be ranging
+- cast_cure()
+  -- necro self aa "Embrace the Decay" added to /heal cure
+- dug out the remaining useSmartAssistR. removed from INIs as well
+  
+- class.nec.inc
+  -- converted to new cast routines
+  -- burn routines are under construction
+- class.mnk.inc
+  -- converted to the new cast routines (what little there is)
+- /imincharge
+  -- playing around with this. i tend to swap drivetoons a lot. wanted something to change everyone elses settings on the fly
 
 
 

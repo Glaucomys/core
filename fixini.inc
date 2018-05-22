@@ -291,7 +291,7 @@ sub fix_ini_namedlist()
 sub fix_ini_current()
 
 	| core.ini
-		
+	
 		| 20180429
 		/ini "${INICore}" "General" "switchAlwaysFaceTarget" NULL
 		/ini "${INICore}" "Here" "combatWAR" NULL
@@ -311,9 +311,11 @@ sub fix_ini_current()
 		/ini "${INICore}" "Here" "combatBRD" NULL
 		/ini "${INICore}" "Here" "combatMNK" NULL
 		
-		
 	
 	| toon INI non specific class
+		| 20180522.00
+		/ini "${INIClass}" "Common" "useSmartAssistR" NULL	
+	
 		| fix the range summon INI entries
 		/if (!${RangeItem.Count[|]}) /call writeINI RangeItem Common |"${RangeItem}"
 		/if (!${RangeItemSummon.Count[|]}) /call writeINI RangeItemSummon Common |"${RangeItemSummon}"		

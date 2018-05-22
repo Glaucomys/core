@@ -320,7 +320,7 @@ sub base_preperation()
 
 	| disable smart assists for TLP w/o underfoot
 	/if (!${validate_expansion[TRUE, |16]}) {
-		/if (${useSmartAssistG}) /call writeIni useSmartAssistR FALSE
+		/if (${useSmartAssistG}) /call writeIni useSmartAssistG FALSE
 		/if (${useSmartAssist1}) /call writeIni useSmartAssist1 FALSE
 		/if (${useSmartAssist2}) /call writeIni useSmartAssist2 FALSE
 		/if (${useSmartAssist3}) /call writeIni useSmartAssist3 FALSE

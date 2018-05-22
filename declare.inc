@@ -17,7 +17,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180521.01
+	/call setDeclare coreBuild											string	outer 20180522.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -55,6 +55,18 @@ sub set_declares()
 	/call DeclareCoreIniVar smartasserrors					string	General TRUE
 	/call DeclareCoreIniVar forceNukeLoop						string	General FALSE
 	/call DeclareCoreIniVar autoAddNameList					string	General TRUE
+
+	/call DeclareCoreIniVar switchDispInfo					string	General TRUE
+	/call DeclareCoreIniVar switchDispBuild					string	General TRUE
+	/call DeclareCoreIniVar switchDispEXP						string	General TRUE
+	/call DeclareCoreIniVar switchAADiscnowManual		string	General FALSE
+	/call DeclareCoreIniVar switchDelayWhileZoning	string	General FALSE
+	/call DeclareCoreIniVar switchAutoRestFull			string	General FALSE
+	/call DeclareCoreIniVar switchModRodinRest			string	General TRUE
+	/call DeclareCoreIniVar switchBuffinRest				string	General TRUE
+	/call DeclareCoreIniVar switchUseCLSinHUD				string	General FALSE
+	/call DeclareCoreIniVar switchUseADVL						string	General TRUE
+	/call DeclareCoreIniVar switchGlyphOutsideRaid	string	General FALSE
 	/call DeclareCoreIniVar maintenance							string	General "|FALSE|FALSE"
  			
 
@@ -167,17 +179,7 @@ sub set_declares()
 	/call DeclareCoreIniVar heallist								string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General "|FALSE|FALSE"
 
-	/call DeclareCoreIniVar switchDispInfo					string	General TRUE
-	/call DeclareCoreIniVar switchDispBuild					string	General TRUE
-	/call DeclareCoreIniVar switchDispEXP						string	General TRUE
-	/call DeclareCoreIniVar switchAADiscnowManual		string	General FALSE
-	/call DeclareCoreIniVar switchDelayWhileZoning	string	General FALSE
-	/call DeclareCoreIniVar switchAutoRestFull			string	General FALSE
-	/call DeclareCoreIniVar switchModRodinRest			string	General TRUE
-	/call DeclareCoreIniVar switchBuffinRest				string	General TRUE
-	/call DeclareCoreIniVar switchUseCLSinHUD				string	General FALSE
-	/call DeclareCoreIniVar switchUseADVL						string	General TRUE
-	/call DeclareCoreIniVar switchGlyphOutsideRaid	string	General FALSE
+
 	
 	/call setINIVar toonControl			 								string	Common FALSE
 	/call setINIVar autoRest 												int 		Common 90
@@ -469,7 +471,7 @@ sub set_declares()
   /call setDeclare tcType													string	outer "|distance|lock|mode|name|time"
 	/call setINIVar SetTieToon 											string 	Movement FALSE
 	/call setDeclare SetTie       									bool 		outer FALSE
-	/call setINIVar SetTieDistance 									int 		Movement 15 
+	/call setINIVar SetTieDistance 									int 		Movement 5
 	/call setINIVar SetTieLock	 										bool 		Movement FALSE
 	/call setINIVar SetTieMode	 										string	Movement Stick
 
@@ -2478,7 +2480,7 @@ sub Event_task_update(string line, string skillname)
 
 #event noRaid "Your raid was disbanded."
 sub Event_noRaid()
- 		/if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
+ 		| /if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
 		| /if (${switchRaidInvite}) /call writeINI switchRaidInvite Common FALSE
 /return
 
@@ -4006,8 +4008,6 @@ sub Bind_setCore(string _coreType, string _verbage)
 		}		
 		/return
 		
-	
-
 	| set control toon
 	} else /if (${Bool[${_coreType.Equal[control]}]}) {
 		/if (${Bool[${_verbage}]}) {
@@ -4016,34 +4016,29 @@ sub Bind_setCore(string _coreType, string _verbage)
 			/call writeINI toonControl Common FALSE
 		}
 		VOUT /${_bind} control ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
+		/if (!${toonControl}) /xtarget set ${toonControlXTslot} Autohater
 		/return
 
 	| enable wasiting fireworks for those bastards with too much AA on their hands
 	} else /if (${Bool[${_coreType.Equal[fireworks]}]}) {
 		/call writeINI switchAAFireworks Common ${If[${switchAAFireworks},FALSE,TRUE]}  
-		| VOUT /${_bind} fireworks ${sep} ${If[${switchAAFireworks},${oenabled},${odisabled}]}
 		/if (!${switchAAFireworks}) /call create_timer timer_Waste_Fireworks 1
 		
 	| take invites to raid/group
 	} else /if (${Bool[${_coreType.Equal[invite]}]}) {
 		/call writeINI switchInvites Common ${If[${switchInvites},FALSE,TRUE]}  
-		| /call echos switch "Auto Accept Invites for [${ctar}Group\ax|${ctar}Raid\ax]" switchInvites 0 0
-		| /return
 
 	| take raid invites
 	} else /if (${Bool[${_coreType.Equal[takeraidinvite]}]}) {
 		/call writeINI switchTakeRaidInvite Common ${If[${switchTakeRaidInvite},FALSE,TRUE]} 
-		| VOUT /${_bind} takeraidinvite ${sep} ${If[${Bool[${switchTakeRaidInvite}]},${oenabled},${odisabled}]}
 
 	| take group invites
 	} else /if (${Bool[${_coreType.Equal[takegroupinvite]}]}) {
 		/call writeINI switchTakeGroupInvite Common ${If[${switchTakeGroupInvite},FALSE,TRUE]} 
-		| VOUT /${_bind} takegroupinvite ${sep} ${If[${Bool[${switchTakeGroupInvite}]},${oenabled},${odisabled}]}
 	
 	| invite people to your raid
 	} else /if (${Bool[${_coreType.Equal[giveraidinvite]}]}) {
 		/call writeINI switchGiveRaidInvite Common ${If[${switchGiveRaidInvite},FALSE,TRUE]} 
-		| VOUT /${_bind} giveraidinvite ${sep} ${If[${Bool[${switchGiveRaidInvite}]},${oenabled},${odisabled}]}
 
 	| claim market cash
 	} else /if (${Bool[${_coreType.Equal[dbcash]}]}) {
@@ -4432,8 +4427,6 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	} else /if (${Bool[${_ccType.Equal[zradius]}]}) {
 		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
 			/call writeINI zradius Common ${_verbage} 
-			| VOUT /${_bind} zradius ${sep} ${cinfo}${zradius}\ax
-			| /call echos number "Set ZRadius" ${_verbage} 0 0
 		} else {
 			VOUT /${_bind} zradius(${cnum}${zradius}\ax) allowable range ${cinfo}1 - 200\ax
 			/return
@@ -4448,18 +4441,18 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/call clear_combat
 
 		| Raid Assist Role
-		/if ((${_verbage.Equal[r]} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
+		/if ((${_verbage.Equal[r]} || (!${Bool[${_verbage}]} && ${Bool[${Raid.Members}]})) && !${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistG} && ${Bool[${Raid.Members}]})) && !${Select[${Me.Class.ShortName},CLR]} && !${switchPull})
 			/call validate_assist FALSE raid
 
 		| Goup Assist role
-		} else /if ((${_verbage.Equal[g]} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
+		} else /if ((${_verbage.Equal[g]} || (!${Bool[${_verbage}]} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && ${Bool[${Group.Members}]} && !${useSmartAssistG})) && !${switchPull})
 			/call validate_assist FALSE group
 
 		| NO Assist
-		} else /if ((${_verbage.Equal[x]} || (!${Bool[${_verbage}]} && (${useSmartAssistR} || ${useSmartAssistG})) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
-			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && !${useSmartAssistR} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
+		} else /if ((${_verbage.Equal[x]} || (!${Bool[${_verbage}]} && (${useSmartAssistG})) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull}) {
+			DEBUG ((${_verbage} || (!${Bool[${_verbage}]} && ${useSmartAssistG}) || (!${Bool[${Raid.Members}]} && !${Bool[${Group.Members}]})) || ${switchPull})
 			/call validate_assist FALSE x
 		}
 
@@ -4979,7 +4972,6 @@ sub Bind_grab(string _name)
 
 
 
-
 |***
  *	DES: navigates to the name/target
  *	USE: /navto [NAME]
@@ -5081,7 +5073,6 @@ sub Bind_cast_AA_invis()
 		/return
 	}	
 /return
-
 
 
 
@@ -5292,4 +5283,28 @@ sub Bind_killmob()
 			/bca //override engageat
 		}
 	} 
+/return
+
+
+
+|***
+ *	DES: make adjustments for the drivetoon
+ *	USE: /imincharge
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind imincharge /imincharge
+sub Bind_imincharge()
+
+	| set toons to off
+	/off
+
+	| set my tie name off
+	/tc name FALSE
+
+	| set everyone elses /tie defaults
+	/bca //tc name ${Me.DisplayName}
+	/bca //tc time 5
+	/bca //tc distance 5
+
 /return

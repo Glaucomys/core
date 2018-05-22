@@ -74,30 +74,16 @@ sub disc_MNK()
 		/delay 1
 	}
 
-
-	/call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
-	/call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
-	
-	/call core_cast "Drunken Monkey Style" disc 0 FALSE
-	/call core_cast "Whorl of Fists" disc 0 FALSE
-
-	/call core_cast "Zan Fi's Whistle" alt ${Target2Kill} FALSE
-		
-	/call core_cast "Drunken Monkey Style" disc 0 FALSE
-	/call core_cast "Torrent of Fists Rk. II" disc 0 FALSE
-	/call core_cast "Doomwalker's Synergy" disc 0 FALSE
-	/call core_cast "Zalikor's Fang" disc 0 FALSE
-	/call core_cast "Curse of the Thirteen Fingers" disc 0 FALSE
-
-	/call core_cast "Five Point Palm" alt ${Target2Kill} FALSE
-	/call core_cast "Zan Fi's Whistle" alt ${Target2Kill} FALSE
-	/call core_cast "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
-		
-	/call core_cast "Drunken Monkey Style" disc 0 FALSE
-	/call core_cast "Torrent of Fists Rk. II" disc 0 FALSE
-	/call core_cast "Doomwalker's Synergy" disc 0 FALSE
-	/call core_cast "Zalikor's Fang" disc 0 FALSE
-	/call core_cast "Curse of the Thirteen Fingers" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Five Point Palm",${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Two-Finger Wasp Touch",${Target2Kill}]}) /call core_cast2 "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "Whorl of Fists", ${Me.ID}]}) /call core_cast2 "Whorl of Fists" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Zan Fi's Whistle",${Target2Kill}]}) /call core_cast2 "Zan Fi's Whistle" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "Drunken Monkey Style", ${Me.ID}]}) /call core_cast2 "Drunken Monkey Style" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "Doomwalker's Synergy", ${Me.ID}]}) /call core_cast2 "Doomwalker's Synergy" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "Zalikor's Fang", ${Me.ID}]}) /call core_cast2 "Zalikor's Fang" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "Curse of the Thirteen Fingers", ${Me.ID}]}) /call core_cast2 "Curse of the Thirteen Fingers" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Five Point Palm",${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "Curse of the Thirteen Fingers", ${Me.ID}]}) /call core_cast2 "Curse of the Thirteen Fingers" disc 0 FALSE
 
 /return
 
@@ -116,7 +102,7 @@ sub patch_heal_MNK()
 	CHECKEXIT
 	AMIDEAD
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /doability Mend
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${switchMNKTrainMelee}) /doability Mend
 	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast "Defer Death" disc 0 FALSE
 	/call click_item_heal
 /return
@@ -183,6 +169,9 @@ sub synergy_MNK()
  ***|
 sub melee_train_MNK()
 	DEBUG ${cbug}melee_train_MNK()\ax
+	
+	| mend training
+	/if (${switchMNKTrainMelee} && ${Me.Skill[Mend]} <= ${Me.SkillCap[Mend]} && ${Me.AbilityReady[Mend]}) /doability Mend
 
 	| kick skills
 	/if (${Me.Skill[Kick]} <= ${Me.Skill[Flying Kick]} && ${Me.Skill[Kick]} <= ${Me.Skill[Round Kick]}) {

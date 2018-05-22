@@ -79,6 +79,10 @@ sub patch_heal_NEC()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+
+	| aa Dying grasp
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Dying Grasp", ${Target2Kill}]}) /call core_cast2 "Dying Grasp" alt ${Target2Kill} FALSE
+
 	/call click_item_heal
 /return
 
@@ -95,12 +99,53 @@ sub disc_NEC()
 	CHECKEXIT
 	/doevents
 	CHECKTIE
-	/call is_target_dead
-	/if (!${Macro.Return}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	| aa wake the dead
-	/if (${switchPcSwarm} && ${Target.PctHPs} > 15 && ${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) /call core_cast "Wake the Dead" alt ${Target2Kill} FALSE
+	/if (${switchPcSwarm}) {
+		| wake the dead
+		/if (${SpawnCount[corpse radius ${Spell[Wake the Dead].MyRange}]} > 3) { 
+			/if (${validate_cast[FALSE, alt, "Wake the Dead", ${Target2Kill}]} && ${Target.PctHPs} > 15) /call core_cast2 "Wake the Dead" alt ${Target2Kill} FALSE
+		}
+		| aa swarm of decay
+		/if (${validate_cast[FALSE, alt, "Swarm of Decay", ${Target2Kill}]}) /call core_cast2 "Swarm of Decay" alt ${Target2Kill} FALSE
+		| aa Rise of bones
+		/if (${validate_cast[FALSE, alt, "Rise of Bones", ${Target2Kill}]}) /call core_cast2 "Rise of Bones" alt ${Target2Kill} FALSE
+	}
+	
+	/if (${validate_cast[FALSE, alt, "Hand of Death", ${Target2Kill}]}) /call core_cast2 "Hand of Death" alt ${Target2Kill} FALSE
+	
+	
+/return
+
+
+
+
+
+
+ |***
+ *	DES: Necromancer burn routines
+ *	USE: establish all comp/trigger skills
+ *	INI: 
+ *	NOTE: 
+ ***| 
+sub synergy_NEC()
+	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	CHECKEXIT
+	/doevents
+	
+	/call cast_AA_spire
+
+	/if (${validate_cast[FALSE, alt, "Life Burn", ${Target2Kill}]}) /call core_cast2 "Life Burn" alt ${Target2Kill} FALSE
+
+	/if (${validate_cast[FALSE, alt, "Funeral Pyre", ${Target2Kill}]}) /call core_cast2 "Funeral Pyre" alt ${Target2Kill} FLASE
+	
+	/if (${validate_cast[FALSE, alt, "Gift of Deathly Resolve", ${Target2Kill}]}) /call core_cast2 "Gift of Deathly Resolve" alt ${Target2Kill} FLASE
+	
+	/call use_glyph
+	/call synergy_click_Circle
+	/call click_item_burn
 /return
 
 
@@ -132,9 +177,8 @@ sub cast_blood(int _tmpID)
 	/doevents
 	/call create_timer timer_check_blood ${tCheck_Blood}
 	/if (${Bool[${Me.Song[Chaotic Power]}]}) /return
-	/call is_target_dead
-	/if (${Macro.Return}) /return
-	/call core_cast "${spellBlood}" 0 ${_tmpID}	FALSE
+	/if (${is_target_dead[${Target2Kill}]}) /return
+	/if (${validate_cast[FALSE, spell, "${spellBlood}", ${_tmpID}]}) /call core_cast2 "${spellBlood}" 0 ${_tmpID} FALSE
 /return
 
 
@@ -158,6 +202,7 @@ sub sac_toon()
 	}
 /return
  ***|
+ 
  
  
 |***
@@ -185,33 +230,6 @@ sub check_bloom()
 /return
  
  
-
-
-
- |***
- *	DES: Necromancer burn routines
- *	USE: establish all comp/trigger skills
- *	INI: 
- *	NOTE: 
- ***| 
-sub synergy_NEC()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
-	CHECKEXIT
-	/doevents
-	
-	/call cast_AA_spire
-	
-	| aa swarm of decay
-	/if (${switchPcSwarm}) /call core_cast "Swarm of Decay" alt ${Target2Kill} FALSE
-	| aa Rise of bones
-	/if (${switchPcSwarm}) /call core_cast "Rise of Bones" alt ${Target2Kill} FALSE
-
-	/call use_glyph
-	/call synergy_click_Circle
-	/call click_item_burn
-/return
-
-
 
 |***
  *	DES: Class controls
@@ -287,3 +305,8 @@ sub Bind_setNEC(string _classType, string _verbage)
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+
+
+
+

@@ -769,6 +769,7 @@ sub check_pet_buffs()
 		/if (${check_engaged[]}) /return
 		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
 		UPDATEHUD "BUFF Pet"
+		/if (${Me.Pet.Buff[${PetBuff${_count}chk}]}) /continue
 		
 		/if (${Me.Book[${PetBuff${_count}}]}) {
 			/if (${validate_cast[FALSE, spell, "${PetBuff${_count}}", ${Me.ID}]}) /call core_cast2 "${PetBuff${_count}}" ${buffGem} ${Me.ID} FALSE
@@ -957,7 +958,7 @@ sub check_ammo()
 	/for _count 1 to ${RangeItem.Count[|]}
 		/if (!${Bool[${RangeItem.Arg[${_count},|]}]} || !${Bool[${RangeItemSummon.Arg[${_count},|]}]}) /continue
 
-		/if (!${Bool[${FindItemCount[${RangeItemSummon.Arg[${_count},|]}]}]}) {
+		/if (!${Bool[${FindItemCount[=${RangeItemSummon.Arg[${_count},|]}]}]}) {
 			/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 			/if (${Me.Book[${RangeItem.Arg[${_count},|]}]}) {
 				/if (${validate_cast[FALSE, , "${RangeItem.Arg[${_count},|]}", ${Me.ID}]}) /call core_cast2 "${RangeItem.Arg[${_count},|]}" ${buffGem} ${Me.ID} FALSE
@@ -1346,7 +1347,7 @@ sub sort_cursor(bool _ignoreTimer)
 
 		/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]} || ${Select[${_cursorChoice},Keep,Sell,Announce]}) {
 			/if (${Select[${_cursorChoice},Announce]}) ECHOCHANNEL - Cursor .. ${Cursor.Name}
-			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} (${cnum}${FindItemCount[${Cursor.Name}]}\ax)
+			/if (${Cursor.ID}) VOUT Cursor ${sep} ${okeep} ${sep} ${cinfo}${Cursor.Name}\ax ${sep} (${cnum}${FindItemCount[=${Cursor.Name}]}\ax)
 			/if (${Cursor.ID}) /nomodkey /autoinventory
 		} else /if (${Select[${_cursorChoice},Destroy]}) {
 			/if (${Cursor.ID}) VOUT Cursor ${sep} ${odestroy} ${sep} ${cinfo}${Cursor.Name}\ax
@@ -1746,7 +1747,7 @@ sub is_target_valid(int _tmpID)
 	| check smart assists
 	/if (!${useForceAssist}) {
 		/if (${Target.ID} && ${coreAuto}) {
-			/if (${useSmartAssistR} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
+			/if ((${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 				/call clear_combat
 			} else /if (${useSmartAssistG} && ${Bool[${Group.MainAssist}]} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 				/call clear_combat
@@ -2468,22 +2469,30 @@ sub cast_cure()
 	/if (!${Debuff.Counters}) {
 		/if (!${Bool[${Group.Members}]} || ${switchPull} || ${switchAgro}) /return
 	} else /if (${Debuff.Counters}) {
-		| cure self only with items
 		
+		| Monk
 		/if (${Select[${Me.Class.ShortName},MNK]}) {
-			/call core_cast "Purify Body" alt 0 FALSE
+			/if (${validate_cast[FALSE, alt, "Purify Body", ${Me.ID}]}) /call core_cast2 "Purify Body" alt 0 FALSE
+		| paladin, Cleric, Shaman, Druid
 		} else /if (${Select[${Me.Class.ShortName},PAL,CLR,SHM,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
-			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased}) /call core_cast "Radiant Cure" alt 0 FALSE
+			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased}) {
+				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
+			}
+		| Necromancer
+		} else /if (${Select[${Me.Class.ShortName},NEC]} && ${Me.AltAbilityReady[Embrace the Decay]}) {
+			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased} || ${Debuff.Corruption}) {
+				/if (${validate_cast[FALSE, alt, "Embrace the Decay", ${Me.ID}]}) /call core_cast2 "Embrace the Decay" alt 0 FALSE
+			}
 		}
 		
 		/if (${Debuff.Cursed} && ${Me.ItemReady[${cureCurseItem}]}) {
-			/call core_cast "${cureCurseItem}" item ${Me.ID} FALSE
+			/if (${validate_cast[FALSE, item, "${cureCurseItem}", ${Me.ID}]}) /call core_cast2 "${cureCurseItem}" item ${Me.ID} FALSE
 		} else /if (${Debuff.Corrupted} && ${Me.ItemReady[${cureCorruptItem}]}) {
-			/call core_cast "${cureCorruptItem}" item ${Me.ID} FALSE
+			/if (${validate_cast[FALSE, item, "${cureCorruptItem}", ${Me.ID}]}) /call core_cast2 "${cureCorruptItem}" item ${Me.ID} FALSE
 		} else /if (${Debuff.Poisoned} && ${Me.ItemReady[${curePoisonItem}]}) {
-			/call core_cast "${curePoisonItem}" item ${Me.ID} FALSE
+			/if (${validate_cast[FALSE, item, "${curePoisonItem}", ${Me.ID}]}) /call core_cast2 "${curePoisonItem}" item ${Me.ID} FALSE
 		} else /if (${Debuff.Diseased} && ${Me.ItemReady[${cureDiseaseItem}]}) {
-			/call core_cast "${cureDiseaseItem}" item ${Me.ID} FALSE
+			/if (${validate_cast[FALSE, item, "${cureDiseaseItem}", ${Me.ID}]}) /call core_cast2 "${cureDiseaseItem}" item ${Me.ID} FALSE
 		}
 	}
 
@@ -2721,6 +2730,8 @@ sub set_combat(str _mode)
 			/call set_stop NOECHO
 			/call clear_combat
 		} else {
+			
+			|**
 			/if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind}) {
 				/if ((${Spawn[${Target2Kill}].LineOfSight} && !${switchOverrideLos}) && !${Me.AutoFire}) /squelch /autofire on
 				/if (${coreAuto} && ${switchCombatMelee} && !${RangeList.Find[${Target.DisplayName}]}) /call stick_to_target ${Target2Kill}
@@ -2732,6 +2743,29 @@ sub set_combat(str _mode)
 					/if (${coreAuto} && ${switchCombatMelee}) /call stick_to_target ${Target2Kill}
 				}
 			}
+			**|
+
+
+			/if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind}) {
+				/if (${RangeList.Find[${Target.DisplayName}]}) {
+					/if (${Me.AutoFire}) /squelch /autofire off
+				} else {
+					/if (${Spawn[${Target2Kill}].LineOfSight} && !${Me.AutoFire}) /squelch /autofire on
+				}
+			} else /if ((${Target.Distance} <= 31 && ${switchCombatMelee}) || (${SetStickBehind} && ${Target.Distance} <= ${MobAgro} && ${switchCombatMelee})) {
+				/if (${NoMeleeList.Find[${Target.DisplayName}]}) {
+					/squelch /attack off
+				} else {
+					/squelch /attack on
+					/if (${coreAuto}) /call stick_to_target ${Target2Kill}
+				}
+			}
+
+
+
+			
+			
+			
 		}
 	}
 /return
@@ -2746,11 +2780,11 @@ sub set_combat(str _mode)
  ***|
 sub cast_nuke_GoM(int _tmpID)
 	DEBUGCAST ${cbug}cast_nuke_GoM(ID: ${_tmpID})\ax
+
 	| clerics have their own GOM routine in group heals
-	/if (!${Select[${Me.Class.ShortName},CLR]}) {
-		CHECKEXIT
-		/if (${is_target_dead[${_tmpID}]}) /return
-	}
+	/if (${Select[${Me.Class.ShortName},CLR]}) /return
+
+	CHECKEXIT
 
 	/while (${Me.Casting.ID} && (${Me.Gem[${GoMNuke}]} || ${Me.Gem[${GoMNuke2}]})) {
 		/delay 1
@@ -2816,9 +2850,6 @@ sub check_buffs_manual(string _type)
 	} else {
 		/return
 	}
-	
-	
-	| ${Group.Members}
 	
 	
 	DEBUG _GroupRaid:${_GroupRaid}, _PCMercenary:${_PCMercenary}, _INIline:${_INIline}
@@ -4642,7 +4673,7 @@ sub get_target()
 		
 					| range item pull mob
 					} else {
-						/if (${FindItemCount[${RangeItemSummon.Arg[${_count},|]}]} <= ${RangeItemCount}) /return				
+						/if (${FindItemCount[=${RangeItemSummon.Arg[${_count},|]}]} <= ${RangeItemCount}) /return				
 					 	/range
 					}
 				}
@@ -5063,7 +5094,7 @@ sub check1offBuffs()
  *  NOTE: 
  ***|
 sub click_summon_food()
-	DEBUG ${cbug}click_summon_food(${FindItemCount[${clickFoodItem}]} <= ${clickFoodCount})\ax
+	DEBUG ${cbug}click_summon_food(${FindItemCount[=${clickFoodItem}]} <= ${clickFoodCount})\ax
 	/call create_timer timer_click_food ${tClick_FoodDrink}
 	AMIDEAD
 	CHECKTIE
@@ -5085,7 +5116,7 @@ sub click_summon_food()
  *  NOTE: 
  ***|
 sub click_summon_drink()
-	DEBUG ${cbug}click_summon_drink(${FindItemCount[${clickDrinkItem}]} <= ${clickDrinkCount})\ax
+	DEBUG ${cbug}click_summon_drink(${FindItemCount[=${clickDrinkItem}]} <= ${clickDrinkCount})\ax
 	CHECKTIE
 	AMIDEAD
 	CHECKEXIT
@@ -6035,7 +6066,7 @@ sub cast_malo(int _tmpID)
 		/varset _readytype AltAbilityReady
 	}		
 	
-	| check the things normal things	
+	| check the things .. normal things	
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellMalo}]}) /return
 	/delay 2.25s ${Me.${_readytype}[${spellMalo}]}	
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} > 2 && ${Select[${Me.Class.ShortName},MAG]}) {
