@@ -283,7 +283,6 @@ sub synergy_RNG()
 #bind setRNG /rng
 sub Bind_setRNG(string _classType, string _verbage)
 	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
-	/if (!${validate_class[TRUE, |RNG]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
@@ -347,6 +346,8 @@ sub Bind_setRNG(string _classType, string _verbage)
 		}
 
 	}
+
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)

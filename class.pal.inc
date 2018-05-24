@@ -293,13 +293,15 @@ sub check_splash_group_PAL()
 	  	/if (${validate_cast[FALSE, alt, "Hand of Piety", ${Me.ID}]}) /call core_cast2 "Hand of Piety" alt 0 FALSE
 	  }
 	  
-		AMIDEAD
-	 	/doevents
-		| Touch Heal 
-	  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
-	  	/if (${validate_cast[FALSE, spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt} FALSE
-	  }
 	}
+
+	AMIDEAD
+ 	/doevents
+	| Touch Heal 
+  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  	/if (${validate_cast[FALSE, spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt} FALSE
+  }
+
 	 
 	UPDATEHUD
 /return
@@ -464,8 +466,6 @@ sub Bind_setPAL(string _classType, string _verbage)
 	| use group Heals
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
-	 	/call echos switch "Use Group Heal" useGroupHeal
-	 	/return
 
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
@@ -487,19 +487,19 @@ sub Bind_setPAL(string _classType, string _verbage)
 	| on/off switch for Steel
 	} else /if (${Bool[${_classType.Equal[steel]}]}) {
 		/call writeINI switchSteel Buffs ${If[${switchSteel},FALSE,TRUE]}  
-		/call echos switch "Buff ${sep} ${Steel}" switchSteel
+		VOUT /${_bind} steel (${cnum}${Steel}\ax) ${sep} ${If[${switchSteel},${oenabled},${odisabled}]}
 		/return
 	
 	| on/off switch for Harmonious
 	} else /if (${Bool[${_classType.Equal[harmonious]}]}) {
 		/call writeINI switchHarmonious Buffs ${If[${switchHarmonious},FALSE,TRUE]}  
-		/call echos switch "Buff ${sep} ${Harmonious}" switchHarmonious
+		VOUT /${_bind} harmonious (${cnum}${Harmonious}\ax) ${sep} ${If[${switchHarmonious},${oenabled},${odisabled}]}
 		/return
 
 	| on/off switch for Stance
 	} else /if (${Bool[${_classType.Equal[stance]}]}) {
 		/call writeINI switchStance Buffs ${If[${switchStance},FALSE,TRUE]}  
-		/call echos switch "Buff ${sep} ${Stance}" switchStance
+		VOUT /${_bind} stance (${cnum}${Stance}\ax) ${sep} ${If[${switchStance},${oenabled},${odisabled}]}
 		/return
 		
 	| set XTar heal radius
@@ -540,7 +540,8 @@ sub Bind_setPAL(string _classType, string _verbage)
 			/next _count
 			VOUT /${_bind} stun [${_listout}]
 		}
-		VOUT Chain Stun: ${cinfo}${chainStun}\ax	
+		VOUT Chain Stun: ${cinfo}${chainStun}\ax
+		/return
 		
 	| defensive mob agro count
 	} else /if (${Bool[${_classType.Equal[defcount]}]}) {
@@ -552,6 +553,8 @@ sub Bind_setPAL(string _classType, string _verbage)
 		}	
 
 	}
+
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
@@ -561,6 +564,12 @@ sub Bind_setPAL(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${cnum}${useYaulpPct}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[stance]}) /varset _listout ${_listout}(${If[${Bool[${switchStance}]},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[steel]}) /varset _listout ${_listout}(${If[${Bool[${switchSteel}]},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[harmonious]}) /varset _listout ${_listout}(${If[${Bool[${switchHarmonious}]},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[stun]}) /varset _listout ${_listout}(${If[${Bool[${chainStun}]},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

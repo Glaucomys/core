@@ -253,6 +253,7 @@ sub Bind_setWAR(string _classType, string _verbage)
 		}	
 
 	}
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)

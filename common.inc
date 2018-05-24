@@ -772,11 +772,11 @@ sub check_pet_buffs()
 		/if (${Me.Pet.Buff[${PetBuff${_count}chk}]}) /continue
 		
 		/if (${Me.Book[${PetBuff${_count}}]}) {
-			/if (${validate_cast[FALSE, spell, "${PetBuff${_count}}", ${Me.ID}]}) /call core_cast2 "${PetBuff${_count}}" ${buffGem} ${Me.ID} FALSE
-		} else /if (${ME.AltAbilityReady[${PetBuff${_count}}]}) {	
-			/if (${validate_cast[FALSE, alt, "${PetBuff${_count}}", ${Me.ID}]}) /call core_cast2 "${PetBuff${_count}}" alt 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${PetBuff${_count}}", ${Me.Pet.ID}]}) /call core_cast2 "${PetBuff${_count}}" ${buffGem} ${Me.Pet.ID} FALSE
+		} else /if (${Me.AltAbilityReady[${PetBuff${_count}}]}) {	
+			/if (${validate_cast[FALSE, alt, "${PetBuff${_count}}", ${Me.Pet.ID}]}) /call core_cast2 "${PetBuff${_count}}" alt 0 FALSE
 		} else /if (${Me.ItemReady[${PetBuff${_count}}]}) {
-			/if (${validate_cast[FALSE, item, "${PetBuff${_count}}", ${Me.ID}]}) /call core_cast2 "${PetBuff${_count}}" item 0 FALSE		
+			/if (${validate_cast[FALSE, item, "${PetBuff${_count}}", ${Me.Pet.ID}]}) /call core_cast2 "${PetBuff${_count}}" item 0 FALSE		
 		}
 
 	/next _count

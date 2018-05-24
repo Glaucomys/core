@@ -17,7 +17,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180522.00
+	/call setDeclare coreBuild											string	outer 20180524.01
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -68,6 +68,7 @@ sub set_declares()
 	/call DeclareCoreIniVar switchUseADVL						string	General TRUE
 	/call DeclareCoreIniVar switchGlyphOutsideRaid	string	General FALSE
 	/call DeclareCoreIniVar maintenance							string	General "|FALSE|FALSE"
+	/call DeclareCoreIniVar switchMQclearonCLS			string	General FALSE
  			
 
 	| broadcast switches
@@ -161,7 +162,7 @@ sub set_declares()
 	/call setDeclare AllClassList										string 	outer "|WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU"
 	/call setDeclare MeleeList    		  						string 	outer "|WAR|ROG|BST|MNK|SHD|PAL|BER|BRD|RNG"
 	/call setDeclare CastList												string 	outer "|BST|SHD|PAL|RNG|CLR|DRU|SHM|ENC|WIZ|NEC|MAG"
-	/call setDeclare PetList												string 	outer "|ENC|DRU|SHM|SHD|WIZ|BRD|BST|MAG"
+	/call setDeclare PetList												string 	outer "|ENC|DRU|SHM|SHD|WIZ|BRD|BST|MAG|NEC"
 	/call setDeclare HealerList											string 	outer "|CLR|DRU|SHM|PAL"
 	/call setDeclare RezerList											string 	outer "|CLR|DRU|SHM|PAL|NEC"
 	/call setDeclare AASnareList										string 	outer "|RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL"
@@ -397,7 +398,7 @@ sub set_declares()
 
 
 	| combat controls
-	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|engage|faderest|force|melee|meleedisc|range|nuke|dot|forceassist|MA1|MA2|nukedelay|pull|saferadius|smartengage|smartma|stopnuke|zradius"
+	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|engage|faderest|force|melee|meleedisc|range|nuke|dot|forceassist|MA1|MA2|nukedelay|pull|saferadius|smartengage|stopnuke|zradius"
 	/call setINIVar MA1			 												string 	Common FALSE
 	/call setINIVar MA2			 												string 	Common FALSE
 	/call setINIVar MobAgro													int 		Common 60
@@ -3007,9 +3008,12 @@ sub Bind_watchspawn(string _spawn)
 #bind override /override
 sub Bind_override(string _overrideType, string _verbage)
 	DEBUG ${cbug}Bind_override(type: ${_overrideType})\ax
+	
 	/declare _count		int local
 	/declare _bind string local override
-	
+	/declare _listout string local
+	/declare _sep bool local FALSE
+		
 	| override class checks. not documented.
 	/if (${_overrideType.Equal[classcheck]}) {
 		/varset switchOverrideClasscheck TRUE
@@ -3038,8 +3042,8 @@ sub Bind_override(string _overrideType, string _verbage)
 			}
 		/next _count
 	}
-	/declare _listout string local
-	/declare _sep bool local FALSE
+
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${overrideType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${overrideType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
@@ -3058,6 +3062,7 @@ sub Bind_override(string _overrideType, string _verbage)
 #bind deBuff /debuff
 sub Bind_deBuff(string _deBuffType, string _verbage)
 	DEBUG ${cbug}Bind_deBuff(type: ${_deBuffType})\ax
+	
 	/declare _count int local 0
 	/declare _bind string local deBuff
 	/declare _listout string local
@@ -3102,6 +3107,8 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
 			}
 		/next _count
 	} 
+
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${deBuffType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchdeBuff${deBuffType.Arg[${_count},|].Left[1].Upper}${deBuffType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${deBuffType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
@@ -3127,6 +3134,7 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
 #bind heal /heal
 sub Bind_heal(string _healType, string _verbage)
 	DEBUG ${cbug}Bind_heal(type: ${_healType})\ax
+	
 	/declare _count		int local
 	/declare _bind string local heal
 	/declare _listout string local
@@ -3191,6 +3199,7 @@ sub Bind_heal(string _healType, string _verbage)
 		/return
 	}
 
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${healType.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchHeal${healType.Arg[${_count},|].Left[1].Upper}${healType.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${healType.Arg[${_count},|]}\ax
 		/varset _sep TRUE
@@ -3453,6 +3462,13 @@ sub Bind_listControl(string _list, string _verbage)
 		/return
 	}
 
+	| require a target. one that is not a PC
+	/if ((!${Target.ID} || ${Bool[${Spawn[pc ID ${Target.ID}]}]}) && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
+		DEBUG NO /${_bind} Target
+		/call echos needtarget 0 0 0 0
+		/return
+	} 
+
 	| make sure we are using the correct zone file
 	/call validate_zone FALSE TRUE
 	
@@ -3461,13 +3477,6 @@ sub Bind_listControl(string _list, string _verbage)
 		VOUT ${onotice} ${sep} List Control is disabled while in a Safe Zone.
 		/return
 	}
-
-	| require a target. one that is not a PC
-	/if ((!${Target.ID} || ${Bool[${Spawn[pc ID ${Target.ID}]}]}) && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
-		DEBUG NO /${_bind} Target
-		/call echos needtarget 0 0 0 0
-		/return
-	} 
 
 	| validate _list and correct the case
 	/if (${Bool[${_list}]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
@@ -3572,6 +3581,7 @@ sub Bind_listControl(string _list, string _verbage)
 #bind debug /debug
 sub Bind_debug(string _debugType, string _verbage)
 	DEBUG ${cbug}Bind_debug(Debug: ${_debugType})\ax
+	
 	/declare _count int local 0
 	/declare _bind string local debug
 	/declare _listout string local
@@ -3599,19 +3609,21 @@ sub Bind_debug(string _debugType, string _verbage)
 			}
 		/next _count	
 	}
+
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchDebug${${_bind}Type.Arg[${_count},|].Left[1].Upper}${${_bind}Type.Arg[${_count},|].Right[-1].Lower}},${cgood},${cinfo}]}${${_bind}Type.Arg[${_count},|]}\ax
 		/varset _sep TRUE
 	/next _count
-	VOUT /${_bind} [${_listout}]		
-/return  
+	VOUT /${_bind} [${_listout}]
+/return
 
 
 
 |***
  *	DES: pet control
  *	USE: /pc []
- *	INI: NA
+ *	INI: mostly [pet] entries  from the toons INI
  *  NOTE:
  ***|
 #bind petControl /pc
@@ -3700,6 +3712,7 @@ sub Bind_petControl(string _pcType, string _verbage)
 
 	}
 	
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]}
 		/if (${${_bind}Type.Arg[${_count},|].Equal[build]}) /varset _listout ${_listout} ${cinfo}build\ax
@@ -3741,6 +3754,7 @@ sub Event_SendPets(string line, int _tmpID)
 #bind setTieControl /tc
 sub Bind_setTieControl(string _tcType, string _verbage)
 	DEBUG ${cbug}Bind_setsetTieControl()\ax
+	
 	/declare _count int local 0
 	/declare _bind string local tc
 	/declare _listout string local
@@ -3804,6 +3818,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 			/return
 		}
 	}
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
 		/if (${${_bind}Type.Arg[${_count},|].Equal[name]}) /varset _listout ${_listout}(${cnum}${If[${Bool[${SetTieToon}]},${SetTieToon},${ooff}]}\ax)
@@ -3858,6 +3873,7 @@ sub Bind_setTie(string _tieType)
 #bind burn /burn
 sub Bind_burn(string _burnType, string _verbage)
 	DEBUG ${cbug}Bind_burn()\ax
+	
 	/declare _count int local 0
 	/declare _bind string local burn
 	/declare _listout string local
@@ -3902,6 +3918,7 @@ sub Bind_burn(string _burnType, string _verbage)
 
 	} 
 	
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[auto]}) /varset _listout ${_listout}(${cnum}${If[${Bool[${burnAuto}]},${oon},${ooff}]}\ax)
@@ -4074,6 +4091,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 		/return
 	}
 
+	/if (${switchMQclearonCLS}) /mqclear	
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[explevel]}) /varset _listout ${_listout}(${cnum}${MaxLevel}\ax)
@@ -4103,6 +4121,8 @@ sub Bind_setCore(string _coreType, string _verbage)
 #bind onoff /onoff
 sub Bind_onoff(string _onoffType)
 	DEBUG ${cbug}Bind_onoff(type: ${_onoffType})\ax
+	/if (${switchMQclearonCLS}) /mqclear
+	
 	/declare _count int local 0
 	/declare _listout string local
 	/declare _sep bool local FALSE
@@ -4136,6 +4156,8 @@ sub Bind_onoff(string _onoffType)
 #bind info /info
 sub Bind_info()
 	DEBUG ${cbug}Bind_info()\ax
+	/if (${switchMQclearonCLS}) /mqclear
+	
 	/declare _listout string local
 	/declare _sep bool local
 	/declare _count int local
@@ -4209,6 +4231,8 @@ sub Bind_ts(string _tsType)
 		}
 
 	} else {
+		/if (${switchMQclearonCLS}) /mqclear
+
 		/for _count 1 to ${${_bind}Type.Count[|]}
 			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
 			/varset _sep TRUE
@@ -4220,12 +4244,11 @@ sub Bind_ts(string _tsType)
 
 
 |***
- *	DES: simple shortcut to the  /cc smartma command
+ *	DES: sets the assist
  *	USE: /setassist [X|G|1|2|3|F|MA1|MA2|NULL]
  *	INI: 
  *  NOTE: 
  ***| 	
-| #bind setAssist /smartma
 #bind setAssist /setassist
 sub Bind_setAssist(string _verbage, _name)
 	DEBUG ${cbug}Bind_setAssist(assist: ${_verbage}, name: ${_name})\ax
@@ -4243,6 +4266,7 @@ sub Bind_setAssist(string _verbage, _name)
 #bind setCombatControl /cc
 sub Bind_setCombatControl(string _ccType, string _verbage)
 	DEBUG ${cbug}Bind_setCombatControl(type:${_ccType}, verbage:${_verbage})\ax
+	
 	/declare _count int local 0
 	/declare _bind string local cc
 	/declare _listout string local
@@ -4432,7 +4456,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 			/return
 		}	
 		
-	| set smart assist
+	|** set smart assist
 	} else /if (${Bool[${_ccType.Equal[smartma]}]}) {
 		/if (!${validate_expansion[TRUE, |16]}) {
 			OUT Use /cc MA1 [NAME] or MA2 [NAME]
@@ -4468,6 +4492,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/next _count
 		VOUT /${_bind} smartma [${_listout}]
 		/return
+		**| 
 
 	| alliance on or off... yada yada		
 	} else /if (${Bool[${_ccType.Equal[alliance]}]}) {
@@ -4542,6 +4567,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/return
 	}
 
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
 		/if (${${_bind}Type.Arg[${_count},|].Equal[zradius]}) /varset _listout ${_listout}(${cnum}${zradius}\ax)
@@ -4591,7 +4617,7 @@ sub Bind_MobAgro(int _MobAgro)
 #bind setMovementControls /movement
 sub Bind_setMovementControls(string _movementType, string _verbage)
 	DEBUG ${cbug}Bind_setMovementControls(type:${_movementType}, verbage:${_verbage})\ax
-	
+		
 	/if (!${validate_plugin[FALSE, |MQ2MoveUtils]}) /return
 
 	/declare _count int local 0
@@ -4720,6 +4746,8 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 		}
 		
 	}
+
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} 
 		/if (${${_bind}Type.Arg[${_count},|].Equal[mount]}) /varset _listout ${_listout} ${cinfo}mount\ax
@@ -4852,8 +4880,6 @@ sub Bind_echos(string _echoType, string _verbage)
 	| base echos
 	/if (${Bool[${_baseEchos.Find[${_echoType}]}]}) {
 		/call writeINI switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower} Echo ${If[${switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower}},FALSE,TRUE]}  
-		| /call echos switch "Echo ${sep} ${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower}" switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower} 0 0
-		| VOUT /${_bind}s ${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower} ${sep} ${If[${switchEcho${_echoType.Left[1].Upper}${_echoType.Right[-1].Lower}},${oenabled},${odisabled}]}
 
 	| set echo channel
 	} else /if (${Bool[${_echoType.Equal[channel]}]}) {
@@ -4880,6 +4906,7 @@ sub Bind_echos(string _echoType, string _verbage)
 	
 	}
 	
+ 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
 		/if (${${_bind}Type.Arg[${_count},|].Equal[channel]}) /varset _listout ${_listout}(${cnum}${echoChannel}\ax)

@@ -10,9 +10,23 @@
  ** I swear to god. If you don't read this and ask me questions, /ignore
 
 -- migration from core_cast() to validate_cast() / core_cast2()
-  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard, Magician, Necromancer, Monk
+  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard, Magician, Necromancer, Monk, Beastlord
 
 
+
+
+20180524.01
+- smartma completely removed. need to be useing /setassist
+- assists should not adjust for you anymore. how you set it is how it will stay
+- check_pet_buff()
+  - i fixed the fix that i fixed before
+- class.bst.inc
+  -- updated to new cast controls
+  -- fixed some of the /bst controls
+- class.pal.inc
+  -- adjustment to healTouch spell
+  -- cosmetic changes to /pal command
+  
 
 20180522.00
 I think i got the wiki up to date.. well maybe..
@@ -23,7 +37,6 @@ I think i got the wiki up to date.. well maybe..
 - cast_cure()
   -- necro self aa "Embrace the Decay" added to /heal cure
 - dug out the remaining useSmartAssistR. removed from INIs as well
-  
 - class.nec.inc
   -- converted to new cast routines
   -- burn routines are under construction
@@ -31,7 +44,6 @@ I think i got the wiki up to date.. well maybe..
   -- converted to the new cast routines (what little there is)
 - /imincharge
   -- playing around with this. i tend to swap drivetoons a lot. wanted something to change everyone elses settings on the fly
-
 
 
 20180521.01

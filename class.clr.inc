@@ -805,6 +805,7 @@ ${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
 sub Bind_setCLR(string _classType, string _verbage)
 	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |CLR]}) /return
+	/if (${switchMQclearonCLS}) /mqclear
 
 	/declare _sep bool local
 	/declare _listout string local
@@ -826,14 +827,10 @@ sub Bind_setCLR(string _classType, string _verbage)
 	| enable/disable lead with aggerssive heals
 	/if (${Bool[${_classType.Equal[aggressive]}]}) {
 		/call writeINI switchHealAggressive Heal ${If[${switchHealAggressive},FALSE,TRUE]}
-	 	VOUT /${_bind} aggressive ${sep} ${If[${switchHealAggressive},${oenabled},${odisabled}]}
-		/return
 
 	| lock group heals
 	} else /if (${Bool[${_classType.Equal[forcegroupheal]}]}) {
 	 	/call writeINI switchForceGroupHeal Heal ${If[${switchForceGroupHeal},FALSE,TRUE]}  
-	 	VOUT /${_bind} forcegroupheal ${sep} ${If[${switchForceGroupHeal},${oenabled},${odisabled}]}
-	 	/return
 
 	| mgb celestial regen
 	} else /if (${Bool[${_classType.Equal[regen]}]}) {
@@ -884,36 +881,26 @@ sub Bind_setCLR(string _classType, string _verbage)
 			/return
 		} else {
 		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
-		 	VOUT /${_bind} yaulp(${cnum}${useYaulpPct}\ax) ${sep} ${If[${doYaulp},${oenabled},${odisabled}]}
-		 	/return
 		}
 
 	| Veturika's Perseverance	Control	
 	} else /if (${Bool[${_classType.Equal[vp]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI useVPPct Buffs ${_verbage} 
-		 	VOUT /${_bind} vp ${sep} (${cnum}${useVPPct}\ax)
-			/call echos number "Veturika's Perseverance" ${_verbage} 0 0
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} vp [${cinfo}${useVPPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI useVP Buffs ${If[${useVP},FALSE,TRUE]}  
-		 	VOUT /${_bind} vp(${cnum}${useVPPct}\ax) ${sep} ${If[${useVP},${oenabled},${odisabled}]}
-			/return
 		}	
 		
 	| use group Heals
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
-	 	VOUT /${_bind} groupheal ${sep} ${If[${useGroupHeal},${oenabled},${odisabled}]}
-	 	/return
-	
+
 	| use group Heal over Time	
 	} else /if (${Bool[${_classType.Equal[grouphot]}]}) {
 		/call writeINI useGroupHoT Heal ${If[${useGroupHoT},FALSE,TRUE]} 	
-	 	VOUT /${_bind} grouphot ${sep} ${If[${useGroupHoT},${oenabled},${odisabled}]}
-	 	/return
 
 	| set rampage tank toon
 	} else /if (${Bool[${_classType.Equal[rampage]}]}) {
@@ -970,6 +957,7 @@ sub Bind_setCLR(string _classType, string _verbage)
 		}
 
 	}
+	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
@@ -977,10 +965,15 @@ sub Bind_setCLR(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${cnum}${useYaulpPct}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[ch]}) /varset _listout ${_listout}(${cnum}${CompleteHealpct}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[vp]}) /varset _listout ${_listout}(${cnum}${useVPPct}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[ch]}) /varset _listout ${_listout}(${If[${switchCompleteHeal},${oon},${ooff}]})(${cnum}${CompleteHealpct}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[vp]}) /varset _listout ${_listout}(${If[${useVP},${oon},${ooff}]})(${cnum}${useVPPct}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
-		
+		/if (${${_bind}Type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[forcegroupheal]}) /varset _listout ${_listout}(${If[${switchForceGroupHeal},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[grouphot]}) /varset _listout ${_listout}(${If[${useGroupHoT},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[aggressive]}) /varset _listout ${_listout}(${If[${switchHealAggressive},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
+
 	/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
