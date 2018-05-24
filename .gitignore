@@ -1,0 +1,10 @@
+**/.svn
+**/other
+**/plugins
+**/wiki txt
+misc stuff.txt
+*.bat
+*.old
+core.ini
+core.[a-z].[a-z].[a-z].ini
+
