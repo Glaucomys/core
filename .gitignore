@@ -9,5 +9,4 @@ core.ini
 core.zone.ini
 core.loot.ini
 namelistdata.ini
-core.[a-z].[a-z].[a-z].ini
-
+core.*.*.*.ini

@@ -13,7 +13,7 @@
   -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard, Magician, Necromancer, Monk, Beastlord
 
 
-
+ff
 
 20180524.01
 - smartma completely removed. need to be useing /setassist
