@@ -20,5 +20,5 @@ core.loot.ini
 namelistdata.ini
 
 # all character files
-core.[a-z].[a-z].[a-z].ini
+core.*.*.*.ini
 

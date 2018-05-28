@@ -17,7 +17,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180524.01
+	/call setDeclare coreBuild											string	outer 20180528.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -204,7 +204,7 @@ sub set_declares()
 	
 	| buff queue variables
 	/call DeclareCoreIniVar queueCountMax						int			General 10
-	/call setDeclare queueCount            					int  		outer 0
+	/call setDeclare queueCount            					int  		outer 1
 	
 	/if (!${Defined[queueBuffID]}) /declare queueBuffID[8] 												int  		outer
 	/if (!${Defined[queueList]}) /declare queueList[${queueCountMax},2] 				 	int  		outer
@@ -665,6 +665,7 @@ sub set_declares()
 	}
 	
 	| bc/tell buffs
+	/call setDeclare Buff0 													string 	outer FALSE
 	/call setDeclare BuffCount											int 		outer 15
 	/for _count 1 to ${BuffCount}
 		/call setINIVar Buff${_count}									string 	Buffs FALSE
@@ -901,15 +902,6 @@ sub declare_MAG()
 	/call setINIVar GatherSpell											string 	Spells "Gather Magnitude"
 	/call setINIVar switchGather			 							bool		Spells TRUE
 	/call setINIVar GatherPercent			 							int			Spells 60
-	/call setINIVar DoNuke					 								int			Spells 2
-	/call setINIVar Nuke1 													string 	Spells "Spear of Blistersteel"
-	/call setINIVar Nuke1Condition 									string	Spells FALSE
-	/call setINIVar Nuke2 													string 	Spells "Spear of Molten Shieldstone"
-	/call setINIVar Nuke2Condition 									string	Spells FALSE
-	/call setINIVar Nuke3 													string 	Spells FALSE
-	/call setINIVar Nuke3Condition 									string	Spells FALSE
-	/call setINIVar Nuke4 													string 	Spells FALSE
-	/call setINIVar Nuke4Condition 									string	Spells FALSE
 	/call setINIVar NukeSalvo												string 	Spells "Storm of Many"
 	/call setINIVar NukeSalvoCondition 							string	Spells FALSE
 	/call setINIVar DoDoT								 						int			Spells 0
@@ -921,10 +913,35 @@ sub declare_MAG()
 	/call setINIVar spellMalo 											string 	Spells "Malosinete"
 	/call setINIVar AAFade													string	Buffs "Dimensional Shield"
 	/call setINIVar useAAFade												int			Buffs 50
-	/call setINIVar NukeTwincast										string	Spells "Chaotic Fire"
-	/call setINIVar switchForceTwincast							bool		Spells TRUE
 
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
+	
+	/declare _count int local 0
+	/declare _list int local 0
+	/declare _line string local NULL
+	
+	/call setDeclare lineType												string	outer "|off|fire|magic|mix"
+	/call setINIVar lineCurrent											string 	Spells Fire
+	/call setINIVar lineFire												string	Spells "|Spear of Molten Arcronite|Bolt of Skyfire"
+	/call setINIVar lineMagic												string	Spells FALSE
+	/call setINIVar lineMix													string	Spells FALSE
+
+	| add conditions
+	/for _list 1 to ${lineType.Count[|]}
+		/varset _line ${lineType.Arg[${_list},|].Left[1].Upper}${lineType.Arg[${_list},|].Right[-1].Lower}
+		/for _count 1 to 4
+			/call setINIVar line${_line}Condition${_count}		string	Spells FALSE
+		/next _count
+	/next _list		
+	
+	/call setINIVar switchForceTwincast							bool		Spells TRUE
+	/call setINIVar NukeTwincastFire								string	Spells "Chaotic Inferno"
+	/call setINIVar NukeTwincastMagic								string	Spells FALSE
+	/call setINIVar NukeTwincastMix									string	Spells FALSE
+	/call setINIVar NukeTwincastCondition 					string	Spells FALSE	
+	
+	
+	
 /return
 	
 
@@ -2284,7 +2301,7 @@ sub set_alias()
 	
 	| utility
 	| /if (!${Bool[${Alias[/checkvar]}]}) 						/noparse /squelch /alias /checkvar 			 		/invoke ${Macro.Undeclared}
-  | /if (!${Bool[${Alias[/autologin]}]}) 						/squelch /alias /autologin									/plugin mq2autologin unload
+  /if (!${Bool[${Alias[/autologin]}]}) 						/squelch /alias /autologin									/plugin mq2autologin unload
 
 	
 /return
@@ -2421,7 +2438,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	  /delay 15s ${Me.AltAbilityReady[Call of the Hero]}
 	  /if (${Me.Invis}) /makemevisible
 	  ECHOCHANNEL Calling ... ${_sender}
-	 	/if (${validate_cast[FALSE, alt, "Call of the Hero", ${Me.ID}]}) /call core_cast2 "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
+	 	/if (${validate_cast[FALSE, alt, "Call of the Hero", ${Spawn[pc ${_sender}].ID}]}) /call core_cast2 "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
 		/return
 	}
 	
@@ -4033,7 +4050,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 			/call writeINI toonControl Common FALSE
 		}
 		VOUT /${_bind} control ${sep} ${If[${Bool[${toonControl}]},${cgood}${toonControl}\ax,${odisabled}]}
-		/if (!${toonControl}) /xtarget set ${toonControlXTslot} Autohater
+		/if (!${Bool[${toonControl}]}) /xtarget set ${toonControlXTslot} Autohater
 		/return
 
 	| enable wasiting fireworks for those bastards with too much AA on their hands
@@ -5111,7 +5128,6 @@ sub Bind_cast_AA_invis()
  ***|
 #bind broadcast_door /enter
 sub Bind_broadcast_door()
-SDEBUG DOOR
 	/if (${broadcastDoor}) {
 		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
 			/bca //click_door

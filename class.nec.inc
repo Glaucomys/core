@@ -273,7 +273,7 @@ sub Bind_setNEC(string _classType, string _verbage)
 		/return
 		
 	| gather enable/disable /pct
-	/if (${Bool[${_classType.Find[gather]}]}) {
+	} /if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI GatherPercent Spells ${_verbage} 
 		} else /if (${Bool[${_classVerbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {

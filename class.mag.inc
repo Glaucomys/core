@@ -20,8 +20,11 @@ sub core_MAG()
 
 	CHECKTIE
 
-	/if (${coreAuto} && !${Me.Invis}) {
+	/if (${coreAuto}) {
 		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+		/if (${switchGather}) {
+			/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_gather
+		}
 		/call check_engaged
 		/if (!${Bool[${Macro.Return}]}) {
 			/if (${switchPcPet}) /call check_pet
@@ -50,7 +53,8 @@ sub core_MAG()
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatNuke}) {
 				/if (${switchForceTwincast}) /call force_twincast_${Me.Class.ShortName}
-				/call cast_nuke
+				/if (${switchPcPet}) /call cast_nuke_salvo
+				/call cast_nuke_line
 				| /if (${useRain}) /call cast_nuke_rain
 			}
 			/call click_BP
@@ -84,7 +88,6 @@ sub disc_MAG()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${validate_cast[FALSE, alt,"Force of Elements", ${Target2Kill}]}) /call core_cast2 "Force of Elements" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, spell,"${TwincastSpell}", ${Me.ID}]} && ${switchForceTwincast} && !${Me.Buff[Improved Twincast].ID}) /call core_cast2 "${TwincastSpell}" 0 ${Me.ID} FALSE
 /return
 
 
@@ -123,19 +126,11 @@ sub click_DPS_MAG()
 	/call click_horn_of_unity 	
 	
 	| click summon rods. DPS fillers....
-	/if (${validate_cast[FALSE, item, "${ParadoxRodName}", ${Target2Kill}]}) {
-		| /call MQ2Cast "${ParadoxRodName}" item -targetid|${Target2Kill}
-		/call core_cast2 "${ParadoxRodName}" item ${Target2Kill} FALSE
-		/return
-	}
-	/if (${validate_cast[FALSE, item, "${OrbName}", ${Target2Kill}]}) {
-		| /call MQ2Cast "${OrbName}" item -targetid|${Target2Kill}
-		/call core_cast2 "${OrbName}" item ${Target2Kill} FALSE
-		/return
-	}
-	/if (${switchPcSwarm} && ${validate_cast[FALSE, item, "${ElementRodName}", ${Target2Kill}]}) {
-		| /call MQ2Cast "${ElementRodName}" item -targetid|${Target2Kill}
-		/call core_cast2 "${ElementRodName}" item ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, item, "${ParadoxRodName}", ${Target2Kill}]}) /call core_cast2 "${ParadoxRodName}" item ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, item, "${OrbName}", ${Target2Kill}]}) /call core_cast2 "${OrbName}" item ${Target2Kill} FALSE
+
+	/if (${switchPcSwarm}) {
+		/if (${validate_cast[FALSE, item, "${ElementRodName}", ${Target2Kill}]}) /call core_cast2 "${ElementRodName}" item ${Target2Kill} FALSE
 		/return
 	}
 /return
@@ -152,9 +147,9 @@ sub cast_nuke_salvo()
 	DEBUGCLASS ${cbug}cast_nuke_salvo()\ax
 	CHECKEXIT
 	CHECKTIE
-	/if (${validate_cast[FALSE, spell, "${NukeSalvo}", ${Target2Kill}]} && ${switchPcPet} && ${Spawn[${Target.ID}].NearestSpawn[3,pet radius 30]}) {
-		/call core_cast2 "${NukeSalvo}" 0 ${Target2Kill} FALSE
-	}
+	/if (${SpawnCount[pet radius ${MobAgro}]} < 3) /return
+	| /if (${validate_cast[FALSE, spell, "${NukeSalvo}", ${Target2Kill}]} && ${switchPcPet} && ${Spawn[${Target2Kill}].NearestSpawn[3,${Me.Pet.ID} radius 40]}) {
+	/if (${validate_cast[FALSE, spell, "${NukeSalvo}", ${Target2Kill}]}) /call core_cast2 "${NukeSalvo}" 0 ${Target2Kill} FALSE
 /return
 
 
@@ -204,14 +199,7 @@ sub synergy_MAG()
 	CHECKTIE
 	/if (${validate_cast[FALSE, alt, "Elemental Ward", ${Me.ID}]}) /call core_cast2 "Elemental Ward" alt 0 FALSE
 	
-	| twincast
-	/if (${Me.AltAbilityReady[Improved Twincast]} && !${Me.Buff[Twincast].ID}) {
-		/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]}) /call core_cast2 "Improved Twincast" alt 0 FALSE
-	} else /if (${Me.SpellReady[Twincast]} && !${Me.Buff[Improved Twincast].ID}) {
-		/if (${validate_cast[FALSE, spell, "Twincast", ${Me.ID}]}) /call core_cast2 "Twincast" 0 0 FALSE
-	}
-	
-	/if (${Target.PctHPs}) > 20) {
+	/if (${Target.PctHPs} > 20) {
 		/if (${validate_cast[FALSE, alt, "Focus of Arcanum", ${Me.ID}]}) /call core_cast2 "Focus of Arcanum" alt 0 FALSE
 	}
 	
@@ -256,20 +244,97 @@ sub synergy_MAG()
  ***|
 sub force_twincast_MAG()
 	DEBUG ${cbug}force_twincast_MAG()\ax 
+|**
 	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return 
 	AMIDEAD
 	CHECKEXIT
 	/doevents
-	/if (${is_target_dead[${Target2Kill}]}) /return 
+	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
+
+	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID} || ${Me.Buff[Twincast].ID}) /return
 	
-	/if (${validate_cast[FALSE, spell, "${NukeTwincast}", ${Target2Kill}]} && !${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID}) {
-		/call core_cast2 "${NukeTwincast}" 0 ${Target2Kill} FALSE
-		/call create_timer timer_force_twincast ${tForce_Twincast}
+	| twincast spell
+	/if (${Me.SpellReady[${TwincastSpell}]}) {
+		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
+
+	| twincast AA
+	} else /if (${Me.AltAbility[Improved Twincast]}) {
+		/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]}) /call core_cast2 "Improved Twincast" alt 0 FALSE
+		
+	| nuke twincast
+	} else {
+		/if (!${cast_condition[NukeTwincastCondition]}) /return
+		/if (${validate_cast[FALSE, spell, "${NukeTwincast${lineCurrent}}", ${Target2Kill}]}) /call core_cast2 "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
 	}
+	
+	**|
+	
+	
+	
+	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
+	/return	AMIDEAD
+	CHECKEXIT
+	/doevents
+	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
+	/if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID} && ${Me.SpellReady[${TwincastSpell}]}) {
+		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
+		/return
+	} else /if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[${TwincastSpell}].ID} && !${Me.Buff[Twincast].ID}) {
+		/if (!${cast_condition[NukeTwincastCondition]}) /return
+		/if (${validate_cast[FALSE, spell, "${NukeTwincast${lineCurrent}}", ${Target2Kill}]}) /call core_cast2 "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
+	}	
+	
+	
 /return
+
+
+
+|***
+ *	DES: lemme heare everyone say ... hey .. we want some ..... umm manna..
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_gather()
+	DEBUGCLASS ${cbug}check_gather()\ax
+	CHECKEXIT
+	/doevents
+	CHECKTIE
+
+	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID} || ${Me.Buff[Twincast].ID}) /return
+
+	| pet consumption for manna		
+	/if (${Me.Pet.ID}) {
+		/if (${Me.PctMana} <= 19 && ${validate_cast[FALSE, alt, "Elemental Conversion", ${Me.ID}]}) /call core_cast2 "Elemental Conversion" alt 0 FALSE
+	}
 	
+	| rods
+	/if (${Bool[${SelfRodName}]}) {
+		/if (${validate_cast[FALSE, item, "${SelfRodName}", ${Me.ID}]}) /call core_cast2 "${SelfRodName}" item 0 FALSE
+	}
+	/if (${Bool[${ModRodName}]}) {
+		/if (${validate_cast[FALSE, item, "${ModRodName}", ${Me.ID}]}) /call core_cast2 "${ModRodName}" item 0 FALSE
+	}
 	
-	
+	| stop here to save time is nothing else is available
+	/if (!${Me.SpellReady[${GatherSpell}]} && !${Me.AltAbilityReady[Forceful Rejuvenation]}) /return
+		
+	| force rejuv if we can proc gather spell again
+	/if (!${Me.SpellReady[${GatherSpell}]}) {
+		/if (${validate_cast[FALSE, alt, "Forceful Rejuvenation", ${Me.ID}]}) /call core_cast2 "Forceful Rejuvenation" alt 0 FALSE
+		/delay 1s
+	}
+
+	/if (${Me.SpellReady[${GatherSpell}]}) {
+		/if (${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
+	}
+
+/return
+
+
+		
 |***
  *	DES: Class controls
  *	USE: /mag []
@@ -285,7 +350,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare magType string	local |fade|forcetwincast|gather|healpoint|mana|rods|spiregroup|spireraid
+  /declare magType string	local |fade|forcetwincast|gather|healpoint|line|rods|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -322,8 +387,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 	| enable/disable force twincasting
 	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
 		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
-		| VOUT /${_bind} forcetwincast ${sep} ${If[${switchForceTwincast},${oenabled},${odisabled}]}
-		| /return
+
 
 	| get rods.. cause things and stuff
 	} else /if (${Bool[${_classType.Equal[rods]}]}) {
@@ -339,7 +403,6 @@ sub Bind_setMAG(string _classType, string _verbage)
 		
 		| group mod rod
 		/if (${Bool[${ModRodName}]} && !${FindItem[${ModRodName}].ID} && !${Cursor.Name.Equal[${ModRodName}]}) {
-			| /target ID ${Me.ID}
 			/if (${validate_cast[FALSE, spell, "${ModRodSpell}", ${Me.ID}]}) /call core_cast2 "${ModRodSpell}" alt 0 FALSE
 			/call sort_cursor TRUE
 		}
@@ -373,26 +436,6 @@ sub Bind_setMAG(string _classType, string _verbage)
 		VOUT /${Me.Class.ShortName.Lower} ${_classType.Lower} [${_listout}]	
 		/return
 
-	| get mana
-	} else /if (${Bool[${_classType.Equal[mana]}]}) {
-
-		:checkgather
-		/if (${switchGather} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) {
-			/if (${Bool[${SelfRodName}]} && ${validate_cast[FALSE, item, "${SelfRodName}", ${Me.ID}]}) /call core_cast2 "${SelfRodName}" item 0 FALSE
-			/if (${Bool[${ModRodName}]} && ${validate_cast[FALSE, item, "${ModRodName}", ${Me.ID}]}) /call core_cast2 "${ModRodName}" item 0 FALSE
-			/if (${Me.PctMana} <= 19 && ${validate_cast[FALSE, alt, "Mana Reserve", ${Me.ID}]}) /call core_cast2 "Mana Reserve" alt 0 FALSE
-
-		  /if (${Bool[${GatherSpell}]} && ${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
-		  
-			/if (!${Me.SpellReady[${GatherSpell}]}) {
-				/if (${validate_cast[FALSE, alt, "Forceful Rejuvenation", ${Me.ID}]}) /call core_cast2 "Forceful Rejuvenation" alt 0 FALSE
-				/delay 2
-				/goto :checkgather
-			}
-
-		}
-		
-		/return
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
@@ -402,6 +445,30 @@ sub Bind_setMAG(string _classType, string _verbage)
 			VOUT /${_bind} healpoint(${cnum}${${Me.Class.ShortName}Point}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}
+		
+	| spell line. not quite done with this. 
+	} else /if (${Bool[${_classType.Equal[line]}]}) {
+		| mem a line of spells.
+		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
+			DEBUG ${lineType.Find[${_verbage.Lower}]}
+			/call writeINI lineCurrent Spells ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+			/if (${_verbage.Equal[off]}) {
+				VOUT Casting line ${sep} ${odisabled}
+				/return
+			}
+			
+			/call mem_nuke_line ${lineCurrent}
+			/return
+		}
+		/for _count 1 to ${lineType.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${lineCurrent.Equal[${lineType.Arg[${_count},|]}]},${cgood},${cinfo}]}${lineType.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} line [${_listout}]	
+		/return		
+		
+		
+		
 
 	}
 	/if (${switchMQclearonCLS}) /mqclear
@@ -410,7 +477,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)(${cnum}${If[${switchGather},${oon},${ooff}]}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[forcetwincast]}) /varset _listout ${_listout}(${If[${switchForceTwincast},${oon},${ooff}]})
 		/varset _sep TRUE

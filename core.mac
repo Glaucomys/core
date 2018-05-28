@@ -265,6 +265,10 @@ sub main()
 		/doevents
 		/call core_${Me.Class.ShortName}
 	/goto :loopmain
+	
+
+	| :OnExit	
+	
 /return
 
 

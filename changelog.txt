@@ -14,6 +14,25 @@
 
 
 
+20180528.00
+- CHECKTIE addedd to all the buff routines
+- get_assist_target()
+  -- logic error in sorting the additional raid slots
+- /core [control] boolean error for the toons name
+- found the rogue bug in /t buffs. it should be sorted now
+- class.mag.inc
+  -- logic error in the class control command
+  -- changed the salvo nuke. it should cast it a lot more. still requires > 2 pets in the area
+  -- changes to forced twincast
+  -- removed twincasting from burns
+  -- manna recover alterations. match more like the wizard now
+  -- mages now have lines
+    -- /mag line [off|fire|magic|mix]
+- cast_nuke_lines() 
+  -- corrected for wizard
+  -- addedd to mage
+
+
 
 20180524.01
 - smartma completely removed. need to be useing /setassist
