@@ -433,8 +433,6 @@ sub Bind_setPAL(string _classType, string _verbage)
 			/return
 		} else {
 		 	/call writeINI doYaulp Buffs ${If[${doYaulp},FALSE,TRUE]}  
-		 	/call echos switch "Yaulp" doYaulp 0 0
-		 	/return
 		}
 		
 	| spire control
@@ -563,7 +561,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[mg]}) /varset _listout ${_listout}(${cnum}${useMGPct}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${cnum}${useYaulpPct}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[stance]}) /varset _listout ${_listout}(${If[${Bool[${switchStance}]},${oon},${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[steel]}) /varset _listout ${_listout}(${If[${Bool[${switchSteel}]},${oon},${ooff}]})
@@ -575,6 +573,3 @@ sub Bind_setPAL(string _classType, string _verbage)
 	VOUT /${_bind} [${_listout}]
 
 /return
-
-
-

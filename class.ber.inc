@@ -79,7 +79,7 @@ sub disc_BER()
 		
 	/call core_cast "Binding Axe" alt 0 FALSE
 	
-	/if (${Bool[${Me.Song[Strike of Savagery]}]}) /call core_cast "Rampage" alt 0 FALSE
+	/if (${AEMelee} && ${Bool[${Me.Song[Strike of Savagery]}]}) /call core_cast "Rampage" alt 0 FALSE
 		
 	/if (!${Me.Song[Reckless Abandon].ID}) /call core_cast "Vehement Rage" alt 0 FALSE
 

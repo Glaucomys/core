@@ -3,7 +3,7 @@
 	Core Macro
 	exspes007
 	
-	"Someone once told me it taks a lot of skill and preperation to be effectively lazy."
+	"Someone once told me it takes a lot of skill and preperation to be effectively lazy."
 	-- unknown
 	
 	GitHub: https://github.com/exspes007
@@ -53,7 +53,7 @@
 	tmpHealOverride			int				control hp heal reduction percentage. For zones that impose a HP/Mana cap. (no effect on stamina calculations)
 	
 	Common Used Functions:
-	check_exit										returns {TRUE/FALSE] if there is a reason to not do the current sub
+	check_exit										returns [TRUE/FALSE] if there is a reason to not do the current sub
 	create_timer									creates a timer. will declare the variable if needed
 	core_cast											"SPELLNAME" [alt|disc|gem#|item|0] [MobID|0] [subname]
 	writeINI											updates the related ini and the loaded variable
@@ -66,7 +66,7 @@
 		- NinjaADVLoot - 	is the core of the do_loot loot function used with VERY heavy mods/butchering. http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=19707
 		- whoHas.mac [/whohas] - http://www.macroquest2.com/phpBB3/viewtopic.php?f=49&t=20212 (this is a genius idea)
 		- puller/targ acquisition is very loosely based off nytemyst pull code for his SK and the healing foundation
-		- i stole the base forage functions from someone years ago. Thank You Whomever. fish code based off same processes. and then promptly adapted. rewritten to use core.loot.ini list.
+		- i stole the base forage functions from someone years ago. Thank You Whomever. fish code based off same processes and then promptly adapted. rewritten to use core.loot.ini list.
 
 ***|
 
@@ -95,7 +95,8 @@
 #define CHECKEXIT "/if (${check_exit[]}) /return"
 #define CHECKTIE "/if ((${SetTie} && !${Bool[${timer_check_Tie}]}) || (${SetTie} && ${SetTieLock})) /call set_tie"
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"
-#define CHECKSAFELIST "/if (!${safelist.Find[${_sender}]} && !${switchOverrideSafelist}) /return"
+| #define CHECKSAFELIST "/if (!${safelist.Find[${_sender}]} && !${switchOverrideSafelist}) /return"
+#define CHECKSAFELIST "/if ((!${safelist.Find[${_sender}]} || ${switchGuildinSafelist} && !${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]}) && !${switchOverrideSafelist}) /return"
 #define UPDATEHUD "/call update_HUD_notices"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
@@ -148,8 +149,6 @@ sub main()
   
 		/if (!${timer_check_EQBC}) /call check_one_mind
 		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
-		
-
 		
 		| what is this for??
 		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}
@@ -281,6 +280,8 @@ sub main()
  ***| 	
 sub initialize_core()
 	/mqclear
+	/if (${Target.ID}) /squelch /target clear
+
 	/if (!${Defined[INICore]}) /declare INICore 								string 	outer tc\core.ini
 	/if (!${Defined[INIClass]}) /declare INIClass 							string 	outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
 	/if (!${Defined[INIZone]}) /declare INIZone						     	string 	outer tc\core.zone.ini
@@ -323,7 +324,7 @@ sub base_preperation()
 	/if (${validate_plugin[FALSE, |MQ2Bucles]}) /plugin MQ2Bucles unload
 
 	| disable smart assists for TLP w/o underfoot
-	/if (!${validate_expansion[TRUE, |16]}) {
+	/if (!${validate_expansion[FALSE, |16]}) {
 		/if (${useSmartAssistG}) /call writeIni useSmartAssistG FALSE
 		/if (${useSmartAssist1}) /call writeIni useSmartAssist1 FALSE
 		/if (${useSmartAssist2}) /call writeIni useSmartAssist2 FALSE
@@ -358,16 +359,22 @@ sub base_preperation()
 	}
 
 	| cpu stuffs
-	/if (${validate_plugin[FALSE, |mq2cpuload]}) /squelch /cpu auto
+	/if (${validate_plugin[FALSE, |mq2cpuload]}) {
+		/squelch /cpu auto
+	}
 
 	| make sure netbots is running	
-	/if (${validate_plugin[FALSE, |mq2netbots]}) /squelch /netbots ON send=ON grab=ON	
+	/if (${validate_plugin[FALSE, |mq2netbots]}) {
+		/squelch /netbots ON send=ON grab=ON	
+	}
 
 	| turn off forced burn routines if there still on
 	| /if (${Bool[${burnForce}]}) /varset burnForce FALSE
 
 	| turn off rez non guildies/group if it is still on. 'cause fuck everyone else.
-	/if (${switchRezEveryone}) /call writeINI switchRezEveryone Heal FALSE
+	/if (${switchRezEveryone}) {
+		/call writeINI switchRezEveryone Heal FALSE
+	}
 
 	| Show the HUD	
 	/squelch /hud ${HudType}

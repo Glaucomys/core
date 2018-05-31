@@ -1236,6 +1236,7 @@ sub set_stop(string _echo)
 	}
 	
 	| stop advanced path
+	
 	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
 		/if (${AdvPath.Following}) /squelch /afollow off
 	}
@@ -2001,7 +2002,7 @@ sub mem_nuke_line(string _line)
  ***|
 sub cast_DOT()
 	DEBUGCAST ${cbug}cast_DOT(count ${DoDoT})\ax
-	/if (!${switchCombatDoT}) /return
+	| /if (!${switchCombatDoT}) /return
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoDoT}
@@ -3342,10 +3343,14 @@ sub update_HUD_notices(string _mode)
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} ${lineCurrent}
 		/varset _sep TRUE
 	}	
-	/if (${AdvPath.Playing}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} AdvPath
-		/varset _sep TRUE
+
+	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
+		/if (${AdvPath.Playing}) {
+			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} AdvPath
+			/varset _sep TRUE
+		}
 	}
+	
 	/if (${SafeZone}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} SafeZone
 		/varset _sep TRUE
@@ -5637,7 +5642,6 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	}
 	
 	
-	
 	| _spell set to false
 	/if (!${Bool[${_spell}]}) /return FALSE
 	
@@ -5649,7 +5653,11 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	/if (${_type.Equal[spell]}) {
 		/if (!${Bool[${Me.Book[${_spell}]}]}) /return FALSE
 		/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]}) /return FALSE
-		/if ((${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) || ${Me.Moving} || ${AdvPath.Following}) /return FALSE
+		/if (${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) /return FALSE
+		/if (${Me.Moving}) /return FALSE
+		/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
+			/if (${AdvPath.Following}) /return FALSE
+		}
 		/if (${Me.Casting.ID}) /return FALSE
 		/if (!${Spell[${_spell}].Category.Equal[Heals]}) {
 			/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE

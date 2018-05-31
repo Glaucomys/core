@@ -17,7 +17,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180528.00
+	/call setDeclare coreBuild											string	outer 20180531.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -69,6 +69,7 @@ sub set_declares()
 	/call DeclareCoreIniVar switchGlyphOutsideRaid	string	General FALSE
 	/call DeclareCoreIniVar maintenance							string	General "|FALSE|FALSE"
 	/call DeclareCoreIniVar switchMQclearonCLS			string	General FALSE
+	/call DeclareCoreIniVar switchGuildinSafelist		string	General FALSE
  			
 
 	| broadcast switches
@@ -5216,7 +5217,7 @@ sub Bind_broadcast_here()
 sub Bind_set_combat_here()
  	DEBUG ${cbug}Bind_set_combat_here()\ax
  	AMIDEAD
-	/if (!${Bool[${Group.Members}]}) /return
+	| /if (!${Bool[${Group.Members}]}) /return
 	UPDATEHUD "Combat Now"
 
 	VOUT ${owarning} ${sep} COMBAT ${sep} Right NOW!
