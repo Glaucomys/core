@@ -353,6 +353,22 @@ sub fix_ini_current()
 		| MAGICIAN
 		} else /if (${Select[${Me.Class.ShortName},MAG]}) {
 			
+		| 20180527
+		
+			/ini "${INIClass}" "Spells" "DoNuke" NULL
+			/ini "${INIClass}" "Spells" "Nuke1" NULL
+			/ini "${INIClass}" "Spells" "Nuke1Condition" NULL
+			/ini "${INIClass}" "Spells" "Nuke2" NULL
+			/ini "${INIClass}" "Spells" "Nuke2Condition" NULL
+			/ini "${INIClass}" "Spells" "Nuke3" NULL
+			/ini "${INIClass}" "Spells" "Nuke3Condition" NULL
+			/ini "${INIClass}" "Spells" "Nuke4" NULL
+			/ini "${INIClass}" "Spells" "Nuke4Condition" NULL
+			/ini "${INIClass}" "Spells" "NukeTwincast" NULL
+			
+
+
+			
 		| MONK
 		} else /if (${Select[${Me.Class.ShortName},MNK]}) {
 		

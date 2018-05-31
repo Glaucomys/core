@@ -12,7 +12,7 @@
 /C1"Macroquest2 Commands" Colors = 23924030 Colors Back = 16777215 Colors Auto Back = 1 Font Style = 0
 // /GetWinTitle 
 // /SetWinTitle /SpellSlotInfo 
-// /aa /alert /alias /altkey 
+// /aa /AddLootFilter /alert /alias /altkey 
 // /banklist /beep /beepontells /bind /break /buyitem 
 // /call /caption /captioncolor /cast /charinfo /cleanup /clearerrors /click /combine /continue /ctrlkey
 // /declare /delay /deletevar /destroy /docommand /doevents /doors /doortarget /dosocial /drop /dumpbinds
@@ -20,7 +20,7 @@
 // /face /filter /for 
 // /goto 
 // /help /highlight 
-// /identify /if /ini /invoke /itemnotify /items /itemtarget 
+// /identify /if /ini /invoke /itemdisplay /itemnotify /items /itemtarget 
 // /keepkeys /keypress 
 // /listmacros /loadcfg /loadspells /location /loginname /look /lootall 
 // /macro /makemevisible /mapclick /mapfilter /maphide /mapnames /mapshow /memspell /mouseto /mqclear /mqlog /mqp /mqpause /multiline 
@@ -63,10 +63,10 @@ timer to
 // /language /lfg /loc /location /log /loot /lootnodrop 
 // /market /mcicontrol /me /memspellset /mousespeed /msg 
 // /note 
-// /ooc 
+// /ooc /outputfile
 // /pet /petition /played 
 // /q /quit 
-// /random /reply /report /resetwindows /reverb /reversesound /roleplay
+// /random /reply /report /resetwindows /reverb /reversesound /roleplay /raidinvite /raidaccept /raiddecline
 // /serverfilter /shout /show /shownames /showspelleffects /sit /split /stand /stopsong /surname
 // /taskquit /targetgroupbuff /tasktimer /tell /time /trackfilter /trackplayers /tracksort /tribute
 // /useadvlooting /usercolor 
@@ -88,6 +88,7 @@ LOG
 NOUT
 OUT
 SDEBUG SIMPLEEXIT
+TESTFUNCTION
 UPDATEHUD
 VALT VBC VDISC VITEM VMELEE VOUT VSPELL
 
@@ -103,8 +104,9 @@ P0 P1 P2 P3 P4 P5 P6 P7 P8 P9 Param0 Param1 Param2 Param3 Param4 Param5 Param6 P
 {HUD {Heading 
 {If {Ini {Int {InvSlot {Irc {Item {ItemSlot {ItemTarget 
 {LastSpawn {LineOfSight 
-{Macro {MacroQuest {MakeCamp {MapSpawn {Math {MaxFPS {Me {Mercenary {Merchant ${MoveTo {MoveUtils {Mount
-{NearestSpawn {NetBots
+{Macro {MacroQuest {MakeCamp {MapSpawn {Math {MaxFPS {Me {Mercenary {Merchant ${MoveTo {MoveUtils {Mount {MQ2ItemSpellType}
+{Navigation {NearestSpawn {NetBots
+
 {Pet {Plugin {PointMercant
 {Raid {Range
 {Select {SelectedItem {Skill {Spawn {SpawnCount {Spell {Stick {Switch 
@@ -114,56 +116,57 @@ P0 P1 P2 P3 P4 P5 P6 P7 P8 P9 Param0 Param1 Param2 Param3 Param4 Param5 Param6 P
 {{
 
 /C5"Members"
-.AFK .AAExp .AAPoints .AAPointsTotal .AARank .AARankRequired .AATitle .AERange .AGI .Ability .AbilityReady .Abs .Accuracy .AccuracyBonus .Acos 
-.ActiveDisc .Aego .AggroHolder .AltAbility .AltAbilityReady .AltAbilityTimer .AltCurrency .AltTimer .AltTimerReady .AmIGroupLeader .Animation 
+.AFK .AAExp .AAPoints .AAPointsSpent .AAPointsTotal .AARank .AARankRequired .AATitle .AERange .AGI .Ability .AbilityReady .Abs .Accuracy .AccuracyBonus .Acos 
+.ActiveDisc .AddLootFilter .Aego .AggroHolder .AltAbility .AltAbilityReady .AltAbilityTimer .AltCurrency .AltTimer .AltTimerReady .AmIGroupLeader .Animation 
 .Anonymous .AnyoneMissing .Arg .Asin .Assist .AssistComplete .Atan .AttackBonus .AttackSpeed .Aura .Auto .AutoFire .AutoSkill .AverageLevel 
 .AvoidanceBonus 
 .BGColor .Bank .BardSongPlaying .Base .Basic .Beneficial .Between .Binding .Body .Book .Brells .Buddies .Buddy .Buff .BuffCount .BuffDuration 
-.Build .BuildDate .BuyPrice 
-.CHA .Calc .Campfire .CampfireZone .CanCast .CanSplashLand .CareerFavor .Cash .CashBank .CastOnAnother .CastOnYou .CastTime .Caster .Casting 
-.Category .Centi .CharSelectList .Channel .Charges .Charmed .Checked .Child .Children .Clarity .Class .CleanName .ClericType .Clock .Collectible 
-.Combat .CombatAbility .CombatAbilityReady .CombatAbilityTimer .CombatEffectsBonus .CombatState .Compare .CompareCS .ConColor .Connected 
+.BuffsPopulated .Build .BuildDate .BuyPrice 
+.CHA .Calc .Campfire .CampfireZone .CanCast .CanSplashLand .CanTrain .CanUse .CareerFavor .Cash .CashBank .CastOnAnother .CastOnYou .CastTime .Caster .Casting 
+.Category .Centi .CharSelectList .Channel .Charges .Charmed .Checked .Child .Children .Clarity .Class .CleanName .Cleric .ClericType .Clock .Collectible 
+.Combat .CombatAbility .CombatAbilityReady .CombatAbilityTimer .CombatEffectsBonus .CombatState .Compare .CompareCS .ConColor .Connected .Corruption
 .Container .ContractorID .Copper .CopperBank .Cos .Cost .Count .CountBuffs .Crippled .CurLine .CurrentEndurance .CurrentFavor .CurrentHPs 
 .CurrentMana .CurrentWeight .CurrentUI .CurrentUIt .CursorKrono
 .DEX .DMGBonus .DSed .DamageShieldBonus .Dar .Date .Day .DayOfWeek .Dead .Dec .Deci .DefaultX .DefaultY .DefaultZ .Degrees .DegreesCCW 
 .Description .Diety .Dimensions .DisplayName .Distance .Distance3D .DistanceN .DistancePredict .DistanceU .DistanceW .DistanceX .DistanceY 
-.DistanceZ .DoTShieldBonus .Done .DoOpen .DoClose .DoLeftMouseUp .DruidType .dRUNK .Ducking .Duration 
+.DistanceZ .DoAssist .DoFace .DoTShieldBonus .Done .DoOpen .DoClose .DoLeftMouseUp .DoTarget .DruidType .Drunk .Ducking .Duration 
 .EQLoc .EffectType .Enabled .Endurance .EnduranceBonus .EnduranceCost .EnduranceRegen .Equipment .Error .Exp .Expendable 
 .FeetWet .Feigning .Fellowship .Find .FirstChild .FirstFreeSlot .FizzleTime .Float .Focus .Foreground .FreeBuffSlots .FreeInventory 
-.GHold .GameState .Gem .Gender .Gold .GoldBank .Gravity .Group .GroupAssistTarget .GroupLeader .GroupLeaderExp .GroupLeaderPoints .GroupList 
+.GHold .GameState .Gem .Gender .Gold .GoldBank .Grab .Gravity .Group .GroupAssistTarget .GroupLeader .GroupLeaderExp .GroupLeaderPoints .GroupList 
 .GroupMarkNPC .GroupSize .Grouped .Growth .Guild .GuildStatus .GukEarned 
-.HPBonus .HPRegen .HPRegenBouns .HScrollMax .HScrollPos .HUD .Hasted .HaveExpansion .Heading .HeadingTo .HeadingToLoc .Height .Heriloom .Hex 
+.HPBonus .HPRegen .HPRegenBouns .HScrollMax .HScrollPos .HUD .HasSPA .Hasted .HaveExpansion .Heading .HeadingTo .HeadingToLoc .Height .Heriloom .Hex 
 .Highlighted .HisTradeReady .HitCount .Hold .Holding .Hovering .Hour .Hours .HscrollPct .Hunger .HybridHP
-.ID .IllusionOkWhenMounted .INT .InInstance .Index .Indoor .Infusable .Inside .Int .Inventory .Invis .Invited .Inviter .InvSlot .InZone 
+.ID .IllusionOkWhenMounted .INT .InInstance .Index .Indoor .Infusable .Injured .Inside .Int .InternalName .Inventory .Invis .Invited .Inviter .InvSlot .InZone 
 .IsCurrentUILoaded .IsDefaultUILoaded .Item .ItemID .ItemReady .ItemSlot .Items 
 .LDoNPoints .LDoNTheme .LFG .Language .LargestFreeInventory .LastCommand .LastMouseOver .LastSeen .LastTell .LayoutCopyInProgress .Leader 
-.Left .Length .Level .Levitating .Light .LineOfSight .LinkDead .List .Loc .Locked .LoginName .Look .LootTypeLore .Looter .Looters .Lower 
-.MMEarned .MQ2DataError .Magic .MainAssist .MainTank .Maloed .Mana .ManaBonus .ManaRegen .ManaRegenBonus .Mark .Markup .Master .MasterLooter 
-.Max .MaxClip .MaxEndurance .MaxHPs .MaxMana .MaxRange .MaxRangeTo .MaxRank .MemUse .Member .Members .MercAAExp .MercID .Mezzed .Mid .Milli 
+.Left .LeftClick .LeftMouseDown .LeftMouseHeld .LeftMouseHeldUp .LeftMouseUp .Length .Level .Levitating .Light .LineOfSight .LinkDead .List .Loc 
+.Locked .LoginName .Look .LootTypeLore .Looter .Looters .Lower 
+.MMEarned .MQ2DataError .Magic .MainAssist .MainTank .Maloed .Mana .ManaBonus .ManaRegen .ManaRegenBonus .Mark .Markup .Master .MasterLooter
+.Max .MaxClip .MaxEndurance .MaxHPs .MaxMana .MaxRange .MaxRangeTo .MaxRank .MemUse .Member .Members .MercAAExp .MercAAPoints .MercAAPointsSpent .MercID .Mezzed .Mid .Milli 
 .MinClip .MinLevel .Minute .Minutes .MirEarned .Mod .Month .Mount .MouseOver .MouseX .MouseY .MyCastTime .MyRange 
-.Name .NearestSpawn .NecromancerType .Next .Nick .Night .NoDestroy .NoDrop .NoRent 
+.Name .NearestSpawn .NecromancerType .Next .NextIndex .Nick .Night .NoDestroy .NoDrop .NoRent 
 .Objective .Offline .Open .OtherZone .Outdoor
-.PID .PPriority .Pack .Params .Parent .PctAAExp .PctAggro .PctEndurance .PctExp .PctGroupLeader .PctHPs .PctMana .PctMercAAExp .PctPower 
+.PID .PPriority .Pack .Params .Parent .Path .PctAAExp .PctAggro .PctEndurance .PctExp .PctExpToAA .PctGroupLeader .PctHPs .PctMana .PctMercAAExp .PctPower 
 .PctRaidLeaderExp .Pet .PetBuff .PetClass .Platinum .PlatinumBank .PlatinumShared .Port .Pred .Precision .Prestige .Prev .Price .Primary 
 .PureCaster .Purity .PushBack 
 .Quantity .Quest 
-.Race .RaidAssistTarget .RaidLeader .RaidLeaderExp .RaidLeaderPoints .RaidMarkNPC .Rand .Range .RangedReady .Rank .Raw .ReGroup .RecastTime 
-.RecastType .RecoveryTime .RequiresAbility .RequiresAbilityPoints .ResistAdj .ResistType .Return .ReuseTime .RevDSed .Reverse .Right 
-.Roleplaying .Rooted .RujEarned .RunTime .Running 
+.Race .RaidAssistTarget .RaidLeader .RaidLeaderExp .RaidLeaderPoints .RaidMarkNPC .Rand .Range .RangedReady .Rank .RankName .Raw .ReGroup .RecastTime 
+.RecastType .RecoveryTime .Remove .RequiredLevel .RequiresAbility .RequiresAbilityPoints .ResistAdj .ResistType .Return .ReuseTime .RevDSed .Reverse .Right .RightClick 
+.RightMouseDown .RightMouseHeld .RightMouseHeldUp .RightMouseUp .Roleplaying .Rooted .RujEarned .RunTime .Running 
 .SE .STA .STR .ScreenID .ScreenMode .Second .Secondary .SecondaryAggroPlayer .SecondaryPctAggro .SecondaryPctAggroPlayer .Seconds 
-.SecondsSinceMidnight .SellPrice .Server .ShamanType .ShieldingBonus .Shining .ShortName .Siblings .Silver .SilverBank .Sin .Sitting .Size 
-.Skill .SkillCapPost50 .Skin .SkillCapPre50 .SkyType .Slot .SlotUsedByItem .Slowed .Snared .Sneaking .Song .Spawn .Speed .Spell .SpellGroup 
+.SecondsSinceMidnight .Select .SellPrice .Server .ShamanType .ShieldingBonus .Shining .ShortName .Siblings .Silver .SilverBank .Sin .Sitting .Size 
+.Skill .SkillCap .SkillCapPost50 .Skin .SkillCapPre50 .SkyType .Slot .SlotUsedByItem .Slowed .Snared .Sneaking .Song .Spawn .Speed .Spell .SpellGroup 
 .SpellInCooldown .SpellReady .SpellShieldBonus .SpellType .Sqrt .Stack .Stacks .Stackable .StackSize .StacksWith .Stance .Standing .StartingSkill 
-.State .StateID .StatusID .Stop .Stored .Strength .StrikeThroughBonus .StunResistBonus .Stunned .Style .SubCategory .SubSpellGroup .Subscription 
+.State .StateID .StatusID .Stop .Stored .Strength .StrikeThroughBonus .StunResistBonus .Stunned .Style .Solvent .Subcategory .SubSpellGroup .Subscription 
 .Suffix .Surname .SV .Swimming .Symbol .SyntaxError 
 .TakEarned .Tan .Target .TargetOfTarget .TargetType .Tashed .Taunt .Team .Text .Thirst .Ticks .Time .Time12 .Time24 .TimeHMS .Timer .TimerReady 
-.Title .Token .Tooltip .TotalLevels .TotalMinutes .TotalSeconds .Trader .Tribute .TributeActive .TributeTimer .Type 
+.Title .Token .Tooltip .TotalLevels .TotalMinutes .TotalSeconds .Trader .Tribute .TributeActive .TributeTimer .Trigger .Type 
 .Underwater .Upper .UseAdvancedLooting 
 .VScrollMax .VScrollPct .VScrollPos .Value .Vitality 
 .WIS .Weight .WillStack .WinTitle .WornSlot .WornSlots .XTarget .Year
 .X .XTAggroCount 
 .Y
-.ZoneBoundX .ZoneBoundY .ZoneBoundZ .Zoning .bazaaritem .svCold .svDisease .svFire .svMagic .svPoison
+.Z .ZoneBound .ZoneBoundX .ZoneBoundY .ZoneBoundZ .Zoning .bazaaritem .svCold .svDisease .svFire .svMagic .svPoison
 
 
 /C6"Pre-Processor"
@@ -223,7 +226,7 @@ tabselect
 // /i /iconnect /inote /istatus /link 
 // /loadhud 
 // /makecamp /mapclick /mapfilter /maphide /mapnames /mapshow /maxfps /melee /memorize /moveto /mqclear /mqfont /mqmin
-// /netbots /netcure /netheal /networst 
+// /nav /netbots /netcure /netheal /networst 
 // /render /rootme 
 // /sing /ssd /ssl /ssm /sss /stick /stoptwist /style
 // /telnet /timer /track /tracknames /twist 
@@ -247,11 +250,11 @@ sub
 .Following .FullVerbosity
 .GM
 .Leash .LeashLength .Loose 
-.MaxDelay .MinDelay .MoveBack .MoveBehind .MovePause .Moving
-.PauseMaxDelay .PauseMinDelay .Paused .Percent .Pin .Poisoned .PulseCheck
+.MaxDelay .MeshLoaded .MinDelay .MoveBack .MoveBehind .MovePause .Moving
+.PathExists .PathLength .PauseMaxDelay .PauseMinDelay .Paused .Percent .Pin .Poisoned .PulseCheck
 .Returning
-.Status .StickTarget .StickTargetName .Stopped .Stuck .StuckLogic .Summoned
-.TotalSilence .TryToJump
+.ShortBuff .Status .StickTarget .StickTargetName .Stopped .Stuck .StuckLogic .Summoned
+.Toggle .TotalSilence .TryToJump
 .UseWalk
 .Version .Verbosity
 

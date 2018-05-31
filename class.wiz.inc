@@ -41,7 +41,7 @@ sub core_WIZ()
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatNuke}) {
 				/if (${switchForceTwincast}) /call force_twincast_${Me.Class.ShortName}
-				/call cast_nuke_wiz
+				/call cast_nuke_line
 			}
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
@@ -292,75 +292,6 @@ sub force_twincast_WIZ()
 
 
 |***
- *	DES: memorize spell line
- *	USE: /call mem_song_line [] | /wiz line [fire|ice|magic|mix]
- *	INI: [Spell] -> line[fire|ice|magic|mix]
- *  NOTE:
- ***|
-sub mem_spell_line_WIZ(string _line)
- 	DEBUGCLASS ${cbug}mem_spell_line_WIZ(group: ${_line})\ax
-	AMIDEAD
-	CHECKEXIT
-	/doevents
-	/declare _index 				int 		local 0
-	/declare _list		 			string 	local ${line${lineCurrent}}
-	/declare _currentSong 	string 	local NULL
-	
-	| mem twincast spell
-	/if (!${Me.Gem[1].Name.Equal[${NukeTwincast${lineCurrent}}]} && ${Bool[${NukeTwincast${lineCurrent}}]}) {
-		/call mem_spell TRUE "${NukeTwincast${lineCurrent}}" 1 FALSE
-	}	
-	
-	| mem remainder line of spells
-	/for _index 1 to ${_list.Count[|]}
-		/if (${Me.Gem[${_index}].Name.Equal[${Spell[${_list.Arg[${_index},|]}].RankName}]}) /continue
-		/call mem_spell TRUE "${Spell[${_list.Arg[${_index},|]}].RankName}" ${Int[${Math.Calc[${_index}+1]}]} FALSE
-	/next _index	
-	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax memorization completed.
-/return
-
-
-
-|***
- *	DES: Cast nukes
- *	USE: /call cast_nuke
- *	INI: 
- *  NOTE: "The only good bug is a dead bug" -- Would you like to know more?
- ***|
-sub cast_nuke_WIZ()
-	DEBUGCAST ${cbug}cast_nuke_wiz()\ax
-	/if (${lineCurrent.Equal[off]}) /return
-	/if (${timer_Nuke_Delay}) /return	
-	/call get_assist_target
-	/declare _count int local 0
-	/declare _list string local ${line${lineCurrent}}
-	
-	/for _count 1 to ${_list.Count[|]}
-		/if (!${Range.Between[1,${_list.Count[|]}:${Int[${_count}]}]}) /continue
-		DEBUG _count:${_count}, spell:${Spell[${_list.Arg[${_count},|]}].RankName}, manna:${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana}
-		AMIDEAD
-		CHECKEXIT
-		
-		/if (${is_target_dead[${Target2Kill}]}) /return
-		/if (${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana} || ${Me.PctMana} < 2) /break 
-		/if (!${cast_condition[line${lineCurrent}Condition${_count}]}) /continue 
-		
-		/if (${validate_cast[FALSE, spell, "${Spell[${_list.Arg[${_count},|]}].RankName}", ${Target2Kill}]}) /call core_cast2 "${Spell[${_list.Arg[${_count},|]}].RankName}" 0 ${Target2Kill} cast_break
-		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
-
-		| toons ini switch. maintain the loop of nuked till all are cycled.
-		/if (${forceNukeLoop}) {
-			/delay 10s !${Me.Casting.ID}
-			/delay 2.5s
-			/delay ${timer_Nuke_Delay}
-		}
-
-	/next _count
-/return
-
-
-
-|***
  *	DES: Make sure you are using the AA casting boost you want..
  *	USE: /call sort_mancy_lineAA
  *	INI: 
@@ -425,13 +356,13 @@ sub Bind_setWIZ(string _classType, string _verbage)
 			DEBUG ${lineType.Find[${_verbage.Lower}]}
 			/call writeINI lineCurrent Spells ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 			/if (${_verbage.Equal[off]}) {
-			VOUT Casting line ${sep} ${odisabled}
+				VOUT Casting line ${sep} ${odisabled}
 				/return
 			}
 			/call sort_mancy_lineAA
 			/delay 2
 			
-			/call mem_spell_line_WIZ ${lineCurrent}
+			/call mem_nuke_line ${lineCurrent}
 			/return
 		}
 		/for _count 1 to ${lineType.Count[|]}

@@ -1,12 +1,24 @@
+# directories
 **/.svn
 **/other
 **/plugins
 **/wiki txt
+
+# old stale data.
 misc stuff.txt
+
+# dont need these
 *.bat
 *.old
+
+# user specific INIs
 core.ini
 core.zone.ini
 core.loot.ini
+
+# namelists till i figure out the variable limits
 namelistdata.ini
+
+# all character files
 core.*.*.*.ini
+

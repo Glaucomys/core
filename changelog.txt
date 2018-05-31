@@ -10,10 +10,50 @@
  ** I swear to god. If you don't read this and ask me questions, /ignore
 
 -- migration from core_cast() to validate_cast() / core_cast2()
-  -- classes converted: Cleric, Ranger, Rogue, Paladin, Wizard, Magician, Necromancer, Monk, Beastlord
+  -- classes converted: 
+     Cleric, Ranger, Rogue, 
+     Paladin, Wizard, Magician, 
+     Necromancer, Monk, Beastlord, 
+     Enchanter
 
 
-ff
+
+
+20180531
+- on macro start, current target will be cleard
+- /here
+  -- will work on all toons in your BC not just those in group
+- Safelist
+  -- core.ini->[General]->switchGuildinSafelist=TRUE|FALSE - allows your guild to be included in the safelist check
+- class.enc.inc
+  -- converted to the new casting routines
+- class.bst.inc
+  -- Strike of Savagery set to an AE skill
+- class.clr.inc
+  -- cosmetic changes to /clr
+- class.pal.inc
+  -- cosmetic changes to /pal
+
+
+20180528.00
+- CHECKTIE addedd to all the buff routines
+- get_assist_target()
+  -- logic error in sorting the additional raid slots
+- /core [control] boolean error for the toons name
+- found the rogue bug in /t buffs. it should be sorted now
+- class.mag.inc
+  -- THIS WILL BREAK YOUR MAGE.. go fix its INI...
+  -- logic error in the class control command
+  -- changed the salvo nuke. it should cast it a lot more. still requires > 2 pets in the area
+  -- changes to forced twincast
+  -- removed twincasting from burns
+  -- manna recover alterations. match more like the wizard now
+  -- mages now have lines
+    -- /mag line [off|fire|magic|mix]
+- cast_nuke_lines() 
+  -- corrected for wizard
+  -- addedd to mage
+
 
 20180524.01
 - smartma completely removed. need to be useing /setassist

@@ -97,7 +97,8 @@ sub Bind_port_list(string _class, string _location)
 	} else /if (${Bool[${_class}]} && ${Bool[${_location}]}) {
 		/for _count 1 to ${Resident${_class}.Count[|]}
 			/if (${Spawn[pc ${Resident${_class}.Arg[${_count},|]} zradius 80 radius 100].ID}) {
-				/t ${Resident${_class}.Arg[${_count},|]} send ${_location}
+				/bct ${Resident${_class}.Arg[${_count},|]} //send_a_person ${Me.DisplayName} ${Resident${_class}.Arg[${_count},|]} ${_location}
+				| /t ${Resident${_class}.Arg[${_count},|]} send ${_location}
 				/varset _tell TRUE
 			}		
 		/next _count
@@ -118,10 +119,13 @@ sub Bind_port_list(string _class, string _location)
  *	INI: 
  *  NOTE: 
  ***|
-#event port_request "#1# tells you, 'send #2#'"
-sub Event_port_request(string line, string _sender, string _location)
+| #event port_request "#1# tells you, 'send #2#'"
+| sub Event_port_request(string line, string _sender, string _location)
+
+#bind send_a_person /send_a_person
+sub send_a_person(string _sender, string _location)
 	SDEBUG ${cbug}Event_port_request(sender:${_sender}, location:${_location})\ax
-	/return
+	| /return
 	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]}) /return
 	/if (!${Defined[${_location}]}) /return
 	CHECKSAFELIST

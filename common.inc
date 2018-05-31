@@ -392,7 +392,7 @@ sub cast_summon_weapons()
 		/call sort_cursor TRUE
 		/delay 2s !${Cursor.ID}
 		/delay 5
-		/if (${validate_cast[FALSE, spell, "${summonedWepClosedBag}", ${Me.ID}]}) /call core_cast2 "${summonedWepClosedBag}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${summonedWepClosedBag}", ${Me.ID}]}) /call core_cast2 "${summonedWepClosedBag}" item 0 FALSE
 		DEBUG open the dumb bag
 		/delay 3s !${Me.Casting.ID}
 		/delay 5
@@ -622,6 +622,7 @@ sub check_buffs_item()
 		/for _count 1 to ${ClickItem}
 			/doevents
 			AMIDEAD
+			CHECKTIE
 			/if (${UseItem[${_count}]}&& ${Me.FreeBuffSlots} >= 1 && ${FindItem[${SelfItem[${_count}]}].ID} && ${Cast.Ready[${SelfItem[${_count}]}]} && !${Me.Buff[${SpellItem[${_count}]}].ID} && ${Spell[${SpellItem[${_count}]}].Stacks}) { 
 				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 				/if (${validate_cast[FALSE, item, "${SelfItem[${_count}]}", ${Me.ID}]}) /call core_cast2 "${SelfItem[${_count}]}" item 0 FALSE
@@ -883,6 +884,7 @@ sub check_buffs_BC()
 		DEBUG _toon ${_toon} / ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}
 		AMIDEAD
 		CHECKEXIT
+		CHECKTIE
 
 		| each buff. cycle all ${BuffCount}, used or not
 		/for _buff 1 to ${BuffCount}
@@ -893,6 +895,7 @@ sub check_buffs_BC()
 			/if (!${Range.Between[1,${BuffCount}:${Int[${_buff}]}]}) /continue
 			/doevents
 			AMIDEAD
+			CHECKTIE
 
 			| no BC Buff
 			/if (!${Bool[${Buff${_buff}}]}) /continue
@@ -1157,7 +1160,6 @@ sub do_rest()
 				/if (${switchPcPet} && ${switchBuffinRest}) /call check_pet
 			} else /if (${Select[${Me.Class.ShortName},MAG]}) {
 				/if (${switchPcPet} && ${switchBuffinRest}) /call check_pet
-				/call Bind_setMAG mana
 			}
 		} 			
 	}
@@ -1234,6 +1236,7 @@ sub set_stop(string _echo)
 	}
 	
 	| stop advanced path
+	
 	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
 		/if (${AdvPath.Following}) /squelch /afollow off
 	}
@@ -1550,7 +1553,7 @@ sub get_assist_target()
 	/if (${useForceAssist} && ${Target2Kill} == ${Me.ID}) /return
 	
 	| if no MA present. move along..	
-	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && && !${useSmartAssistG} && !${useForceAssist}) {
+	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG} && !${useForceAssist}) {
 		DEBUG ${cbad}NO Assist Set\ax
 		/delay 1
 		/return
@@ -1600,9 +1603,9 @@ sub get_assist_target()
 			/if (${Me.XTarget[1].TargetType.NotEqual[Group Assist Target]} && ${Group.Members}) /xtarget set 1 groupassisttarget
 		} else /if (${useSmartAssist1}) {
 			/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 1 Target]} && ${Raid.Members}) /xtarget set 1 raidassist1target
-		} else /if ${useSmartAssist2}) {
+		} else /if (${useSmartAssist2}) {
 			/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 2 Target]} && ${Raid.Members}) /xtarget set 1 raidassist2target
-		} else /if ${useSmartAssist3}) {
+		} else /if (${useSmartAssist3}) {
 			/if (${Me.XTarget[1].TargetType.NotEqual[Raid Assist 3 Target]} && ${Raid.Members}) /xtarget set 1 raidassist3target
 		}
 		
@@ -1711,19 +1714,6 @@ sub get_assist_target()
 		}
 	}
 /return
-
-
-
-
-
-${Me.RaidAssistTarget[1].ID}
-${Me.RaidAssistTarget[2].ID}
-${Me.RaidAssistTarget[3].ID}
-
-${Me.RaidAssist[1].ID}
-
-
-
 
 
 
@@ -1906,7 +1896,6 @@ sub cast_condition(str _condition)
  ***|
 sub cast_nuke()
 	DEBUGCAST ${cbug}cast_nuke()\ax
-	| /if (!${switchCombatNuke}) /return
 	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
 	/declare _count int local 0
@@ -1937,6 +1926,75 @@ sub cast_nuke()
 
 
 |***
+ *	DES: Cast nuke Lines
+ *	USE: /call cast_nuke
+ *	INI: 
+ *  NOTE: "The only good bug is a dead bug" -- Would you like to know more?
+ ***|
+sub cast_nuke_line()
+	DEBUGCAST ${cbug}cast_nuke_wiz()\ax
+	/if (${lineCurrent.Equal[off]}) /return
+	/if (${timer_Nuke_Delay}) /return	
+	/call get_assist_target
+	/declare _count int local 0
+	/declare _list string local ${line${lineCurrent}}
+	
+	/for _count 1 to ${_list.Count[|]}
+		/if (!${Range.Between[1,${_list.Count[|]}:${Int[${_count}]}]}) /continue
+		DEBUG _count:${_count}, spell:${Spell[${_list.Arg[${_count},|]}].RankName}, manna:${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana}
+		AMIDEAD
+		CHECKEXIT
+		
+		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (${Me.CurrentMana} < ${Spell[${_list.Arg[${_count},|]}].Mana} || ${Me.PctMana} < 2) /break 
+		/if (!${cast_condition[line${lineCurrent}Condition${_count}]}) /continue 
+		
+		/if (${validate_cast[FALSE, spell, "${Spell[${_list.Arg[${_count},|]}].RankName}", ${Target2Kill}]}) /call core_cast2 "${Spell[${_list.Arg[${_count},|]}].RankName}" 0 ${Target2Kill} cast_break
+		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
+
+		| toons ini switch. maintain the loop of nuked till all are cycled.
+		/if (${forceNukeLoop}) {
+			/delay 10s !${Me.Casting.ID}
+			/delay 2.5s
+			/delay ${timer_Nuke_Delay}
+		}
+
+	/next _count
+/return
+
+
+
+|***
+ *	DES: memorize spell line
+ *	USE: /call mem_nuke_line [] 
+ *	INI: [Spell] -> line[fire|ice|magic|mix]
+ *  NOTE:
+ ***|
+sub mem_nuke_line(string _line)
+ 	DEBUGCLASS ${cbug}mem_nuke_line(group: ${_line})\ax
+	AMIDEAD
+	CHECKEXIT
+	/doevents
+	/declare _index 				int 		local 0
+	/declare _list		 			string 	local ${line${lineCurrent}}
+	| /declare _currentSong 	string 	local NULL
+	
+	| mem twincast spell
+	/if (!${Me.Gem[1].Name.Equal[${NukeTwincast${lineCurrent}}]} && ${Bool[${NukeTwincast${lineCurrent}}]}) {
+		/call mem_spell TRUE "${NukeTwincast${lineCurrent}}" 1 FALSE
+	}	
+	
+	| mem remainder line of spells
+	/for _index 1 to ${_list.Count[|]}
+		/if (${Me.Gem[${_index}].Name.Equal[${Spell[${_list.Arg[${_index},|]}].RankName}]}) /continue
+		/call mem_spell TRUE "${Spell[${_list.Arg[${_index},|]}].RankName}" ${Int[${Math.Calc[${_index}+1]}]} FALSE
+	/next _index	
+	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax memorization completed.
+/return
+
+
+
+|***
  *	DES: Cast DoT's
  *	USE: /call cast_DOT
  *	INI: 
@@ -1944,7 +2002,7 @@ sub cast_nuke()
  ***|
 sub cast_DOT()
 	DEBUGCAST ${cbug}cast_DOT(count ${DoDoT})\ax
-	/if (!${switchCombatDoT}) /return
+	| /if (!${switchCombatDoT}) /return
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoDoT}
@@ -1954,7 +2012,7 @@ sub cast_DOT()
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		| /if (${Select[${Me.Subscription},SILVER]}) /varset DoT${_count}chk ${Ini[${INIClass},Spells,DoT${_count}chk]}
 		/if (!${cast_condition[DoT${_count}Condition]}) /continue 
-		/if (${Me.CurrentMana} < ${Spell[${DoT${_count}}].Mana} || ${Me.CurrentMana} < 2) /continue 
+		/if (${Me.CurrentMana} < ${Spell[${DoT${_count}}].Mana} || ${Me.PctMana} < 2) /continue 
 
 		/if (${Target.BuffDuration[${DoT${_count}chk}].TotalSeconds} >= 3 && ${Spawn[${Target.Buff[${DoT${_count}chk}].Caster}].ID} == ${Me.ID}) /continue
 		/if (${Target.Buff[${DoT${_count}chk}].ID}) /continue
@@ -2228,9 +2286,6 @@ sub use_glyph()
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
 /return
 
-
-
-switchGlyphOutsideRaid
 
 
 |***
@@ -2748,14 +2803,15 @@ sub set_combat(str _mode)
 
 			/if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind}) {
 				/if (${RangeList.Find[${Target.DisplayName}]}) {
-					/if (${Me.AutoFire}) /squelch /autofire off
+					/if (${Me.AutoFire}) /squelch /autofire
 				} else {
-					/if (${Spawn[${Target2Kill}].LineOfSight} && !${Me.AutoFire}) /squelch /autofire on
+					/if (${Spawn[${Target2Kill}].LineOfSight} && !${Me.AutoFire}) /squelch /autofire
 				}
 			} else /if ((${Target.Distance} <= 31 && ${switchCombatMelee}) || (${SetStickBehind} && ${Target.Distance} <= ${MobAgro} && ${switchCombatMelee})) {
 				/if (${NoMeleeList.Find[${Target.DisplayName}]}) {
 					/squelch /attack off
 				} else {
+					/if (${Me.AutoFire}) /squelch /autofire
 					/squelch /attack on
 					/if (${coreAuto}) /call stick_to_target ${Target2Kill}
 				}
@@ -3287,10 +3343,14 @@ sub update_HUD_notices(string _mode)
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} ${lineCurrent}
 		/varset _sep TRUE
 	}	
-	/if (${AdvPath.Playing}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} AdvPath
-		/varset _sep TRUE
+
+	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
+		/if (${AdvPath.Playing}) {
+			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} AdvPath
+			/varset _sep TRUE
+		}
 	}
+	
 	/if (${SafeZone}) {
 		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} SafeZone
 		/varset _sep TRUE
@@ -4076,6 +4136,7 @@ sub check_buffs_tell()
 	/if (${coreAuto}) /call create_timer timer_check_buffs_tell ${tTell_Buff}
 
 	/for _count 1 to ${queueCount}
+		/if (${queueCount} < 1 || ${queueCount} == 0) /continue
 		/if (!${Range.Between[1,${queueCount}:${Int[${_count}]}]}) /continue
 		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /break
 
@@ -4083,6 +4144,8 @@ sub check_buffs_tell()
 		DEBUGARRAY Tell queue count: ${queueCount}
 		AMIDEAD
 		CHECKEXIT
+		CHECKTIE
+		| /if (${Defined[Buff0]}) /deletevar Buff0
 		/if (${queueList[${_count},2]} < ${_tmpVAR} && ${Spawn[${queueList[${_count},1]}].ID} && !${Spawn[${queueList[${_count},1]}].Dead} && (${Spawn[${queueList[${_count},1]}].Distance} <  ${Spell[${Buff${queueList[${_count},2]}}].MyRange} || ${Spawn[${queueList[${_count},1]}].Distance} < ${Spell[${Buff${queueList[${_count},2]}}].AERange}) && ${Me.CurrentMana} > ${Spell[${Buff${_tmpVAR}}].Mana}) {
 			/varset _tmpID ${queueList[${_count},1]}
 			/varset _tmpVAR ${queueList[${_count},2]}
@@ -5380,7 +5443,7 @@ sub synergy_click_Circle()
 	| circle of power
 	/if (${useCircle.Equal[Power]}) {
 		/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].Stacks}) {
-			/if (${Bool[${Me.Song[Circle of Power]}]} || ${Bool[${Me.Song[${RNGauspice}]}]}) /return
+			/if (${Bool[${Me.Song[Circle of Power]}]}) /return
 			/call core_cast "${CircleofPower}" item 0 FALSE
 			/return
 		}
@@ -5579,7 +5642,6 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	}
 	
 	
-	
 	| _spell set to false
 	/if (!${Bool[${_spell}]}) /return FALSE
 	
@@ -5591,7 +5653,11 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	/if (${_type.Equal[spell]}) {
 		/if (!${Bool[${Me.Book[${_spell}]}]}) /return FALSE
 		/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]}) /return FALSE
-		/if ((${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) || ${Me.Moving} || ${AdvPath.Following}) /return FALSE
+		/if (${Stick.Active} && !${setModeType.Equal[hunt]} && !${setModeType.Equal[scorch]}) /return FALSE
+		/if (${Me.Moving}) /return FALSE
+		/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
+			/if (${AdvPath.Following}) /return FALSE
+		}
 		/if (${Me.Casting.ID}) /return FALSE
 		/if (!${Spell[${_spell}].Category.Equal[Heals]}) {
 			/if (!${Me.SpellReady[${_spell}]} && !${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE
@@ -5645,7 +5711,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (${Spell[${_spell}].Range}) {
 			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].MyRange}) /return FALSE
 		}
-		/if (${Bool[${Me.Song[${${_spell}}].Duration}]}) /return FALSE
+		/if (${Bool[${Me.Song[${_spell}].Duration}]}) /return FALSE
 		/if (${Bool[${Me.Buff[${_spell}].Duration}]}) /return FALSE		
 					
 		| stacking
@@ -6894,5 +6960,7 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
 
 	/call create_timer ${_my_timer} 1
 /return
+
+
 
 
