@@ -106,6 +106,7 @@ P0 P1 P2 P3 P4 P5 P6 P7 P8 P9 Param0 Param1 Param2 Param3 Param4 Param5 Param6 P
 {LastSpawn {LineOfSight 
 {Macro {MacroQuest {MakeCamp {MapSpawn {Math {MaxFPS {Me {Mercenary {Merchant ${MoveTo {MoveUtils {Mount {MQ2ItemSpellType}
 {Navigation {NearestSpawn {NetBots
+
 {Pet {Plugin {PointMercant
 {Raid {Range
 {Select {SelectedItem {Skill {Spawn {SpawnCount {Spell {Stick {Switch 

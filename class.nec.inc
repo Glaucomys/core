@@ -142,13 +142,16 @@ sub synergy_NEC()
 	/if (${validate_cast[FALSE, alt, "Funeral Pyre", ${Target2Kill}]}) /call core_cast2 "Funeral Pyre" alt ${Target2Kill} FLASE
 	
 	/if (${validate_cast[FALSE, alt, "Gift of Deathly Resolve", ${Target2Kill}]}) /call core_cast2 "Gift of Deathly Resolve" alt ${Target2Kill} FLASE
+    /if (${validate_cast[FALSE, alt, "Mercurial Torment", ${Me.ID}]) /call core_cast2 "Mercurial Torment" alt 0 FALSE
+    
+    /if (${validate_cast[FALSE, alt, "Focus of Arcanum", ${Me.ID}]) /call core_cast2 "Mercurial Torment" alt 0 FALSE		
 	
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn
 /return
 
-
+ 
 
 |***
  *	DES: 
