@@ -534,15 +534,15 @@ sub Bind_setSHM(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare shmType string	local |cannihps|cannimanna|groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|talisman|xtradius|xttime
+  /declare _type string	local |cannihps|cannimanna|groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|talisman|xtradius|xttime
 
 	| get help
 	/if (${_classType.Equal[info]}) {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/for _count 1 to ${_type.Count[|]}
+			VOUT /${_bind} ${cinfo}${_type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${_type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
@@ -635,14 +635,14 @@ sub Bind_setSHM(string _classType, string _verbage)
 
 	}
 	/if (${switchMQclearonCLS}) /mqclear
-	/for _count 1 to ${${_bind}Type.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[cannihps]}) /varset _listout ${_listout}(${cnum}${CanniPctHPs}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[cannimanna]}) /varset _listout ${_listout}(${cnum}${CanniPctManna}\ax)
+	/for _count 1 to ${_type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
+		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
+		/if (${_type.Arg[${_count},|].Equal[cannihps]}) /varset _listout ${_listout}(${cnum}${CanniPctHPs}\ax)
+		/if (${_type.Arg[${_count},|].Equal[cannimanna]}) /varset _listout ${_listout}(${cnum}${CanniPctManna}\ax)
 
 		/varset _sep TRUE
 	/next _count

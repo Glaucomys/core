@@ -19,7 +19,66 @@
 
 
 
-20180531
+20180603.00
+- correction to the main class loop exit for a dead mob
+- is_valid_target()
+  -- removed excessive ${coreAuto} checks
+- is_target_dead()
+  -- nested a lot of the statements, trying to spped is up a bit
+- renamed *pet_buffs to *buffs_pet to match all the other buff naming conventions.
+- converted to new casting routine
+  -- cast_eradicate_magic()
+  -- check_AA_now()
+  -- check_buffs_BC()
+  -- check_disc_now()
+  -- check_buffs_tell()
+  -- check_AA_now()
+  -- cast_DOT()
+  -- cast_rez()
+  -- cast_nuke_line()
+  -- cast_stamina_recovery()
+  -- cast_nuke()
+  -- cast_AA_snare()
+  -- check_buffs_pet()
+  -- click_summon_drink()
+  -- click_summon_food()
+  -- check_harmonious()
+  -- cast_yaulp()
+- check_buffs_tell()
+  -- complete rewrite to accomodate items and AA for buffing better
+  -- so for shamn epic to cast on request might do something like
+    -- Buff2=Blessed Spiritstaff of the Heyokah
+    -- Buff2chk=Prophet's Gift of the Ruchu
+    -- Buff2self=FALSE
+    -- Buff2Alias=|epic
+    -- BCBuff2Class=FALSE
+    -- RaidBuff2Class=FALSE
+    -- ManualBuff2Class=FALSE
+    -- Buff2noBCinRaid=FALSE
+  -- keep in mind, the buffcheck is not needed since /t buffs are forced regardless of existing or stacking issues
+- all classes cosmetic changes to their respective /CLS commands
+- class.shd.inc
+  -- /shd [ae] enable/disable AE skills
+  -- redesign of AE agro skills (spells and AAs)
+  -- AE melee skill needs to be enable for AE skills
+- class.pal.inc 
+  -- /pal [ae] enable/disable AE skills
+  -- redesign of AE agro AAs
+  -- AE melee skill needs to be enable for AE skills  
+  -- fixed rampage tank control for healing
+  -- considerable changes to group healing structure. shoudn't act like an ass now
+  -- access to xtarget healing
+  -- access to pet healing
+  -- NOTE: I made some serious changes to the agro flow for pallys. this is kind of a test to see if it can hold more mobs better.
+     it will take some work.
+- class.clr.inc
+  -- minor correction to a couple heal lines
+- class.rog.inc
+  -- put the sneak attack back in. not sure why it ran off.
+
+
+
+20180531.00
 - on macro start, current target will be cleard
 - /here
   -- will work on all toons in your BC not just those in group

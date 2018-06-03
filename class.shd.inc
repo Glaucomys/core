@@ -54,7 +54,7 @@ sub core_SHD()
 		/if (${coreAuto}) {	
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
@@ -82,37 +82,41 @@ sub disc_SHD()
 		/declare _count int local 0
 		/for _count 1 to 3
 			/if (${Bool[${Me.ActiveDisc}]}) /break
-			/if (${Me.CombatAbilityReady[${DefensiveDisc${_count}}]}) {
-				/call core_cast "${DefensiveDisc${_count}}" disc 0 FALSE
-				/break
-			}			
+			/if (${validate_cast[FALSE, activedisc, "${DefensiveDisc${_count}}", ${Me.ID}]}) /call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 		/next _count
 	}
-	
-
-	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
-	
-	| check challenge
-	/call cast_challenge ${Target2Kill}
 	
 	| get me sum...
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 
-	| tap disc
-	/if (${switchHealSelf} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscRancor}]}) /call core_cast "${DiscRancor}" disc ${Target2Kill} FALSE
+	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
+
+	| tap 'dat ass..
+	/if (${switchHealSelf}) {
+		/if (${validate_cast[FALSE, disc, "${DiscRancor}", ${Me.ID}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${DiscRancor}" disc ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Leech Touch", ${Target2Kill}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Leech Touch" alt ${Target2Kill} FALSE
+		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} >= ${defCount}) {
+			/if (${validate_cast[FALSE, disc, "${DiscLeech}", ${Me.ID}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${DiscLeech}" disc 0 FALSE
+		}
+		/if (${validate_cast[FALSE, alt, "Vicious Bite of Chaos" ${Target2Kill}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Vicious Bite of Chaos" alt ${Target2Kill} FALSE
+	}
 
 	| heal clickies
 	/call click_item_heal
+
+
+	| swarm pets
+	/if (${switchPcSwarm}) {
+		/if (${validate_cast[FALSE, alt, "Chattering Bones", ${Target2Kill}]}) /call core_cast2 "Chattering Bones" alt ${Target2Kill} FALSE
+	}
 	
-	/if (${Me.CombatAbilityReady[${Withstand}]} && ${Me.CurrentEndurance} > ${Spell[${Withstand}].EnduranceCost}) /call core_cast "${Withstand}" disc 0 FALSE
-	/if (${Me.AltAbilityReady[Thought Leech]} &&  ${Me.PctMana} <= 60*.${tmpHealOverride}) /call core_cast "Thought Leech" alt ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${BladeStrike}]} && ${Me.CurrentEndurance} > ${Spell[${BladeStrike}].EnduranceCost}) /call core_cast "${BladeStrike}" disc ${Target2Kill} FALSE
-	/if (${switchHealSelf} &&  ${Me.AltAbilityReady[Vicious Bite of Chaos]} && ${Target.Distance} <= ${Spell[Vicious Bite of Chaos].MyRange}) /call core_cast "Vicious Bite of Chaos" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Soul Flay]}) /call core_cast "Soul Flay" alt 0 FALSE
 	
-	/if (${switchHealSelf} && ${Me.PctHPs} < 30*.${tmpHealOverride} && ${Me.AltAbilityReady[Leech Touch]}) /call core_cast "Leech Touch" alt ${Target2Kill} FALSE
-	/if (${switchHealSelf} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[${DiscLeech}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} > 2 ) /call core_cast "${DiscLeech}" disc 0 FALSE
-	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride} && ${Me.CombatAbilityReady[Deflection Discipline]}) /call core_cast "Deflection Discipline" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${Withstand}", ${Me.ID}]}) /call core_cast2 "${Withstand}" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Thought Leech", ${Target2Kill}]} &&  ${Me.PctMana} <= 60*.${tmpHealOverride}) /call core_cast2 "Thought Leech" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${BladeStrike}", ${Target2Kill}]}) /call core_cast2 "${BladeStrike}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Soul Flay", ${Me.ID}]}) /call core_cast2 "Soul Flay" alt 0 FALSE
+	
+	/if (${validate_cast[FALSE, activedisc, "Deflection Discipline", ${Me.ID}]} && ${Me.PctHPs} < 50*.${tmpHealOverride}) /call core_cast2 "Deflection Discipline" disc 0 FALSE
 
 /return
 
@@ -126,34 +130,47 @@ sub disc_SHD()
  ***|
 sub get_agro_SHD()
 	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
-	/if (!${switchAgro}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/call use_skill_melee ${Target2Kill}
 	/if (${switchPcPet}) /call send_pet
+	
+	/call cast_challenge ${Target2Kill}
 
 	| single hate
-	| /if (${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "Stream of Hatred" alt ${Target2Kill} FALSE
-	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.SpellReady[${Hate1}]} && ${Target.Distance} <= ${Spell[${Hate1}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate1}" 0 ${Target2Kill} FALSE
-	/if ((${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.SpellReady[${Hate2}]} && ${Target.Distance} <= ${Spell[${Hate2}].MyRange} && !${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) /call core_cast "${Hate2}" 0 ${Target2Kill} FALSE
+	/if ((!${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+		/if (${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+			/call core_cast "${Hate1}" 0 ${Target2Kill} FALSE
+		}
+		/if (${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+			/call core_cast "${Hate2}" 0 ${Target2Kill} FALSE
+		}
+	}
 
 
 	| AE Hate
-	/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50 playerstate 4 targetable]}
-	/if  (${mobAECount} > 1) {
-		/if (${Me.SpellReady[${AEHate1}]}) /call core_cast "${AEHate1}" 0 0 FALSE
-	} else /if (${mobAECount} > 2) {
-		/if (${Me.SpellReady[${AEHate2}]}) /call core_cast "${AEHate2}" 0 0 FALSE
-	} else /if (${mobAECount} > 4) {
-		/if (${Me.AltAbilityReady[Explosion of Hatred]}) /call core_cast "Explosion of Hatred" alt 0 FALSE
-	} else /if (${mobAECount} > 6) {
-		/if (${Me.AltAbilityReady[Explosion of Spite]}) /call core_cast "Explosion of Spite" alt 0 FALSE
+	/if (${AEMelee}) {
+		/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50]}
+		/if (${mobAECount} > 1) {
+			/if (${Me.AltAbilityReady[Explosion of Hatred]}) {
+				/call core_cast "Explosion of Hatred" alt 0 FALSE
+			} else /if (${Me.SpellReady[${AEHate1}]}) {
+				/call core_cast "${AEHate1}" 0 0 FALSE
+			}
+		} else /if (${mobAECount} > 3) {
+			/if (${Me.AltAbilityReady[Explosion of Spite]}) {
+				/call core_cast "Explosion of Spite" alt 0 FALSE
+			} else /if (${Me.SpellReady[${AEHate2}]}) {
+				/call core_cast "${AEHate2}" 0 0 FALSE
+			}
+		}	
 	}
 
 	| AE lifetap	
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]} && ${Me.SpellReady[${AELifeTap}]}) /call core_cast "${AELifeTap}" 0 ${Target2Kill} FALSE
+	/if (${AEMelee}) {
+		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]} && ${Me.SpellReady[${AELifeTap}]}) /call core_cast "${AELifeTap}" 0 ${Target2Kill} FALSE
+	}
 	
 	| fake hate
 	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill} FALSE
@@ -238,8 +255,6 @@ sub synergy_SHD()
 		/call core_cast "Visage of Decay" alt 0 FALSE
 	}
 
-	| swarm pets
-	/if (${switchPcSwarm} && ${Me.AltAbilityReady[Chattering Bones]}) /call core_cast "Chattering Bones" alt ${Target2Kill} FALSE
 	
 	| epic 2.0
 	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
@@ -266,15 +281,15 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare shdType string	local |defcount|harmonious|healpoint|skin|spiregroup|spireraid|stance
+  /declare _type string	local |ae|defcount|harmonious|healpoint|skin|spiregroup|spireraid|stance
 
 	| get help
 	/if (${_classType.Equal[info]}) {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/for _count 1 to ${_type.Count[|]}
+			VOUT /${_bind} ${cinfo}${_type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${_type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -282,20 +297,14 @@ sub Bind_setSHD(string _classType, string _verbage)
 	| on/off switch for Vizat's Skin
 	/if (${Bool[${_classType.Find[skin]}]}) {
 		/call writeINI switchSkin Buffs ${If[${switchSkin},FALSE,TRUE]}  
-		/call echos switch "Buff ${sep} ${Skin}" switchSkin 0 0
-		/return
 	
 	| on/off switch for Harmonious
 	} else /if (${Bool[${_classType.Find[harmonious]}]}) {
 		/call writeINI switchHarmonious Buffs ${If[${switchHarmonious},FALSE,TRUE]}  
-		/call echos switch "Buff ${sep} ${Harmonious}" switchHarmonious 0 0
-		/return
 
 	| on/off switch for Stance
 	} else /if (${Bool[${_classType.Find[stance]}]}) {
 		/call writeINI switchStance Buffs ${If[${switchStance},FALSE,TRUE]}  
-		/call echos switch "Buff ${sep} ${Stance}" switchStance 0 0
-		/return
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -319,6 +328,10 @@ sub Bind_setSHD(string _classType, string _verbage)
 			/return
 		}
 
+	| AE or Focused Melee
+	} else /if (${Bool[${_classType.Equal[ae]}]}) {
+		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
+
 	| defensive mob agro count
 	} else /if (${Bool[${_classType.Equal[defcount]}]}) {
 		/if (${Range.Between[1,50:${Int[${_verbage}]}]}) {
@@ -328,15 +341,19 @@ sub Bind_setSHD(string _classType, string _verbage)
 			/return
 		}	
 
-
 	}
+	
 	/if (${switchMQclearonCLS}) /mqclear
-	/for _count 1 to ${${_bind}Type.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
+	/for _count 1 to ${_type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
+		/if (${_type.Arg[${_count},|].Equal[harmonious]}) /varset _listout ${_listout}(${If[${Bool[${switchHarmonious}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[skin]}) /varset _listout ${_listout}(${If[${Bool[${switchSkin}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[stance]}) /varset _listout ${_listout}(${If[${Bool[${switchStance}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${Bool[${AEMelee}]},${oon},${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

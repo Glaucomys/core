@@ -377,6 +377,9 @@ sub fix_ini_current()
 			
 		| PALADIN
 		} else /if (${Select[${Me.Class.ShortName},PAL]}) {
+			| 20180602
+			/ini "${INIClass}" "Heal" "healPanic" NULL
+			/ini "${INIClass}" "Heal" "healWholeGroup" NULL
 
 		| RANGER
 		} else /if (${Select[${Me.Class.ShortName},RNG]}) {

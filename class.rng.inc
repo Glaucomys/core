@@ -49,7 +49,7 @@ sub core_RNG()
 		/if (${coreAuto}) {	
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
@@ -288,15 +288,15 @@ sub Bind_setRNG(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare rngType string	local |fastheal|healpoint|spice|spiregroup|spireraid|summer
+  /declare _type string	local |fastheal|healpoint|spice|spiregroup|spireraid|summer
 
 	| get help
 	/if (${_classType.Equal[info]}) {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/for _count 1 to ${_type.Count[|]}
+			VOUT /${_bind} ${cinfo}${_type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${_type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}	
@@ -348,13 +348,13 @@ sub Bind_setRNG(string _classType, string _verbage)
 	}
 
 	/if (${switchMQclearonCLS}) /mqclear
-	/for _count 1 to ${${_bind}Type.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[summer]}) /varset _listout ${_listout}(${If[${switchNukeSummer},${oon},${ooff}]})		
+	/for _count 1 to ${_type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
+		/if (${_type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
+		/if (${_type.Arg[${_count},|].Equal[summer]}) /varset _listout ${_listout}(${If[${switchNukeSummer},${oon},${ooff}]})		
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

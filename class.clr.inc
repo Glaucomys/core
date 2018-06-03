@@ -20,10 +20,12 @@ sub core_CLR()
 	CHECKTIE
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 
-  /if (!${timer_set_xtarget} && ${switchHealXtarget}) {
-    /call set_xtarget
-    /call create_timer timer_set_xtarget ${tXHeal}
-  }	
+  /if (${switchHealXtarget}) {
+  	/if (!${timer_set_xtarget}) {
+	    /call set_xtarget
+	    /call create_timer timer_set_xtarget ${tXHeal}
+	  }	
+	}
 	
 	CHECKREZ
 	/if (${coreAuto} && !${Me.Invis}) {
@@ -68,7 +70,7 @@ sub core_CLR()
 		/if (${coreAuto}) {	
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
@@ -411,7 +413,7 @@ sub check_heal_XTarget_CLR()
   	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	/if (!${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	/if (${heallist.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
-  	UPDATEHUD "HEAL XTARGET"
+  	UPDATEHUD "HEAL XTarget"
 		/call check_no_cast_buffs
 		AMIDEAD
 		SIMPLEEXIT
@@ -475,7 +477,7 @@ sub check_HP_CLR()
 
 	/varset WorstHurt 				${Me.ID}
 	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset WorstClass 				CLR
+	/varset WorstClass 				${Me.Class.ShortName}
 	/varset MajorHurt					0
 
 	/if (${Bool[${Group.Members}]}) {
@@ -499,10 +501,10 @@ sub check_HP_CLR()
 
 	/if (${Spawn[${WorstHurt}].PctHPs} < 20*.${HealOverride} && ${Spawn[${WorstHurt}].Distance}<=${Spell[${healPanic}].MyRange} && ${Cast.Timing}/1000<${Spell[${healPanic}].MyCastTime} && ${Me.SpellReady[${healPanic}]}) {
 		/if (${Me.Casting.ID}) /stopcast
-		/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]}) /call core_cast2 "${healPanic}" 0 ${WorstHurt}
+		/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]}) /call core_cast2 "${healPanic}" 0 ${WorstHurt} FALSE
 	} else /if (${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.${HealOverride}*.5 && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${healRemedy2}].MyRange} && ${Target.ID} != ${WorstHurt} && ${Target.PctHPs} >= (${${Target.Class.ShortName}Point}*.${HealOverride})*.5 && ${Cast.Timing}/1000 < ${Spell[${PatchSpell}].MyCastTime}) {
 		/if (${Me.Casting.ID}) /stopcast
-		/if (${validate_cast[FALSE, spell, "${healRemedy2}", ${WorstHurt}]}) /call core_cast2 "${healRemedy2}" 0 ${WorstHurt}
+		/if (${validate_cast[FALSE, spell, "${healRemedy2}", ${WorstHurt}]}) /call core_cast2 "${healRemedy2}" 0 ${WorstHurt} FALSE
 	} else /if ((${Target.ID} && ${Bool[${Group.Member[${Target.CleanName}]}]}) != ${WorstHurt} && ${${Target.Class.ShortName}Point}*.${HealOverride} < ${Target.PctHPs}*.${HealOverride}*.6 && ${Spawn[${Target.ID}].Distance} < ${Spell[Divine Arbitration].MyRange}) {
 		/call cast_divine_arbitration 
 	} else /if (${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.${HealOverride}*.4 && ${Spawn[${WorstHurt}].Distance} < ${Spell[Divine Arbitration].MyRange}) {
@@ -643,9 +645,9 @@ sub cast_temp_pet_CLR()
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${burnForce} || (${burnAuto} && ${NameList.Find[${Target.CleanName}]})) {
-		/if (${validate_cast[FALSE, alt, "Celestial Hammer", ${Target2Kill}]}) /call core_cast2 "Celestial Hammer" alt ${Target2Kill}
+		/if (${validate_cast[FALSE, alt, "Celestial Hammer", ${Target2Kill}]}) /call core_cast2 "Celestial Hammer" alt ${Target2Kill} FALSE
 	}
-	/if (${validate_cast[FALSE, spell, "${tempPet}", ${Target2Kill}]}) /call core_cast2 "${tempPet}" 0 ${Target2Kill}
+	/if (${validate_cast[FALSE, spell, "${tempPet}", ${Target2Kill}]}) /call core_cast2 "${tempPet}" 0 ${Target2Kill} FALSE
 
 /return
 
@@ -811,15 +813,15 @@ sub Bind_setCLR(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare clrType string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|lock|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
+  /declare _type string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
-		/for _count 1 to ${${_bind}Type.Count[|]}
-			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/for _count 1 to ${_type.Count[|]}
+			VOUT /${_bind} ${cinfo}${_type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${_type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
+	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
@@ -837,7 +839,17 @@ sub Bind_setCLR(string _classType, string _verbage)
 		/delay 2s !${Me.Casting.ID}
 		/call cast_AA_celest_regen
 		/return
-
+		
+	| set rampage tank toon
+	} else /if (${Bool[${_classType.Equal[rampage]}]}) {
+		/echo rampage
+		/if (${Bool[${_classVerbage}]}) {
+			/call writeINI RampageTank Heal ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
+		} else /if (!${Bool[${_classVerbage}]}) {
+			/call writeINI RampageTank Heal FALSE
+		}
+		VOUT Rampage Tank ${sep} ${If[${Bool[${RampageTank}]},${cgood}${RampageTank}\ax,${odisabled}]}
+		
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
@@ -850,7 +862,6 @@ sub Bind_setCLR(string _classType, string _verbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]
 		/return
-		
 	
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
@@ -909,8 +920,6 @@ sub Bind_setCLR(string _classType, string _verbage)
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI RampageTank Heal FALSE
 		}
-		VOUT Rampage Tank ${sep} ${If[${Bool[${RampageTank}]},${cgood}${RampageTank}\ax,${odisabled}]}
-		/return
 				
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
@@ -937,12 +946,6 @@ sub Bind_setCLR(string _classType, string _verbage)
 			VOUT /${_bind} fade(${cnum}${useAAFade}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}
-
-	| lock on MA
-	| } else /if (${Bool[${_classType.Equal[lock]}]}) {
-	| 	/call writeINI switchLockMA Heal ${If[${switchLockMA},FALSE,TRUE]}
-	| 	/call echos switch "Lock to MA" switchLockMA 0 0
-
 	| Complete Heal
 	} else /if (${Bool[${_classType.Equal[ch]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -958,22 +961,22 @@ sub Bind_setCLR(string _classType, string _verbage)
 
 	}
 	/if (${switchMQclearonCLS}) /mqclear
-	/for _count 1 to ${${_bind}Type.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[ch]}) /varset _listout ${_listout}(${If[${switchCompleteHeal},${cnum}${CompleteHealpct}\ax,${cbad}${CompleteHealpct}\ax]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[vp]}) /varset _listout ${_listout}(${If[${useVP},${cnum}${useVPPct}\ax,${cbad}${useVPPct}\ax]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[forcegroupheal]}) /varset _listout ${_listout}(${If[${switchForceGroupHeal},${oon},${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[grouphot]}) /varset _listout ${_listout}(${If[${useGroupHoT},${oon},${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[aggressive]}) /varset _listout ${_listout}(${If[${switchHealAggressive},${oon},${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
-
+	/for _count 1 to ${_type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
+		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
+		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
+		/if (${_type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[ch]}) /varset _listout ${_listout}(${If[${switchCompleteHeal},${cnum}${CompleteHealpct}\ax,${cbad}${CompleteHealpct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[vp]}) /varset _listout ${_listout}(${If[${useVP},${cnum}${useVPPct}\ax,${cbad}${useVPPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
+		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[forcegroupheal]}) /varset _listout ${_listout}(${If[${switchForceGroupHeal},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[grouphot]}) /varset _listout ${_listout}(${If[${useGroupHoT},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[aggressive]}) /varset _listout ${_listout}(${If[${switchHealAggressive},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
+		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
 	/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

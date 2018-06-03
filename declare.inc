@@ -3,7 +3,6 @@
  *	Core Declares common and class specific.
  *	All manual forced events.
  *	All created alias', binds and /bc commands
- *	All INI edits
  *
  ***|
 
@@ -17,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180531.00
+	/call setDeclare coreBuild											string	outer 20180603.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -832,7 +831,7 @@ sub declare_timers()
 	/call setTimer tPetfarm_delay										string	Timer	1s 		timer_Petfarm_delay	
 	/call setTimer tClear_Cursor										string	Timer 5s 		timer_clear_cursor   
 
-	/call setTimer tPet_Buff												string	Timer 1m 		timer_check_pet_buffs
+	/call setTimer tPet_Buff												string	Timer 1m 		timer_check_buffs_pet
 	/call setTimer tSelf_Buff												string	Timer 3m 		timer_check_buffs_self
 	/call setTimer tItem_Buff												string	Timer 1m 		timer_check_buffs_item
 	/call setTimer tBC_Buff													string	Timer 20s 	timer_check_buffs_BC
@@ -1330,6 +1329,7 @@ sub declare_SHD()
 	/call setINIVar DefensiveDisc2 									string 	Discs "Tylix's Carapace"
 	/call setINIVar DefensiveDisc3 									string 	Discs "Cursed Guardian Discipline"
 	/call setINIVar defCount												int			Discs 2
+	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 
 	/call setINIVar ChallengeSpell									string 	Spells "Impose for Power"
 	/call setINIVar Hate1 													string 	Spells "Terror of Narus"
@@ -1348,6 +1348,16 @@ sub declare_SHD()
 	/call setINIVar Nuke2Condition 									string	Spells FALSE
 	/call setINIVar Nuke3 													string 	Spells FALSE
 	/call setINIVar Nuke3Condition 									string	Spells FALSE
+	/call setINIVar Nuke4 													string 	Spells FALSE
+	/call setINIVar Nuke4Condition 									string	Spells FALSE
+	/call setINIVar Nuke5 													string 	Spells FALSE
+	/call setINIVar Nuke5Condition 									string	Spells FALSE
+	/call setINIVar Nuke6 													string 	Spells FALSE
+	/call setINIVar Nuke6Condition 									string	Spells FALSE
+	
+	
+	
+	
 	/call setINIVar DoDoT										 				int			Spells 0
 	/call setINIVar DoT1									 					string	Spells FALSE
 	/call setINIVar DoT1chk								 					string	Spells FALSE
@@ -1398,18 +1408,25 @@ sub declare_PAL()
 	/call setTimer tcheck_Stance										string 	Timer 7.5m timer_check_Stance
 
 	/call setDeclare mobAECount											int			outer 0 
-	/call setDeclare groupHurt 											int 		outer 0
+	
 	/call setDeclare WorstHurt 											string 	outer FALSE
 	/call setDeclare WorstHP 												int 		outer 100
 	/call setDeclare WorstClass 										string 	outer FALSE
+	/call setDeclare MajorHurt 											int 		outer 0
+	/call setDeclare MinorHurt											int    	outer 0 
+	/call setDeclare groupHurt 											int 		outer 0
+
+	/call setDeclare pWorstHurt 										string 	outer ${Me.DisplayName}
+	/call setDeclare pWorstHP												int			outer 100
+	/call setDeclare pWorstHurtID										int 		outer ${Me.ID}
+	/call setDeclare pWorstClass										string	outer FALSE
+	/call setDeclare pMajorHurt											int			outer 0
 	
-  /call setINIVar healWholeGroup									string 	Heal "Wave of Grief"
-  /call setINIVar splashGroup											string 	Heal "Wave of Grief"
-  /call setINIVar healPanic												string 	Heal FALSE
-  /call setINIVar splashPanic											string 	Heal "Aurora of Dayspring"
-  /call setINIVar healPanic1											string 	Heal FALSE
-  /call setINIVar healPanic2											string 	Heal FALSE
-  /call setINIVar healTouch												string 	Heal "Ardent Touch"
+	  /call setINIVar splashGroup											string 	Heal "Wave of Expiation"
+  /call setINIVar splashPanic											string 	Heal "Aurora of Morninglight"
+  /call setINIVar healPanic1											string 	Heal "Expiation"
+  /call setINIVar healPanic2											string 	Heal "Grief"
+  /call setINIVar healTouch												string 	Heal "Merciful Touch"
 	/call setINIVar useGroupHeal 										bool		Heal TRUE
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar RampageTank											string	Heal FALSE
@@ -1447,6 +1464,7 @@ sub declare_PAL()
 	/call setINIVar AAValorousRage									string	Discs "Valorous Rage"
 	/call setINIVar AAShield												string	Discs "Shield of Brilliance"
 	/call setINIVar chainStun												string	Discs FALSE
+	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 	                                         	
 	/call setINIVar DoNuke					 								int			Spells 5
 	/call setINIVar Nuke1														string 	Spells "Force of Ardency"
@@ -1458,7 +1476,9 @@ sub declare_PAL()
 	/call setINIVar Nuke4														string 	Spells "Lesson of Grief"
 	/call setINIVar Nuke4Condition 									string	Spells FALSE
 	/call setINIVar Nuke5							 							string	Spells "Protective Proclamation"
-	/call setINIVar Nuke5Condition 									string	Spells FALSE
+	/call setINIVar Nuke5Condition 									string	Spells "!${Me.Song[Protective Devotion Guard].ID}"
+	/call setINIVar Nuke6							 							string	Spells FALSE
+	/call setINIVar Nuke6Condition 									string	Spells FALSE
                                            	
 	/call setINIVar DoDoT								 						int			Spells 0
 	/call setINIVar DoT1							 							string	Spells FALSE
@@ -5236,7 +5256,7 @@ sub Bind_set_combat_here()
 	/if (${switchBuffSelf}) /call create_timer timer_check_buffs_self ${defaultTimerDelay}
 	/if (${switchBuffRaid}) /call create_timer timer_check_buffs_raid ${defaultTimerDelay}
 	/if (${switchBuffBc}) /call create_timer timer_check_buffs_BC ${defaultTimerDelay}
-	/if (${switchBuffPet}) /call create_timer timer_check_pet_buffs ${defaultTimerDelay}
+	/if (${switchBuffPet}) /call create_timer timer_check_buffs_pet ${defaultTimerDelay}
 	/if (${switchBuffMerc}) /call create_timer timer_check_buffs_merc ${defaultTimerDelay}
 	/if (${switchBuffGroup}) /call create_timer timer_check_buffs_group ${defaultTimerDelay}
 	/if (${Bool[${Aura1Buff}]} || ${Bool[${Aura2Buff}]}) /call create_timer timer_check_aura ${defaultTimerDelay}
