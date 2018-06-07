@@ -806,14 +806,16 @@ sub mode_trainspell(string _type)
 	UPDATEHUD "Train Spell"
 	
 	/if (${_type.Equal[specialize]} && !${switchModeTrainspellSPC}) {
-		/echo specialize
+		| /echo specialize
 		/varset switchModeTrainspellSPC TRUE
-	
 	}
 
 	/declare _skill string local |alteration|abjuration|conjuration|divination|evocation
 	/declare _count int local 0
 	/declare _gem[5] bool local FALSE
+
+
+
 
 	| figure out what we want to cast
 	/for _count 1 to ${_skill.Count[|]}
@@ -822,8 +824,11 @@ sub mode_trainspell(string _type)
 		DEBUG spell: ${${_skill.Arg[${_count},|]}}, skill: ${Spell[${${_skill.Arg[${_count},|]}}].Skill}
 		
 		| validate skill caps and spell. if cap is maxed, move on		
-		/if (${Me.Skill[${If[${switchModeTrainspellSPC},specialize ,]}${_skill.Arg[${_count},|]}]} == ${Me.SkillCap[${If[${switchModeTrainspellSPC},specialize ,]}${_skill.Arg[${_count},|]}]}) /continue
-
+		/if (!${switchOverrideTrainspell}) {
+			/if (${Me.Skill[${If[${switchModeTrainspellSPC},specialize ,]}${_skill.Arg[${_count},|]}]} == ${Me.SkillCap[${If[${switchModeTrainspellSPC},specialize ,]}${_skill.Arg[${_count},|]}]}) /continue
+		}
+		
+		
 		| if the skill spell is set to FALSE, move on
 		/if (!${Bool[${_skill.Arg[${_count},|]}]}) /continue
 		

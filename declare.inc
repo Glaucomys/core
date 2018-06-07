@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180603.00
+	/call setDeclare coreBuild											string	outer 20180607.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -538,7 +538,7 @@ sub set_declares()
 
 
 	| overrides
-  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|name|safelist|safezone"
+  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|name|safelist|safezone|trainspell"
 	/call setDeclare switchOverride									bool		outer FALSE
 	/call setDeclare switchOverrideStop							bool		outer FALSE
   /call setINIVar switchOverrideLos								bool		Override FALSE
@@ -551,6 +551,7 @@ sub set_declares()
   /call setINIVar switchOverrideSafelist					bool		Override FALSE
   /call setDeclare switchOverrideClasscheck				bool		outer FALSE
 	/call setINIVar switchOverrideCombatheal				string	Override FALSE
+  /call setINIVar switchOverrideTrainspell				bool		Override FALSE
 
 
 	| General class combat skills
@@ -3688,7 +3689,7 @@ sub Bind_petControl(string _pcType, string _verbage)
 		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/call writeINI switchPcPet Pet TRUE
 		/call check_pet
-		/if (${Me.Pet.ID}) /call check_pet_buffs	
+		/if (${Me.Pet.ID}) /call check_buffs_pet
 		/return
 
 	| pet/engage#
@@ -4744,7 +4745,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	| set leash range
 	} else /if (${_${_bind}Type.Equal[leash]}) {
 		/if (${Range.Between[1,200:${Int[${_verbage}]}]}) {
-			/if (${HomeRadius} < ${_verbage}) {
+			/if (${HomeRadius} > ${_verbage}) {
 				VOUT ${onotice} ${sep} Leash must be less then radius(${cnum}${HomeRadius}\ax)
 				/return
 			}

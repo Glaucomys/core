@@ -37,7 +37,7 @@ sub core_BRD()
 			/if (${addList.Count[|]}) /call mez_adds_BRD
 			/call check_for_adds
 			/if (${addList.Count[|]}) /return
-			/if (${mobList.Find[|]}) /call list_update
+			/if (${mobList.Find[|]}) /call list_update mobList ${Target2Kill}
 			/call check_for_adds
 			/if (${addList.Count[|]}) /return
 		}

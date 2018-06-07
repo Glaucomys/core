@@ -55,6 +55,7 @@ sub core_ENC()
 		
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
+			/call check_deBuffs ${Target2Kill}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/if (${switchdeBuffMezz}) {

@@ -7,8 +7,6 @@
  *
  ***|
 
- ** I swear to god. If you don't read this and ask me questions, /ignore
-
 -- migration from core_cast() to validate_cast() / core_cast2()
   -- classes converted: 
      Cleric, Ranger, Rogue, 
@@ -19,12 +17,43 @@
 
 
 
+20180607.00
+- /override [trainspell] - overrides the skill cap checks, will simply cast the spell forever
+- /debuff [slow]
+  -- adjusted slowing routines. chanter was apparently only hitting them while mez weas enabled. /shrug
+  -- Tendon Slice proc will be ignored for slowed evaluations and overwritten if there
+- converted to new casting routine
+  -- use_glyph()
+  -- use_mod_rod()
+  -- cast_cure()
+  -- cast_nuke_servant()
+  -- odds_and_ends()
+  -- cast_AA_slow()
+  -- get_target()
+  -- cast_AA_fade()
+  -- check_stance()
+  -- synergy_click_Circle()
+  -- click_item_burn()
+  -- cast_challenge()
+- check_buffs_pet()
+  -- corrected an issue with the timer.
+  -- was preventing static pet classes from assisting as a fast as they should 
+- class.nec.inc
+  -- several updates
+- class.brd.inc
+  -- correction to the mezz routine call so it will remove old targets from the moblist
+- class.enc.inc
+  -- will check target debuffs more often and not just while mezing
+
+
+
+
 20180603.00
 - correction to the main class loop exit for a dead mob
 - is_valid_target()
   -- removed excessive ${coreAuto} checks
 - is_target_dead()
-  -- nested a lot of the statements, trying to spped is up a bit
+  -- nested a lot of the statements, trying to speed is up a bit
 - renamed *pet_buffs to *buffs_pet to match all the other buff naming conventions.
 - converted to new casting routine
   -- cast_eradicate_magic()

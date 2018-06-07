@@ -843,12 +843,12 @@ sub Bind_setCLR(string _classType, string _verbage)
 	| set rampage tank toon
 	} else /if (${Bool[${_classType.Equal[rampage]}]}) {
 		/echo rampage
-		/if (${Bool[${_classVerbage}]}) {
-			/call writeINI RampageTank Heal ${_classVerbage.Left[1].Upper}${_classVerbage.Right[-1].Lower}
-		} else /if (!${Bool[${_classVerbage}]}) {
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI RampageTank Heal ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI RampageTank Heal FALSE
 		}
-		VOUT Rampage Tank ${sep} ${If[${Bool[${RampageTank}]},${cgood}${RampageTank}\ax,${odisabled}]}
+		| VOUT Rampage Tank ${sep} ${If[${Bool[${RampageTank}]},${cgood}${RampageTank}\ax,${odisabled}]}
 		
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {

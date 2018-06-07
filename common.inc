@@ -283,11 +283,13 @@ sub cast_summon_pet()
 	}
 
 	VOUT Building ${sep} ${csp}${PcPettype}\ax
-	/if (${validate_cast[FALSE, spell, "${PcPettype}", ${Me.ID}]}) /call core_cast2 "${PcPettype}" ${buffGem} 0 FALSE
-	/call create_timer timer_check_buffs_pet 20
-	/delay 20s !${Me.Casting.ID}
-	/pet hold on
-	/pet ghold on
+	/if (!${Me.Pet.ID}) {
+		/if (${validate_cast[FALSE, spell, "${PcPettype}", ${Me.ID}]}) /call core_cast2 "${PcPettype}" ${buffGem} 0 FALSE
+		/call create_timer timer_check_buffs_pet 20
+		/delay 20s !${Me.Casting.ID}
+		/pet hold on
+		/pet ghold on
+	}
 	
 	/if (${coreAuto} && ${switchPcPet}) { 
 		/if (${Bool[${PetTank}]}) { 
@@ -336,7 +338,7 @@ sub check_pet()
 	AMIDEAD
 	CHECKEXIT
 	/if (!${Me.Pet.ID}) /call cast_summon_pet
-	/if (${switchBuffPet} && !${timer_check_buffs_pet}) /call  check_buffs_pet
+	/if (${switchBuffPet} && !${timer_check_buffs_pet}) /call check_buffs_pet
 	/if (${Me.Pet.ID} && ${useSummonWeps} && (!${Bool[${Me.Pet.Equipment[primary]}]} || !${Bool[${Me.Pet.Equipment[offhand]}]} || ${Me.Pet.Equipment[primary]} == 10855)) {
 		/if (!${Select[${Me.Class.ShortName},MAG]} && !${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
 			/call tell_resident_mage weapons
@@ -755,9 +757,10 @@ sub check_buffs_pet()
 	DEBUG ${cbug} check_buffs_pet()\ax
 	/if (!${Me.Pet.ID}) /return
 	CHECKCOMBATCAST
-	/if (${coreAuto}) {
-		/if (${switchModePetfarm} || ${switchModeHunt}) /call create_timer timer_check_buffs_pet ${tPet_Buff}
+	/if (${coreAuto} || ${switchModePetfarm} || ${switchModeHunt}) {
+		/call create_timer timer_check_buffs_pet ${tPet_Buff}
 	}
+
 
 	/declare _count int local 0
 	/declare _spellType string local
@@ -2036,7 +2039,7 @@ sub cast_nuke_rain()
 		/if (${is_target_dead[${Target2Kill}]}) /return
 
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${RainNuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${RainNuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${RainNuke${_count}}].Mana}) {
-			/call core_cast "${RainNuke${_count}}" 0 ${Target2Kill} cast_break
+			/if (${validate_cast[FALSE, spell, "${RainNuke${_count}}", ${Target2Kill}]}) /call core_cast2 "${RainNuke${_count}}" 0 ${Target2Kill} cast_break
 			/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 		}
 	/next _count
@@ -2188,9 +2191,9 @@ sub click_BP()
 	/if (!${Me.ItemReady[${Breastplate1}]} && !${Me.ItemReady[${Breastplate2}]}) /return
 	/if (${Bool[${Me.Song[${Breastplate1effect}]}]} || ${Bool[${Me.Buff[${Breastplate2effect}]}]}) /return
 	/if (!${Bool[${Me.Song[${Breastplate1effect}]}]} && ${Me.ItemReady[${Breastplate2}]} && ${Spell[${Breastplate2effect}].Stacks}) {
-		/call core_cast "${Breastplate2}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${Breastplate2}", ${Me.ID}]}) /call core_cast2 "${Breastplate2}" item 0 FALSE
 	} else /if (!${Bool[${Me.Buff[${Breastplate2effect}]}]} && ${Me.ItemReady[${Breastplate1}]} && ${Spell[${Breastplate1effect}].Stacks}) {
-		/call core_cast "${Breastplate1}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${Breastplate1}", ${Me.ID}]}) /call core_cast2 "${Breastplate1}" item 0 FALSE
 	}
 /return
 
@@ -2210,24 +2213,43 @@ sub use_mod_rod()
 		
 	| use all the rods!!
 	/if (${Me.PctMana} < 70*.${tmpHealOverride}) {
-		/if (${Me.ItemReady[Summoned: Glowing Modulation Shard]} && ${Me.CurrentHPs} > 45500) /call core_cast "Summoned: Glowing Modulation Shard" item 0 FALSE
-		/if (${Me.ItemReady[Summoned: Giant Modulation Shard]} && ${Me.CurrentHPs} > 37500) /call core_cast "Summoned: Giant Modulation Shard" item 0 FALSE
-		/if (${Me.ItemReady[Summoned: Large Modulation Shard]} && ${Me.CurrentHPs} > 23100) /call core_cast "Summoned: Large Modulation Shard" item 0 FALSE
-		/if (${Me.ItemReady[Summoned: Medium Modulation Shard]} && ${Me.CurrentHPs} > 15100) /call core_cast "Summoned: Medium Modulation Shard" item 0 FALSE
-		/if (${Me.ItemReady[Summoned: Small Modulation Shard]} && ${Me.CurrentHPs} > 7600) /call core_cast "Summoned: Small Modulation Shard" item 0 FALSE
-		/if (${Me.ItemReady[Summoned: Modulating Rod]} && ${Me.CurrentHPs} > 325) /call core_cast "Summoned: Modulating Rod" item 0 FALSE
-		/if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 12850) /call core_cast "Wand of Pelagic Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Wand of Phantasmal Modulation]} && ${Me.CurrentHPs} > 11100) /call core_cast "Wand of Phantasmal Modulation" item 0 FALSE 
-		/if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 3594) /call core_cast "Wand of Pelagic Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Wand of Phantasmal Transvergence]} && ${Me.CurrentHPs} > 3138) /call core_cast "Wand of Phantasmal Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Wand of Temporal Mastery]} && ${Me.CurrentHPs} > 1686) /call core_cast "Wand of Temporal Mastery" item 0 FALSE
-		/if (${Me.ItemReady[Wand of Elemental Transvergence]} && ${Me.CurrentHPs} > 920) /call core_cast "Wand of Elemental Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Rod of Arcane Transvergence]} && ${Me.CurrentHPs} > 2530) /call core_cast "Rod of Arcane Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Rod of Spectral Transvergence]} && ${Me.CurrentHPs} > 1720) /call core_cast "Rod of Spectral Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Rod of Ethereal Transvergence]} && ${Me.CurrentHPs} > 1320) /call core_cast "Rod of Ethereal Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Rod of Mechamagical Mastery]} && ${Me.CurrentHPs} > 1400) /call core_cast "Rod of Mechamagical Mastery" item 0 FALSE
-		/if (${Me.ItemReady[Rod of Prime Transvergence]} && ${Me.CurrentHPs} > 1000) /call core_cast "Rod of Prime Transvergence" item 0 FALSE
-		/if (${Me.ItemReady[Rod of Mystical Transvergence]} && ${Me.CurrentHPs} > 550) /call core_cast "Rod of Mystical Transvergence" item 0 FALSE
+		/if (${Me.ItemReady[Summoned: Glowing Modulation Shard]} && ${Me.CurrentHPs} > 45500) { 
+			/if (${validate_cast[FALSE, item, "Summoned: Glowing Modulation Shard", ${Me.ID}]}) /call core_cast2 "Summoned: Glowing Modulation Shard" item 0 FALSE
+		} else /if (${Me.ItemReady[Summoned: Giant Modulation Shard]} && ${Me.CurrentHPs} > 37500) {
+			/if (${validate_cast[FALSE, item, "Summoned: Giant Modulation Shard", ${Me.ID}]}) /call core_cast2 "Summoned: Giant Modulation Shard" item 0 FALSE
+		} else /if (${Me.ItemReady[Summoned: Large Modulation Shard]} && ${Me.CurrentHPs} > 23100) {
+			/if (${validate_cast[FALSE, item, "Summoned: Large Modulation Shard", ${Me.ID}]}) /call core_cast2 "Summoned: Large Modulation Shard" item 0 FALSE
+		} else /if (${Me.ItemReady[Summoned: Medium Modulation Shard]} && ${Me.CurrentHPs} > 15100) {
+			/if (${validate_cast[FALSE, item, "Summoned: Medium Modulation Shard", ${Me.ID}]}) /call core_cast2 "Summoned: Medium Modulation Shard" item 0 FALSE
+		} else /if (${Me.ItemReady[Summoned: Small Modulation Shard]} && ${Me.CurrentHPs} > 7600) {
+			/if (${validate_cast[FALSE, item, "Summoned: Small Modulation Shard", ${Me.ID}]}) /call core_cast2 "Summoned: Small Modulation Shard" item 0 FALSE
+		} else /if (${Me.ItemReady[Summoned: Modulating Rod]} && ${Me.CurrentHPs} > 325) {
+			/if (${validate_cast[FALSE, item, "Summoned: Modulating Rod", ${Me.ID}]}) /call core_cast2 "Summoned: Modulating Rod" item 0 FALSE
+		} else /if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 12850) {
+			/if (${validate_cast[FALSE, item, "Wand of Pelagic Transvergence", ${Me.ID}]}) /call core_cast2 "Wand of Pelagic Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Wand of Phantasmal Modulation]} && ${Me.CurrentHPs} > 11100) {
+			/if (${validate_cast[FALSE, item, "Wand of Phantasmal Modulation", ${Me.ID}]}) /call core_cast2 "Wand of Phantasmal Modulation" item 0 FALSE 
+		} else /if (${Me.ItemReady[Wand of Pelagic Transvergence]} && ${Me.CurrentHPs} > 3594) {
+			/if (${validate_cast[FALSE, item, "Wand of Pelagic Transvergence", ${Me.ID}]}) /call core_cast2 "Wand of Pelagic Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Wand of Phantasmal Transvergence]} && ${Me.CurrentHPs} > 3138) {
+			/if (${validate_cast[FALSE, item, "Wand of Phantasmal Transvergence", ${Me.ID}]}) /call core_cast2 "Wand of Phantasmal Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Wand of Temporal Mastery]} && ${Me.CurrentHPs} > 1686) {
+			/if (${validate_cast[FALSE, item, "Wand of Temporal Mastery", ${Me.ID}]}) /call core_cast2 "Wand of Temporal Mastery" item 0 FALSE
+		} else /if (${Me.ItemReady[Wand of Elemental Transvergence]} && ${Me.CurrentHPs} > 920) {
+			/if (${validate_cast[FALSE, item, "Wand of Elemental Transvergence", ${Me.ID}]}) /call core_cast2 "Wand of Elemental Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Rod of Arcane Transvergence]} && ${Me.CurrentHPs} > 2530) {
+			/if (${validate_cast[FALSE, item, "Rod of Arcane Transvergence", ${Me.ID}]}) /call core_cast2 "Rod of Arcane Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Rod of Spectral Transvergence]} && ${Me.CurrentHPs} > 1720) {
+			/if (${validate_cast[FALSE, item, "Rod of Spectral Transvergence", ${Me.ID}]}) /call core_cast2 "Rod of Spectral Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Rod of Ethereal Transvergence]} && ${Me.CurrentHPs} > 1320) {
+			/if (${validate_cast[FALSE, item, "Rod of Ethereal Transvergence", ${Me.ID}]}) /call core_cast2 "Rod of Ethereal Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Rod of Mechamagical Mastery]} && ${Me.CurrentHPs} > 1400) {
+			/if (${validate_cast[FALSE, item, "Rod of Mechamagical Mastery", ${Me.ID}]}) /call core_cast2 "Rod of Mechamagical Mastery" item 0 FALSE
+		} else /if (${Me.ItemReady[Rod of Prime Transvergence]} && ${Me.CurrentHPs} > 1000) {
+			/if (${validate_cast[FALSE, item, "Rod of Prime Transvergence", ${Me.ID}]}) /call core_cast2 "Rod of Prime Transvergence" item 0 FALSE
+		} else /if (${Me.ItemReady[Rod of Mystical Transvergence]} && ${Me.CurrentHPs} > 550) {
+			/if (${validate_cast[FALSE, item, "Rod of Mystical Transvergence", ${Me.ID}]}) /call core_cast2 "Rod of Mystical Transvergence" item 0 FALSE
+		}
 	}
 	
 	| ask for a rod cause i'm fu'kn lazy...
@@ -2282,7 +2304,7 @@ sub use_glyph()
 	AMIDEAD
 	/if (!${Bool[${useGlyph}]} || !${Raid.Members} && !${switchGlyphOutsideRaid}) /return
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
-	/if (${Me.AltAbilityReady[${useGlyph}]}) /call core_cast "${useGlyph}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${useGlyph}", ${Me.ID}]}) /call core_cast2 "${useGlyph}" alt 0 FALSE
 	/if (!${Me.AltAbility[${useGlyph}].ID} && ${Me.AAPoints} >= ${AltAbility[${useGlyph}].Cost}) /alt buy ${AltAbility[${useGlyph}].ID}
 /return
 
@@ -2565,7 +2587,8 @@ sub cast_cure()
 		| 100' 1 min
 		/if (${validate_class[FALSE, |PAL|SHM|CLR|DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0 FALSE
+				| /if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0 FALSE
+				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 			}
 			/return
 		}
@@ -2574,7 +2597,8 @@ sub cast_cure()
 		| 200' 5 min
 		/if (${validate_class[FALSE, |PAL|CLR|DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+				| /if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+				/if (${validate_cast[FALSE, alt, "Purify Soul", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 			}
 			/return
 		}
@@ -2583,12 +2607,13 @@ sub cast_cure()
 		| 0/100' 15 min
 		/if (${validate_class[FALSE, |CLR|DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt 0 FALSE
+				| /if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt 0 FALSE
+				/if (${validate_cast[FALSE, alt, "Group Purify Soul", ${Me.ID} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast2 "Group Purify Soul" alt 0 FALSE
 			}
 			/return
 		}
 
-		| cure with spell
+		|** cure with spell
 		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed} && ${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCurse}].MyRange}) {
 			/call core_cast "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCorrupt}].MyRange}) {
@@ -2598,6 +2623,19 @@ sub cast_cure()
 		} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureDisease}].MyRange}) {
 			/call core_cast "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		}
+		**|
+
+		| cure with spell
+		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed}) {
+			/if (${validate_cast[FALSE, spell, "${cureCurse}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+		} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted}) {
+			/if (${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+		} else /if (${Bool[${curePoison}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned}) {
+			/if (${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+		} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased}) {
+			/if (${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+		}
+
 	/next _count
 	UPDATEHUD FALSE
 /return
@@ -2612,7 +2650,7 @@ sub cast_cure()
  ***|
 sub cast_free_target(string _tmpSpell, int _tmpID)
 	DEBUGCAST ${cbug}cast_free_target()\ax
-	/call core_cast "${_tmpSpell}" 0 ${_tmpID} FALSE
+	/if (${validate_cast[FALSE, spell, "${_tmpSpell}", ${_tmpID}) /call core_cast2 "${_tmpSpell}" 0 ${_tmpID} FALSE
 	/squelch /face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
 	/delay 5
 	/click left center
@@ -2754,8 +2792,8 @@ sub cast_nuke_servant()
 	/if (!${switchPcSwarm}) /return
 	AMIDEAD
 	CHECKEXIT
-	/if (${validate_cast[FALSE, spell, "${ServantNuke}", ${Target2Kill}]}) /call core_cast "${ServantNuke}" 0 ${Target2Kill} cast_break
-	/if (${validate_cast[FALSE, alt, "${ServantNuke}", ${Target2Kill}]}) /call core_cast "${ServantNuke}" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, spell, "${ServantNuke}", ${Target2Kill}]}) /call core_cast2 "${ServantNuke}" 0 ${Target2Kill} cast_break
+	/if (${validate_cast[FALSE, alt, "${ServantNuke}", ${Target2Kill}]}) /call core_cast2 "${ServantNuke}" alt ${Target2Kill} FALSE
 /return
 
 
@@ -3204,7 +3242,7 @@ sub odds_and_ends()
 		AMIDEAD
 		CLEARCURSOR TRUE
 		/doevents
-		/if (${Me.ItemReady[${clickOddItem${_count}}]}) /call core_cast "${clickOddItem${_count}}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${clickOddItem${_count}}]}" ${Me.ID}) /call core_cast2 "${clickOddItem${_count}}" item 0 FALSE
 	/next _count
 	/call sort_cursor TRUE
 /return
@@ -3483,7 +3521,7 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
 	
 	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${_tmpSpell}].MyRange} && !${timer_slow_${_tmpID}}) {
 		AMIDEAD
-		/call core_cast "${_tmpSpell}" alt ${_tmpID} FALSE
+		/if (${validate_cast[FALSE, alt, "${_tmpSpell}", ${_tmpID}]}) /call core_cast2 "${_tmpSpell}" alt ${_tmpID} FALSE
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_slow_${_tmpID} ${Spell[${_tmpSpell}].Duration.TotalSeconds}s
 		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
@@ -3595,7 +3633,7 @@ sub cast_stamina_recovery()
 
  	DEBUG ${Me.PctEndurance} < ${_endurancePoint}
  	/if (${Me.PctEndurance} < ${_endurancePoint}) {
- 		/if (${validate_cast[FALSE, disc, "${DiscRest}", ${Me.ID}]}) /call core_cast "${DiscRest}" disc 0 FALSE
+ 		/if (${validate_cast[FALSE, disc, "${DiscRest}", ${Me.ID}]}) /call core_cast2 "${DiscRest}" disc 0 FALSE
  	}
 /return
 
@@ -4696,14 +4734,14 @@ sub check_disc_now()
 	/if (${Bool[${DiscNow1}]} && ${Me.CombatAbilityReady[${DiscNow1}]} && ${Spell[${DiscNow1}].Stacks}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (!${Bool[${Me.Buff[${DiscNow1.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow1.Left[-7]}]}]}) {
-			/if (${validate_cast[FALSE, disc, "${DiscNow1}", ${Me.ID}]}) /call core_cast "${DiscNow1}" disc 0 FALSE
+			/if (${validate_cast[FALSE, disc, "${DiscNow1}", ${Me.ID}]}) /call core_cast2 "${DiscNow1}" disc 0 FALSE
 		}
 	}
 	| nowDisc2
 	/if (${Bool[${DiscNow2}]} && ${Me.CombatAbilityReady[${DiscNow2}]} && ${Spell[${DiscNow2}].Stacks}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (!${Bool[${Me.Buff[${DiscNow2.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow2.Left[-7]}]}]}) {
-			/if (${validate_cast[FALSE, disc, "${DiscNow2}", ${Me.ID}]}) /call core_cast "${DiscNow2}" disc 0 FALSE
+			/if (${validate_cast[FALSE, disc, "${DiscNow2}", ${Me.ID}]}) /call core_cast2 "${DiscNow2}" disc 0 FALSE
 		}
 	}	
 /return
@@ -4809,30 +4847,42 @@ sub get_target()
 			/if (${Me.Stunned}) /return
 			/if (!${switchPull} || !${coreAuto}) /return
 			
+
+
 			/if (${Select[${Me.Class.ShortName},SHD]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) /call core_cast "Hate's Attraction" alt ${Target2Kill} FALSE
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) {
+					/if (${validate_cast[FALSE, alt, "Hate's Attraction", ${Target2Kill}]}) /call core_cast2 "Hate's Attraction" alt ${Target2Kill} FALSE
+				}
 			} else /if (${Select[${Me.Class.ShortName},PAL]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31 && ${Target.Distance} <= 45) /call core_cast "Divine Call" alt ${Target2Kill} FALSE
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) {
+					| /if (${validate_cast[FALSE, alt, "Divine Call", ${Target2Kill}]}) /call core_cast2 "Divine Call" alt ${Target2Kill} FALSE
+				}
 			} else /if (${Select[${Me.Class.ShortName},WAR]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) /call core_cast "Warlord's Grasp" alt ${Target2Kill} FALSE
-				/if (${Target.Distance} < 31 && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost}) /call core_cast "${DiscInsult}" disc ${Target2Kill} FALSE
+				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) {
+					/if (${validate_cast[FALSE, alt, "Warlord's Grasp", ${Target2Kill}]}) /call core_cast2 "Warlord's Grasp" alt ${Target2Kill} FALSE
+				} else /if (${Target.Distance} < 31) {
+					/if (${validate_cast[FALSE, disc, "${DiscInsult}", ${Target2Kill}]}) /call core_cast2 "${DiscInsult}" disc ${Target2Kill} FALSE
+				}
 			}
+			
+			
+			
 
 			| get mob to us
 			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && < ${MobAgro}) {
 				/if (${Target.ID}) {
 					
 					| spell pull mob
-					/if (${Bool[${Spell[${RangeSpell}]}]} && ${Bool[${Me.Gem[${RangeSpell}]}]} && ${Me.SpellReady[${RangeSpell}]}) {
-						/call core_cast "${RangeSpell}" 0 ${Target2Kill} FALSE
+					/if (${Bool[${Spell[${RangeSpell}]}]} && ${Bool[${Me.Gem[${RangeSpell}]}]}) {
+						/if (${validate_cast[FALSE, spell, "${RangeSpell}", ${Target2Kill}]}) /call core_cast2 "${RangeSpell}" 0 ${Target2Kill} FALSE
 
 					| item pull mob
 					} else /if (${Me.ItemReady[${RangeClickItem}]}) {
-						/call core_cast "${RangeClickItem}" item ${Target2Kill} FALSE
+						/if (${validate_cast[FALSE, item, "${RangeClickItem}", ${Target2Kill}]}) /call core_cast2 "${RangeClickItem}" item ${Target2Kill} FALSE
 
 					| disc pull mob
 					} else /if (${Me.CombatAbilityReady[${RangeDisc}]}) {
-						/call core_cast "${RangeDisc}" disc ${Target2Kill} FALSE
+						/if (${validate_cast[FALSE, disc, "${RangeDisc}", ${Target2Kill}]}) /call core_cast2 "${RangeDisc}" disc ${Target2Kill} FALSE
 		
 					| range item pull mob
 					} else {
@@ -5504,7 +5554,7 @@ sub cast_AA_fade()
 
 	/if (${Me.AltAbilityReady[${AAFade}]}) {
 		ECHOCHANNEL Fading Combat ${Me.PctHPs} <= ${AAFade}
-		/call core_cast "${AAFade}" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "${AAFade}", ${Me.ID}]}) /call core_cast2 "${AAFade}" alt 0 FALSE
 	}
 /return
 
@@ -5522,10 +5572,8 @@ sub check_stance()
 	/doevents
 	/if (!${switchStance}) /return
 	/call create_timer timer_check_Stance ${tcheck_Stance}
-		
-	/if (!${Bool[${Me.Buff[${Stance}]}]} && ${Me.SpellReady[${Stance}]}) {
-		/call core_cast "${Stance}" 0 0 FALSE
-	}
+	/if (${Bool[${Me.Buff[${Stance}]}]}) /return
+	/if (${validate_cast[FALSE, spell, "${Stance}", ${Me.ID}]}) /call core_cast2 "${Stance}" 0 0 FALSE
 /return
 
  
@@ -5544,26 +5592,23 @@ sub synergy_click_Circle()
 	
 	| circle of power
 	/if (${useCircle.Equal[Power]}) {
+		/if (${Bool[${Me.Song[Circle of Power]}]}) /return
 		/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].Stacks}) {
-			/if (${Bool[${Me.Song[Circle of Power]}]}) /return
-			/call core_cast "${CircleofPower}" item 0 FALSE
-			/return
+			/if (${validate_cast[FALSE, item, "${CircleofPower}", ${Me.ID}]}) /call core_cast2 "${CircleofPower}" item 0 FALSE
 		}
 
 	| circle of life
 	} else /if (${useCircle.Equal[Life]}) {
+		/if (${Bool[${Me.Song[Circle of Life]}]}) /return
 		/if (${Me.ItemReady[${CircleofLife}]} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) {
-			/if (${Bool[${Me.Song[Circle of Life]}]}) /return
-			/call core_cast "${CircleofLife}" item 0 FALSE
-			/return
+			/if (${validate_cast[FALSE, item, "${CircleofLife}", ${Me.ID}]}) /call core_cast2 "${CircleofLife}" item 0 FALSE
 		}		
 
 	| circle of Mana
 	} else /if (${useCircle.Equal[Mana]}) {
+		/if (${Bool[${Me.Song[Circle of Mana]}]}) /return
 		/if (${Me.ItemReady[${CircleofMana}]} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) {
-			/if (${Bool[${Me.Song[Circle of Mana]}]}) /return
-			/call core_cast "${CircleofMana}" item 0 FALSE
-			/return
+			/if (${validate_cast[FALSE, item, "${CircleofMana}", ${Me.ID}]}) /call core_cast2 "${CircleofMana}" item 0 FALSE
 		}
 	}
 /return TRUE
@@ -5585,7 +5630,7 @@ sub click_item_burn()
 		AMIDEAD
 		CHECKTIE
 		/if (${is_target_dead[${Target2Kill}]}) /break
-		/if (${Me.ItemReady[${clickItemBurn${_count}}]}) /call core_cast "${clickItemBurn${_count}}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${clickItemBurn${_count}}", ${Me.ID}]}) /call core_cast2 "${clickItemBurn${_count}}" item 0 FALSE
 	/next _count
 /return  
 
@@ -5717,7 +5762,7 @@ sub cast_challenge(int _tmpID)
 	AMIDEAD
 	CHECKEXIT
 	/if (${Target.Buff[${ChallengeSpell}].ID}) /return
-	/call core_cast "${ChallengeSpell}" 0 ${_tmpID} cast_break
+	/if (${validate_cast[FALSE, spell, "${ChallengeSpell}", ${_tmpID}]}) /call core_cast2 "${ChallengeSpell}" 0 ${_tmpID} cast_break
 /return
 
 
@@ -6142,17 +6187,18 @@ sub cast_slow(int _tmpID)
 	
 	/squelch /target ID ${_tmpID}
 	/delay 1s ${Target.ID} == ${_tmpID}
+
+	| necros only slow undead 
+	/if (${validate_class[FALSE, |NEC]} && ${Target.Body.Name.NotEqual[Undead]}) /return
 	
 	| dont waste time if its slowed already
-	/if (${Target.Slowed.Duration}) {
+	/if (${Target.Slowed.Duration} && ${Target.Slowed.Name.NotEqual[Tendon Slice]}) {
+		DEBUG Slowed already
 		/call create_timer timer_slow_${Target2Kill} ${Target.Slowed.Duration.TotalSeconds}s
 		/return
 	}
-	UPDATEHUD "Slow"
+	UPDATEHUD "Slow"	
 	
-	| necros only slow undead 
-	/if (${validate_class[FALSE, |NEC]} && ${Target.Body.Name.NotEqual[Undead]}) /return
-
 	| get to business
 	/declare _spelltype string local FALSE
 	/declare _readytype string local FALSE
@@ -6354,8 +6400,8 @@ sub check_deBuffs(int _tmpID)
 	 	/if (!${Bool[${timer_tash_${_tmpID}}]}) {
 			/if (${Select[${Me.Class.ShortName},ENC]}) { 
 				/call cast_tash ${_tmpID}
-				/call check_for_adds
-				/if (${addList.Count[|]}) /return
+				| /call check_for_adds
+				| /if (${addList.Count[|]}) /return
 			} else {
 			}
 		}

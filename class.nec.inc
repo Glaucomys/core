@@ -121,28 +121,35 @@ sub disc_NEC()
 
 
 
- |***
- *	DES: Necromancer burn routines
- *	USE: establish all comp/trigger skills
- *	INI: 
- *	NOTE: 
+|***
+ *  DES: Necromancer burn routines
+ *  USE: establish all comp/trigger skills
+ *  INI: 
+ *  NOTE: 
  ***| 
 sub synergy_NEC()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
-	CHECKEXIT
-	/doevents
-	
-	/call cast_AA_spire
+    DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+    CHECKEXIT
+    /doevents
+    
+		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (${Me.Song[Gift of Deathly Resolve].ID}) /call cast_DOT
+		/call cast_AA_spire
 
-	/if (${validate_cast[FALSE, alt, "Life Burn", ${Target2Kill}]}) /call core_cast2 "Life Burn" alt ${Target2Kill} FALSE
+		/if (${Target.PctHPs} > 15 && ${Me.PctHPs} > 90) {
+			/if (${validate_cast[FALSE, alt, "Life Burn", ${Target2Kill}]}) /call core_cast2 "Life Burn" alt ${Target2Kill} FALSE
+		}
+		/if (${validate_cast[FALSE, alt, "Funeral Pyre", ${Target2Kill}]}) /call core_cast2 "Funeral Pyre" alt ${Target2Kill} FALSE
 
-	/if (${validate_cast[FALSE, alt, "Funeral Pyre", ${Target2Kill}]}) /call core_cast2 "Funeral Pyre" alt ${Target2Kill} FLASE
-	
-	/if (${validate_cast[FALSE, alt, "Gift of Deathly Resolve", ${Target2Kill}]}) /call core_cast2 "Gift of Deathly Resolve" alt ${Target2Kill} FLASE
-	
-	/call use_glyph
-	/call synergy_click_Circle
-	/call click_item_burn
+		/if (${validate_cast[FALSE, alt, "Gift of Deathly Resolve", ${Me.ID}]}) /call core_cast2 "Gift of Deathly Resolve" alt 0 FALSE
+
+		/if (${validate_cast[FALSE, alt, "Mercurial Torment", ${Me.ID}]}) /call core_cast2 "Mercurial Torment" alt 0 FALSE
+
+		/if (${validate_cast[FALSE, alt, "Focus of Arcanum", ${Me.ID}]}) /call core_cast2 "Focus of Arcanum" alt 0 FALSE        
+
+		/call use_glyph
+		/call synergy_click_Circle
+		/call click_item_burn
 /return
 
 
@@ -278,8 +285,6 @@ sub Bind_setNEC(string _classType, string _verbage)
 			/return
 		}	else /if (!${Bool[${_classVerbage}]}) {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
-			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) ${sep} ${If[${switchGather},${oenabled},${odisabled}]}
-			/return
 		}		
 
 	| healpoint
@@ -299,7 +304,7 @@ sub Bind_setNEC(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
+		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${If[${switchGather},${cnum}${GatherPercent}\ax,${ooff}]})		
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

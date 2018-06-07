@@ -141,8 +141,10 @@ sub patch_heal_PAL()
 	}
 
 	| Panic Heal 1
-  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.45*.${tmpHealOverride}) {
-		/if (${validate_cast[FALSE, spell, "${healPanic1}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 FALSE
+	/if (${Me.Gem[${healPanic1}]}) {
+	  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.45*.${tmpHealOverride}) {
+			/if (${validate_cast[FALSE, spell, "${healPanic1}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 FALSE
+		}
 	}
 
 	| dpsheal
@@ -151,10 +153,11 @@ sub patch_heal_PAL()
 	}
 
 	| Panic Heal 2
-  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.20*.${tmpHealOverride}) {
-		/if (${validate_cast[FALSE, spell, "${healPanic2}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 FALSE
+	/if (${Me.Gem[${healPanic2}]}) {
+	  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.20*.${tmpHealOverride}) {
+			/if (${validate_cast[FALSE, spell, "${healPanic2}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 FALSE
+		}
 	}
-
 	/call click_item_heal
 /return
 
