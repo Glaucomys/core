@@ -371,8 +371,6 @@ sub Bind_setMAG(string _classType, string _verbage)
 			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 		}	else {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
-			VOUT /${_bind} gather(${cnum}${GatherPercent}\ax) ${sep} ${If[${switchGather},${oenabled},${odisabled}]}
-			/return
 		}			
 		
 	| set AA fade use %	
@@ -477,9 +475,11 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)(${cnum}${If[${switchGather},${oon},${ooff}]}\ax)
+		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${If[${switchGather},${cnum}${GatherPercent}\ax,${ooff}]}\ax)
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
 		/if (${_type.Arg[${_count},|].Equal[forcetwincast]}) /varset _listout ${_listout}(${If[${switchForceTwincast},${oon},${ooff}]})
+
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

@@ -2588,7 +2588,7 @@ sub cast_cure()
 		/if (${validate_class[FALSE, |PAL|SHM|CLR|DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
 				| /if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0 FALSE
-				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}) /call core_cast2 "Radiant Cure" alt 0 FALSE
+				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 			}
 			/return
 		}
@@ -2627,13 +2627,13 @@ sub cast_cure()
 
 		| cure with spell
 		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed}) {
-			/if (${validate_cast[FALSE, spell, "${cureCurse}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			/if (${validate_cast[FALSE, spell, "${cureCurse}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted}) {
-			/if (${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			/if (${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		} else /if (${Bool[${curePoison}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned}) {
-			/if (${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			/if (${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased}) {
-			/if (${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			/if (${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 		}
 
 	/next _count
@@ -3242,7 +3242,7 @@ sub odds_and_ends()
 		AMIDEAD
 		CLEARCURSOR TRUE
 		/doevents
-		/if (${validate_cast[FALSE, item, "${clickOddItem${_count}}]}" ${Me.ID}) /call core_cast2 "${clickOddItem${_count}}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${clickOddItem${_count}}]}", ${Me.ID}) /call core_cast2 "${clickOddItem${_count}}" item 0 FALSE
 	/next _count
 	/call sort_cursor TRUE
 /return

@@ -16,11 +16,19 @@
 
 
 
+20180609.00
+- cast_cure()
+  -- corrected some errors resulting in crashes
+- class.mag.inc
+  -- updates to the class / commands
+
+
+
 
 20180607.00
 - /override [trainspell] - overrides the skill cap checks, will simply cast the spell forever
 - /debuff [slow]
-  -- adjusted slowing routines. chanter was apparently only hitting them while mez weas enabled. /shrug
+  -- adjusted slowing routines. chanter was apparently only hitting them while mez was enabled. /shrug
   -- Tendon Slice proc will be ignored for slowed evaluations and overwritten if there
 - converted to new casting routine
   -- use_glyph()
@@ -44,8 +52,6 @@
   -- correction to the mezz routine call so it will remove old targets from the moblist
 - class.enc.inc
   -- will check target debuffs more often and not just while mezing
-
-
 
 
 20180603.00
