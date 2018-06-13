@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180609.00
+	/call setDeclare coreBuild											string	outer 20180612.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -180,8 +180,6 @@ sub set_declares()
 	/call DeclareCoreIniVar heallist								string	No FALSE
 	/call DeclareCoreIniVar safelist								string	General "|FALSE|FALSE"
 
-
-	
 	/call setINIVar toonControl			 								string	Common FALSE
 	/call setINIVar autoRest 												int 		Common 90
 	/call setINIVar AutoExpAdjust 									bool 		Common TRUE
@@ -204,7 +202,7 @@ sub set_declares()
 	
 	| buff queue variables
 	/call DeclareCoreIniVar queueCountMax						int			General 10
-	/call setDeclare queueCount            					int  		outer 1
+	/call setDeclare queueCount            					int  		outer 0
 	
 	/if (!${Defined[queueBuffID]}) /declare queueBuffID[8] 												int  		outer
 	/if (!${Defined[queueList]}) /declare queueList[${queueCountMax},2] 				 	int  		outer
@@ -258,7 +256,6 @@ sub set_declares()
 	/call setDeclare bitch27												string 	outer "You breathe through your mouth a lot don't you?"
 	/call setDeclare bitch28												string 	outer "Your mother was a hamster and your father smelt of elderberries!"
 	/call setDeclare bitch29												string 	outer "Don't worry about it too much. I did the same thing when I was eleven."
-	/call setDeclare bitch30												string 	outer 
 
 
 	| expansions
@@ -387,13 +384,13 @@ sub set_declares()
 
 	| spire control
 	/call setDeclare typeSpire											string	outer "|0|1|2|3"
-	/call setDeclare ${Me.Class.ShortName}spire0		int		Buffs 0
-	/call setINIVar spireRaid												int 	Buffs 0
-	/call setINIVar spireGroup											int 	Buffs 0
+	/call setDeclare ${Me.Class.ShortName}spire0		int			Buffs 0
+	/call setINIVar spireRaid												int 		Buffs 0
+	/call setINIVar spireGroup											int 		Buffs 0
 
 	| unity buffs
 	/for _count 1 to 7
-		/call setINIVar BuffAAUnity${_count}		string	Buffs FALSE
+		/call setINIVar BuffAAUnity${_count}					string	Buffs FALSE
 	/next _count
 
 
@@ -415,7 +412,7 @@ sub set_declares()
 	/call setINIVar combatRadius										string	Common 30
 	/call setINIVar zradius													int			Common 60	
 	/call setINIVar switchBandolier									bool		meleedisc FALSE
-	/call setINIVar stopnukeAt 											int 		Common 0
+	/call setINIVar stopnukeAt 											int 		Spells 0
 	/call setINIVar switchAlliance									bool		Spells FALSE
 	/call setINIVar spellAllianceTrigger						string	Spells |FALSE|FALSE
 	/call setINIVar switchForceFadeRest							bool		Common FALSE
@@ -520,7 +517,6 @@ sub set_declares()
 	/call setINIVar clickItemSwarm3									string	Items FALSE 
 	/call setINIVar clickItemSwarm4									string	Items FALSE 	
 
-
 	/call setINIVar clickOddItem1										string	Odds FALSE 
 	/call setINIVar clickOddItem2										string	Odds FALSE 
 	/call setINIVar clickOddItem3										string	Odds FALSE 
@@ -542,7 +538,6 @@ sub set_declares()
 	/call setDeclare switchOverride									bool		outer FALSE
 	/call setDeclare switchOverrideStop							bool		outer FALSE
   /call setINIVar switchOverrideLos								bool		Override FALSE
-  | /call setINIVar switchOverridePve							bool		Override FALSE
   /call setINIVar switchOverrideSafezone					bool		Override FALSE
   /call setINIVar switchOverrideExclude						bool		Override FALSE
   /call setINIVar switchOverrideName							bool		Override FALSE
@@ -4370,8 +4365,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 	| set stop nuke %
 	} else /if (${Bool[${_ccType.Equal[stopnuke]}]}) {
 		/if (${Range.Between[0,99:${Int[${_verbage}]}]}) {
-			/call writeINI stopnukeAt Common ${_verbage} 
-			VOUT /${_bind} stopnuke ${sep} ${cinfo}${_verbage}%\ax
+			/call writeINI stopnukeAt Spells ${_verbage} 
 		} else {
 			VOUT /${_bind} stopnuke(${cnum}${stopnukeAt}\ax) allowable range is ${cinfo}0 - 99\ax
 		} 		

@@ -76,7 +76,6 @@ sub Bind_hud(string _hcType, string _hcVerbage)
 sub HUDUpdate()
 	DEBUG ${cbug}HUDUpdate()\ax
 	VOUT Updating MQ2HUD.INI - > [core]
-	| /ini ".\..\MQ2HUD.ini" "core" NULL NULL
 	/delay 1s
 	
 	| Build
@@ -101,7 +100,7 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "mode0" "19,5,74,0,255,0,${If[${switchAutoCursor},Mode,]}"
 	/noparse /ini HUDPATH "mode1" "19,5,74,255,0,0,${If[!${switchAutoCursor},Mode,]}"	
 	/noparse /ini HUDPATH "mode2" "19,44,74,255,255,0,${If[${Bool[${tmpMode}]},${tmpMode},]}"
-	/noparse /ini HUDPATH "mode3" "19,44,74,25,25,25,${If[${Bool[${tmpMode}]},,----]}"
+	/noparse /ini HUDPATH "mode3" "19,44,74,25,25,25,${If[${Bool[${tmpMode}]},,]}"
 
 	| Target / LOS
 	/noparse /ini HUDPATH "bodytype1" "3,5,85,100,149,237,[                       ]"
@@ -125,7 +124,7 @@ sub HUDUpdate()
 
 	| pet engage ##
 	/noparse /ini HUDPATH "pettarget1" "19,31,98,255,255,255,${If[${coreAuto} && !${switchOverrideEngageat} && ${switchPcPet},${PcPetengageat},]}"
-	/noparse /ini HUDPATH "pettarget2" "19,31,98,25,25,25,${If[!${coreAuto} && !${switchOverrideEngageat} && !${switchPcPet},##,]}"
+	/noparse /ini HUDPATH "pettarget2" "19,31,98,25,25,25,${If[!${coreAuto} && !${switchOverrideEngageat} || !${switchPcPet},##,]}"
 	/noparse /ini HUDPATH "pettarget3" "19,33,98,255,0,0,${If[${switchOverrideEngageat},X,]}"
 
 	| swarmpet engage ##
@@ -182,7 +181,7 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "tie6" "19,170,38,25,25,25,${If[${SetTie},,##]}"
 	/noparse /ini HUDPATH "tie7" "19,209,38,0,255,0,${If[${Bool[${SetTieToon}]},${If[${Bool[${Spawn[${SetTieToon}]}]},${SetTieToon},]},]}"
 	/noparse /ini HUDPATH "tie8" "19,209,38,255,0,0,${If[${Bool[${SetTieToon}]},${If[!${Bool[${Spawn[${SetTieToon}]}]},${If[${Bool[${SetTieToon}]},${SetTieToon},]},]},]}"
-	/noparse /ini HUDPATH "tie9" "19,209,38,25,25,25,${If[${Bool[${SetTieToon}]},,---]}"
+	/noparse /ini HUDPATH "tie9" "19,209,37,25,25,25,${If[${Bool[${SetTieToon}]},,----]}"
 
 	| burn a thing
 	/noparse /ini HUDPATH "burn1" "19,140,50,0,255,0,${If[${burnAuto},Burn,]}"
@@ -233,11 +232,11 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "ma11" "3,280,26,100,149,237,MA1"
 	/noparse /ini HUDPATH "ma12" "19,305,26,0,255,0,${If[${Bool[${MA1}]},${If[${Bool[${Spawn[${MA1}]}]},${MA1},]},]}"
 	/noparse /ini HUDPATH "ma13" "19,305,26,255,0,0,${If[${Bool[${MA1}]},${If[!${Bool[${Spawn[${MA1}]}]},${If[${Bool[${MA1}]},${MA1},]},]},]}"
-	/noparse /ini HUDPATH "ma14" "19,305,26,25,25,25,${If[${Bool[${MA1}]},,----]}"
+	/noparse /ini HUDPATH "ma14" "19,305,25,25,25,25,${If[${Bool[${MA1}]},,----]}"
 	/noparse /ini HUDPATH "ma21" "3,280,38,100,149,237,MA2"
 	/noparse /ini HUDPATH "ma22" "19,305,38,0,255,0,${If[${Bool[${MA2}]},${If[${Bool[${Spawn[${MA2}]}]},${MA2},]},]}"
 	/noparse /ini HUDPATH "ma23" "19,305,38,255,0,0,${If[${Bool[${MA2}]},${If[!${Bool[${Spawn[${MA2}]}]},${If[${Bool[${MA2}]},${MA2},]},]},]}"
-	/noparse /ini HUDPATH "ma24" "19,305,38,25,25,25,${If[${Bool[${MA2}]},,----]}"
+	/noparse /ini HUDPATH "ma24" "19,305,37,25,25,25,${If[${Bool[${MA2}]},,----]}"
 
 	/noparse /ini HUDPATH "ass1" "3,280,50,100,149,237,Assist"
 	/noparse /ini HUDPATH "ass2" "3,315,49,100,149,237,[           ]"

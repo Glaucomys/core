@@ -292,6 +292,7 @@ sub fix_ini_current()
 
 	| core.ini
 	
+
 		| 20180429
 		/ini "${INICore}" "General" "switchAlwaysFaceTarget" NULL
 		/ini "${INICore}" "Here" "combatWAR" NULL
@@ -312,7 +313,13 @@ sub fix_ini_current()
 		/ini "${INICore}" "Here" "combatMNK" NULL
 		
 	
-	| toon INI non specific class
+	| toon INI non specific class --------------------------------------------------------------------------------------
+
+		| 20180611.00
+		/ini "${INIClass}" "Common" "stopnukeAt" NULL	
+		/ini "${INIClass}" "Itme" "Epic" NULL		
+		
+
 		| 20180522.00
 		/ini "${INIClass}" "Common" "useSmartAssistR" NULL	
 	

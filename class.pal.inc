@@ -88,6 +88,7 @@ sub disc_PAL()
 	CHECKTIE
 
 	/if (${validate_cast[FALSE, activedisc, "${DiscFastRune}", ${Me.ID}]}) /call core_cast2 "${DiscFastRune}" disc 0 FALSE
+	/if (${switchPull}) /call set_combat ${combat.Upper}
 
 	| defensive	
 	/if (${coreAuto} && ${switchAgro} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} >= ${defCount}) {
@@ -174,6 +175,7 @@ sub get_agro_PAL()
 	AMIDEAD
 	CHECKEXIT
 	/if (${is_target_dead[${Target2Kill}]}) /return
+	/if (${switchPull}) /call set_combat ${combat.Upper}
 
 	| challenge
 	/call cast_challenge ${Target2Kill}

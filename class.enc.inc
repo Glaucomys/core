@@ -114,7 +114,7 @@ sub check_rune_ENC()
 	/if (${validate_cast[FALSE, alt, "${runeSpray}", ${Me.ID}]}) /call core_cast2 "${runeSpray}" alt 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${runeReactive}", ${Me.ID}]}) /call core_cast2 "${runeReactive}" alt 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${runeMind}", ${Me.ID}]}) /call core_cast2 "${runeMind}" alt 0 FALSE
-	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Me.ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
+	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
 	
 	| /if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]}) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
 	| /if (${validate_cast[FALSE, spell, "${runeEntAuspice}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE

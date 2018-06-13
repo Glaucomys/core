@@ -1276,6 +1276,9 @@ sub set_stop(string _echo)
  ***|
 sub click_item()
 	DEBUGCAST ${cbug}click_item()\ax
+	/doevents
+	AMIDEAD
+	CHECKTIE
 	/declare _count int local 0
 	/for _count 1 to 6
 		DEBUG _count:${_count} item:${clickItem${_count}} ready:${Me.ItemReady[${clickItem${_count}}]} 
@@ -1300,6 +1303,9 @@ sub click_item()
  ***|
 sub click_item_swarm(int _tmpID)
 	DEBUGCAST ${cbug}click_item_swarm(id: ${_tmpID})\ax
+	/doevents
+	AMIDEAD
+	CHECKTIE
 	/declare _count int local 0
 	/for _count 1 to 4
 		DEBUG _count:${_count} item:${clickItemSwarm${_count}} ready:${Me.ItemReady[${clickItemSwarm${_count}}]} 
@@ -1881,8 +1887,7 @@ sub clear_timer(int _tmpID)
  ***|
 sub cast_condition(str _condition)
 	DEBUG ${cbug}cast_condition(condition: ${_condition} ${sep} (${${_condition}})\ax
-	/if (!${Bool[${${_condition}}]}) /return TRUE
-	DEBUG ${_condition}: ${${_condition}}
+	/if (${_condition.Equal[FALSE]}) /return FALSE
 	/if (${${_condition}}) /return TRUE
 /return FALSE
 
@@ -1905,10 +1910,10 @@ sub cast_nuke()
 		DEBUG _count:${_count}, spell:${Nuke${_count}}, manna:${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana}
 		AMIDEAD
 		CHECKEXIT
-		
-		/if (${is_target_dead[${Target2Kill}]}) /return
-		/if (${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana} || ${Me.CurrentMana} < 2) /continue 
 		/if (!${cast_condition[Nuke${_count}Condition]}) /continue 
+				
+		/if (${is_target_dead[${Target2Kill}]}) /return
+		/if (${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana} || ${Me.PctMana} < 2) /continue 
 		
 		/if (${validate_cast[FALSE, spell, "${Nuke${_count}}", ${Target2Kill}]}) /call core_cast2 "${Nuke${_count}}" 0 ${Target2Kill} cast_break
 		/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
@@ -2812,7 +2817,6 @@ sub set_combat(str _mode)
 	UPDATEHUD "${_mode}"
 	/if (${Me.State.NotEqual[STAND]}) /stand
 	/if (${coreAuto} && ${Me.State.Equal[FEIGN]}) /squelch /stand
-
 		
 	| combat	
 	/if (${Bool[${_mode}]}) {
@@ -2838,7 +2842,6 @@ sub set_combat(str _mode)
 			}
 			**|
 
-
 			/if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind}) {
 				/if (${RangeList.Find[${Target.DisplayName}]}) {
 					/if (${Me.AutoFire}) /squelch /autofire
@@ -2854,12 +2857,6 @@ sub set_combat(str _mode)
 					/if (${coreAuto}) /call stick_to_target ${Target2Kill}
 				}
 			}
-
-
-
-			
-			
-			
 		}
 	}
 /return
@@ -3378,34 +3375,34 @@ sub update_HUD_notices(string _mode)
 
 	DEBUG HUD: Bottom Notices
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} ${lineCurrent}
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} ${lineCurrent}
 		/varset _sep TRUE
 	}	
 
 	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
 		/if (${AdvPath.Playing}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} AdvPath
+			/varset hudNotice ${hudNotice} ${If[${_sep},..,]} AdvPath
 			/varset _sep TRUE
 		}
 	}
 	
 	/if (${SafeZone}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} SafeZone
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} SafeZone
 		/varset _sep TRUE
 	}	
 	/if (${Stick.Active}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Stick
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Stick
 		/varset _sep TRUE
 	}
 	/if (${Select[${Me.Class.ShortName},MAG]}) {
 		/if (${Bool[${useRain}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} AE
+			/varset hudNotice ${hudNotice} ${If[${_sep},..,]} AE
 			/varset _sep TRUE
 		}	
 	}
 	/if (${Select[${Me.Class.ShortName},CLR,PAL,SHM,DRU]}) {
 		/if (${Bool[${RampageTank}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},-,]} RT[${RampageTank}]
+			/varset hudNotice ${hudNotice} ${If[${_sep},..,]} RT[${RampageTank}]
 			/varset _sep TRUE
 		}	
 	}
@@ -3414,39 +3411,39 @@ sub update_HUD_notices(string _mode)
 	DEBUG HUD: Mode Notice
 	/varset _sep FALSE
 	/if (${Bool[${switchModeHunt}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Hunt[${If[${setModeAgro},${setModeAgro},Zone]}]
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Hunt[${setModeAgro}]
 		/varset _sep TRUE
 	}		
 	/if (${Bool[${switchModePetfarm}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} PetFarm
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} PetFarm
 		/varset _sep TRUE
 	}		
 	/if (${Bool[${switchModeScorch}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Scorch[${If[${setModeAgro},${setModeAgro},Zone]}]
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Scorch[${setModeAgro}]
 		/varset _sep TRUE
 	}		
 	/if (${Bool[${switchModeHarvest}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Harvest[${If[${setModeAgro},${setModeAgro},Zone]}]
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Harvest[${setModeAgro}]
 		/varset _sep TRUE
 	}	
 	/if (${Bool[${switchModeDrag}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Drag
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Drag
 		/varset _sep TRUE
 	}
 	/if (${Bool[${switchModeForage}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Forage
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Forage
 		/varset _sep TRUE
 	}
 	/if (${Bool[${switchModeFish}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Fish
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Fish
 		/varset _sep TRUE
 	}
 	/if (${Bool[${switchModeSkill}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Skill Trainer
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Skill Trainer
 		/varset _sep TRUE
 	}		
 	/if (${Bool[${switchModeLush}]} || ${Me.Drunk}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},-,]} Drunk[${Me.Drunk}]
+		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Drunk[${Me.Drunk}]
 		/varset _sep TRUE
 	}		
 		
@@ -3463,33 +3460,33 @@ sub update_HUD_notices(string _mode)
 	/varset _sep FALSE
 
 	/if (${Bool[${Spawn[${Target.ID}].Master}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},-,]} Pet
+		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Pet
 		/varset _sep TRUE
 	}	
 
 	/if (${Bool[${Target.Maloed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},-,]} Malo
+		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Malo
 		/varset _sep TRUE
 	}	
 
 	/if (${Bool[${Target.Tashed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},-,]} Tash
+		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Tash
 		/varset _sep TRUE
 	}	
 	/if (${Bool[${Target.Snared}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},-,]} Snare
+		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Snare
 		/varset _sep TRUE
 	}	
 	/if (${Bool[${Target.Buff[Mental Contortion]}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},-,]} MC
+		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} MC
 		/varset _sep TRUE
 	}	
 	/if (${Bool[${Target.Slowed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},-,]} Slow
+		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Slow
 		/varset _sep TRUE
 	}	
 	/if (${Bool[${Target.DSed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},-,]} DS
+		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} DS
 		/varset _sep TRUE
 	}	
 
@@ -4162,72 +4159,6 @@ sub queue_buff_delete(int _buffee, int _buffnumber)
 /return
 
 
-
-|***
- *	DES: Buff on /t requests
- *	USE: uses INI [Buffs] 
- *	INI: 
- *  NOTE: 
-sub check_buffs_tell()
-	DEBUG ${cbug}check_buffs_tell()\ax
-	/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return
-	/if (${coreAuto} && ${watch_for_death[]}) /return 
-
-	UPDATEHUD "BUFF Tell"
-	/doevents
-	/declare _count					int local
-	/declare _tmpVAR				int local ${Math.Calc[${BuffCount}]}
-	/declare _tmpID					int local 0
-	/if (${coreAuto}) /call create_timer timer_check_buffs_tell ${tTell_Buff}
-
-	/for _count 1 to ${queueCount}
-		/if (${queueCount} < 1 || ${queueCount} == 0) /continue
-		/if (!${Range.Between[1,${queueCount}:${Int[${_count}]}]}) /continue
-		/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /break
-
-
-		DEBUGARRAY Tell queue count: ${queueCount}
-		AMIDEAD
-		CHECKEXIT
-		CHECKTIE
-		| /if (${Defined[Buff0]}) /deletevar Buff0
-		/if (${queueList[${_count},2]} < ${_tmpVAR} && ${Spawn[${queueList[${_count},1]}].ID} && !${Spawn[${queueList[${_count},1]}].Dead} && (${Spawn[${queueList[${_count},1]}].Distance} <  ${Spell[${Buff${queueList[${_count},2]}}].MyRange} || ${Spawn[${queueList[${_count},1]}].Distance} < ${Spell[${Buff${queueList[${_count},2]}}].AERange}) && ${Me.CurrentMana} > ${Spell[${Buff${_tmpVAR}}].Mana}) {
-			/varset _tmpID ${queueList[${_count},1]}
-			/varset _tmpVAR ${queueList[${_count},2]}
-		}
-	/next _count
-	
-	| /if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || !${Me.Gem[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || (${BuffGem${_tmpVAR}.Equal[item]} && ${FindItem[${Buff${_tmpVAR}}].TimerReady} < 30)) {
-	/if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || !${Me.Gem[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || (${FindItem[${Buff${_tmpVAR}}].TimerReady} < 30)) {
-	| /if (${_tmpID}) /if ((${Me.SpellReady[${Buff${_tmpVAR}}]} || ${Spell[${Buff${_tmpVAR}}].RecastTime} < 30) || ${Me.ItemReady[${Buff${_tmpVAR}}]}) {
-		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-		/target ID ${_tmpID}
-		/delay 5s ${Target.ID}==${_tmpID}
-		/if (${Target.ID}!=${_tmpID} || !${Target.ID}) /return
-		/if (${Me.ItemReady[${Buff${_tmpVAR}}]}) /call core_cast "${Buff${_tmpVAR}}" item ${_tmpID} FALSE
-		/call core_cast "${Buff${_tmpVAR}}" ${buffGem} ${_tmpID} FALSE
-
-		/if (${Select[${castReturn},CAST_SUCCESS]}) /call queue_buff_delete ${_tmpID} ${_tmpVAR}
-	}
-	
-	UPDATEHUD FALSE
-/return
-
-
-**|
-
-
-
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: Buff on /t requests
  *	USE: uses INI [Buffs] 
@@ -4241,53 +4172,53 @@ sub check_buffs_tell()
 	/declare _count					int local
 	/declare _tmpVAR				int local ${Math.Calc[${BuffCount}]}
 	/declare _tmpID					int local 0
-	/if (${coreAuto}) /call create_timer timer_check_buffs_tell ${tTell_Buff}
 
+	/if (${coreAuto}) {
+		/call create_timer timer_check_buffs_tell ${tTell_Buff}
+	}
 	
 	/for _count 1 to ${queueCount}
+		DEBUGARRAY _count:${_count}
 		DEBUGARRAY Tell queue count: ${queueCount}
-		| queues default to 1 but empty. if empty., go away
-		/if (${queueCount} < 1 || ${queueCount} == 0 || ${queueList[${_count},1]} == 0) /break
+
 		| make sure we are at least in the correct range
 		/if (!${Range.Between[1,${queueCount}:${Int[${_count}]}]}) /continue
+	
+		| queues default to 1 but empty. if empty., go away
+		/if (${queueCount} < 1 || ${queueCount} == 0 || ${queueList[${_count},1]} == 0) /return
+	
 		CHECKCOMBATCAST
 
-		DEBUG 1: ${queueList[${_count},1]}
-		DEBUG 2: ${Buff${queueList[${_count},2]}}
+		DEBUGARRAY 1: Target: ${queueList[${_count},1]}
+		DEBUGARRAY 2: Buff: ${Buff${queueList[${_count},2]}}
 
 		| target dead or not in zone? fuck their request 
 		/if (${Spawn[${queueList[${_count},1]}].Dead} || !${Spawn[${queueList[${_count},1]}].ID}) {
+			DEBUGARRAY ${queueList[${_count},1]} is not here. deleting request
 			/call queue_buff_delete ${queueList[${_count},1]} ${queueList[${_count},2]}
 			/return
 		}
-		
-		| more checks		
-		/if (${FindItem[${Buff${queueList[${_count},2]}}].ID}) {
-		} else {
-			/if (${Me.CurrentMana} < ${Spell[${Buff${_tmpVAR}}].Mana}) /continue
-			/if (${Spawn[${queueList[${_count},1]}].Distance} > ${Spell[${Buff${queueList[${_count},2]}}].MyRange}) /continue
-			/if (${Spawn[${queueList[${_count},1]}].Distance} > ${Spell[${Buff${queueList[${_count},2]}}].AERange}) /continue
-		}
 
-		
-		| /if (${queueList[${_count},2]} > ${_tmpVAR}) /continue
-		
-		
 		AMIDEAD
 		CHECKEXIT
 		/varset _tmpID ${queueList[${_count},1]}
 		/varset _tmpVAR ${queueList[${_count},2]}
+		| /if (${_tmpID}) /break
 	/next _count
-	
+
 	| no target. were out of here
 	/if (!${_tmpID}) /return
-	
+
+	DEBUGARRAY were out of the loop check and have a target. 
+
 	| even more checks for items/spells
 	/if (${FindItem[${Buff${_tmpVAR}}].ID}) {
 		/if (${FindItem[${Buff${_tmpVAR}}].TimerReady} > 20) /return
 	} else {
 		/if (!${Me.SpellReady[${Buff${_tmpVAR}}]} && ${Me.Gem[${Buff${_tmpVAR}}]}) /return
 	}	
+
+	DEBUGARRAY Passed spell/item checks
 
 	| bards are a pita..
 	/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
@@ -4297,16 +4228,18 @@ sub check_buffs_tell()
 	
 	| do something.. seriously we made it this far..
 	/if (${FindItem[${Buff${_tmpVAR}}].ID}) {
+		DEBUGARRAY  ${Spawn[ID ${_tmpID}].DisplayName} request is for an item
 		/if (${validate_cast[FALSE, item, "${Buff${_tmpVAR}}", ${_tmpID}]}) /call core_cast2 "${Buff${_tmpVAR}}" item ${_tmpID} FALSE
 	} else /if (${Me.AltAbility[${Buff${_tmpVAR}}]}) {
+		DEBUGARRAY  ${Spawn[ID ${_tmpID}].DisplayName} request is for an AA
 		/if (${validate_cast[FALSE, alt, "${Buff${_tmpVAR}}", ${_tmpID}]}) /call core_cast2 "${Buff${_tmpVAR}}" alt ${_tmpID} FALSE
 	} else {
+		DEBUGARRAY ${Spawn[ID ${_tmpID}].DisplayName} request is for a spell
 		/if (${validate_cast[FALSE, spell, "${Buff${_tmpVAR}}", ${_tmpID}]}) /call core_cast2 "${Buff${_tmpVAR}}" ${buffGem} ${_tmpID} FALSE
 	}
 
 	| clear that request form the queue. we no longer like that person
 	/if (${Select[${castReturn},CAST_SUCCESS]}) /call queue_buff_delete ${_tmpID} ${_tmpVAR}
-
 	
 	UPDATEHUD FALSE
 /return
@@ -4846,17 +4779,15 @@ sub get_target()
 			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]} && ${Me.State.NotEqual[STAND]}) /stand
 			/if (${Me.Stunned}) /return
 			/if (!${switchPull} || !${coreAuto}) /return
-			
-
 
 			/if (${Select[${Me.Class.ShortName},SHD]}) {
 				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) {
 					/if (${validate_cast[FALSE, alt, "Hate's Attraction", ${Target2Kill}]}) /call core_cast2 "Hate's Attraction" alt ${Target2Kill} FALSE
 				}
 			} else /if (${Select[${Me.Class.ShortName},PAL]}) {
-				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) {
-					| /if (${validate_cast[FALSE, alt, "Divine Call", ${Target2Kill}]}) /call core_cast2 "Divine Call" alt ${Target2Kill} FALSE
-				}
+				| /if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) {
+				| 	/if (${validate_cast[FALSE, alt, "Divine Call", ${Target2Kill}]}) /call core_cast2 "Divine Call" alt ${Target2Kill} FALSE
+				| }
 			} else /if (${Select[${Me.Class.ShortName},WAR]}) {
 				/if (${Target.Distance} < ${MobAgro} && ${Target.Distance} > 31) {
 					/if (${validate_cast[FALSE, alt, "Warlord's Grasp", ${Target2Kill}]}) /call core_cast2 "Warlord's Grasp" alt ${Target2Kill} FALSE
@@ -4864,12 +4795,9 @@ sub get_target()
 					/if (${validate_cast[FALSE, disc, "${DiscInsult}", ${Target2Kill}]}) /call core_cast2 "${DiscInsult}" disc ${Target2Kill} FALSE
 				}
 			}
-			
-			
-			
 
 			| get mob to us
-			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && < ${MobAgro}) {
+			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && ${Spawn[ID ${Target2Kill}].Distance} <= ${MobAgro}) {
 				/if (${Target.ID}) {
 					
 					| spell pull mob
