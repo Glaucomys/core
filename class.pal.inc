@@ -232,6 +232,7 @@ sub get_agro_PAL()
  ***|
 sub click_DPS_PAL()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -499,6 +500,7 @@ sub check_steel()
  ***| 
 sub synergy_PAL()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
 

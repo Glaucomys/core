@@ -15,10 +15,19 @@
      Enchanter
 
 
+
+
+
+20180614.00
+- cast validations should work again. my bad
+- class.pal.inc
+  -- testing a pattern to get it to release dead targets faster.
+
+
 20180612.00
 HUDUPDATE
 - removed all overide controls for any PVE. not gonna bother dealing with it
-- adjsutment to the condition tester for spells. should respond faster
+- adjustment to the condition tester for spells. should respond faster
 - stopnukeAt has been moved from [common] to [spells]. correct your % if you use this
 - HUD
   -- several cosmetic changes. trying to shorten its cycle time

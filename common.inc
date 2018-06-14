@@ -1495,7 +1495,6 @@ sub stick_to_target()
 	DEBUG ${cbug}stick_to_target()\ax Setting Stick to: [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] @ ${CombatDistance}% agro distance
 	/if (!${switchCombatMelee}) || !${coreAuto}) /return
 	/if (!${validate_plugin[TRUE, |mq2moveutils]}) /return
-	/if (${is_target_dead[${Target2Kill}]}) /return
 	/doevents
 	AMIDEAD	
 
@@ -1718,7 +1717,7 @@ sub get_assist_target()
  *  NOTE: in manual mode. anything is a valid target.
  ***|
 sub is_target_valid(int _tmpID)
-	DEBUG ${cbug}is_target_valid(\ax${_tmpID}${cbug})\ax checking: [${cinfo}${Spawn[${_tmpID}].DisplayName}\ax]
+	| DEBUG ${cbug}is_target_valid(\ax${_tmpID}${cbug})\ax checking: [${cinfo}${Spawn[${_tmpID}].DisplayName}\ax]
 	/if (!${coreAuto}) /return TRUE
 	AMIDEAD
 	/doevents
@@ -1764,7 +1763,7 @@ sub is_target_valid(int _tmpID)
 		/if (${isValidTarget} && ${switchSos}) /makemevisible
 	}
 		
-	DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
+	| DEBUG ${Spawn[${_tmpID}].DisplayName} [ID:${cinfo}${_tmpID}\ax] is a valid target: ${If[${isValidTarget},${cgood}TRUE\ax,${cbad}FALSE\ax]} ${If[${Spawn[${_tmpID}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]} ${If[${Spawn[${_tmpID}].Distance} <= ${MobAgro},${cgood}${Spawn[${_tmpID}].Distance}\ax,${cbad}${Spawn[${_tmpID}].Distance}\ax]}
 /return ${isValidTarget}
 
 
@@ -1886,10 +1885,18 @@ sub clear_timer(int _tmpID)
  *  NOTE: DO NOT PASS VARIABLE CONTAINER. JUST PASS ITS' INI DECLARE NAME
  ***|
 sub cast_condition(str _condition)
-	DEBUG ${cbug}cast_condition(condition: ${_condition} ${sep} (${${_condition}})\ax
-	/if (${_condition.Equal[FALSE]}) /return FALSE
-	/if (${${_condition}}) /return TRUE
-/return FALSE
+	| DEBUG ${cbug}cast_condition(condition: ${_condition} ${sep} (${${_condition}})\ax
+	/if (${${_condition}.Equal[FALSE]}) {
+		| DEBUG String.Equal=FALSE
+		/return TRUE
+	} else /if (${${_condition}}) {
+		| DEBUG condition TRUE
+		/return TRUE
+	} else /if (!${${_condition}}) {
+		| DEBUG condition FALSE
+		/return FALSE
+	}
+/return
 
 
 
@@ -1906,12 +1913,11 @@ sub cast_nuke()
 	/declare _count int local 0
 	
 	/for _count 1 to ${DoNuke}
+		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (!${Range.Between[1,${DoNuke}:${Int[${_count}]}]}) /continue
 		DEBUG _count:${_count}, spell:${Nuke${_count}}, manna:${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana}
 		AMIDEAD
 		CHECKEXIT
-		/if (!${cast_condition[Nuke${_count}Condition]}) /continue 
-				
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana} || ${Me.PctMana} < 2) /continue 
 		
@@ -5478,7 +5484,6 @@ sub cast_AA_fade()
 	DEBUG ${cbug}cast_AA_fade()\ax
 	CHECKEXIT
 	/doevents
-	/if (${is_target_dead[${Target2Kill}]}) /return
 
 	/if (${Me.AltAbilityReady[${AAFade}]}) {
 		ECHOCHANNEL Fading Combat ${Me.PctHPs} <= ${AAFade}
@@ -5496,11 +5501,9 @@ sub cast_AA_fade()
  ***|
 sub check_stance()
 	DEBUGCAST ${cbug}check_stance()\ax
+	AMIDEAD
 	CHECKEXIT
-	/doevents
-	/if (!${switchStance}) /return
 	/call create_timer timer_check_Stance ${tcheck_Stance}
-	/if (${Bool[${Me.Buff[${Stance}]}]}) /return
 	/if (${validate_cast[FALSE, spell, "${Stance}", ${Me.ID}]}) /call core_cast2 "${Stance}" 0 0 FALSE
 /return
 
@@ -5709,7 +5712,6 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	/if (${_error}) {
 		SDEBUG type:${_type}, name:${_spell}, ID:${_tmpID} 
 	}
-	
 	
 	| _spell set to false
 	/if (!${Bool[${_spell}]}) /return FALSE
