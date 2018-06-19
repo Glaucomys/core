@@ -70,7 +70,6 @@
 
 ***|
 
-| #turbo 60
 | #warning
 #define DEBUG "/if (${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define DEBUGCAST "/if (${switchDebugCasting} || ${switchDebugCore}) /echo [\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax]"
@@ -91,7 +90,7 @@
 #define HUDPATH ".\..\MQ2HUD.ini core"
 #define LOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
 #define AMIDEAD "/if (${watch_for_death[]}) /call watch_for_rezbox"
-#define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Stunned} || ${Stick.Active} || ${Me.Invis} || ${Me.State.Equal[FEIGN]} || ${switchAmIDead} || ${flagCallNeedRez}) /return"
+#define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Invis} || ${Select[${Me.State},DEAD,FEIGN,STUN,BIND]} || ${switchAmIDead} || ${flagCallNeedRez}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
 #define CHECKTIE "/if ((${SetTie} && !${Bool[${timer_check_Tie}]}) || (${SetTie} && ${SetTieLock})) /call set_tie"
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"
@@ -100,7 +99,6 @@
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
 #define CHECKCOMBATCAST "/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return TRUE"
-
 
 #include tc\declare.inc
 #include tc\common.inc

@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180614.00
+	/call setDeclare coreBuild											string	outer 20180618.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -26,6 +26,9 @@ sub set_declares()
 	/call setDeclare isValidTarget									bool		outer FALSE
 
 	| HUD controls
+	/call setDeclare hudWarningLength								int			outer	0
+	/call setDeclare hudNoticeLength								int			outer	0
+	/call setDeclare hudTargetLength								int			outer	0
 	/call setDeclare hcType													string	outer "|time|update|broadcast|delete"
 	/call setDeclare hudNotice											string	outer FALSE
 	/call setDeclare hudWarning											string	outer	FALSE
@@ -37,6 +40,7 @@ sub set_declares()
 	/call DeclareCoreIniVar HudType									string	General normal
 	/call setINIVar HUDTime													bool 		Common TRUE
 	/call setINIVar setBroadcast										string	Common TRUE	
+
 
 	| Base Environment settings
 	/call setDeclare noInvis 												bool 		outer TRUE
@@ -298,7 +302,7 @@ sub set_declares()
 	
 	
 	| mode control
-	/call setDeclare modeType												string	outer "|stop|agro|drag|drink|fish|forage|harvest|harvestcount|hunt|lush|open|petfarm|scorch|tradeskill|trainspell"
+	/call setDeclare modeType												string	outer "|stop|agro|drag|drink|fish|forage|harvest|harvestcount|hunt|lush|open|petfarm|scorch|skill|tradeskill|trainspell"
 	/call setDeclare setMode												bool		outer FALSE
 	/call setDeclare switchModeStop									bool		outer FALSE
 	/call setDeclare switchModeAgro									bool		outer FALSE
@@ -1351,9 +1355,6 @@ sub declare_SHD()
 	/call setINIVar Nuke6 													string 	Spells FALSE
 	/call setINIVar Nuke6Condition 									string	Spells FALSE
 	
-	
-	
-	
 	/call setINIVar DoDoT										 				int			Spells 0
 	/call setINIVar DoT1									 					string	Spells FALSE
 	/call setINIVar DoT1chk								 					string	Spells FALSE
@@ -1377,6 +1378,9 @@ sub declare_SHD()
 	/call setINIVar Skin			 											string 	Buffs "Tylix's Skin"
 
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
+	/call setINIVar useShieldFlash									bool		Discs FALSE
+	/call setINIVar useShieldFlashPct								int			Discs 20
+
 /return	
 
  
@@ -1471,8 +1475,8 @@ sub declare_PAL()
 	/call setINIVar Nuke3Condition 									string	Spells FALSE
 	/call setINIVar Nuke4														string 	Spells "Lesson of Grief"
 	/call setINIVar Nuke4Condition 									string	Spells FALSE
-	/call setINIVar Nuke5							 							string	Spells "Protective Proclamation"
-	/call setINIVar Nuke5Condition 									string	Spells "!${Me.Song[Protective Devotion Guard].ID}"
+	/call setINIVar Nuke5							 							string	Spells "Protective Devotion"
+	/call setINIVar Nuke5Condition 									string	Spells "!${Me.Song[Protective Devotion].ID}"
 	/call setINIVar Nuke6							 							string	Spells FALSE
 	/call setINIVar Nuke6Condition 									string	Spells FALSE
                                            	
@@ -1505,6 +1509,9 @@ sub declare_PAL()
 	                                        		
 	/call setINIVar useMG														bool		Buffs TRUE
 	/call setINIVar useMGPct												int			Buffs 60
+	/call setINIVar useShieldFlash									bool		Discs FALSE
+	/call setINIVar useShieldFlashPct								int			Discs 20
+
 /return	
 
 

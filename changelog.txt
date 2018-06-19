@@ -17,7 +17,26 @@
 
 
 
-
+20180618.00
+- significant changes to the hud output. shoud no longer flash like a bad japanese porno
+  -- seriously i think it was starting to cause epileptic seizures
+- fixed a roll back issue. basically, i roled the code back and forgot to redo something /oops
+- RangeItemCount=0 will disable the check. mostly for rangers and the quiver AA
+- renamed
+  -- cast_eradicate_magic() -> cast_AA_eradicate_magic()
+- class.brd.inc
+  -- removed the /while loop from the stop singing a song sub. i dont thing MQ handles while loops very well
+  -- adjustment to the use of Darkened Breath of Harmony (seb HH clicky)
+- class.pal.inc
+  -- /pal shieldflash (on/off) - enables using AA Shield Flash in emergencies
+  -- /pal shieldflash [1,99] - set the HP% to use AA Shield Flash when enabled
+- class.shd.inc
+  -- /shd shieldflash (on/off) - enables using AA Shield Flash in emergencies
+  -- /shd shieldflash [1,99] - set the HP% to use AA Shield Flash when enabled
+  
+  
+  
+  
 20180614.00
 - cast validations should work again. my bad
 - class.pal.inc

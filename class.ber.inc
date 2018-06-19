@@ -45,7 +45,7 @@ sub core_BER()
 
 		/if (${coreAuto}) {	
 			/call cast_stamina_recovery
-			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}

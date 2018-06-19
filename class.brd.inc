@@ -71,7 +71,7 @@ sub core_BRD()
 			/if (${coreAuto}) {	
 				/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 				/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-				/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+				/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 			} else /if (!${coreAuto}) {
 				/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 			}
@@ -96,7 +96,7 @@ sub disc_BRD()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
 	/if (${Me.Casting.ID}) /call pulse_stop
-	/if (!${Me.Song[Doben's Spry Sonata Rk. II].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
+	/if (!${Me.Song[Doben's Spry Sonata].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill} FALSE
 	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill} FALSE
 	/call core_cast "Cacophony" alt ${Target2Kill} FALSE
@@ -280,10 +280,8 @@ sub pulse_valid(_gem)
  ***|
 sub pulse_stop()
 	DEBUGCLASS ${cbug}pulse_stop()\ax 
-	/while (${Me.Casting.ID}) {
-		/stopcast
-		/delay 1
-	}
+	/delay 2
+	/if (${Me.Casting.ID}) /stopcast
 /return
 
 

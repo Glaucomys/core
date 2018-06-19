@@ -1885,18 +1885,25 @@ sub clear_timer(int _tmpID)
  *  NOTE: DO NOT PASS VARIABLE CONTAINER. JUST PASS ITS' INI DECLARE NAME
  ***|
 sub cast_condition(str _condition)
-	| DEBUG ${cbug}cast_condition(condition: ${_condition} ${sep} (${${_condition}})\ax
+	| SDEBUG ${cbug}cast_condition(condition: ${_condition} ${sep} (${${_condition}})\ax
+	
+	| is the base variable string set to FALSE in the INI? if so. we do not need to check and consider valid
 	/if (${${_condition}.Equal[FALSE]}) {
-		| DEBUG String.Equal=FALSE
+		| SDEBUG String.Equal=FALSE return TRUE
 		/return TRUE
+
+	| if there is a condition and it does evaluate as TRUE.
 	} else /if (${${_condition}}) {
-		| DEBUG condition TRUE
+		| SDEBUG condition evaluates TRUE
 		/return TRUE
-	} else /if (!${${_condition}}) {
-		| DEBUG condition FALSE
-		/return FALSE
-	}
-/return
+		
+	| when in doubt. dont cast it.	
+	} 
+	| else /if (!${${_condition}}) {
+	| 	SDEBUG condition evaluates FALSE
+	| 	/return FALSE
+	| }
+/return FALSE
 
 
 
@@ -1916,6 +1923,8 @@ sub cast_nuke()
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (!${Range.Between[1,${DoNuke}:${Int[${_count}]}]}) /continue
 		DEBUG _count:${_count}, spell:${Nuke${_count}}, manna:${Me.CurrentMana} < ${Spell[${Nuke${_count}}].Mana}
+		/if (!${cast_condition[Nuke${_count}Condition]}) /continue
+
 		AMIDEAD
 		CHECKEXIT
 		/if (${is_target_dead[${Target2Kill}]}) /return
@@ -1934,6 +1943,7 @@ sub cast_nuke()
 	/next _count
 /return
 
+/echo ${Nuke5Condition}
 
 
 |***
@@ -2098,12 +2108,12 @@ sub get_target_2kill()
 
 |***
  *	DES: Uses Entropy of Nature/EradicateMagic/Whatever on target. only once every 60 seconds.
- *	USE: /call cast_eradicate_magic [target ID] & /debuff eradicate
+ *	USE: /call cast_AA_eradicate_magic [target ID] & /debuff eradicate
  *	INI: 
  *  NOTE: 
  ***|
-sub cast_eradicate_magic(int _tmpID)
-	DEBUGCAST ${cbug}cast_eradicate_magic()\ax
+sub cast_AA_eradicate_magic(int _tmpID)
+	DEBUGCAST ${cbug}cast_AA_eradicate_magic()\ax
 	/if (${timer_eradicate_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -3325,176 +3335,169 @@ sub check_exit()
  ***|
 sub update_HUD_notices(string _mode)
 	DEBUG ${cbug}update_HUD_notices()\ax
-	/declare _count 				int 		local 0
-	/declare _index 				int 		local 0
-	/declare _sep 					bool 		local FALSE
-	/declare _IV[3] 				string 	local FALSE
-	/declare _IVU[1]				string 	local FALSE
+	/declare _count 					int 		local 0
+	/declare _index 					int 		local 0
+	/declare _sep 						bool 		local FALSE
+	/declare _IV[3] 					string 	local FALSE
+	/declare _IVU[1]					string 	local FALSE
+	/declare _tmphudWarning		string	local  
+	/declare _tmphudNotice		string	local  
+	/declare _tmptarNotice		string	local  
 	
-	/varset hudNotice
-	/varset hudWarning
-	/varset hudTarNotice
+	| /varset _tmphudNotice
+	| /varset _tmphudWarning
+	| /varset _tmptarNotice
 	/if (!${timer_check_status}) /call broadcast_status
-	/doevents	
+	
+	| current mode display
 	/if (${Bool[${_mode}]}) {
 		/varset tmpMode "${_mode}"
 	} else /if (!${Bool[${_mode}]} || ${_mode.Equal[NULL]}) {
 		/varset tmpMode FALSE
 	}
-	
-		/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Perfected Invisibility
-		/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Shauri's Sonorous Clouding|Gather Umbra|Invisibility Cloak
-		/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility|Shauri's Sonorous Clouding
 
-		/for _count 1 to ${_IV.Size}
-			/for _index 1 to ${_IV[${_count}].Count[|]}
-				/if (${Me.Buff[${_IV[${_count}].Arg[${_index},|]}].Name.Equal["${_IV[${_count}].Arg[${_index},|]}"]}) {
-				/varset hudWarning ${hudWarning} IV
-					/varset _sep TRUE
+	|**  HUD warning notices.. the red stuff up top **|
+	
+	| rez warning
+	/if (${switchAmIDead} || ${flagCallNeedRez}) {
+		/varset _tmphudWarning ${_tmphudWarning} NEED REZ
+	}	
+			
+	/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Perfected Invisibility
+	/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Shauri's Sonorous Clouding|Gather Umbra|Invisibility Cloak
+	/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility|Shauri's Sonorous Clouding
+
+	/for _count 1 to ${_IV.Size}
+		/for _index 1 to ${_IV[${_count}].Count[|]}
+			/if (${Me.Buff[${_IV[${_count}].Arg[${_index},|]}].Name.Equal["${_IV[${_count}].Arg[${_index},|]}"]}) {
+			/varset _tmphudWarning ${_tmphudWarning} IV
+		}
+		/next _index	
+	/next _count
+
+	| check for invis vs undead
+	/varset _IVU[1] |Group Perfected Invisibility to Undead|Perfected Invisibility to Undead|Invisibility to Undead|Invisibility versus Undead|Shauri's Sonorous Clouding
+
+	/for _count 1 to ${_IVU.Size}
+		/for _index 1 to ${_IVU[${_count}].Count[|]}
+			/if (${Me.Buff[${_IVU[${_count}].Arg[${_index},|]}].Name.Equal["${_IVU[${_count}].Arg[${_index},|]}"]}) {
+				/varset _tmphudWarning ${_tmphudWarning} IVU 
 			}
 			/next _index	
-		/next _count
+	/next _count
 
-		| check for invis vs undead
-		/varset _IVU[1] |Group Perfected Invisibility to Undead|Perfected Invisibility to Undead|Invisibility to Undead|Invisibility versus Undead|Shauri's Sonorous Clouding
-
-		/for _count 1 to ${_IVU.Size}
-			/for _index 1 to ${_IVU[${_count}].Count[|]}
-				/if (${Me.Buff[${_IVU[${_count}].Arg[${_index},|]}].Name.Equal["${_IVU[${_count}].Arg[${_index},|]}"]}) {
-					/varset hudWarning ${hudWarning} IVU 
-					/varset _sep TRUE
-				}
-				/next _index	
-		/next _count
-
-		| override warnings
-		/for _count 1 to ${overrideType.Count[|]}
-			/if (${switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}}) {
-				/varset hudWarning ${hudWarning} ${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower} 
-				/varset _sep TRUE			
-			}
-		/next _count	
+	| override warnings
+	/for _count 1 to ${overrideType.Count[|]}
+		/if (${switchOverride${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower}}) {
+			/varset _tmphudWarning ${_tmphudWarning} ${overrideType.Arg[${_count},|].Left[1].Upper}${overrideType.Arg[${_count},|].Right[-1].Lower} 
+		}
+	/next _count	
+	
+	| finaly something to update.. maybe..
+	/if (${_tmphudWarning.Length} != ${hudWarningLength}) {
+		/varset hudWarningLength ${_tmphudWarning.Length}
+		/varset hudWarning ${_tmphudWarning}
+	} 		
 		
 	
-	| ** Notices for bottom of HUD	
-	/varset _sep FALSE
-
-	DEBUG HUD: Bottom Notices
+	|**  HUD bottom notices.. safe zone, modes, stuff like that **|
+	
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} ${lineCurrent}
-		/varset _sep TRUE
+		/varset _tmphudNotice ${_tmphudNotice} ${lineCurrent}
 	}	
 
 	/if (${Bool[${Plugin[MQ2ADVPath]}]}) {
 		/if (${AdvPath.Playing}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},..,]} AdvPath
-			/varset _sep TRUE
+			/varset _tmphudNotice ${_tmphudNotice} AdvPath
 		}
 	}
 	
 	/if (${SafeZone}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} SafeZone
-		/varset _sep TRUE
+		/varset _tmphudNotice ${_tmphudNotice} SafeZone
 	}	
 	/if (${Stick.Active}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Stick
-		/varset _sep TRUE
+		/varset _tmphudNotice ${_tmphudNotice} Stick
 	}
 	/if (${Select[${Me.Class.ShortName},MAG]}) {
 		/if (${Bool[${useRain}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},..,]} AE
-			/varset _sep TRUE
+			/varset _tmphudNotice ${_tmphudNotice} AE
 		}	
 	}
 	/if (${Select[${Me.Class.ShortName},CLR,PAL,SHM,DRU]}) {
 		/if (${Bool[${RampageTank}]}) {
-			/varset hudNotice ${hudNotice} ${If[${_sep},..,]} RT[${RampageTank}]
-			/varset _sep TRUE
+			/varset _tmphudNotice ${_tmphudNotice} RT[${RampageTank}]
 		}	
 	}
 
 	| Mode Notice
-	DEBUG HUD: Mode Notice
-	/varset _sep FALSE
-	/if (${Bool[${switchModeHunt}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Hunt[${setModeAgro}]
-		/varset _sep TRUE
+	/if (${switchModeHunt}) {
+		/varset _tmphudNotice ${_tmphudNotice} Hunt[${setModeAgro}]
 	}		
-	/if (${Bool[${switchModePetfarm}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} PetFarm
-		/varset _sep TRUE
+	/if (${switchModePetfarm}) {
+		/varset _tmphudNotice ${_tmphudNotice} PetFarm
 	}		
-	/if (${Bool[${switchModeScorch}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Scorch[${setModeAgro}]
-		/varset _sep TRUE
+	/if (${switchModeScorch}) {
+		/varset _tmphudNotice ${_tmphudNotice} Scorch[${setModeAgro}]
 	}		
-	/if (${Bool[${switchModeHarvest}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Harvest[${setModeAgro}]
-		/varset _sep TRUE
+	/if (${switchModeHarvest}) {
+		/varset _tmphudNotice ${_tmphudNotice} Harvest[${setModeAgro}]
 	}	
-	/if (${Bool[${switchModeDrag}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Drag
-		/varset _sep TRUE
+	/if (${switchModeDrag}) {
+		/varset _tmphudNotice ${_tmphudNotice} Drag
 	}
-	/if (${Bool[${switchModeForage}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Forage
-		/varset _sep TRUE
+	/if (${switchModeForage}) {
+		/varset _tmphudNotice ${_tmphudNotice} Forage
 	}
-	/if (${Bool[${switchModeFish}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Fish
-		/varset _sep TRUE
+	/if (${switchModeFish}) {
+		/varset _tmphudNotice ${_tmphudNotice} Fish
 	}
-	/if (${Bool[${switchModeSkill}]}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Skill Trainer
-		/varset _sep TRUE
+	/if (${switchModeSkill}) {
+		/varset _tmphudNotice ${_tmphudNotice} Skill Trainer
 	}		
-	/if (${Bool[${switchModeLush}]} || ${Me.Drunk}) {
-		/varset hudNotice ${hudNotice} ${If[${_sep},..,]} Drunk[${Me.Drunk}]
-		/varset _sep TRUE
+	/if (${switchModeLush} || ${Me.Drunk}) {
+		/varset _tmphudNotice ${_tmphudNotice} Drunk[${Me.Drunk}]
 	}		
+
+	| spit out the verbage
+	/if (${_tmphudNotice.Length} != ${hudNoticeLength}) {
+		/varset hudNoticeLength ${_tmphudNotice.Length}
+		/varset hudNotice ${_tmphudNotice}
+	} 	
+
 		
-	/varset _sep FALSE
-
-	| WARNINGS FOR TOP OF HUD.. USE THIS SPARINGLY
-	DEBUG HUD: WARNING
-	/if (${switchAmIDead} || ${flagCallNeedRez}) {
-		/varset hudWarning NEED REZ
-	}	
-
-
 	| ** target debuffs notices
 	/varset _sep FALSE
 
 	/if (${Bool[${Spawn[${Target.ID}].Master}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Pet
-		/varset _sep TRUE
+		/varset _tmptarNotice ${_tmptarNotice} Pet
 	}	
-
 	/if (${Bool[${Target.Maloed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Malo
-		/varset _sep TRUE
+		/varset _tmptarNotice ${_tmptarNotice} Malo
 	}	
-
 	/if (${Bool[${Target.Tashed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Tash
-		/varset _sep TRUE
+		/varset _tmptarNotice ${_tmptarNotice} Tash
 	}	
 	/if (${Bool[${Target.Snared}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Snare
-		/varset _sep TRUE
+		/varset _tmptarNotice ${_tmptarNotice} Snare
 	}	
 	/if (${Bool[${Target.Buff[Mental Contortion]}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} MC
-		/varset _sep TRUE
+		/varset _tmptarNotice ${_tmptarNotice} MC
 	}	
 	/if (${Bool[${Target.Slowed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} Slow
-		/varset _sep TRUE
+		/varset _tmptarNotice ${_tmptarNotice} Slow
 	}	
 	/if (${Bool[${Target.DSed}]}) {
-		/varset hudTarNotice ${hudTarNotice} ${If[${_sep},..,]} DS
-		/varset _sep TRUE
+		/varset _tmptarNotice ${_tmptarNotice} DS
 	}	
+	
+	
+	| target things and stuff
+	/if (${_tmptarNotice.Length} != ${hudTargetLength}) {
+		/varset hudTargetLength ${_tmptarNotice.Length}
+		/varset hudTarNotice ${_tmptarNotice}
+	} 	
+	
+	
 
 /return
 
@@ -4820,7 +4823,9 @@ sub get_target()
 		
 					| range item pull mob
 					} else {
-						/if (${FindItemCount[=${RangeItemSummon.Arg[${_count},|]}]} <= ${RangeItemCount}) /return				
+						/if (${Bool[${RangeItemCount}]}) {
+							/if (${FindItemCount[=${RangeItemSummon.Arg[${_count},|]}]} <= ${RangeItemCount}) /return				
+						}
 					 	/range
 					}
 				}
@@ -6384,7 +6389,7 @@ sub check_deBuffs(int _tmpID)
 	| eradicate magic AA line
 	/if (${switchdeBuffEradicate} && ${validate_class[FALSE, ${AAEradicateList}]}) {
 		/if (!${Bool[${timer_eradicate_${_tmpID}}]}) {
-			/call cast_eradicate_magic ${_tmpID}
+			/call cast_AA_eradicate_magic ${_tmpID}
 			/if (${Select[${Me.Class.ShortName},ENC]}) { 
 				/call check_for_adds
 				/if (${addList.Count[|]}) /return
@@ -7034,5 +7039,18 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
 /return
 
 
+
+|***
+ *	DES: active AA Shield Flash when HP reach a specific %
+ *	USE: /if (${useShieldFlash}) /call cast_AA_shield_flash
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub cast_AA_shield_flash()
+	SIMPLEEXIT
+	/if (!${coreAuto}) /return
+	/if (${Me.PctHPs}*.${tmpHealOverride} > ${useShieldFlashPct}) /return
+	/if (${validate_cast[FALSE, alt, "Shield Flash", ${Me.ID}]}) /call core_cast2 "Shield Flash" alt 0 FALSE
+/return
 
 

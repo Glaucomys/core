@@ -138,6 +138,7 @@ sub do_mode()
 	/if (${switchModeDrink} && !${Me.Drunk}) /call mode_get_drunk
 	/if (${switchModeTrainspell}) /call mode_trainspell
 	/if (${switchModeOpen} && !${timer_mode_open}) /call mode_open
+	/if (${switchModeSkill}) /call mode_skill_train
 
 /return
 
@@ -223,25 +224,43 @@ sub mode_get_mob()
  *	INI: 
  *  NOTE: This is not working yet...
  ***|
-sub mode_skill_train()
+sub mode_skill_train(string _skilltype)
 	DEBUGMODE ${cbug}mode_skill_train()\ax
-	AMIDAD
+	
+	|**
+	/declare _sep bool local
+	/declare _listout string local
+	/declare _count int local 0
+	/declare _bind string local ${Me.Class.ShortName.Lower}
+  /declare _type string	local |beg|bindwound
+	**|
+	
+	
+	AMIDEAD
 	UPDATEHUD "Skill Train"
-	:looptrainingskills
-	/doevents
-	/delay 10
-	/if (${Me.Skill[Taunt]} < ${Skill[Taunt].SkillCap} && ${Me.AbilityReady[Taunt]}) /doability Taunt
-	/if (${Me.Skill[Disarm]} < ${Skill[Disarm].SkillCap} && ${Me.AbilityReady[Disarm]}) /doability Disarm
-	/if (${Me.Skill[Bash]} < ${Skill[Bash].SkillCap} && ${Me.AbilityReady[Bash]}) /doability Bash
-	/if (${Me.Skill[Kick]} < ${Skill[Kick].SkillCap} && ${Me.AbilityReady[Kick]}) /doability Kick
-	/if (${Me.Skill[Sneak]} < ${Skill[Sneak].SkillCap} && ${Me.AbilityReady[Sneak]}) /doability sneak
-	/if (${Me.Skill[Begging]} < ${Skill[Begging].SkillCap} && ${Me.AbilityReady[Begging]}) /doability begging
-	/if (${Me.Skill[Bind Wound]} < ${Skill[Bind Wound].SkillCap} && ${Me.AbilityReady[Bind Wound]} && ${Me.PctHPs} < 99*.${tmpHealOverride}) {
-		/target ID ${Me.ID}
-	  /delay 3s ${Target.ID} == ${Me.ID}
-		/doability "Bind Wound"
+
+
+	| /if (${Me.Skill[Taunt]} < ${Skill[Taunt].SkillCap} && ${Me.AbilityReady[Taunt]}) /doability Taunt
+	| /if (${Me.Skill[Disarm]} < ${Skill[Disarm].SkillCap} && ${Me.AbilityReady[Disarm]}) /doability Disarm
+	| /if (${Me.Skill[Bash]} < ${Skill[Bash].SkillCap} && ${Me.AbilityReady[Bash]}) /doability Bash
+	| /if (${Me.Skill[Kick]} < ${Skill[Kick].SkillCap} && ${Me.AbilityReady[Kick]}) /doability Kick
+	| /if (${Me.Skill[Sneak]} < ${Skill[Sneak].SkillCap} && ${Me.AbilityReady[Sneak]}) /doability sneak
+	
+	/if (${Target.ID} && ${Target.ID} != ${Me.ID}) {
+		/if (${Me.Skill[Begging]} < ${Skill[Begging].SkillCap} && ${Me.AbilityReady[Begging]}) /doability begging
 	}
-	/goto :looptrainingskills
+		
+	| Bind Wounds
+	/if (${Me.AbilityReady[Bind Wound]} && ${FindItem[bandages].ID}) {
+		/if (${Me.Skill[Bind Wound]} < ${Skill[Bind Wound].SkillCap} && ${Me.PctHPs} < 99*.${tmpHealOverride}) {
+			/target ID ${Me.ID}
+		  /delay 3s ${Target.ID} == ${Me.ID}
+			/delay 2s
+			/doability "Bind Wound"
+		}
+	}
+	
+	
 	UPDATEHUD
 /return
 

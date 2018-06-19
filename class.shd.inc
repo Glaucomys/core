@@ -26,6 +26,7 @@ sub core_SHD()
 	}	
 	
 	:killtarget
+	/if (${useShieldFlash}) /call cast_AA_shield_flash
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
@@ -85,6 +86,8 @@ sub disc_SHD()
 			/if (${validate_cast[FALSE, activedisc, "${DefensiveDisc${_count}}", ${Me.ID}]}) /call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 		/next _count
 	}
+	/if (${useShieldFlash}) /call cast_AA_shield_flash
+
 	
 	| get me sum...
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
@@ -137,6 +140,7 @@ sub get_agro_SHD()
 	/if (${switchPcPet}) /call send_pet
 	
 	/call cast_challenge ${Target2Kill}
+	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	| single hate
 	/if ((!${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
@@ -147,7 +151,6 @@ sub get_agro_SHD()
 			/call core_cast "${Hate2}" 0 ${Target2Kill} FALSE
 		}
 	}
-
 
 	| AE Hate
 	/if (${AEMelee}) {
@@ -207,7 +210,8 @@ sub click_DPS_SHD()
 sub check_skin()
 	DEBUGCLASS ${cbug}check_skin()\ax
 	AMIDEAD
-	CHECKEXIT
+	SIMPLEEXIT
+	/if (${useShieldFlash}) /call cast_AA_shield_flash
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return	
 	/if (!${Bool[${Me.Buff[${Skin}]}]} && ${Me.SpellReady[${Skin}]}) {
@@ -240,6 +244,7 @@ sub synergy_SHD()
 			/break
 		}			
 	/next _count	
+	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	/if (${Me.AltAbilityReady[T`Vyl's Resolve]} && ${Target.Distance} <= ${Spell[T`Vyl's Resolve].MyRange}) /call core_cast "T`Vyl's Resolve" alt ${Target2Kill} FALSE
 	/if (${Me.CombatAbilityReady[${CrimsonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimsonBlade}].EnduranceCost}) /call core_cast "${CrimsonBlade}" disc 0 FALSE
@@ -281,7 +286,7 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|harmonious|healpoint|skin|spiregroup|spireraid|stance
+  /declare _type string	local |ae|defcount|harmonious|healpoint|shieldflash|skin|spiregroup|spireraid|stance
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -294,8 +299,19 @@ sub Bind_setSHD(string _classType, string _verbage)
 		/return
 	}
 
+	| Shield Flash oh shit
+	/if (${Bool[${_classType.Equal[shieldflash]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${_verbage}]}) {
+			/call writeINI useShieldFlashPct Discs ${_verbage} 
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${_verbage}]}) {
+			VOUT /${_bind} shieldflash [${cinfo}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}	else /if (!${Bool[${_verbage}]}) {
+			/call writeINI useShieldFlash Discs ${If[${useShieldFlash},FALSE,TRUE]}  
+		}			
+
 	| on/off switch for Vizat's Skin
-	/if (${Bool[${_classType.Find[skin]}]}) {
+	} else /if (${Bool[${_classType.Find[skin]}]}) {
 		/call writeINI switchSkin Buffs ${If[${switchSkin},FALSE,TRUE]}  
 	
 	| on/off switch for Harmonious
@@ -354,6 +370,8 @@ sub Bind_setSHD(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[skin]}) /varset _listout ${_listout}(${If[${Bool[${switchSkin}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[stance]}) /varset _listout ${_listout}(${If[${Bool[${switchStance}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${Bool[${AEMelee}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

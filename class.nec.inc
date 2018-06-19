@@ -59,7 +59,7 @@ sub core_NEC()
 		/if (${coreAuto}) {	
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${Spawn[${Target2Kill}].ID} && !${is_target_dead[${Target2Kill}]}) /goto :killtarget
+			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}	
