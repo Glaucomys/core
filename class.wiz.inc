@@ -145,8 +145,12 @@ sub check_harvest()
 			/delay 5			
 		}
 		/if (${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) {
-			/if (${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
-			/if (${validate_cast[FALSE, alt, "Harvest of Druzzil", ${Me.ID}]}) /call core_cast2 "Harvest of Druzzil" alt 0 FALSE
+			/if (${Me.SpellReady[${GatherSpell}]}) {
+				/if (${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
+			}
+			/if (${Me.AltAbilityReady[Harvest of Druzzil]}) {
+				/if (${validate_cast[FALSE, alt, "Harvest of Druzzil", ${Me.ID}]}) /call core_cast2 "Harvest of Druzzil" alt 0 FALSE
+			}
 		}
 	}
 /return

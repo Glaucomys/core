@@ -581,7 +581,9 @@ sub cast_divine_arbitration()
   }
   /if (${validate_cast[FALSE, alt, "Celestial Rapidity", ${Me.ID}]}) /call core_cast2 "Celestial Rapidity" alt 0 FALSE
 	
-	/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]} && ${setDivinetoGroupHeal} && ${useGroupHeal}) /call core_cast2 "${healWholeGroup}" 0 ${Me.ID} check_HP_${Me.Class.ShortName}
+	/if (${setDivinetoGroupHeal} && ${useGroupHeal}) {
+		/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0 ${Me.ID} check_HP_${Me.Class.ShortName}
+	}
 /return
 
 

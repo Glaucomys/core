@@ -317,9 +317,9 @@ sub HUDUpdate()
 	/noparse /ini HUDPATH "heal12" "19,355,86,25,25,25,${If[${switchHealPet},,P]}"
 	/noparse /ini HUDPATH "heal13" "19,363,86,0,255,0,${If[${switchHealCure},C,]}"
 	/noparse /ini HUDPATH "heal14" "19,363,86,25,25,25,${If[${switchHealCure},,C]}"
-	/noparse /ini HUDPATH "heal15" "19,280,86,100,149,237,${If[!${Select[${Me.Class.ShortName},CLR]},Heal,]}"
-	/noparse /ini HUDPATH "heal16" "19,280,86,255,0,0,${If[${Select[${Me.Class.ShortName},CLR]} && ${switchHealAggressive},Heal,]}"
-	/noparse /ini HUDPATH "heal17" "19,280,86,0,255,0,${If[${Select[${Me.Class.ShortName},CLR]} && !${switchHealAggressive},Heal,]}"
+	/noparse /ini HUDPATH "heal15" "19,280,86,100,149,237,${If[!${Select[${Me.Class.ShortName},CLR,SHM]},Heal,]}"
+	/noparse /ini HUDPATH "heal16" "19,280,86,255,0,0,${If[${Select[${Me.Class.ShortName},CLR,SHM]} && ${switchHealAggressive},Heal,]}"
+	/noparse /ini HUDPATH "heal17" "19,280,86,0,255,0,${If[${Select[${Me.Class.ShortName},CLR,SHM]} && !${switchHealAggressive},Heal,]}"
 
 	| notice at bottom	
 	/noparse /ini HUDPATH "notice1" "3,5,131,100,149,237,[                                                                                                                   ]"

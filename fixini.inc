@@ -405,6 +405,9 @@ sub fix_ini_current()
 
 		| SHAMAN
 		} else /if (${Select[${Me.Class.ShortName},SHM]}) {
+			
+			/ini "${INIClass}" "Heal" "healReckless" NULL
+			
 			| 20180501
 			/ini "${INIClass}" "Spells" "CaniPercent" NULL
 

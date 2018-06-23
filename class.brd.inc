@@ -96,15 +96,28 @@ sub disc_BRD()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
 	/if (${Me.Casting.ID}) /call pulse_stop
-	/if (!${Me.Song[Doben's Spry Sonata].ID}) /call core_cast "Darkened Breath of Harmony" item 0 FALSE
+	
+	| this is a weapon from Sebilis Hardcore Heratige.
+	/if (!${Me.Song[Doben's Spry Sonata].ID}) {
+		/if (${validate_cast[FALSE, item, "Darkened Breath of Harmony", ${Me.ID}]}) /call core_cast2 "Darkened Breath of Harmony" item 0 FALSE
+	}
+	
 	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill} FALSE
-	/if (${switchPcSwarm}) /call cast_servant_swarm ${Target2Kill} FALSE
-	/call core_cast "Cacophony" alt ${Target2Kill} FALSE
-	/call core_cast "Bladed Song" alt ${Target2Kill} FALSE
-	/call core_cast "Boastful Bellow" alt ${Target2Kill} FALSE	
+	
+	/if (${switchPcSwarm}) {
+		/call cast_servant_swarm ${Target2Kill} FALSE
+	}
+
+	/if (${validate_cast[FALSE, alt, "Cacophony", ${Target2Kill}]}) /call core_cast2 "Cacophony" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Bladed Song", ${Target2Kill}]}) /call core_cast2 "Bladed Song" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Boastful Bellow", ${Target2Kill}]}) /call core_cast2 "Boastful Bellow" alt ${Target2Kill} FALSE	
 	
 	| trigger Frenzied kicks AA for bards if target is debuffed from intimidate
-	/if (${Bool[${intimidation}]} && ${switchIntimidKick} && ${Target.Buff[Harbinger's Intimidation].ID} && ${Spawn[${Target2Kill}].Distance} <= 15) /call core_cast "Frenzied Kicks" alt 0 FALSE
+	/if (${switchIntimidKick}) {
+		/if (${Bool[${intimidation}]} && ${Target.Buff[Harbinger's Intimidation].ID} && ${Spawn[${Target2Kill}].Distance} <= 15) {
+			/if (${validate_cast[FALSE, alt, "Frenzied Kicks", ${Me.ID}]}) /call core_cast2 "Frenzied Kicks" alt 0 FALSE
+		}
+	}
 	
 /return
 
@@ -464,7 +477,7 @@ sub cast_AA_Rallying()
  	/declare _manaPoint		int local 30
 
  	/if (((${Me.PctEndurance} < ${_endurancePoint}) || (${Me.PctMana} < ${_manaPoint})) && ${Select[${Me.CombatState},RESTING]}) {
-		/call core_cast "Rallying Solo" alt ${Me.ID}
+		/if (${validate_cast[FALSE, alt, "Rallying Solo", ${Me.ID}]}) /call core_cast2 "Rallying Solo" alt ${Me.ID}
 	}
 /return
 
@@ -487,12 +500,12 @@ sub synergy_BRD()
 	| epic 2.0
 	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	
- 	/if (${Me.AltAbilityReady[Bladed Song]}) /call core_cast "Bladed Song" alt 0 FALSE
- 	/if (${Me.CombatAbilityReady[Thousand Blades]}) /call core_cast "Thousand Blades" disc 0 FALSE	
-	/if (${Me.AltAbilityReady[Fierce Eye]}) /call core_cast "Fierce Eye" alt 0 FALSE
+ 	/if (${validate_cast[FALSE, alt, "Bladed Song", ${Me.ID}]}) /call core_cast2 "Bladed Song" alt 0 FALSE
+ 	/if (${validate_cast[FALSE, alt, "Thousand Blades", ${Me.ID}]}) /call core_cast2 "Thousand Blades" disc 0 FALSE	
+	/if (${validate_cast[FALSE, alt, "Fierce Eye", ${Me.ID}]}) /call core_cast2 "Fierce Eye" alt 0 FALSE
 	/call cast_AA_spire
-	/if (${Me.AltAbilityReady[Funeral Dirge]}) /call core_cast "Funeral Dirge" alt 0 FALSE
-	/if (${Me.AltAbilityReady[Quick Time]} && !${Me.Song[Ruaabri's Fury].ID}) /call core_cast "Quick Time" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Funeral Dirge", ${Me.ID}]}) /call core_cast2 "Funeral Dirge" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Quick Time", ${Me.ID}]} && !${Me.Song[Ruaabri's Fury].ID}) /call core_cast2 "Quick Time" alt 0 FALSE
 
 	/call use_glyph
 	/call synergy_click_Circle

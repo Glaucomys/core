@@ -405,7 +405,7 @@ sub Bind_setDRU(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |groupheal|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
+  /declare _type string	local |groupheal|grouphot|healpoint|rampage|spiregroup|spireraid|xtradius|xttime
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -450,7 +450,11 @@ sub Bind_setDRU(string _classType, string _verbage)
 			VOUT /${_bind} xtradius [${cinfo}${XTHealRadius}\ax] allowable range ${sep} ${cinfo}1 - 300\ax
 			/return
 		}	
-		
+
+	| use group Heal over Time	
+	} else /if (${Bool[${_classType.Equal[grouphot]}]}) {
+		/call writeINI useGroupHoT Heal ${If[${useGroupHoT},FALSE,TRUE]} 	
+
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
 		/if (!${validate_expansion[TRUE, |16]}) /return
@@ -461,6 +465,13 @@ sub Bind_setDRU(string _classType, string _verbage)
 			/return
 		}	
 
+	| set rampage tank toon
+	} else /if (${Bool[${_classType.Equal[rampage]}]}) {
+		/if (${Bool[${_verbage}]}) {
+			/call writeINI RampageTank Heal ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
+		} else /if (!${Bool[${_verbage}]}) {
+			/call writeINI RampageTank Heal FALSE
+		}
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -483,6 +494,10 @@ sub Bind_setDRU(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
+		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[grouphot]}) /varset _listout ${_listout}(${If[${useGroupHoT},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

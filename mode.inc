@@ -251,7 +251,7 @@ sub mode_skill_train(string _skilltype)
 	}
 		
 	| Bind Wounds
-	/if (${Me.AbilityReady[Bind Wound]} && ${FindItem[bandages].ID}) {
+	/if (${Me.AbilityReady[Bind Wound]} && ${FindItem[=Bandages].ID}) {
 		/if (${Me.Skill[Bind Wound]} < ${Skill[Bind Wound].SkillCap} && ${Me.PctHPs} < 99*.${tmpHealOverride}) {
 			/target ID ${Me.ID}
 		  /delay 3s ${Target.ID} == ${Me.ID}
@@ -259,7 +259,6 @@ sub mode_skill_train(string _skilltype)
 			/doability "Bind Wound"
 		}
 	}
-	
 	
 	UPDATEHUD
 /return

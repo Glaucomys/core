@@ -228,7 +228,7 @@ sub check_crystals()
 
 	/if (${Bool[${mannaCrystal}]}) {
 		/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) {
-			/if (${validate_cast[FALSE, alt , "${mannaCrystal} IV", ${Me.ID}]}) /call core_cast2 "${mannaCrystal} IV" item 0 FALSE
+			/if (${validate_cast[FALSE, item, "${mannaCrystal}", ${Me.ID}]}) /call core_cast2 "${mannaCrystal}" item 0 FALSE
 		}
 	}
 

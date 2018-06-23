@@ -12,9 +12,27 @@
      Cleric, Ranger, Rogue, 
      Paladin, Wizard, Magician, 
      Necromancer, Monk, Beastlord, 
-     Enchanter
+     Enchanter, Shaman, Berserker
 
 
+20180622.00
+HUDUPDATE
+- HUD updated for shaman aggressive heals
+- converted to new casting routine
+  -- class.shm.inc
+  -- class.ber.inc
+- class.shm.inc
+  -- addded rotations between 3 reckless heal spells
+    -- removed healReckless from shaman ini
+    -- added healReckless1, healReckless2, healReckless3 to shaman INI
+    -- all three reckless added to xtarget and pet healing
+  -- fixed the rampage tank control
+  -- updated group controls output
+  -- /shm [aggressive] - enable/disable use of rekless healse before intervention/main heal
+    -- aggressive on will use reckless first
+  --/shm [surge] - enable/disable surge healing (includes the nukes associated)
+- class.wiz.inc
+  -- added a couple extra ready checks to the harvest routine  
 
 
 20180618.00
@@ -33,8 +51,6 @@
 - class.shd.inc
   -- /shd shieldflash (on/off) - enables using AA Shield Flash in emergencies
   -- /shd shieldflash [1,99] - set the HP% to use AA Shield Flash when enabled
-  
-  
   
   
 20180614.00

@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180618.00
+	/call setDeclare coreBuild											string	outer 20180622.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -1790,6 +1790,7 @@ sub declare_DRU()
 	/call setINIVar ProtectInsideRaid								string	Heal "|FALSE|FALSE"
 	/call setINIVar ProtectNPCList									string	Heal "|FALSE|FALSE"
 	/call setINIVar useGroupHeal 										bool		Heal TRUE
+	/call setINIVar useGroupHoT											bool		Heal TRUE
                                            	
 	/call setINIVar healPanic			 									string  Heal "Survival of the Serendipitous"
 	/call setINIVar healRejuvilation								string  Heal "Resurgence"
@@ -1916,7 +1917,8 @@ sub declare_SHM()
 	/call setINIVar CanniPctManna				 						int			Spells 60
 	/call setINIVar spellCannibalization						string	Spells "Tribal Pact"
 
-
+	/call setINIVar switchSurge											bool		Heal TRUE
+	/call setINIVar switchHealAggressive						bool		Heal FALSE
                                           		
 	/call setINIVar useGroupHeal 										bool		Heal TRUE
 	/call setINIVar useGroupHoT											bool		Heal TRUE
@@ -1925,7 +1927,9 @@ sub declare_SHM()
   /call setINIVar healSurge												string 	Heal "Spiritual Surge"
   /call setINIVar healMain												string 	Heal "Krasir's Mending"
   /call setINIVar healIntervention1								string 	Heal "Historian's Intervention"
-  /call setINIVar healReckless										string 	Heal "Reckless Regeneration"
+  /call setINIVar healReckless1										string 	Heal "Reckless Regeneration"
+  /call setINIVar healReckless2										string 	Heal FALSE
+  /call setINIVar healReckless3										string 	Heal FALSE
   /call setINIVar healWholeGroup									string 	Heal "Krasir's Recourse"
   /call setINIVar healWholeGroupHoT								string 	Heal "Shear of Renewal"
                                           		
@@ -2129,27 +2133,27 @@ sub declare_ROG()
 	/call setINIVar DiscRest				 								string 	Discs "Breather"
 	/call setINIVar DiscAggro 											string 	Discs "Disorientation"
 	/call setINIVar DiscAssault 										string 	Discs "Barrage"
-	/call setINIVar DiscBleed 											string 	Discs "Hack"	
-	/call setINIVar DiscPlay	 											string 	Discs "Knifeplay Discipline"	
-	/call setINIVar DiscPhantom											string 	Discs "Phantom Assassin"	
-	/call setINIVar DiscHack												string 	Discs "Jugular Hack"	
-	/call setINIVar DiscHiddenBlade									string 	Discs "Hidden Blade"	
-	/call setINIVar DiscBladePoison									string 	Discs "Reefcrawler Blade"	
-	/call setINIVar DiscSneakAttack									string 	Discs "Daggergash"	
-	/call setINIVar DiscShadowHunter								string 	Discs "Shadow-Hunter's Dagger"	
-	/call setINIVar DiscDisassociative							string 	Discs "Disassociative Puncture"	
-	/call setINIVar DiscAspBleeder									string 	Discs "Aceleus Discipline"	
-	/call setINIVar DiscBlinding										string 	Discs "Blinding Brilliance"	
+	/call setINIVar DiscBleed 											string 	Discs "Hack"
+	/call setINIVar DiscPlay	 											string 	Discs "Knifeplay Discipline"
+	/call setINIVar DiscPhantom											string 	Discs "Phantom Assassin"
+	/call setINIVar DiscHack												string 	Discs "Jugular Hack"
+	/call setINIVar DiscHiddenBlade									string 	Discs "Hidden Blade"
+	/call setINIVar DiscBladePoison									string 	Discs "Reefcrawler Blade"
+	/call setINIVar DiscSneakAttack									string 	Discs "Daggergash"
+	/call setINIVar DiscShadowHunter								string 	Discs "Shadow-Hunter's Dagger"
+	/call setINIVar DiscDisassociative							string 	Discs "Disassociative Puncture"
+	/call setINIVar DiscAspBleeder									string 	Discs "Aceleus Discipline"
+	/call setINIVar DiscBlinding										string 	Discs "Blinding Brilliance"
                                              		
 	| disable for burn                         		
-	/call setINIVar DiscVision 											string 	Discs "Thief's Vision"	
+	/call setINIVar DiscVision 											string 	Discs "Thief's Vision"
                                              		
 	| burn                                     		
 	/call setINIVar DiscPinPoint 										string 	Discs "Pinpoint Deficiencies"
 	/call setINIVar DiscMark 												string 	Discs "Wide-Eyed Mark"
 	/call setINIVar DiscEradicator 									string 	Discs "Executioner Discipline"
-	/call setINIVar DiscRazor 											string 	Discs "Razor's Edge Discipline"	
-	/call setINIVar DiscFrenzy 											string 	Discs "Frenzied Stabbing Discipline"	
+	/call setINIVar DiscRazor 											string 	Discs "Razor's Edge Discipline"
+	/call setINIVar DiscFrenzy 											string 	Discs "Frenzied Stabbing Discipline"
 	/call setINIVar DiscTwistedChance								string 	Discs "Twisted Chance Discipline"
                                              		
 	/call setINIVar TwistedShank										string 	Discs "Twisted Shank"
@@ -2237,8 +2241,8 @@ sub declare_CLR()
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar switchForceGroupHeal						bool		Heal FALSE
 	/call setINIVar RampageTank											string	Heal FALSE
-	/call setINIVar switchHealAggressive						string	Heal FALSE
-	/call setINIVar switchCompleteHeal							string	Heal FALSE
+	/call setINIVar switchHealAggressive						bool		Heal FALSE
+	/call setINIVar switchCompleteHeal							bool		Heal FALSE
 	/call setINIVar CompleteHealpct									int 		Heal 70	
 	                                          		
 	/call setINIVar doYaulp 												string	Buffs TRUE
