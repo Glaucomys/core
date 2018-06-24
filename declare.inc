@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180622.00
+	/call setDeclare coreBuild											string	outer 20180624.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -73,6 +73,7 @@ sub set_declares()
 	/call DeclareCoreIniVar maintenance							string	General "|FALSE|FALSE"
 	/call DeclareCoreIniVar switchMQclearonCLS			string	General FALSE
 	/call DeclareCoreIniVar switchGuildinSafelist		string	General FALSE
+	/call DeclareCoreIniVar switchCheckGameCash			string	General FALSE
  			
 
 	| broadcast switches
@@ -174,7 +175,7 @@ sub set_declares()
 		
 		
 	| core control
-	/call setDeclare coreType 											string 	outer "|auto|control|events|expadjust|expmaintain|explevel|fireworks|fixini|takeraidinvite|takegroupinvite|giveraidinvite|killcode|dbcash|reset|rest|whitewash|zonereset"
+	/call setDeclare coreType 											string 	outer "|auto|checkcash|control|events|expadjust|expmaintain|explevel|fireworks|fixini|takeraidinvite|takegroupinvite|giveraidinvite|killcode|reset|rest|whitewash|zonereset"
 	/call setDeclare coreObscure										bool		outer FALSE
 	/call setINIVar coreAuto				 								bool	 	Common FALSE
 	/call DeclareCoreIniVar remoteKillKey						string	General "CHANGE ME" 
@@ -4020,6 +4021,15 @@ sub Bind_setCore(string _coreType, string _verbage)
 		}
 		VOUT /${_bind} auto ${sep} ${If[${coreAuto},${oenabled},${odisabled}]}
 		/return
+		
+	| check in game cash
+	} else /if (${Bool[${_coreType.Equal[checkcash]}]}) {
+		/if (${Window[MKPW_ClaimWindow].Child[MKPW_ClaimClickHereBtn].Text.EqualCS[Claimed]}) {
+			VOUT No cash to collect, current: ${cnum}${Window[MarketplaceWnd].Child[MKPW_AvailableFundsUpper].Text}\ax
+			/return
+		} else {
+			/call check_free_ingame_cash
+		}		
 
 	| enable/disable obscure target names ## not documented
 	} else /if (${Bool[${_coreType.Equal[obscure]}]}) {
@@ -4101,11 +4111,6 @@ sub Bind_setCore(string _coreType, string _verbage)
 	| invite people to your raid
 	} else /if (${Bool[${_coreType.Equal[giveraidinvite]}]}) {
 		/call writeINI switchGiveRaidInvite Common ${If[${switchGiveRaidInvite},FALSE,TRUE]} 
-
-	| claim market cash
-	} else /if (${Bool[${_coreType.Equal[dbcash]}]}) {
-		/call check_free_ingame_cash
-		/return
 
 	| exp max level
 	} else /if (${Bool[${_coreType.Equal[expmaintain]}]}) {

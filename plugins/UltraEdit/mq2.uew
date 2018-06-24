@@ -78,12 +78,11 @@ timer to
 
 /C3"DEFINES"
 AMIDEAD
-CHECKEXIT CHECKREZ CHECKSAFELIST CHECKTIE CLEARCURSOR
+CHECKCOMBATCAST CHECKEXIT CHECKREZ CHECKSAFELIST CHECKTIE CLEARCURSOR
 ECHOCHANNEL
 FADECOMBAT
 HUDPATH
 ISDEAD
-LDEBUG
 LOG
 NOUT
 OUT
@@ -96,7 +95,7 @@ VALT VBC VDISC VITEM VMELEE VOUT VSPELL
 P0 P1 P2 P3 P4 P5 P6 P7 P8 P9 Param0 Param1 Param2 Param3 Param4 Param5 Param6 Param7 Param8 Param9
 {AdvLoot {AdvPath {Alert {AltAbility 
 {Bool 
-{Circle {Corpse {Cursor 
+{Cast {Circle {Corpse {Cursor 
 {Debuff {Defined {DisplayItem {DoorTarget {DynamicZone
 {EverQuest {EQBC
 {FPS {FindItem {FindItemBank {FindItemBankCount {FindItemCount {Float {Foreground {Friends
@@ -106,7 +105,6 @@ P0 P1 P2 P3 P4 P5 P6 P7 P8 P9 Param0 Param1 Param2 Param3 Param4 Param5 Param6 P
 {LastSpawn {LineOfSight 
 {Macro {MacroQuest {MakeCamp {MapSpawn {Math {MaxFPS {Me {Mercenary {Merchant ${MoveTo {MoveUtils {Mount {MQ2ItemSpellType}
 {Navigation {NearestSpawn {NetBots
-
 {Pet {Plugin {PointMercant
 {Raid {Range
 {Select {SelectedItem {Skill {Spawn {SpawnCount {Spell {Stick {Switch 
@@ -150,7 +148,7 @@ P0 P1 P2 P3 P4 P5 P6 P7 P8 P9 Param0 Param1 Param2 Param3 Param4 Param5 Param6 P
 .PctRaidLeaderExp .Pet .PetBuff .PetClass .Platinum .PlatinumBank .PlatinumShared .Port .Pred .Precision .Prestige .Prev .Price .Primary 
 .PureCaster .Purity .PushBack 
 .Quantity .Quest 
-.Race .RaidAssistTarget .RaidLeader .RaidLeaderExp .RaidLeaderPoints .RaidMarkNPC .Rand .Range .RangedReady .Rank .RankName .Raw .ReGroup .RecastTime 
+.Race .RaidAssistTarget .RaidLeader .RaidLeaderExp .RaidLeaderPoints .RaidMarkNPC .Rand .Range .RangedReady .Rank .RankName .Raw .Ready .ReGroup .RecastTime 
 .RecastType .RecoveryTime .Remove .RequiredLevel .RequiresAbility .RequiresAbilityPoints .ResistAdj .ResistType .Return .ReuseTime .RevDSed .Reverse .Right .RightClick 
 .RightMouseDown .RightMouseHeld .RightMouseHeldUp .RightMouseUp .Roleplaying .Rooted .RujEarned .RunTime .Running 
 .SE .STA .STR .ScreenID .ScreenMode .Second .Secondary .SecondaryAggroPlayer .SecondaryPctAggro .SecondaryPctAggroPlayer .Seconds 
@@ -251,7 +249,7 @@ sub
 .GM
 .Leash .LeashLength .Loose 
 .MaxDelay .MeshLoaded .MinDelay .MoveBack .MoveBehind .MovePause .Moving
-.PathExists .PathLength .PauseMaxDelay .PauseMinDelay .Paused .Percent .Pin .Poisoned .PulseCheck
+.PathExists .PathLength .PauseMaxDelay .PauseMinDelay .Paused .Percent .Pin .Playing .Poisoned .PulseCheck
 .Returning
 .ShortBuff .Status .StickTarget .StickTargetName .Stopped .Stuck .StuckLogic .Summoned
 .Toggle .TotalSilence .TryToJump

@@ -315,6 +315,10 @@ sub fix_ini_current()
 	
 	| toon INI non specific class --------------------------------------------------------------------------------------
 
+		| 20180624.00
+		/ini "${INIClass}" "Common" "InGameCashChecked" NULL	
+
+
 		| 20180611.00
 		/ini "${INIClass}" "Common" "stopnukeAt" NULL	
 		/ini "${INIClass}" "Itme" "Epic" NULL		

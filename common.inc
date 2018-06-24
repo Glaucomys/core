@@ -559,50 +559,48 @@ sub intialize_item_buffs()
 	DEBUG ${cbug}intialize_item_buffs()\ax
 	AMIDEAD
 	/doevents
-	/declare InvItem         														     							int			local 0
-	/declare ContainerItem																								int			local 0
+	/declare _tmpSlot         														     						int			local 0
+	/declare _tmpContItem																									int			local 0
+	/declare _tmpClickItemList																						string	local ${Ini[${INIClass},ClickItems]}
 	/if (!${Defined[ClickItem]}) /declare ClickItem												int			outer 1
 	/if (!${Defined[UseItem]}) /declare UseItem[40]                  			string	outer 
 	/if (!${Defined[SelfItem]}) /declare SelfItem[${UseItem.Size}]   			string 	outer 
 	/if (!${Defined[SpellItem]}) /declare SpellItem[${UseItem.Size}]   		string	outer 
-	/if (!${Defined[tmpClickName]}) /declare tmpClickName									string	outer ${Ini[${INIClass},ClickItems]}
-	
-	| /declare tmpFoundSpell								bool		local FALSE
 
-	/for InvItem 1 to 32
+	/for _tmpSlot 1 to 32
 		AMIDEAD
-		/if (${Bool[${InvSlot[${InvItem}].Item.Container}]}) {
-			/for ContainerItem 1 to ${InvSlot[${InvItem}].Item.Container}
+		/if (${Bool[${InvSlot[${_tmpSlot}].Item.Container}]}) {
+			/for _tmpContItem 1 to ${InvSlot[${_tmpSlot}].Item.Container}
 				AMIDEAD
-				/if (${Me.Inventory[${InvItem}].Item[${ContainerItem}].ID} && ${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell.ID} && ${Me.Inventory[${InvItem}].Item[${ContainerItem}].EffectType.Equal[Click Inventory]} && ${Me.Level}>=${Me.Inventory[${InvItem}].Item[${ContainerItem}].RequiredLevel}) {
-					DEBUG Finding ${Me.Inventory[${InvItem}].Item[${ContainerItem}].Name}: -- [${If[${tmpClickName.Find[${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell}]},TRUE,FALSE]}]
-					/if (${Bool[${tmpClickName.Find[${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell}]}]} && ${Bool[${Ini[${INIClass},ClickItems,${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell},TRUE]}]}) { 
+				/if (${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].ID} && ${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell.ID} && ${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].EffectType.Equal[Click Inventory]} && ${Me.Level}>=${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].RequiredLevel}) {
+					DEBUG Finding ${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Name}: -- [${If[${_tmpClickItemList.Find[${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell}]},TRUE,FALSE]}]
+					/if (${Bool[${_tmpClickItemList.Find[${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell}]}]} && ${Bool[${Ini[${INIClass},ClickItems,${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell},TRUE]}]}) { 
 					  /varset UseItem[${ClickItem}] TRUE
-					  /varset SelfItem[${ClickItem}] ${Me.Inventory[${InvItem}].Item[${ContainerItem}].Name}
-					  /varset SpellItem[${ClickItem}] ${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell}		  
+					  /varset SelfItem[${ClickItem}] ${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Name}
+					  /varset SpellItem[${ClickItem}] ${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell}		  
 					  /varcalc ClickItem ${ClickItem}+1
-					  DEBUG Setting "${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell}" clickitem:${ClickItem}
-					} else /if (!${tmpClickName.Find[${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell}]}) {
-					 	/ini "${INIClass}" "ClickItems" "${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell}" "FALSE"
-						DEBUG Creating "ClickItems" "${Me.Inventory[${InvItem}].Item[${ContainerItem}].Spell}"
+					  DEBUG Setting "${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell}" clickitem:${ClickItem}
+					} else /if (!${_tmpClickItemList.Find[${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell}]}) {
+					 	/ini "${INIClass}" "ClickItems" "${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell}" "FALSE"
+						DEBUG Creating "ClickItems" "${Me.Inventory[${_tmpSlot}].Item[${_tmpContItem}].Spell}"
 					}
 				}
-			/next ContainerItem
-		} else /if (!${Bool[${InvSlot[${InvItem}].Item.Container}]} && ${InvSlot[${InvItem}].Item.ID} && ${InvSlot[${InvItem}].Item.Spell.ID} && ${InvSlot[${InvItem}].Item.EffectType.Equal[Click Inventory]} && ${Me.Level}>=${InvSlot[${InvItem}].Item.RequiredLevel}) {
-			DEBUG Finding ${Me.Inventory[${InvItem}].Name}: ${tmpClickName.Find[${Me.Inventory[${InvItem}].Spell.Name}]} -- [${If[${tmpClickName.Find[${Me.Inventory[${InvItem}].Spell}]},TRUE,FALSE]}]
+			/next _tmpContItem
+		} else /if (!${Bool[${InvSlot[${_tmpSlot}].Item.Container}]} && ${InvSlot[${_tmpSlot}].Item.ID} && ${InvSlot[${_tmpSlot}].Item.Spell.ID} && ${InvSlot[${_tmpSlot}].Item.EffectType.Equal[Click Inventory]} && ${Me.Level}>=${InvSlot[${_tmpSlot}].Item.RequiredLevel}) {
+			DEBUG Finding ${Me.Inventory[${_tmpSlot}].Name}: ${_tmpClickItemList.Find[${Me.Inventory[${_tmpSlot}].Spell.Name}]} -- [${If[${_tmpClickItemList.Find[${Me.Inventory[${_tmpSlot}].Spell}]},TRUE,FALSE]}]
 			AMIDEAD
-			/if (${Bool[${tmpClickName.Find[${Me.Inventory[${InvItem}].Spell}]}]} && ${Bool[${Ini[${INIClass},ClickItems,${Me.Inventory[${InvItem}].Spell},TRUE]}]}) { 
+			/if (${Bool[${_tmpClickItemList.Find[${Me.Inventory[${_tmpSlot}].Spell}]}]} && ${Bool[${Ini[${INIClass},ClickItems,${Me.Inventory[${_tmpSlot}].Spell},TRUE]}]}) { 
 				/varset UseItem[${ClickItem}] TRUE		
-				/varset SelfItem[${ClickItem}] ${InvSlot[${InvItem}].Item}
-				/varset SpellItem[${ClickItem}] ${InvSlot[${InvItem}].Item.Spell}
+				/varset SelfItem[${ClickItem}] ${InvSlot[${_tmpSlot}].Item}
+				/varset SpellItem[${ClickItem}] ${InvSlot[${_tmpSlot}].Item.Spell}
 				/varcalc ClickItem ${ClickItem}+1
-			  DEBUG Setting "${Me.Inventory[${InvItem}].Spell}" clickitem:${ClickItem}
-			} else /if (!${tmpClickName.Find[${Me.Inventory[${InvItem}].Spell}]}) {
-				/ini "${INIClass}" "ClickItems" "${InvSlot[${InvItem}].Item.Spell}" "FALSE"
-				DEBUG Creating "ClickItems" "${Me.Inventory[${InvItem}].Spell}"
+			  DEBUG Setting "${Me.Inventory[${_tmpSlot}].Spell}" clickitem:${ClickItem}
+			} else /if (!${_tmpClickItemList.Find[${Me.Inventory[${_tmpSlot}].Spell}]}) {
+				/ini "${INIClass}" "ClickItems" "${InvSlot[${_tmpSlot}].Item.Spell}" "FALSE"
+				DEBUG Creating "ClickItems" "${Me.Inventory[${_tmpSlot}].Spell}"
 			}
 		}
-	/next InvItem
+	/next _tmpSlot
 /return
 
 
@@ -622,21 +620,27 @@ sub check_buffs_item()
 	
 	/if (${Me.State.NotEqual[Bind]} && !${Me.Moving}) {
 		/for _count 1 to ${ClickItem}
+			/if (!${Me.FreeBuffSlots}) /continue
+			/if (!${Me.ItemReady[${SelfItem[${_count}]}]}) /continue
+			/if (${Me.Buff[${SpellItem[${_count}]}].ID}) /continue
 			/doevents
 			AMIDEAD
 			CHECKTIE
-			/if (${UseItem[${_count}]}&& ${Me.FreeBuffSlots} >= 1 && ${FindItem[${SelfItem[${_count}]}].ID} && ${Cast.Ready[${SelfItem[${_count}]}]} && !${Me.Buff[${SpellItem[${_count}]}].ID} && ${Spell[${SpellItem[${_count}]}].Stacks}) { 
-				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
+			| /if (${UseItem[${_count}]} && ${FindItem[${SelfItem[${_count}]}].ID} && ${Cast.Ready[${SelfItem[${_count}]}]} && !${Me.Buff[${SpellItem[${_count}]}].ID} && ${Spell[${SpellItem[${_count}]}].Stacks}) { 
+			/if (${UseItem[${_count}]}) { 
+				/if (${Select[${Me.Class.ShortName},BRD]}) {
+					/if (${Me.Casting.ID}) /call pulse_stop
+				}
 				/if (${validate_cast[FALSE, item, "${SelfItem[${_count}]}", ${Me.ID}]}) /call core_cast2 "${SelfItem[${_count}]}" item 0 FALSE
-				/delay 5s !${Me.ItemReady[${SelfItem[${_count}]}]}
-				/delay 10s !${Me.Casting.ID}
+				| /delay 5s !${Me.ItemReady[${SelfItem[${_count}]}]}
+				| /delay 10s !${Me.Casting.ID}
 	  	}
   	/next _count
   }
 
  	AMIDEAD
 	CHECKEXIT
-  /if (${Me.ItemReady[${IllusionItem}]} && (!${Bool[${Me.Buff[${IllusionBuff}]}]}) && (${Spell[${IllusionBuff}].Stacks})) {
+  /if (${Me.ItemReady[${IllusionItem}]} && !${Bool[${Me.Buff[${IllusionBuff}]}]} && ${Spell[${IllusionBuff}].Stacks}) {
 		VOUT Item ${sep} ${citem}${IllusionItem}\ax
  		/call MQ2Cast "${IllusionItem}" item 30s
  	}  	
@@ -644,8 +648,10 @@ sub check_buffs_item()
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
  	
 	/if (${Bool[${BuffRemove}]}) /call remove_unwanted_buffs	
-	/if (${coreAuto} && ${switchShrink}) /call check_shrink
-	/if (${coreAuto}) /call create_timer timer_check_buffs_item ${tItem_Buff}
+	/if (${coreAuto}) {
+		/if (${switchShrink}) /call check_shrink
+		/call create_timer timer_check_buffs_item ${tItem_Buff}
+	}
 	UPDATEHUD FALSE
 /return
 
@@ -681,8 +687,10 @@ sub remove_unwanted_buffs()
  ***|
 sub check_buffs_self()
 	DEBUG ${cbug}check_buffs_self(switch:${switchBuffSelf}, timer: ${timer_check_buffs_self})\ax
-	/if (${coreAuto} && !${timer_check_buffs_self}) /call create_timer timer_check_buffs_self ${tSelf_Buff}
-	/if (${coreAuto} && ${watch_for_death[]}) /return 
+	/if (${coreAuto}) {
+		/if (!${timer_check_buffs_self}) /call create_timer timer_check_buffs_self ${tSelf_Buff}
+		/if (${watch_for_death[]}) /return 
+	}
 	/declare _count int local 0
 
 	| check Unity AA buffs
@@ -690,10 +698,10 @@ sub check_buffs_self()
 		DEBUG AA UNITY: ${${Me.Class.ShortName}AAUnity}
 		/for _count 1 to 7
 			CHECKCOMBATCAST
-			UPDATEHUD "BUFF AA Unity"
 			AMIDEAD
 			CHECKEXIT
 			CHECKTIE
+			UPDATEHUD "BUFF AA Unity"
 
 			/if (!${Me.AltAbilityReady[${${Me.Class.ShortName}AAUnity}]}) /break
 			/if (${Me.CurrentMana} < ${Spell[${${Me.Class.ShortName}AAUnity}].Mana}) /break
@@ -703,7 +711,6 @@ sub check_buffs_self()
 			DEBUG _count: ${_count} - ${BuffAAUnity${_count}} = ${Me.Buff[${BuffAAUnity${_count}}].Duration}
 			/if (${Bool[${BuffAAUnity${_count}}]} && !${Bool[${Me.Buff[${BuffAAUnity${_count}}].Duration}]}) {
 				/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}AAUnity}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}AAUnity}" alt 0 FALSE
-
 				/break
 			}
 		/next _count
@@ -716,10 +723,7 @@ sub check_buffs_self()
 		AMIDEAD
 		CHECKEXIT
 		CHECKTIE
-		
-		| check for non gold subs
-		| /if (!${Select[${Me.Subscription},GOLD]}) /varset Buff${_count}chk ${Ini[${INIClass},buffs,Buff${_count}chk]}
-		
+				
 		/if (!${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]} && ${Spell[${Buff${_count}}].Stacks} && ${Bool[${Buff${_count}self}]} && ${Bool[${Buff${_count}}]}) {
 			/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 			/if (!${Me.SpellReady[${Buff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
@@ -734,14 +738,40 @@ sub check_buffs_self()
 		}
 	/next _count
 
-	/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
-	/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
-	/if (${Me.Class.ShortName.Equal[WIZ]}) /call sort_mancy_lineAA
+	| check AA
+	/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) {
+		/call check_AA_now
+	}
+
+	| check Discs
+	/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) {
+		/call check_Disc_now
+	}
+
+	| wizard mancy line spells
+	/if (${validate_class[FALSE, |WIZ]}) {
+		/call sort_mancy_lineAA
+	}
+
 	/if (!${Bool[${timer_Check_Familiar}]}) /call sort_familiar
-	/if (${coreAuto} && ${switchShrink}) /call check_shrink
-	/if (${Bool[${BuffRemove}]}) /call remove_unwanted_buffs	
-	/if ((${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
+
+	/if (${coreAuto}) {
+		| check shrink
+		/if (${switchShrink}) /call check_shrink
+	}
+
+	| ditch unwanted buffs
+	/if (${Bool[${BuffRemove}]}) {
+		/call remove_unwanted_buffs	
+	}
+
+	| check auras
+	/if (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) {
+		/if (!${timer_check_aura}) /call check_aura
+	}
+
 	/if (${Target.ID}) /squelch /target clear
+
 	UPDATEHUD FALSE	
 /return
 
@@ -3167,10 +3197,19 @@ sub set_tie()
 sub sort_familiar()
 	DEBUG ${cbug}sort_Familiar()\ax
 	/call create_timer timer_Check_Familiar ${tCheck_Familiar}
+	/if (!${Bool[${sumFamiliar}]}) /return
 	/doevents
-	/call check_exit
-	/if (${Macro.Return} || !${Bool[${sumFamiliar}]}) /return
-	/if (!${Bool[${Me.Buff[${sumFamiliarBuff}].Duration}]}) /call core_cast "${sumFamiliar}" NULL NULL FALSE
+	/if (${check_exit[]}) /return
+	| /if (!${Bool[${Me.Buff[${sumFamiliarBuff}].Duration}]}) /call core_cast "${sumFamiliar}" NULL NULL FALSE
+	
+	/if (${Me.Book[${sumFamiliar}]}) {
+		/if (${validate_cast[FALSE, spell, "${sumFamiliar}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar}" ${buffGem} ${Me.Pet.ID} FALSE
+	} else /if (${Me.AltAbilityReady[${sumFamiliar}]}) {	
+		/if (${validate_cast[FALSE, alt, "${sumFamiliar}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar}" alt 0 FALSE
+	} else /if (${Me.ItemReady[${sumFamiliar}]}) {
+		/if (${validate_cast[FALSE, item, "${sumFamiliar}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar}" item 0 FALSE		
+	}	
+		
 	/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]} && ${Me.Pet.Body.ID} == 31) /pet get lost
 /return
 
@@ -3208,33 +3247,30 @@ sub protect_always_xt()
 ***|
 sub check_free_ingame_cash()
 	DEBUG ${cbug}check_free_ingame_cash()\ax
-	/doevents
-	/declare _claim_match 			string local Date this reward expires:
-	/declare _current_funds 		string local 0
-	/declare _claim_desc 				string local NULL
-	| /if (${Time.Date.Equal[${Ini[${INIClass},Common,InGameCashChecked,"01/01/2000"]}]}) /return
-	/delay 1
-	/if (!${Window[MarketplaceWnd]}) {
-		/market
-		/delay 10s ${Window[MarketplaceWnd]}
-		/delay 10s ${Window[MKPW_ClaimWindow].Child[MKPW_ClaimDescription].Text.Length}
-	}
+	
+	| if nothing to claim. no reason to stick around.. like a bad house guest... go away..
+	/if (${Window[MKPW_ClaimWindow].Child[MKPW_ClaimClickHereBtn].Text.EqualCS[Claimed]}) /return
+	/declare _current_funds string local 0
 
-	/varset _current_funds ${Window[MarketplaceWnd].Child[MKPW_AvailableFundsUpper].Text}
-	/varset _claim_desc ${Window[MKPW_ClaimWindow].Child[MKPW_ClaimDescription].Text}
+	/if (${Window[MKPW_ClaimWindow].Child[MKPW_ClaimClickHereBtn].Text.EqualCS[Claim]}) {
+		| open market window
+		/if (!${Window[MarketplaceWnd]}) /market
 
-	/if (${_claim_desc.Mid[1,25].NotEqual[${_claim_match}]}) {
-		VOUT ${onotice} ${sep} No free in game cash [${cinfo}${_current_funds}\ax]
-	} else {
+		| get current funds
+		/varset _current_funds ${Window[MarketplaceWnd].Child[MKPW_AvailableFundsUpper].Text}
+		
+		| click claim button
 		/notify MKPW_ClaimWindow MKPW_ClaimClickHereBtn leftmouseup
 		/delay 1s
 		/delay 10s ${Window[MarketplaceWnd].Child[MKPW_AvailableFundsUpper].Text.NotEqual[${_current_funds}]}
-
 		/varset _current_funds ${Window[MarketplaceWnd].Child[MKPW_AvailableFundsUpper].Text}
-		VOUT You have collected your free in game cash [${cinfo}${_current_funds}\ax]   
+		VOUT In Game Cash Collected [${cnum}${_current_funds}\ax]   
+
+		| close market window
+		/if (${Window[MarketplaceWnd]}) /market
+
 	}
-	/market
-	/ini ${INIClass} "Common" "InGameCashChecked" "${Time.Date}"
+
 /return
 
 
@@ -5582,12 +5618,12 @@ sub cast_AA_spire()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Bool[${Raid.Members}]} && ${Bool[${${Me.Class.ShortName}spire${spireRaid}}]}) {
-		/if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireRaid}}]} && !${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireRaid}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireRaid}}].Stacks}) {
-			/call core_cast "${${Me.Class.ShortName}spire${spireRaid}}" alt 0 FALSE
+		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireRaid}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireRaid}}].Stacks}) {
+			/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}spire${spireRaid}}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}spire${spireRaid}}" alt 0 FALSE
 		}
 	} else /if (!${Bool[${Raid.Members}]} && ${Bool[${${Me.Class.ShortName}spire${spireGroup}}]}) {
-		/if (${Me.AltAbilityReady[${${Me.Class.ShortName}spire${spireGroup}}]} && !${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].Stacks}) {
-			/call core_cast "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
+		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].Stacks}) {
+			/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}spire${spireGroup}}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
 		}
 	}
 /return

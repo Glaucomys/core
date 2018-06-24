@@ -15,6 +15,23 @@
      Enchanter, Shaman, Berserker
 
 
+20180624.00
+- converted to new casting routine
+  -- cast_AA_spire()
+  -- sort_familiar()
+- ingame cash (fixed.. took like forever)
+  -- /core checkcash will force a chek of the marketplace cash button. if you can claim cash, it will
+  -- in core.ini->[general]->SwitchCheckGameCash=[TRUE|FALSE] Set to TRUE and will check every mac start
+  -- removed the class ini entry for last cash check date. dont need anymore
+- intialize_item_buffs()
+  -- some minor changes to the structure
+- base_preperation()
+  -- updates to the structure
+- class.shm.inc
+  -- corrected a reckless check
+  -- corrected the inline function to check for others hurt
+
+
 20180622.00
 HUDUPDATE
 - HUD updated for shaman aggressive heals

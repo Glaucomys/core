@@ -241,11 +241,11 @@ sub check_heal_group_SHM()
 	:recklessheals
 	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
   	/if (${Me.SpellReady[${healReckless1}]}) {
-     /if (${validate_cast[FALSE, spell, "${healReckless1}", ${WorstHurt}]}) /call core_cast2 "${healReckless1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+     /if (${validate_cast[FALSE, spell, "${healReckless1}", ${WorstHurt}]}) /call core_cast2 "${healReckless1}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healReckless2}]}) {
-      /if (${validate_cast[FALSE, spell, "${healReckless2}", ${WorstHurt}]}) /call core_cast2 "${healReckless2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      /if (${validate_cast[FALSE, spell, "${healReckless2}", ${WorstHurt}]}) /call core_cast2 "${healReckless2}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healReckless3}]}) {
-      /if (${validate_cast[FALSE, spell, "${healReckless3}", ${WorstHurt}]}) /call core_cast2 "${healReckless3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      /if (${validate_cast[FALSE, spell, "${healReckless3}", ${WorstHurt}]}) /call core_cast2 "${healReckless3}" 0 ${WorstHurt} checkHP_${Me.Class.ShortName}
     } 
   }
 
@@ -330,15 +330,15 @@ sub check_heal_XTarget_SHM()
 			SDEBUG NAME: ${Me.XTarget[${_count}].DisplayName} -- ID: ${Me.XTarget[${_count}].ID}
 			SDEBUG CHECK:${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}
 			/if (${Me.SpellReady[${healMain}]}) {
-				/if (${validate_cast[FALSE, spell, "${healMain}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healMain}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+				/if (${validate_cast[FALSE, spell, "${healMain}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healMain}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
 			} else /if (${Me.SpellReady[${healIntervention1}]}) {
-				/if (${validate_cast[FALSE, spell, "${healIntervention1}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healIntervention1}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+				/if (${validate_cast[FALSE, spell, "${healIntervention1}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healIntervention1}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
 			} else /if (${Me.SpellReady[${healReckless}]}) {
-				/if (${validate_cast[FALSE, spell, "${healReckless1}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healReckless1}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+				/if (${validate_cast[FALSE, spell, "${healReckless1}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healReckless1}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
 			} else /if (${Me.SpellReady[${healReckless2}]}) {
-				/if (${validate_cast[FALSE, spell, "${healReckless2}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healReckless2}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+				/if (${validate_cast[FALSE, spell, "${healReckless2}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healReckless2}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
 			} else /if (${Me.SpellReady[${healReckless3}]}) {
-				/if (${validate_cast[FALSE, spell, "${healReckless3}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healReckless3}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
+				/if (${validate_cast[FALSE, spell, "${healReckless3}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healReckless3}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
 			}
 		}
 		
@@ -382,15 +382,15 @@ sub check_pet_heal_SHM()
   DEBUGCLASS PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
 
 	/if (${Me.SpellReady[${healMain}]}) {
-		/if (${validate_cast[FALSE, spell, "${healMain}", ${pWorstHurtID}]}) /call core_cast2 "${healMain}" 0 ${pWorstHurtID} check_HP_${Me.Class.ShortName}
+		/if (${validate_cast[FALSE, spell, "${healMain}", ${pWorstHurtID}]}) /call core_cast2 "${healMain}" 0 ${pWorstHurtID} checkHP_${Me.Class.ShortName}
 	} else /if (${Me.SpellReady[${healIntervention1}]}) {
-		/if (${validate_cast[FALSE, spell, "${healIntervention1}", ${pWorstHurtID}]}) /call core_cast2 "${healIntervention1}" 0 ${pWorstHurtID} check_HP_${Me.Class.ShortName}
+		/if (${validate_cast[FALSE, spell, "${healIntervention1}", ${pWorstHurtID}]}) /call core_cast2 "${healIntervention1}" 0 ${pWorstHurtID} checkHP_${Me.Class.ShortName}
 	} else /if (${Me.SpellReady[${healReckless}]}) {
-		/if (${validate_cast[FALSE, spell, "${healReckless1}", ${pWorstHurtID}]}) /call core_cast2 "${healReckless1}" 0 ${pWorstHurtID} check_HP_${Me.Class.ShortName}
+		/if (${validate_cast[FALSE, spell, "${healReckless1}", ${pWorstHurtID}]}) /call core_cast2 "${healReckless1}" 0 ${pWorstHurtID} checkHP_${Me.Class.ShortName}
 	} else /if (${Me.SpellReady[${healReckless2}]}) {
-		/if (${validate_cast[FALSE, spell, "${healReckless2}", ${pWorstHurtID}]}) /call core_cast2 "${healReckless2}" 0 ${pWorstHurtID} check_HP_${Me.Class.ShortName}
+		/if (${validate_cast[FALSE, spell, "${healReckless2}", ${pWorstHurtID}]}) /call core_cast2 "${healReckless2}" 0 ${pWorstHurtID} checkHP_${Me.Class.ShortName}
 	} else /if (${Me.SpellReady[${healReckless3}]}) {
-		/if (${validate_cast[FALSE, spell, "${healReckless3}", ${pWorstHurtID}]}) /call core_cast2 "${healReckless3}" 0 ${pWorstHurtID} check_HP_${Me.Class.ShortName}
+		/if (${validate_cast[FALSE, spell, "${healReckless3}", ${pWorstHurtID}]}) /call core_cast2 "${healReckless3}" 0 ${pWorstHurtID} checkHP_${Me.Class.ShortName}
 	}  
 
 	UPDATEHUD FALSE
