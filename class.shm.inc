@@ -34,13 +34,6 @@ sub core_SHM()
 		}
 	}	
 
-	/if (${coreAuto} && !${Me.Invis}) {
-		/call check_engaged
-		/if (!${Bool[${Macro.Return}]}) {
-			/if (${switchPcPet}) /call check_pet
-		}
-	}
-	
 	:killtarget
 	CHECKREZ
 	/call prep_combat
@@ -266,30 +259,36 @@ sub check_heal_group_SHM()
 	}
 	
 	| Group regenerations. Use all the time. Don't care if hurt or not.
- 	/if (${useGroupHoT} && ${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]}) {
- 	 	/if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Elixir of the Seas]}]} && !${Bool[${Me.Song[Elixir of Wulthan]}]}) {
-	    /if (${validate_cast[FALSE, spell, "${healWholeGroupHoT}", ${WorstHurt}]}) /call core_cast2 "${healWholeGroupHoT}" 0 ${Me.ID} FALSE
-	  }
+ 	/if (${useGroupHoT}) { 
+ 		/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]}) {
+	 	 	/if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Elixir of the Seas]}]} && !${Bool[${Me.Song[Elixir of Wulthan]}]}) {
+		    /if (${validate_cast[FALSE, spell, "${healWholeGroupHoT}", ${WorstHurt}]}) /call core_cast2 "${healWholeGroupHoT}" 0 ${Me.ID} FALSE
+		  }
+		}
 	}
  
 	/call check_no_cast_buffs
   
 	| group HoT
-	/if (${useGroupHeal} && ${Math.Calc[${MajorHurt}+${MinorHurt}]} >= 3 && ${Me.SpellReady[${healWholeGroup}]}) {
-		/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${WorstHurt}]}) /call core_cast2 "${healWholeGroup}" 0 ${Me.ID} checkHP_${Me.Class.ShortName}
-	} 
+	/if (${useGroupHeal}) {
+		/if (${Math.Calc[${MajorHurt}+${MinorHurt}]} >= 3 && ${Me.SpellReady[${healWholeGroup}]}) {
+			/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${WorstHurt}]}) /call core_cast2 "${healWholeGroup}" 0 ${Me.ID} checkHP_${Me.Class.ShortName}
+		} 
+	}
   
 	| check for personal debuffs
-	/if (${switchHealCure} && ${Debuff.Count}) {
-		| AA Radient Cure SELF ONLY 100' range 1 min
-		/if (${Me.AltAbilityReady[Radiant Cure]} && (${Debuff.Diseased} || ${Debuff.Poisoned} || ${Debuff.Cursed})) {
-			/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt ${Me.ID} FALSE
-		}
-		| AA Purified Spirits SELF ONLY 0' range 2 min
-		/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Counters}) {
-			/if (${validate_cast[FALSE, alt, "Purified Spirits", ${Me.ID}]}) /call core_cast2 "Purified Spirits" alt ${Me.ID} FALSE
-		}
-	}  
+	/if (${switchHealCure}) {
+		/if (${Debuff.Count}) {
+			| AA Radient Cure SELF ONLY 100' range 1 min
+			/if (${Me.AltAbilityReady[Radiant Cure]} && (${Debuff.Diseased} || ${Debuff.Poisoned} || ${Debuff.Cursed})) {
+				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt ${Me.ID} FALSE
+			}
+			| AA Purified Spirits SELF ONLY 0' range 2 min
+			/if (${Me.AltAbilityReady[Purified Spirits]} && ${Debuff.Count}) {
+				/if (${validate_cast[FALSE, alt, "Purified Spirits", ${Me.ID}]}) /call core_cast2 "Purified Spirits" alt ${Me.ID} FALSE
+			}
+		}  
+	}
   
   | check for surge
   /if (${switchSurge}) {
@@ -327,8 +326,8 @@ sub check_heal_XTarget_SHM()
 		/if (!${Spawn[${Me.XTarget[${_count}].ID}].ID} || ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} > ${${Spawn[pc ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
 
 		/if (${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
-			SDEBUG NAME: ${Me.XTarget[${_count}].DisplayName} -- ID: ${Me.XTarget[${_count}].ID}
-			SDEBUG CHECK:${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}
+			DEBUG NAME: ${Me.XTarget[${_count}].DisplayName} -- ID: ${Me.XTarget[${_count}].ID}
+			DEBUG CHECK:${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}
 			/if (${Me.SpellReady[${healMain}]}) {
 				/if (${validate_cast[FALSE, spell, "${healMain}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healMain}" 0 ${Me.XTarget[${_count}].ID} checkHP_${Me.Class.ShortName}
 			} else /if (${Me.SpellReady[${healIntervention1}]}) {

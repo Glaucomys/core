@@ -15,6 +15,43 @@
      Enchanter, Shaman, Berserker
 
 
+20180702.00
+- cast_AA_slow() 
+  -- removed. no longer needed
+- lot of updates to the WIKI
+  -- why is it called a wiki? what happened to a manual?
+- validate_cast()
+  -- added in a check for manual mode and target issues casting when target has been released.
+  -- need to keep an eye on this...
+- cast_yaulp()
+  -- adjusted the exit checks. should bail a lot faster now
+- class.clr.inc  (working on making it faster)
+  -- removed majority of debugs
+  -- redesigned a lot of the group HP check loops; removed the #defines so they are not cycled as much
+  -- fixed missing checks for the 4th intervention and 3rd remedy 
+  -- adjustment to the aggressive switch selector
+  -- moved the yaulp check to main loot. wasn't hitting the routine enough burried in the discs check
+- class.ber.inc
+  -- /debuff [snare] will work again with the DiscSnare= setting in the class ini.
+- class.pal.inc
+  -- adjustmenst to the heal routines. removed excess #defines
+  -- removed all DEBUGS
+- class.bst.inc
+  -- rewrite cast_AA_focused_paragon() -> check_manna_BST(). should be a little more reliable
+  -- focused paragon is self only now
+  -- removed the fast heal pct. heals now work off the class heal point pct
+  -- removed groupParagon
+  -- removed minConsumptionHP
+  -- /bst paragon - (on/off) enable or disable using Focused Paragon
+  -- /bst paragon [1,99] - pct of mana to use Focused Paragon AA
+  -- /bst consume - (on/off) enable or disable using the Consume Spirit AA
+  -- /bst consume [1,99] - pct of mana to use Consume Spirit AA 
+  -- agro and anti agro AAs conform to the agro switch now
+- class.mnk.inc
+  -- fixed a couple spaces
+  
+
+
 20180624.00
 - converted to new casting routine
   -- cast_AA_spire()

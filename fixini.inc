@@ -348,6 +348,12 @@ sub fix_ini_current()
 		| BEASTLORD
 		} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			
+		| 20180630
+			/ini "${INIClass}" "Spells" "selfParagon" NULL
+			/ini "${INIClass}" "Spells" "groupParagon" NULL
+			/ini "${INIClass}" "Spells" "FastHealPCT" NULL
+			/ini "${INIClass}" "Spells" "minConsumptionHP" NULL
+			
 		| CLERIC
 		} else /if (${Select[${Me.Class.ShortName},CLR]}) {
 			| remove cleric QM from 20 sep 2017 patch

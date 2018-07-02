@@ -775,7 +775,7 @@ sub check_buffs_self()
 	UPDATEHUD FALSE	
 /return
 
-
+${Me.Pet.Buff[Imbue Ally]}
 
 |***
  *	DES: Checks pets buffs. If somethings missing, mem and cast it.
@@ -790,7 +790,6 @@ sub check_buffs_pet()
 	/if (${coreAuto} || ${switchModePetfarm} || ${switchModeHunt}) {
 		/call create_timer timer_check_buffs_pet ${tPet_Buff}
 	}
-
 
 	/declare _count int local 0
 	/declare _spellType string local
@@ -1805,7 +1804,7 @@ sub is_target_valid(int _tmpID)
  *  NOTE: ass.U.ME the mob is alive until, it is not.
  ***|
 sub is_target_dead(int _tmpID)
-	DEBUG ${cbug}is_target_dead(\ax${Spawn[${_tmpID}].DisplayName} [${_tmpID}]${cbug})\ax
+	| DEBUG ${cbug}is_target_dead(\ax${Spawn[${_tmpID}].DisplayName} [${_tmpID}]${cbug})\ax
 	AMIDEAD
 	/declare _dead bool local FALSE
 	
@@ -1813,7 +1812,10 @@ sub is_target_dead(int _tmpID)
 		/if (!${Bool[${_tmpID}]}) /varset _tmpID ${Target2Kill}
 	} else /if (!${coreAuto}) {
 		/if (!${Bool[${_tmpID}]} && ${Target.ID}) /varset _tmpID ${Target.ID}
-		/if (!${Bool[${_tmpID}]}) /return FALSE
+		/if (!${Bool[${_tmpID}]}) {
+			/call clear_combat
+			/return TRUE
+		}
 	}
 	
 	| no target ID? shits dead 'till we get one to check..
@@ -1844,7 +1846,7 @@ sub is_target_dead(int _tmpID)
 	/if (${_dead}) {
 		/call clear_combat
 	}
-	DEBUG ${cbug}is_target_dead(\ax${ctar}${Spawn[${_tmpID}].DisplayName}\ax [${cinfo}${_tmpID}\ax]${cbug})\ax Dead: ${If[${_dead},${cgood}TRUE\ax,${cbad}FALSE\ax]}
+	| DEBUG ${cbug}is_target_dead(\ax${ctar}${Spawn[${_tmpID}].DisplayName}\ax [${cinfo}${_tmpID}\ax]${cbug})\ax Dead: ${If[${_dead},${cgood}TRUE\ax,${cbad}FALSE\ax]}
 /return ${_dead}
 
 
@@ -2199,13 +2201,18 @@ sub cast_AA_snare(int _tmpID)
 	/if (${validate_class[FALSE, |NEC|SHD]}) /varset _debuffSnare Encroaching Darkness
 	/if (${validate_class[FALSE, |WIZ]}) /varset _debuffSnare Atol's Shackles	
 	/if (${validate_class[FALSE, |MNK]}) /varset _debuffSnare Crippling Strike	
+	/if (${validate_class[FALSE, |BER]}) /varset _debuffSnare ${DiscSnare}	
 	
 	| ber Binding Axe disc .. ?? 
 	
 	/if (!${Target.Snared.ID}) {
-		| non paladins
-		/if (!${validate_class[FALSE, |PAL]}) {
+		| non paladins berzerkers
+		/if (!${validate_class[FALSE, |PAL|BER]}) {
 			/if (${validate_cast[FALSE, alt, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" alt ${_tmpID} FALSE
+
+		| berzerkers
+		} else /if (${validate_class[FALSE, |BER]}) {
+			/if (${validate_cast[FALSE, disc, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" disc ${_tmpID} FALSE
 		
 		| paladins
 		} else /if (${validate_class[FALSE, |PAL]}) {
@@ -3198,9 +3205,9 @@ sub sort_familiar()
 	DEBUG ${cbug}sort_Familiar()\ax
 	/call create_timer timer_Check_Familiar ${tCheck_Familiar}
 	/if (!${Bool[${sumFamiliar}]}) /return
+	/if (${Bool[${Me.Buff[${sumFamiliarBuff}].Duration}]}) /return
 	/doevents
 	/if (${check_exit[]}) /return
-	| /if (!${Bool[${Me.Buff[${sumFamiliarBuff}].Duration}]}) /call core_cast "${sumFamiliar}" NULL NULL FALSE
 	
 	/if (${Me.Book[${sumFamiliar}]}) {
 		/if (${validate_cast[FALSE, spell, "${sumFamiliar}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar}" ${buffGem} ${Me.Pet.ID} FALSE
@@ -3374,7 +3381,7 @@ sub update_HUD_notices(string _mode)
 	/declare _count 					int 		local 0
 	/declare _index 					int 		local 0
 	/declare _sep 						bool 		local FALSE
-	/declare _IV[3] 					string 	local FALSE
+	/declare _IV[4] 					string 	local FALSE
 	/declare _IVU[1]					string 	local FALSE
 	/declare _tmphudWarning		string	local  
 	/declare _tmphudNotice		string	local  
@@ -3400,8 +3407,9 @@ sub update_HUD_notices(string _mode)
 	}	
 			
 	/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Perfected Invisibility
-	/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Shauri's Sonorous Clouding|Gather Umbra|Invisibility Cloak
-	/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility|Shauri's Sonorous Clouding
+	/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Gather Umbra|Invisibility Cloak
+	/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility|
+	/varset _IV[4] |Shauri's Sonorous Clouding|Shauri's Sonorous Clouding I|Shauri's Sonorous Clouding II|Shauri's Sonorous Clouding III
 
 	/for _count 1 to ${_IV.Size}
 		/for _index 1 to ${_IV[${_count}].Count[|]}
@@ -3526,7 +3534,6 @@ sub update_HUD_notices(string _mode)
 		/varset _tmptarNotice ${_tmptarNotice} DS
 	}	
 	
-	
 	| target things and stuff
 	/if (${_tmptarNotice.Length} != ${hudTargetLength}) {
 		/varset hudTargetLength ${_tmptarNotice.Length}
@@ -3544,7 +3551,7 @@ sub update_HUD_notices(string _mode)
  *	USE: /call cast_AA_slow [MOBID] [AA SLOW NAME]
  *	INI: 
  *  NOTE: 
- ***|
+
 sub cast_AA_slow(int _tmpID, string _tmpSpell)
 	DEBUG ${cbug}cast_AA_slow(${_tmpID}, ${_tmpSpell})\ax
 	/if (${timer_slow_${_tmpID}}) /return
@@ -3572,7 +3579,7 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
 		}
 	}
 /return
-
+ ***|
 
 
 |***
@@ -3603,31 +3610,30 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
  *	NOTE: Pallys keep that shit up ALL the time
  ***|
 sub cast_yaulp()
-	DEBUGCAST ${cbug}cast_yaulp()\ax
+	DEBUG ${cbug}cast_yaulp()\ax
 	/if (${Me.Sitting}) /return
+	/if (${Me.Buff[Lesser Yaulp].ID} || ${Me.Buff[Yaulp].ID}) /return
+	/if (${Me.PctMana} > ${useYaulpPct}*.${tmpHealOverride}) /return
 	/if (!${Select[${Me.CombatState},COMBAT]}) /return
 	AMIDEAD
-	CHECKEXIT
+	SIMPLEEXIT
 	
 	| use spell Yaulp
-	/if (${Bool[${spellYaulp}]} && ${Me.SpellReady[${spellYaulp}]} && ${Spell[${spellYaulp}].Stacks}) {
-		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride} || (${Me.Combat} && ${Select[${Me.Class.ShortName},PAL]})) {
+	/if (${Bool[${spellYaulp}]}) {
+		/if (${Me.SpellReady[${spellYaulp}]} && ${Spell[${spellYaulp}].Stacks}) {
 			/if (${validate_cast[FALSE, spell, "${spellYaulp}", ${Me.ID}]}) /call core_cast2 "${spellYaulp}" 0 0 FALSE
 		}
 	
 	| use Donals Helm Yaulp (cleric only)
 	} else /if (${Select[${Me.Class.ShortName},CLR]} && ${Me.ItemReady[Darkened Donal's Helm of Mourning]}) {
-		/if (!${Spell[Yaulp XIV Rk. II].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
-		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride}) {
-			/if (${validate_cast[FALSE, item, "Darkened Donal's Helm of Mourning", ${Me.ID}]}) /call core_cast2 "Darkened Donal's Helm of Mourning" item 0 FALSE
-		}
+		/if (!${Spell[Yaulp XIV Rk. II].Stacks}) /return
+		/if (${validate_cast[FALSE, item, "Darkened Donal's Helm of Mourning", ${Me.ID}]}) /call core_cast2 "Darkened Donal's Helm of Mourning" item 0 FALSE
 	
 	| use AA yaulp
 	} else /if (!${FindItem[Darkened Donal's Helm of Mourning].ID} && ${Me.AltAbilityReady[Yaulp (Lesser)]}) {
 		/if (!${Spell[Yaulp (Lesser)].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
-		/if (${Me.PctMana} < ${useYaulpPct}*.${tmpHealOverride} || (${Me.Combat} && ${Select[${Me.Class.ShortName},PAL]})) {
 			/if (${validate_cast[FALSE, alt, "Yaulp (Lesser)", ${Me.ID}]}) /call core_cast2 "Yaulp (Lesser)" alt 0 FALSE
-		}
+
 	}
 /return
 
@@ -5757,8 +5763,16 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	| _spell set to false
 	/if (!${Bool[${_spell}]}) /return FALSE
 	
+	| is the issued target dead?
 	/if (${_tmpID}) {
 		/if (!${Spawn[${_tmpID}].ID}) /return FALSE
+	}
+
+	| exit in manual when force stop issued to release the target..
+	/if (!${coreAuto}) {
+		/if (${_tmpID} != ${Me.ID} && (!${Target.ID} || ${Target.Dead})) {
+			/if (!${Spell[${_spell}].SpellType.Equal[Beneficial]}) /return FALSE
+		}
 	}
 
 	| check spell
@@ -5799,7 +5813,6 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 				/if (${Me.Song[${_spell}].ID}) /return FALSE		
 			}
 		}
-
 		
 	| check alt ability
 	} else /if (${_type.Equal[alt]}) {
@@ -5838,7 +5851,6 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (${Bool[${Me.ActiveDisc}]}) /return FALSE
 		/if (!${Me.CombatAbilityReady[${_spell}]}) /return FALSE
 		/if (${Me.CurrentEndurance} < ${Spell[${_spell}].EnduranceCost}) /return FALSE
-
 
 	| check item
 	} else /if (${_type.Equal[item]}) {
@@ -6174,10 +6186,12 @@ sub cast_slow(int _tmpID)
 	/declare _spelltype string local FALSE
 	/declare _readytype string local FALSE
 
-	| spell not identified, using AA.
+	| if the spell is identified in the INI and memed we will use that over the AA
 	/if (${Bool[${Me.Gem[${spellSlow}]}]}) {
 		/varset _spelltype gem${Me.Gem[${spellSlow}]}
 		/varset _readytype SpellReady
+
+	| spell not identified, using AA.
 	} else /if (${spellSlow.Equal[NULL]} || !${Bool[${spellSlow}]} || !${Bool[${Me.Gem[${spellSlow}]}]}) {
 		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellSlow Dreary Deeds
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellSlow Turgur's Swarm
@@ -6591,7 +6605,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	
 	| check snare switch
 	/if (${Bool[${_deBuffType.Equal[snare]}]} || ${switchdeBuffSnare}) {
-		/if (!${validate_class[${_error}, ${AASnareList}]}) {
+		/if (!${validate_class[${_error}, ${AASnareList}|BER]}) {
 			/call writeINI switchdeBuffSnare Buffs FALSE  
 			/return FALSE
 		}

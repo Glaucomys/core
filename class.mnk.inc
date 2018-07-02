@@ -74,20 +74,18 @@ sub disc_MNK()
 		/delay 1
 	}
 
-	/if (${validate_cast[FALSE, alt, "Five Point Palm",${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, alt, "Two-Finger Wasp Touch",${Target2Kill}]}) /call core_cast2 "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Five Point Palm", ${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Two-Finger Wasp Touch", ${Target2Kill}]}) /call core_cast2 "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "Whorl of Fists", ${Me.ID}]}) /call core_cast2 "Whorl of Fists" disc 0 FALSE
-	/if (${validate_cast[FALSE, alt, "Zan Fi's Whistle",${Target2Kill}]}) /call core_cast2 "Zan Fi's Whistle" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Zan Fi's Whistle", ${Target2Kill}]}) /call core_cast2 "Zan Fi's Whistle" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "Drunken Monkey Style", ${Me.ID}]}) /call core_cast2 "Drunken Monkey Style" disc 0 FALSE
 	/if (${validate_cast[FALSE, disc, "Doomwalker's Synergy", ${Me.ID}]}) /call core_cast2 "Doomwalker's Synergy" disc 0 FALSE
 	/if (${validate_cast[FALSE, disc, "Zalikor's Fang", ${Me.ID}]}) /call core_cast2 "Zalikor's Fang" disc 0 FALSE
 	/if (${validate_cast[FALSE, disc, "Curse of the Thirteen Fingers", ${Me.ID}]}) /call core_cast2 "Curse of the Thirteen Fingers" disc 0 FALSE
-	/if (${validate_cast[FALSE, alt, "Five Point Palm",${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Five Point Palm", ${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "Curse of the Thirteen Fingers", ${Me.ID}]}) /call core_cast2 "Curse of the Thirteen Fingers" disc 0 FALSE
 
 /return
-
-
 
 
 

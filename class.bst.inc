@@ -19,8 +19,8 @@ sub core_BST()
 	AMIDEAD
 	CHECKTIE
 
-	/if (${coreAuto} && !${Me.Invis}) {
-		/call cast_AA_focused_paragon
+	/if (${coreAuto}) {
+		/call check_mana_${Me.Class.ShortName}
 		/if (!${check_engaged[]} && ${switchPcPet}) /call check_pet
 	}
 
@@ -42,13 +42,13 @@ sub core_BST()
 			/call disc_${Me.Class.ShortName}
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
 			/call check_deBuffs ${Target2Kill}
-			/if (${switchCombatNuke}) /call cast_nuke
 			/if (${switchCombatDoT}) /call cast_DOT
+			/if (${switchCombatNuke}) /call cast_nuke
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
 			/call click_DPS_${Me.Class.ShortName}
-			/call cast_AA_focused_paragon
+			/call check_mana_${Me.Class.ShortName}
 		}
 
 		/if (${coreAuto}) {	
@@ -81,12 +81,19 @@ sub disc_BST()
 			
 	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
+	| do we want the mobs attention?
+	/if (${switchAgro}) {
+		/if (${validate_cast[FALSE, alt, "Roaring Strike", ${Target2Kill}]}) /call core_cast2 "Roaring Strike" alt ${Target2Kill} FALSE
+	} else /if (!${switchAgro}) {
+		/if (${validate_cast[FALSE, alt, "Roar of Thunder", ${Target2Kill}]}) /call core_cast2 "Roar of Thunder" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Chameleon Strike", ${Target2Kill}]}) /call core_cast2 "Chameleon Strike" alt ${Target2Kill} FALSE
+	}
+
 	/if (${Me.Pet.ID}) {
 		/if (!${Me.Song[${GrowlSpell}].ID} && !${Me.PetBuff[Savage Rage]} && !${Me.Song[${DiscSavage}].ID}) {
-			/if (${validate_cast[FALSE, spell, "Chameleon Strike", ${Me.ID}]}) /call core_cast2 "${GrowlSpell}" 0 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${GrowlSpell}", ${Me.ID}]}) /call core_cast2 "${GrowlSpell}" 0 0 FALSE
 		}
 	}
-	/if (${validate_cast[FALSE, alt, "Chameleon Strike", ${Target2Kill}]}) /call core_cast2 "Chameleon Strike" alt ${Target2Kill} FALSE
 
 	/if (${Me.PctEndurance} > 5) {
 		/if (${validate_cast[FALSE, disc, "${DiscForay}", ${Target2Kill}]}) /call core_cast2 "${DiscForay}" disc ${Target2Kill} FALSE
@@ -94,7 +101,6 @@ sub disc_BST()
 	}
 
 	/if (${validate_cast[FALSE, disc, "${DiscFocusClaws}", ${Target2Kill}]}) /call core_cast2 "${DiscFocusClaws}" disc ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, alt, "Roar of Thunder", ${Target2Kill}]}) /call core_cast2 "Roar of Thunder" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, alt, "${DiscEnduring}", ${Target2Kill}]} && !${Bool[${Target.Buff[${DiscEnduring}]}]}) /call core_cast2 "${DiscEnduring}" alt ${Target2Kill} FALSE
 	
 	/if (${validate_cast[FALSE, alt, "Bestial Savagery", ${Target2Kill}]} && !${Me.Song[Bestial Savagery].ID}) /call core_cast2 "Bestial Savagery" alt 0 FALSE
@@ -104,48 +110,34 @@ sub disc_BST()
 
 
 |***
- *	DES: Focused Paragon. will maintain the bst then group if able
- *	USE: /call cast_AA_focused_paragon
+ *	DES: Focused Paragon. will maintain the bst
+ *	USE: /call check_mana_${Me.Class.ShortName}
  *	INI: 
  *  NOTE: 
  ***|
-sub cast_AA_focused_paragon()
-	DEBUGCLASS ${cbug}cast_AA_focused_paragon()\ax
-	/if (!${coreAuto}) /return
+sub check_mana_BST()
 	AMIDEAD
-	CHECKEXIT
-	/doevents
-	/declare _count 						int 	local 0
-	/declare _tmpID 						int 	local 0
-	/declare _tmpTarget2Kill		int		local 0
+	SIMPLEEXIT
 	
-	/if (${Target2Kill}) /varset _tmpTarget2Kill ${Target2Kill}
-	
-	/if (${Me.PctHPs} > ${minConsumptionHP}*.${tmpHealOverride} && ${Me.PctMana} < ${selfParagon}*.${tmpHealOverride}) {
-		/if (${validate_cast[FALSE, alt, "Consumption of Spirit" ${Me.ID}]}) /call core_cast2 "Consumption of Spirit" alt ${Me.ID} FALSE
-	}
-	
-	| self only focus
-	/if (${Me.PctMana} < ${selfParagon} && !${Me.Song[Paragon].ID}) {
-		/if (${validate_cast[FALSE, alt, "Focused Paragon of Spirits" ${Me.ID}]}) /call core_cast2 "Focused Paragon of Spirits" alt ${Me.ID} FALSE
-		/if (${_tmpTarget2Kill}) {
-			/target ID ${_tmpTarget2Kill}
-			/delay 1s ${Target.ID} == ${_tmpTarget2Kill}
+	| consumption of Spirits AA
+	/if (${switchConsumeSpirit}) {
+		/if (${Me.PctMana} < ${ConsumeSpiritPct}*.${tmpHealOverride}) {
+		 	/if (${validate_cast[FALSE, alt, "Consumption of Spirit", ${Me.ID}]}) /call core_cast2 "Consumption of Spirit" alt ${Me.ID} FALSE
 		}
 	}
-
-	| check the group
-	/if (${Group} && ${Me.AltAbilityReady[Focused Paragon of Spirits]}) {
-		 /for _count 1 to ${Group}
-		 		/if (${Group.Member[${_count}].ID} && ${Group.Member[${_count}].Distance} <= ${Spell[Focused Paragon of Spirits].MyRange}  && (${Group.Member[${_count}].CurrentMana} < ${groupParagon}*.${tmpHealOverride}) && ${CanCast.Find[${Group.Member[${_count}].Class}]}) {
-				/varset _tmpID ${Group.Member[${i}].ID}	 		
-		 	}
-		/next _count
-		/if (${_tmpID}) {
-			/if (${validate_cast[FALSE, alt, "Focused Paragon of Spirits", ${_tmpID}]}) /call core_cast2 "Focused Paragon of Spirits" alt ${_tmpID} FALSE
+	
+	/if (${Me.Song[Paragon of Spirit].ID}) /return
+	/if (${Me.Song[Focused Paragon of Spirit].ID}) /return
+		
+	| self paragon
+	/if (${switchSelfParagon}) {
+		/if (${Me.PctMana} < ${selfParagonPct}*.${tmpHealOverride}) {
+			/if (!${Me.Song[Focused Paragon].ID}) {
+				/if (${validate_cast[FALSE, alt, "Focused Paragon of Spirits", ${Me.ID}]}) /call core_cast2 "Focused Paragon of Spirits" alt ${Me.ID} FALSE
+			}
 		}
-	}	
-
+	}
+	
 /return
 
 
@@ -158,15 +150,16 @@ sub cast_AA_focused_paragon()
  ***|
 sub patch_heal_BST()
 	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	AMIDEAD
 	CHECKEXIT
-	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
+	
  	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) {
  		/if (${validate_cast[FALSE, alt, "Warder's Gift", ${Me.ID}]}) /call core_cast2 "Warder's Gift" alt 0 FALSE
 	}
-	/if (${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride} && ${Me.SpellReady[${FastHeal}]}) {
+
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} && ${Me.SpellReady[${FastHeal}]}) {
 		/if (${validate_cast[FALSE, spell, "${FastHeal}", ${Me.ID}]}) /call core_cast2 "${FastHeal}" 0 ${Me.ID} FALSE
-		/if (${validate_cast[FALSE, alt, "Focused Paragon of Spirits", ${Me.ID}]}) /call core_cast2 "Focused Paragon of Spirits" alt ${Me.ID} FALSE
 	}
 	/call click_item_heal
 /return
@@ -183,8 +176,7 @@ sub pet_heal_BST()
 	DEBUGCLASS ${cbug}pet_heal_BST()\aw
 	/if (!${Me.Pet.ID}) /return
 	AMIDEAD
-	CHECKEXIT
-	/doevents
+	SIMPLEEXIT
 
 	/if (${Pet.PctHPs} < 20) {
 		/if (${validate_cast[FALSE, alt, "Mend Companion, "${Me.Pet.ID}]}) /call core_cast2 "Mend Companion" alt ${Me.Pet.ID} FALSE
@@ -201,11 +193,11 @@ sub pet_heal_BST()
 
 |***
  *	DES: MGB beast Paragon if both AAs are ready
- *	USE: /bc paragon, /paragon
+ *	USE: /paragon
  *	INI: 
  *  NOTE: 
  ***|
- #bind cast_AA_paragon /paragon
+#bind cast_AA_paragon /paragon
 sub Bind_cast_AA_paragon()
 	DEBUGCLASS ${cbug}Bind_cast_AA_paragon()\ax
 	/if (${Select[${Me.Class.ShortName},BST]}) /call cast_AA_paragon
@@ -220,7 +212,7 @@ sub cast_AA_paragon()
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Paragon of Spirit]} && !${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		/if (${validate_cast[FALSE, alt, "Mass Group Buff", ${Me.ID}]}) /call core_cast2 "Mass Group Buff" alt 0 FALSE
 		/if (${validate_cast[FALSE, alt, "Paragon of Spirit", ${Me.ID}]}) /call core_cast2 "Paragon of Spirit" alt 0 FALSE
-		/if (${Raid.Members}) /rs ${ParagonTXT}
+		| /if (${Raid.Members}) /rs ${ParagonTXT}
 	} else /if (${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		VOUT ${owarning} trying to cast ${csp}Paragon of Spirit\ax while its running.	
 	}		
@@ -257,7 +249,7 @@ sub synergy_BST()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-
+	
 	/if (${validate_cast[FALSE, alt, "Bestial Alignment", ${Me.ID}]}) /call core_cast2 "Bestial Alignment" alt 0 FALSE
 	/if (${validate_cast[FALSE, alt, "Frenzied Swipes", ${Me.ID}]}) /call core_cast2 "Frenzied Swipes" alt 0 FALSE
 
@@ -285,7 +277,7 @@ sub synergy_BST()
 	}
 	
 	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
+	| /if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
 
 	/call use_glyph
 	/call synergy_click_Circle
@@ -309,7 +301,7 @@ sub Bind_setBST(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |fastheal|healpoint|spiregroup|spireraid
+  /declare _type string	local |consume|healpoint|paragon|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -344,17 +336,30 @@ sub Bind_setBST(string _classType, string _verbage)
 			VOUT /${_bind} healpoint [${cinfo}${${Me.Class.ShortName}Point}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}
-
-	| fast heall pct
-	} else /if (${Bool[${_classType.Find[fastheal]}]}) {
-		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/call writeINI FastHealPCT Spells ${_verbage}
-		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} fastheal [${cinfo}${FastHealPCT}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+		
+	| focused paragon	AA
+	} else /if (${Bool[${_classType.Equal[paragon]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI selfParagonPct Spells ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} paragon [${cinfo}${selfParagonPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
+		} else {
+		 	/call writeINI switchSelfParagon Spells ${If[${switchSelfParagon},FALSE,TRUE]}  
 		}
+		
+	| consume spirit AA
+	} else /if (${Bool[${_classType.Equal[consume]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI ConsumeSpiritPct Spells ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} consume [${cinfo}${ConsumeSpiritPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchConsumeSpirit Spells ${If[${switchConsumeSpirit},FALSE,TRUE]}  
+		}
+	}		
 
-	} 
 	
 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${_type.Count[|]}
@@ -363,8 +368,13 @@ sub Bind_setBST(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
+		/if (${_type.Arg[${_count},|].Equal[paragon]}) /varset _listout ${_listout}(${If[${switchSelfParagon},${cnum}${selfParagonPct}\ax,${cbad}${selfParagonPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[consume]}) /varset _listout ${_listout}(${If[${switchConsumeSpirit},${cnum}${ConsumeSpiritPct}\ax,${cbad}${ConsumeSpiritPct}\ax]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 
 /return
+
+		
+		

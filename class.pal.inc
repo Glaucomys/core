@@ -14,9 +14,8 @@
  *  NOTE: 
  ***|
 sub core_PAL()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
 	AMIDEAD
+	/doevents
 	CHECKTIE
 	
   /if (${switchHealXtarget}) {
@@ -34,7 +33,6 @@ sub core_PAL()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
@@ -81,7 +79,6 @@ sub core_PAL()
  *  NOTE: 
  ***|
 sub disc_PAL()
-	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -133,7 +130,6 @@ sub disc_PAL()
  *  NOTE: 
  ***|
 sub patch_heal_PAL()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -174,7 +170,6 @@ sub patch_heal_PAL()
  *  NOTE: 
  ***|
 sub get_agro_PAL()
-	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -186,7 +181,6 @@ sub get_agro_PAL()
 
 	| chain stun
 	/if (${validate_cast[FALSE, alt, "${chainStun}", ${Target2Kill}]}) /call core_cast2 "${chainStun}" alt ${Target2Kill} FALSE
-
 
 	| AE Stuns
 	/if (${AEMelee}) {
@@ -235,7 +229,6 @@ sub get_agro_PAL()
  *  NOTE: 
  ***|
 sub click_DPS_PAL()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -255,11 +248,9 @@ sub click_DPS_PAL()
  *  NOTE: 
  ***|
 sub check_splash_group_PAL()
-	DEBUGCLASS ${cbug}check_splash_group_PAL()\ax
-	/declare _count int	local 0
-	
-	:loopheal
-	/doevents
+	AMIDEAD
+	CHECKEXIT
+ 	/doevents	
 	CHECKTIE
 	/varset WorstHurt 				${Me.ID}
 	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
@@ -268,12 +259,9 @@ sub check_splash_group_PAL()
 	
 	| lets see whos hurt
 	/if (${Bool[${Group.Members}]}) {
+		/declare _count int	local 0
 		/for _count 0 to ${Group.Members}
 			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
-			AMIDEAD
-			CHECKEXIT
-		 	/doevents
-
 			/if ((!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID})) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} && (${Group.Member[${_count}].Distance} < ${Spell[${splashPanic}].MyRange} || ${Group.Member[${_count}].Distance} < ${Spell[${splashGroup}].MyRange})) {
 				/varset WorstHurt ${Group.Member[${_count}].ID}
 				/varset WorstHP ${Group.Member[${_count}].PctHPs}
@@ -288,26 +276,22 @@ sub check_splash_group_PAL()
 	}
   
 	| bail if ??
-	/if (${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]}) /return
-	UPDATEHUD "SPLASH"
+	/if (${Me.Buff[Divine Aura].ID} || ${Me.Buff[Divine Barrier].ID} || ${Me.Buff[Sacred Barrier].ID}) /return
+	UPDATEHUD "HEAL Spalsh"
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
   
 	| Panic Splash
 	/if (${Bool[${Group.Members}]}) {
-	  /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${splashPanic}].MyRange}) {
+	  /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride}) {
 			/if (${validate_cast[FALSE, spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${splashPanic}" 0 0 FALSE
-			/if (${castReturn.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
 		}
 	}
 		
 	| group heals
 	/if (${useGroupHeal}) {
-		AMIDEAD
-		CHECKEXIT
 		| Group Splash
 	  /if (${groupHurt} >= 1) {
 	    /if (${validate_cast[FALSE, spell, "${splashGroup}", ${Me.ID}]}) /call core_cast2 "${splashGroup}" 0 0 FALSE
-	    /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /goto :loopheal
 	  } 
 			
 		| AA Splash
@@ -336,7 +320,6 @@ sub check_splash_group_PAL()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_PAL()
-	DEBUGCLASS ${cbug}check_heal_XTarget_${Me.Class.ShortName}()\ax
 	/if (!${validate_expansion[FALSE, |16]}) /return
   /declare _count int local 0
 	CHECKREZ
@@ -376,17 +359,16 @@ sub check_heal_XTarget_PAL()
  *  NOTE: 
  ***|
 sub check_pet_heal_PAL()
-	DEBUGCLASS ${cbug}check_pet_heal_${Me.Class.ShortName()\ax
+ 	AMIDEAD
+	SIMPLEEXIT
+	/doevents
+	CHECKREZ
 	/declare _count int local
 	/varset pWorstHurt ${Me.CleanName}
 	/varset pWorstHP 100
 	/varset pWorstHurtID ${Me.ID}
   
   /for _count 0 to ${Group}
-  	AMIDEAD
-		SIMPLEEXIT
-		/doevents
-		CHECKREZ
     /if (${Group.Member[${_count}].Pet.ID}) {
       /if (${Group.Member[${_count}].Pet.Distance} <= ${Spell[${healRemedy1}].MyRange}) {
         /if (${Group.Member[${_count}].Pet.PctHPs} < ${pWorstHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
@@ -400,7 +382,6 @@ sub check_pet_heal_PAL()
 
   /if (${pWorstHurtID} == ${Me.ID}) /return
   /if (${useShieldFlash}) /call cast_AA_shield_flash
-  DEBUGCLASS PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
 
 	| touch heal
   /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healTouch}].MyRange} && ${Me.SpellReady[${healTouch}]}) {
@@ -412,15 +393,13 @@ sub check_pet_heal_PAL()
 
 |***
  *	DES: Fast check to see if anyone is hurt worse then person currently being healed.
- *	USE: added as a subcheck for core_cast
+ *	USE: added as a subcheck for core_cast2
  *	INI: 
  *  NOTE: 
  ***|
 sub check_HP_PAL()
-	DEBUGCLASS ${cbug}check_HP_${Me.Class.ShortName}()\ax
 	AMIDEAD
-	/if (!${Me.Casting.ID}) /return
-	/declare _count int local 0
+	SIMPLEEXIT
 
 	/varset WorstHurt 				${Me.ID}
 	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
@@ -428,11 +407,11 @@ sub check_HP_PAL()
 	/varset MajorHurt					0
 
 	/if (${Bool[${Group.Members}]}) {
+		/declare _count int local 0
 		/for _count 0 to ${Group.Members}
 	  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 	  	/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
-			AMIDEAD
-			SIMPLEEXIT
+
 			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
 				/if (${Group.Member[${_count}].Distance}<=${Spell[${healRemedy2}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} || !${WorstHurt}) {
 				/varset WorstHurt ${Group.Member[${_count}].ID} 
@@ -464,7 +443,6 @@ sub check_HP_PAL()
  *  NOTE: 
  ***|
 sub cast_AA_marrs_gift()
-	DEBUGCLASS ${cbug}cast_AA_marrs_gift()\aw
 	AMIDEAD
 	SIMPLEEXIT
 	/call create_timer timer_check_MG ${tcheck_MG}
@@ -487,7 +465,6 @@ sub cast_AA_marrs_gift()
  *  NOTE: 
  ***|
 sub check_steel()
-	DEBUGCAST ${cbug}check_steel()\ax
 	/if (${SafeZone} && !${switchOverrideSafezone}) /return
 	AMIDEAD
 	SIMPLEEXIT
@@ -507,7 +484,6 @@ sub check_steel()
  *	NOTE: 
  ***| 
 sub synergy_PAL()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -553,7 +529,6 @@ sub synergy_PAL()
  ***|
 #bind setPAL /pal
 sub Bind_setPAL(string _classType, string _verbage)
-	DEBUGCLASS ${cbug}Bind_setPAL(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[FALSE, |PAL]}) /return
 
 	/declare _sep bool local

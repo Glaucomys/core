@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180624.00
+	/call setDeclare coreBuild											string	outer 20180702.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -1972,7 +1972,7 @@ sub declare_BRD()
 	                                          		
 	/call setDeclare lineType												string	outer |caster|melee|mix|other|tank
 	/call setINIVar lineCurrent											string 	Song Tank
-	/call setINIVar lineTank												string	Song "|Chorus of Sionachie|War March of Jocelyn|Fjilnauk's Spiteful Lyric Rk. II|Fjilnauk's Song of Suffering|Doben's Spry Sonata Rk. II"
+	/call setINIVar lineTank												string	Song "|Chorus of Sionachie|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Fjilnauk's Song of Suffering|Doben's Spry Sonata"
 	/call setINIVar lineCaster											string	Song "|Chorus of Sionachie|Nilsara's Aria|Fatesong of Jocelyn|Arcane Melody|Aria of Maetanrus"
 	/call setINIVar lineMelee												string	Song "|Chorus of Sionachie|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Fjilnauk's Song of Suffering|Arcane Melody"
 	/call setINIVar lineMix													string	Song "|Chorus of Sionachie|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Nilsara's Aria"
@@ -2032,7 +2032,7 @@ sub declare_BST()
 	                                           		
 	/call setINIVar GrowlSpell 											string 	Pet "Growl of the Leopard"
 	/call setINIVar TasteofBlood										string 	Pet "Taste of Blood"
-	/call setINIVar Aggression											string 	Pet "Sekmoset's Aggression"
+	| /call setINIVar Aggression											string 	Pet "Sekmoset's Aggression"
 	/call setINIVar ProcHeal												string 	Pet "Mending Warder"
 	/call setINIVar Calm														string 	Pet "Companion's Calm Demeanor"
 	/call setINIVar DiscRest				 								string	Spells "Breather"
@@ -2067,11 +2067,12 @@ sub declare_BST()
 	/call setINIVar DoT4Condition 									string	Spells FALSE
 	                                           		
 	/call setINIVar FastHeal			 									string	Spells "Sabhattin's Mending" 
-	/call setINIVar FastHealPCT		 									int			Spells 60
-	                                           		
-	/call setINIVar selfParagon		 									int			Spells 80
-	/call setINIVar groupParagon	 									int			Spells 70
-	/call setINIVar minConsumptionHP								int			Spells 50
+
+	/call setINIVar switchSelfParagon		 						bool		Spells TRUE
+	/call setINIVar selfParagonPct 									int			Spells 80
+	/call setINIVar switchConsumeSpirit	 						bool		Spells TRUE
+	/call setINIVar ConsumeSpiritPct								int			Spells 80
+                                          		
 	/call setINIVar spellSlow		 										string	Spells "Sha's Reprisal"		
 	/call setINIVar spellCripple 										string 	Spells "Incapacitate"
                                              		
@@ -2788,7 +2789,7 @@ sub Event_NullSlot
  *	INI: 
  *  NOTE: 
  ***| 
-#event Zone "You have entered #*#" 
+| #event Zone "You have entered #*#" 
 #event Zone "LOADING, PLEASE WAIT..."
 sub Event_Zone(string _line)
 	DEBUG ${cbug}Event_Zone(line: ${_line})\ax
@@ -5383,3 +5384,4 @@ sub Bind_imincharge()
 	/bca //tc distance 5
 
 /return
+

@@ -14,9 +14,8 @@
  *  NOTE: 
  ***|
 sub core_CLR()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
 	AMIDEAD
+	/doevents
 	CHECKTIE
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 
@@ -42,12 +41,12 @@ sub core_CLR()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
 
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
+		/if (${doYaulp}) /call cast_yaulp
 
 		/if (${isValidTarget}) {
 			CHECKREZ
@@ -87,7 +86,6 @@ sub core_CLR()
  *  NOTE: 
  ***|
 sub click_DPS_CLR()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
 	/call click_horn_of_unity 	
@@ -102,12 +100,10 @@ sub click_DPS_CLR()
  *  NOTE: 
  ***|
 sub disc_CLR()
-	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/if (!${Me.Sitting} && ${Bool[${doYaulp}]}) /call cast_yaulp
+	/if (${doYaulp}) /call cast_yaulp
 
-	| /if (!${Me.Sitting} && ${Bool[${doYaulp}]} || !${Me.Combat} && ${Me.PctMana} > ${autoRest}*.${tmpHealOverride}) /call cast_yaulp
 	/if (${is_target_valid[${Target2Kill}]}) {
 		/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 		/if (${Spawn[${Target2Kill}].Body.Name.Equal[Undead]}) {
@@ -125,7 +121,6 @@ sub disc_CLR()
  *  NOTE: 
  ***|
 sub cast_sum_weapon()
-	DEBUGCLASS ${cbug}cast_sum_weapon()\ax
 	/if (${Me.Primary}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -149,17 +144,13 @@ sub cast_sum_weapon()
  *  NOTE: bread and butter baby...
  ***|
 sub check_heal_group_CLR()
-	DEBUGCLASS ${cbug}check_heal_group_CLR()\ax
 	AMIDEAD
 	CHECKEXIT
 	/declare _count int local 0
-	/doevents
 	CHECKTIE
 	/varset WorstHurt 				${Me.ID}
 	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
 	/varset WorstClass 				${Me.Class.ShortName}
-	/varset MinorHurt 				0
-	| /varset MajorHurt					0
 	/varset groupHurt					0
 	
 
@@ -180,9 +171,6 @@ sub check_heal_group_CLR()
 			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 			| no heallist bitches
 			/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
-			AMIDEAD
-			CHECKEXIT
-		 	/doevents
 			/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && (${Group.Member[${_count}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7)) {
 				/varset WorstHurt ${Group.Member[${_count}].ID}
 				/varset WorstHP ${Group.Member[${_count}].PctHPs}
@@ -201,12 +189,9 @@ sub check_heal_group_CLR()
 	UPDATEHUD "HEAL"
 	CHECKREZ
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
-	DEBUGCLASS WorstHurt:${Spawn[id ${WorstHurt}].DisplayName} ${sep} HP:${WorstHP}
 
 	| Complete Heal
 	| requires group roll Main Tank set to function
-	/doevents
-	AMIDEAD
 	/if (${switchCompleteHeal}) { 
 		/if (${Spawn[${Group.MainTank.ID}].ID}) { 
 			/if (${WorstHurt} == ${Group.MainTank.ID} && ${Spawn[${Group.MainTank.ID}].PctHPs} <= ${${Group.MainTank.Class.ShortName}Point}*.${CompleteHealpct}) {
@@ -233,8 +218,6 @@ sub check_heal_group_CLR()
 			/if (${validate_cast[FALSE, alt, "Focused Celestial Regeneration", ${WorstHurt}]}) /call core_cast2 "Focused Celestial Regeneration" alt ${WorstHurt} FALSE
 		}
 	}
-	AMIDEAD
- 	/doevents
 	
   | AA Spire
 	/if (!${Bool[${Raid.Members}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
@@ -243,19 +226,16 @@ sub check_heal_group_CLR()
   }	
   
 	| Dichotomic Heal
-	/if (${Me.Song[Gift of Mana (${GoMLevel})].ID} && ${Me.SpellReady[${GoMNuke}]} && ${Spawn[${WorstHurt}].PctHPs} < ${GoMpoint}*.${tmpHealOverride}) { 
-		DEBUGCLASS cast_nuke_GoM ${WorstHurt}
-		/call cast_nuke_GoM ${WorstHurt}
-  }
+	/if (${Me.Song[Gift of Mana (${GoMLevel})].ID}) {
+		/if (${Me.SpellReady[${GoMNuke}]} && ${Spawn[${WorstHurt}].PctHPs} < ${GoMpoint}*.${tmpHealOverride}) { 
+			/call cast_nuke_GoM ${WorstHurt}
+	  }
+	}
   
-	AMIDEAD
 	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
- 	/doevents
 
 	| Panic Heal 
-  | /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} < ${Spell[${healPanic}].MyRange} && ${Me.SpellReady[${healPanic}]}) {
   /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} < ${Spell[${healPanic}].MyRange}) {
-  	DEBUG WorstHurt ID:${WorstHurt} .. ME ID:${Me.ID}  .. Target ID:${Target.ID}
 		/if (${validate_cast[FALSE, alt, "Burst of Life", ${WorstHurt}]}) /call core_cast2 "Burst of Life" alt ${WorstHurt} FALSE
    	/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]}) /call core_cast2 "${healPanic}" 0 ${WorstHurt} FALSE
   }
@@ -268,7 +248,6 @@ sub check_heal_group_CLR()
   
   | Forced Group Heals ONLY
 	/if (${switchForceGroupHeal}) {
-		/doevents
 		/if ( ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
 			/if (${Me.SpellReady[${healWholeGroup}]}) {
 				/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0 0 check_HP_${Me.Class.ShortName}
@@ -287,13 +266,9 @@ sub check_heal_group_CLR()
   /if (${useGroupHeal}) {
 	  /if (${groupHurt} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
 	    /if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0 0 check_HP_${Me.Class.ShortName}
-	    /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /return
+	    | /if (${Macro.Return.NotEqual[CAST_SUCCESS]} && ${Macro.Return.NotEqual[CAST_OUTOFMANA]}) /return
 	  } 
 	}
-  
-  
-	AMIDEAD
- 	/doevents
   
   | ward of surety short buff 
 	/if (!${Bool[${timer_heal_ward}]} && ${Me.SpellReady[${healWard}]}) /call check_heal_ward
@@ -308,9 +283,6 @@ sub check_heal_group_CLR()
 		}
 	}
 	
-	AMIDEAD
- 	/doevents
-		
 	| AA heal stuffs
   /if (${groupHurt} && !${SafeZone}) {
 	  /if (${groupHurt} == 2) {
@@ -333,10 +305,10 @@ sub check_heal_group_CLR()
  	/doevents
  	
  	| agressive healing sort
- 	/if (${switchHealAggressive} && (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]})) {
-		/goto :interventionheals
- 	} else /if (!${switchHealAggressive} && (${Me.SpellReady[${healRemedy1}]} || ${Me.SpellReady[${healRemedy2}]})) {
- 		/goto :remedyheals
+ 	/if (${switchHealAggressive}) {
+ 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
+ 	} else /if (!${switchHealAggressive}) {
+ 		/if (${Me.SpellReady[${healRemedy1}]} || ${Me.SpellReady[${healRemedy2}]} || ${Me.SpellReady[${healRemedy3}]}) /goto :remedyheals
  	}
 		
 	| Intervention Heals
@@ -352,8 +324,7 @@ sub check_heal_group_CLR()
       /if (${validate_cast[FALSE, spell, "${healIntervention4}", ${WorstHurt}]}) /call core_cast2 "${healIntervention4}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
     }
   }
-	AMIDEAD
- 	/doevents
+
 	| Remedy Heals 
 	:remedyheals
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
@@ -365,13 +336,11 @@ sub check_heal_group_CLR()
         /if (${validate_cast[FALSE, spell, "${healRemedy3}", ${WorstHurt}]}) /call core_cast2 "${healRemedy3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
       } 
   }    
-	AMIDEAD
- 	/doevents
+
 	CHECKREZ
 
 	| Renewal Heals
-	/doevents
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healRenewal1}]} || ${Me.SpellReady[${healRenewal2}]} || ${Me.SpellReady[${healRenewal3}]})) {
+  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
     /if (${Me.SpellReady[${healRenewal1}]}) {
        /if (${validate_cast[FALSE, spell, "${healRenewal1}", ${WorstHurt}]}) /call core_cast2 "${healRenewal1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
      } else /if (${Me.SpellReady[${healRenewal2}]}) {
@@ -390,7 +359,9 @@ sub check_heal_group_CLR()
 	}
 
   | check for group debuffs
-	/if (${switchHealCure} && ${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure
+	/if (${switchHealCure}) {
+		/if (${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure
+	}
 	
 	UPDATEHUD FALSE
 /return
@@ -404,20 +375,19 @@ sub check_heal_group_CLR()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_CLR()
-	DEBUGCLASS ${cbug}check_heal_XTarget_${Me.Class.ShortName}()\ax
 	/if (!${validate_expansion[FALSE, |16]}) /return
-  /declare _count int local 0
 	CHECKREZ
-
+	AMIDEAD
+	SIMPLEEXIT
+	/doevents
+	
+  /declare _count int local 0
   /for _count 1 to 13
   	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	/if (!${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	/if (${heallist.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	UPDATEHUD "HEAL XTarget"
 		/call check_no_cast_buffs
-		AMIDEAD
-		SIMPLEEXIT
-		/doevents
 
 		/if (!${Spawn[${Me.XTarget[${_count}].ID}].ID} || ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} > ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
 
@@ -470,7 +440,6 @@ sub check_heal_XTarget_CLR()
  *  NOTE: 
  ***|
 sub check_HP_CLR()
-	DEBUGCLASS ${cbug}check_HP_CLR()\ax
 	AMIDEAD
 	/if (!${Me.Casting.ID}) /return
 	/declare _count int local 0
@@ -484,7 +453,6 @@ sub check_HP_CLR()
 		/for _count 0 to ${Group.Members}
 	  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 	  	/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
-			AMIDEAD
 			SIMPLEEXIT
 			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
 				/if (${Group.Member[${_count}].Distance}<=${Spell[${healRemedy2}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} || !${WorstHurt}) {
@@ -521,20 +489,19 @@ sub check_HP_CLR()
  *  NOTE: 
  ***|
 sub check_pet_heal_CLR()
-	DEBUGCLASS ${cbug}check_pet_heal_CLR()\ax
+	AMIDEAD
+	SIMPLEEXIT
+	/doevents
+	CHECKREZ
+
 	/declare _count int local
 	/varset pWorstHurt ${Me.CleanName}
 	/varset pWorstHP 100
 	/varset pWorstHurtID ${Me.ID}
   
   /for _count 0 to ${Group}
-  	AMIDEAD
-		SIMPLEEXIT
-		/doevents
-		CHECKREZ
     /if (${Group.Member[${_count}].Pet.ID}) {
       /if (${Group.Member[${_count}].Pet.Distance} <= ${Spell[${healRemedy1}].MyRange}) {
-        | /if ((${Group.Member[${_count}].Pet.PctHPs} <= ${pWorstHP}) && (${Group.Member[${_count}].Pet.PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point})) {
         /if (${Group.Member[${_count}].Pet.PctHPs} < ${pWorstHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
           /varset pWorstHurt ${Group.Member[${_count}].Pet.Name}
           /varset pWorstHurtID ${Group.Member[${_count}].Pet.ID}
@@ -545,7 +512,6 @@ sub check_pet_heal_CLR()
   /next _count
 
   /if (${pWorstHurtID} == ${Me.ID}) /return
-  DEBUGCLASS PetHeal: ${Group.Member[${_count}].Pet.ID}  ${pWorstHurtID}
   /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Me.SpellReady[${healRemedy1}]}) {
     /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${pWorstHurtID}]}) /call core_cast2 "${healRemedy1}" 0 ${pWorstHurtID} FALSE
   } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy2}].MyRange} && ${Me.SpellReady[${healRemedy2}]}) {
@@ -568,10 +534,9 @@ sub check_pet_heal_CLR()
  *  NOTE: Setting [Heal] -> setDivinetoGroupHeal to TRUE in the clerics INI will force a group heal after the health arbitration.
  ***|
 sub cast_divine_arbitration()
-	DEBUGCLASS ${cbug}cast_divine_arbitration()\ax
 	AMIDEAD
 	SIMPLEEXIT
-	/if (${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]}) /return
+	/if (${Bool[${Me.Buff[Divine Aura]}]} || ${Bool[${Me.Buff[Divine Barrier]}]} || ${Bool[${Me.Buff[Sacred Barrier]}]}) /return
   /if (${Me.ItemReady[${CLREpic2}]}) {    
     /if (${validate_cast[FALSE, item, "${CLREpic2}", ${Me.ID}]}) /call core_cast2 "${CLREpic2}" item 0 FALSE
   } else /if (${Me.ItemReady[${CLREpic15}]}) {
@@ -596,7 +561,6 @@ sub cast_divine_arbitration()
  *	Will not cast cr if the buff is present or if your name is Norbert.
  ***|
 Sub cast_AA_celest_regen()
-	DEBUGCLASS ${cbug}cast_AA_celest_regen()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Celestial Regeneration]},${cgood}CR\ax,${cbad}CR\ax]}
 	AMIDEAD
 	SIMPLEEXIT
 	/doevents
@@ -620,7 +584,6 @@ Sub cast_AA_celest_regen()
  *  NOTE.. THIS IS BROKEN.. It's not my fault.
  ***|
 sub cast_issuance_heal()
-	DEBUGCLASS ${cbug}cast_issuance_heal()\ax
 	AMIDEAD
 	SIMPLEEXIT
 	/if (${Me.SpellReady[${healIssuance}]}) /call castFreeTargetSpell "${healIssuance}" ${Me.ID}
@@ -641,12 +604,11 @@ sub cast_issuance_heal()
  *  NOTE: 
  ***|
 sub cast_temp_pet_CLR()
-	DEBUGCLASS ${cbug}cast_temp_pet()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/if (${burnForce} || (${burnAuto} && ${NameList.Find[${Target.CleanName}]})) {
+	/if (${burnForce} || (${burnAuto} && ${NameList.Find[${Target.DisplayName}]})) {
 		/if (${validate_cast[FALSE, alt, "Celestial Hammer", ${Target2Kill}]}) /call core_cast2 "Celestial Hammer" alt ${Target2Kill} FALSE
 	}
 	/if (${validate_cast[FALSE, spell, "${tempPet}", ${Target2Kill}]}) /call core_cast2 "${tempPet}" 0 ${Target2Kill} FALSE
@@ -662,7 +624,6 @@ sub cast_temp_pet_CLR()
  *  NOTE: 
  ***|
 sub check_heal_ward()
-	DEBUGCLASS ${cbug}check_heal_ward()\ax
 	/if (!${Me.SpellReady[${healWard}]}) /return
 	/if (${coreAuto}) /call create_timer timer_heal_ward ${tHealWard}
 	
@@ -680,7 +641,6 @@ sub check_heal_ward()
 		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${_wardToon}]}) /continue
 
 		/if (${Bool[${Spawn[${NetBots[${_wardToon}].ID}]}]} && ${Spawn[id ${NetBots[${_wardToon}].ID}].Distance} < ${Spell[${healWard}].MyRange} && ${Me.SpellReady[${healWard}]}) {
-			DEBUG  ${_count}: ${_toon.Count[|]}, ID:${Spawn[${_wardToon}].ID}, ${_toon.Arg[${_count},|]}, ${Bool[${Spawn[${_wardToon}].ID}]}, found: ${Bool[${NetBots[${_wardToon}].ShortBuff.Find[${_healwardID}]}]}
 			/if (${Bool[${NetBots[${_wardToon}].ShortBuff.Find[${_healwardID}]}]} || ${Spawn[${_wardToon}].Type.Equal[corpse]}) /continue
 			/if (${validate_cast[FALSE, spell, "${healWard}", ${Spawn[${_wardToon}].ID}]}) /call core_cast2 "${healWard}" 0 ${Spawn[${_wardToon}].ID} FALSE
 		}
@@ -696,7 +656,6 @@ sub check_heal_ward()
  *  NOTE: THIS DOES NOT WORK.. /cry
  ***|
 sub auto_control_swap()
-	DEBUGCLASS ${cbug}auto_control_swap()\ax
 	/if (!${validate_expansion[FALSE, |16]}) /return
 	/return
 	/if (!${autoControl}) /return
@@ -730,7 +689,6 @@ sub auto_control_swap()
  *	NOTE: you will find little of value here.
  ***| 
 sub synergy_CLR()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	SIMPLEEXIT
 	| please note. All of the clerics, what would be considerd heal burns, are built into the cleric routine.
 	/call use_glyph
