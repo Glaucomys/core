@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180719.00
+	/call setDeclare coreBuild											string	outer 20180719.01
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL

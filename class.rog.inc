@@ -93,7 +93,7 @@ sub disc_ROG()
 	/if (${validate_cast[FALSE, disc, "${DiscAssault}", ${Target2Kill}]}) /call core_cast2 "${DiscAssault}" disc ${Target2Kill} FALSE
 	
 	/if (${validate_cast[FALSE, alt, "Shadow's Flanking", ${Me.ID}]}) /call core_cast2 "Shadow's Flanking" alt 0 FALSE
-	/if (${validate_cast[,FALSE disc, "${DiscVision}", ${Me.ID}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast2 "${DiscVision}" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscVision}", ${Me.ID}]} && !${Bool[${Me.Song[${DiscVision}]}]}) /call core_cast2 "${DiscVision}" disc 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${TwistedShank}", ${Target2Kill}]}) /call core_cast2 "${TwistedShank}" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, alt, "${AbsorbingAgent}", ${Target2Kill}]}) /call core_cast2 "${AbsorbingAgent}" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscShadowHunter}", ${Target2Kill}]}) /call core_cast2 "${DiscShadowHunter}" disc ${Target2Kill} FALSE

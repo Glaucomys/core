@@ -14,6 +14,9 @@
      Necromancer, Monk, Beastlord, 
      Enchanter, Shaman, Berserker
 
+20180719.01
+ - class.rog.inc
+   -- because fuck commas..
 
 20180719.00
 - check_for_corpse() -- this is the resurrection routine..
@@ -31,7 +34,7 @@
 -- ALL CLASSES.inc
   -- removed AA Banestrike casting from their respective routines
 - class.pal.inc
-  -- AA Hand of Piety will trigger of 50% of PALPoint health and the defcount number of mobs in area. not just 1
+  -- AA Hand of Piety will trigger off 50% of PALPoint health and the defcount number of mobs in area. not just 1
   -- /pal loh [1,99] - percent health to use AA LoH on self
   -- /pal loh - (on/off) enable/disable using AA LoH
   -- AA Lay on Hands added to self healing
