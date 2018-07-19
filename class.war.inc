@@ -69,7 +69,6 @@ sub disc_WAR()
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /return
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	/if (${Me.AltAbilityReady[${AABraceforImpact}]}) /call core_cast "${AABraceforImpact}" alt 0 FALSE
 	/if (${Me.AltAbilityReady[${AAWarStomp}]}) /call core_cast "${AAWarStomp}" alt 0 FALSE

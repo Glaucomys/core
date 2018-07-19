@@ -92,8 +92,6 @@ sub disc_SHD()
 	| get me sum...
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 
-	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill}
-
 	| tap 'dat ass..
 	/if (${switchHealSelf}) {
 		/if (${validate_cast[FALSE, disc, "${DiscRancor}", ${Me.ID}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${DiscRancor}" disc ${Target2Kill} FALSE

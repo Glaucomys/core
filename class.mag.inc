@@ -86,7 +86,6 @@ sub disc_MAG()
 	CHECKEXIT
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${validate_cast[FALSE, alt,"Force of Elements", ${Target2Kill}]}) /call core_cast2 "Force of Elements" alt ${Target2Kill} FALSE
 /return
 

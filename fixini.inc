@@ -315,6 +315,13 @@ sub fix_ini_current()
 	
 	| toon INI non specific class --------------------------------------------------------------------------------------
 
+
+		| 20180718.00 -- removal of banestrike
+		/ini "${INIClass}" "Common" "switchBanestrike" NULL	
+		/ini "${INIClass}" "Common" "BanestrikeCondition" NULL	
+		
+		
+
 		| 20180624.00
 		/ini "${INIClass}" "Common" "InGameCashChecked" NULL	
 
@@ -400,6 +407,11 @@ sub fix_ini_current()
 
 		| RANGER
 		} else /if (${Select[${Me.Class.ShortName},RNG]}) {
+			
+			/ini "${INIClass}" "Spells" "SlowHeal" NULL
+			/ini "${INIClass}" "Spells" "FastHeal" NULL
+			/ini "${INIClass}" "Spells" "FastHealPCT" NULL
+			
 			| 20180429
 			/ini "${INIClass}" "Spells" "ElementalArrow" NULL
 			/ini "${INIClass}" "Spells" "GlacialArow" NULL

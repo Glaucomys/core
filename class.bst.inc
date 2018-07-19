@@ -79,8 +79,6 @@ sub disc_BST()
 
 	/if (${is_target_dead[${Target2Kill}]}) /return
 			
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-
 	| do we want the mobs attention?
 	/if (${switchAgro}) {
 		/if (${validate_cast[FALSE, alt, "Roaring Strike", ${Target2Kill}]}) /call core_cast2 "Roaring Strike" alt ${Target2Kill} FALSE

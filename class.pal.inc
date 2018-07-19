@@ -27,6 +27,16 @@ sub core_PAL()
 	
 	:killtarget
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}
+	
 	/if (${useMG}) {
 		/if (!${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	}
@@ -97,8 +107,16 @@ sub disc_PAL()
 		/next _count
 	}
 		
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+	
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}
 
 	| AA inquisitors armor stacking control
 	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= ${defCount}) {
@@ -136,14 +154,19 @@ sub patch_heal_PAL()
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	| Hand of Piety AA Group heal	
-	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} > 1 ) {
+	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} >= ${defCount} ) {
 		/if (${validate_cast[FALSE, alt, "${AAHandofPiety}", ${Me.ID}]}) /call core_cast2 "${AAHandofPiety}" alt 0 FALSE
 	}
+	
+	| AA Gift of Life
+	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.30*.${tmpHealOverride}) {
+		/if (${validate_cast[FALSE, alt, "Gift of Life", ${Me.ID}]}) /call core_cast2 "Gift of Life" alt 0 FALSE
+	}	
 
 	| Panic Heal 1
 	/if (${Me.Gem[${healPanic1}]}) {
 	  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.45*.${tmpHealOverride}) {
-			/if (${validate_cast[FALSE, spell, "${healPanic1}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${healPanic1}", ${Me.ID}]}) /call core_cast2 "${healPanic1}" 0 0 FALSE
 		}
 	}
 
@@ -155,9 +178,17 @@ sub patch_heal_PAL()
 	| Panic Heal 2
 	/if (${Me.Gem[${healPanic2}]}) {
 	  /if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.20*.${tmpHealOverride}) {
-			/if (${validate_cast[FALSE, spell, "${healPanic2}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 FALSE
+			/if (${validate_cast[FALSE, spell, "${healPanic2}", ${Me.ID}]}) /call core_cast2 "${healPanic2}" 0 0 FALSE
 		}
 	}
+	
+	| aa LoH
+	/if (${useLoH}) {
+	  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+			/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+		}
+	}
+	
 	/call click_item_heal
 /return
 
@@ -175,6 +206,15 @@ sub get_agro_PAL()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchPull}) /call set_combat ${combat.Upper}
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+	
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}	
 
 	| challenge
 	/call cast_challenge ${Target2Kill}
@@ -235,6 +275,16 @@ sub click_DPS_PAL()
 	/doevents
 	/call click_horn_of_unity 	
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+	
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}	
+	
 	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]} && ${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 
 /return
@@ -275,10 +325,17 @@ sub check_splash_group_PAL()
 	  /next _count
 	}
   
-	| bail if ??
-	/if (${Me.Buff[Divine Aura].ID} || ${Me.Buff[Divine Barrier].ID} || ${Me.Buff[Sacred Barrier].ID}) /return
 	UPDATEHUD "HEAL Spalsh"
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}
   
 	| Panic Splash
 	/if (${Bool[${Group.Members}]}) {
@@ -298,7 +355,6 @@ sub check_splash_group_PAL()
 	  /if (${groupHurt} >= 3) {
 	  	/if (${validate_cast[FALSE, alt, "${AAHandofPiety}", ${Me.ID}]}) /call core_cast2 "${AAHandofPiety}" alt 0 FALSE
 	  }
-	  
 	}
 
 	AMIDEAD
@@ -335,6 +391,15 @@ sub check_heal_XTarget_PAL()
 		/doevents
 		/if (${useShieldFlash}) /call cast_AA_shield_flash
 		
+		| aa LoH
+		/if (${switchHealSelf}) {
+			/if (${useLoH}) {
+			  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+					/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+				}
+			}	
+		}
+		
 		/if (!${Spawn[${Me.XTarget[${_count}].ID}].ID} || ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} > ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
 
 		| Touch Heal
@@ -343,8 +408,6 @@ sub check_heal_XTarget_PAL()
 				/if (${validate_cast[FALSE, spell, "${healTouch}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healTouch}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
 			}
 		}				
-		
-		
 	/next _count
 
 	UPDATEHUD FALSE
@@ -383,10 +446,19 @@ sub check_pet_heal_PAL()
   /if (${pWorstHurtID} == ${Me.ID}) /return
   /if (${useShieldFlash}) /call cast_AA_shield_flash
 
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}
+
 	| touch heal
   /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healTouch}].MyRange} && ${Me.SpellReady[${healTouch}]}) {
     /if (${validate_cast[FALSE, spell, "${healTouch}", ${pWorstHurtID}]}) /call core_cast2 "${healTouch}" 0 ${pWorstHurtID} FALSE
-  } 
+  }
 /return
 
 
@@ -425,6 +497,15 @@ sub check_HP_PAL()
 
 	/if (!${WorstHurt}) /return
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}
 
 	| touch heal
 	/if (${Spawn[${WorstHurt}].PctHPs} < 20*.${HealOverride} && ${Spawn[${WorstHurt}].Distance}<=${Spell[${healPanic}].MyRange} && ${Cast.Timing}/1000<${Spell[${healTouch}].MyCastTime} && ${Me.SpellReady[${healTouch}]}) {
@@ -495,7 +576,7 @@ sub synergy_PAL()
 		/if (${validate_cast[FALSE, disc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
 			/call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 			/break
-		}			
+		}
 	/next _count
 
 	| deflection
@@ -503,10 +584,19 @@ sub synergy_PAL()
 		/if (${validate_cast[FALSE, disc, "Deflection Discipline", ${Me.ID}]}) {
 			/call core_cast2 "Deflection Discipline" disc 0 FALSE
 			/return
-		} 
+		}
 	}
 	
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+
+	| aa LoH
+	/if (${switchHealSelf}) {
+		/if (${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+			}
+		}	
+	}
 
 	/call cast_AA_spire	
 
@@ -535,7 +625,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|groupheal|harmonious|healpoint|mg|rampage|shieldflash|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
+  /declare _type string	local |ae|defcount|groupheal|harmonious|healpoint|loh|mg|rampage|shieldflash|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -581,6 +671,17 @@ sub Bind_setPAL(string _classType, string _verbage)
 		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI useMG Buffs ${If[${useMG},FALSE,TRUE]}  
 		}	
+
+	| AA Lay on Hands	
+	} else /if (${Bool[${_classType.Equal[loh]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${_verbage}]}) {
+			/call writeINI useLoHPct Heal ${_verbage} 
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${_verbage}]}) {
+			VOUT /${_bind} loh [${cinfo}##\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}	else /if (!${Bool[${_verbage}]}) {
+			/call writeINI useLoH Heal ${If[${useLoH},FALSE,TRUE]}  
+		}	
 		
 	| Shield Flash oh shit
 	} else /if (${Bool[${_classType.Equal[shieldflash]}]}) {
@@ -611,7 +712,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 			/varset _sep TRUE
 		/next _count
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}PET\ax(${cnum}${PetPoint}\ax)
-		VOUT /${_bind} [${_listout}]
+		VOUT /${_bind} healpoint [${_listout}]
 		/return
 			
 	| on/off switch for Steel
@@ -715,8 +816,12 @@ sub Bind_setPAL(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[loh]}) /varset _listout ${_listout}(${If[${useLoH},${cnum}${useLoHPct}\ax,${cbad}${useLoHPct}\ax]})
 
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+
+

@@ -85,7 +85,6 @@ sub disc_DRU()
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	/call core_cast "Storm Strike" alt ${Target2Kill} FALSE
 	/call core_cast "Season's Wrath" alt ${Target2Kill} FALSE

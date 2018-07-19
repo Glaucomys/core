@@ -71,7 +71,6 @@ sub disc_BER()
 		/if (${validate_cast[FALSE, alt, "Drawn to Blood", ${Me.ID}]}) /call core_cast2 "Drawn to Blood" alt 0 FALSE
 	}
 	/if (${validate_cast[FALSE, alt, "Battle Leap", ${Me.ID}]} && !${Me.Underwater} && !${Me.Song[Battle Leap Warcry].ID}) /call core_cast2 "Battle Leap" alt 0 FALSE
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
 	/call is_burn_time
 	/if (!${Macro.Return}) {

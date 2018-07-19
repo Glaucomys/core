@@ -105,7 +105,6 @@ sub disc_CLR()
 	/if (${doYaulp}) /call cast_yaulp
 
 	/if (${is_target_valid[${Target2Kill}]}) {
-		/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 		/if (${Spawn[${Target2Kill}].Body.Name.Equal[Undead]}) {
 			/if (${validate_cast[FALSE, alt, "Turn Undead", ${Target2Kill}]} && !${Raid.Members}) /call core_cast2 "Turn Undead" alt ${Target2Kill} FALSE
 		}

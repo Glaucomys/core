@@ -66,7 +66,6 @@ sub disc_MNK()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call check_deBuffs ${Target2Kill}
 	/call get_agro_${Me.Class.ShortName}
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 
 	/if (!${switchAgro} && ${Me.PctAggro} >= ${setFDAgroPct}) {

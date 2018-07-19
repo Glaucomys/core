@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180702.00
+	/call setDeclare coreBuild											string	outer 20180719.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -74,7 +74,7 @@ sub set_declares()
 	/call DeclareCoreIniVar switchMQclearonCLS			string	General FALSE
 	/call DeclareCoreIniVar switchGuildinSafelist		string	General FALSE
 	/call DeclareCoreIniVar switchCheckGameCash			string	General FALSE
- 			
+	/call DeclareCoreIniVar switchPersistentModes		string	General FALSE 			
 
 	| broadcast switches
 	| default on
@@ -744,10 +744,7 @@ sub set_declares()
 
 
 	| onoff types
-  /call setDeclare 		onoffType										string	outer "|banestrike|horn|shrink"
-
-	/call setINIVar switchBanestrike								bool		Common FALSE		
-	/call setINIVar BanestrikeCondition							string	Common FALSE
+  /call setDeclare 		onoffType										string	outer "|horn|shrink"
 	/call setINIVar switchShrink										bool		Common FALSE
 	/call setINIVar switchHorn											bool		Common FALSE
 
@@ -1512,6 +1509,8 @@ sub declare_PAL()
 	/call setINIVar useMGPct												int			Buffs 60
 	/call setINIVar useShieldFlash									bool		Discs FALSE
 	/call setINIVar useShieldFlashPct								int			Discs 20
+	/call setINIVar useLoH													bool		Heal FALSE
+	/call setINIVar useLoHPct												int			Heal 10
 
 /return	
 
@@ -1705,9 +1704,10 @@ sub declare_RNG()
 	/call setINIVar DoTSwarmDSdeBuff 								string	Spells "Glistenwing Swarm"
 	                                        		
 	/call setINIVar spellCripple 										string 	Spells FALSE
-	/call setINIVar SlowHeal												string	Spells "Cloudfont" 
-	/call setINIVar FastHeal			 									string	Spells "Desperate Dousing" 
-	/call setINIVar FastHealPCT		 									int			Spells 25
+
+	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
+  /call setINIVar heal1	 													string  Heal "Cloudfont"
+  /call setINIVar heal2					 									string  Heal "Desperate Dousing"
                                           		
 	/call setINIVar DiscMele			 									string	Spells "Windstalkers's Discipline"
 	/call setINIVar DiscRange			 									string	Spells "Pureshot Discipline"
@@ -1723,7 +1723,6 @@ sub declare_RNG()
 	/call setINIVar AADefensive2 										string	Spells "Protection of the Spirit Wolf"
 	/call setINIVar AADefensive3 										string	Spells "Bulwark of the Brownies"
 
-	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
 /return	
 
 
@@ -2309,7 +2308,7 @@ sub set_alias()
 	/if (!${Bool[${Alias[/blurb]}]}) 								/squelch /alias /blurb 											VOUT Blurb: 
  	| /if (!${Bool[${Alias[/clean]}]}) 								/squelch /alias /clean 											VOUT Clean this mess up.
   /if (!${Bool[${Alias[/bcsay]}]}) 								/squelch /alias /bcsay 											/bc bcsay
-  | /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
+  /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
                                             			
 	| quick cleric cure commands              			
 	/if (!${Bool[${Alias[/rc]}]}) 									/squelch /alias /rc 												/bc rc
@@ -2798,11 +2797,6 @@ sub Event_Zone(string _line)
 	:stillfuckingzoningOMG
 	/if (${switchDelayWhileZoning} && ${Me.Zoning}) {
 		/delay 45s !${Me.Zoning}
-
-		| /while (${Me.Zoning}) {
-		| 	/delay 2s
-		| }	
-
 	}
 
 	/if (${Me.Zoning}) {
@@ -2927,7 +2921,7 @@ sub Bind_setstop()
 sub Bind_click_primary_anchor()
 	/if (${Me.ItemReady[Primary Anchor Transport Device]}) {
 		/if (${Me.Invis}) /makemevisible
-		/call switch_clear_mode
+		/if (!${switchPersistentModes}) /call switch_clear_mode
 		/call set_stop NOECHO
 		/call clear_combat
 		/if (${validate_cast[FALSE, item, "Primary Anchor Transport Device", ${Me.ID}]}) /call core_cast2 "Primary Anchor Transport Device" item 0 FALSE
@@ -2946,7 +2940,7 @@ sub Bind_click_primary_anchor()
 sub Bind_click_secondary_anchor()
 	/if (${Me.ItemReady[Secondary Anchor Transport Device]}) {
 		/if (${Me.Invis}) /makemevisible
-		/call switch_clear_mode
+		/if (!${switchPersistentModes}) /call switch_clear_mode
 		/call set_stop NOECHO
 		/call clear_combat
 		/if (${validate_cast[FALSE, item, "Secondary Anchor Transport Device", ${Me.ID}]}) /call core_cast2 "Secondary Anchor Transport Device" item 0 FALSE
@@ -2997,7 +2991,7 @@ sub Bind_prisec_anchor()
 sub Bind_click_drunkards_stein()
 	/if (!${Me.ItemReady[Drunkard's Stein]}) /return
 		/if (${Me.Invis}) /makemevisible
-		/call switch_clear_mode
+		/if (!${switchPersistentModes}) /call switch_clear_mode
 		/call set_stop NOECHO
 		/call clear_combat
 	/if (${validate_cast[FALSE, item, "Drunkard's Stein", ${Me.ID}]}) /call core_cast2 "Drunkard's Stein" item 0 FALSE
@@ -3015,7 +3009,7 @@ sub Bind_click_drunkards_stein()
 sub Bind_click_mirror_fragment()
 	/if (!${Me.ItemReady[Mirror Fragment of Anashti Sul]}) /return
 		/if (${Me.Invis}) /makemevisible
-		/call switch_clear_mode
+		/if (!${switchPersistentModes}) /call switch_clear_mode
 		/call set_stop NOECHO
 		/call clear_combat
 	/if (${validate_cast[FALSE, item, "Mirror Fragment of Anashti Sul", ${Me.ID}]}) /call core_cast2 "Mirror Fragment of Anashti Sul" item 0 FALSE
@@ -3775,24 +3769,6 @@ sub Bind_petControl(string _pcType, string _verbage)
 
 
 |***
- *	DES: 
- *	USE: 
- *	INI: 
- *  NOTE: 
- 	
-#event SendPets "[MQ2] - SendPets: #1#"
-sub Event_SendPets(string line, int _tmpID)
-	DEBUG ${cbug}Event_SendPets()\ax
-	/if (${switchPcPet} && ${Pet.ID}) {
-		VOUT Sending ${cpc}${Pet.DisplayName}\ax
-		/target	ID ${_tmpID}
-		/pet attack
-	}
-/return
- ***|
-
-
-|***
  *	DES: sets controlls for /tie
  *	USE: /tc [name|time|distance]
  *	INI: 
@@ -4165,7 +4141,7 @@ sub Bind_setCore(string _coreType, string _verbage)
 
 |***
  *	DES: set on/off switches
- *	USE: /onoff [banestrike|horn|shrink]
+ *	USE: /onoff [|horn|shrink]
  *	INI: NA
  *  NOTE: enable/disable many switches
  ***|
@@ -4187,7 +4163,6 @@ sub Bind_onoff(string _onoffType)
 	
 	/for _count 1 to ${${_bind}Type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[banestrike]}) /varset _listout ${_listout}(${If[${switchBanestrike},${oon},${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[horn]}) /varset _listout ${_listout}(${If[${switchHorn},${oon},${ooff}]})	
 		/if (${${_bind}Type.Arg[${_count},|].Equal[shrink]}) /varset _listout ${_listout}(${If[${switchShrink},${oon},${ooff}]})
 

@@ -100,7 +100,6 @@ sub disc_NEC()
 	/doevents
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 
 	| aa wake the dead
 	/if (${switchPcSwarm}) {

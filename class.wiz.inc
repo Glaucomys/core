@@ -91,8 +91,6 @@ sub disc_WIZ()
 	}
 	
 	| filler DPS. used when inbetween/down spellgem casts
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-	
 	| aa Force of Flame
 	/if (${lineCurrent.Equal[Fire]} && !${NoFireList.Find[${Spawn[${Target2Kill}].DisplayName}]}) {
 		/if (${validate_cast[FALSE, alt, "Force of Flame", ${Target2Kill}]}) /call core_cast2 "Force of Flame" alt ${Target2Kill} FALSE

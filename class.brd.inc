@@ -102,8 +102,6 @@ sub disc_BRD()
 		/if (${validate_cast[FALSE, item, "Darkened Breath of Harmony", ${Me.ID}]}) /call core_cast2 "Darkened Breath of Harmony" item 0 FALSE
 	}
 	
-	/if (${switchBanestrike}) /call cast_AA_banestrike ${Target2Kill} FALSE
-	
 	/if (${switchPcSwarm}) {
 		/call cast_servant_swarm ${Target2Kill} FALSE
 	}

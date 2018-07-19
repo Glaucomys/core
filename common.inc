@@ -1902,8 +1902,6 @@ sub clear_timer(int _tmpID)
 	/if (${Defined[timer_snare_${_tmpID}]}) /deletevar timer_snare_${_tmpID}
 	| druid Ro debuff
 	/if (${Defined[timer_ro_${_tmpID}]}) /deletevar timer_ro_${_tmpID}
-	| if you have to ask
-	/if (${Defined[timer_banestrike_${_tmpID}]}) /deletevar timer_banestrike_${_tmpID}
 	| stick to mobs ass check
 	/if (${Defined[timer_snap_recheckID_${_tmpID}]}) /deletevar timer_snap_recheckID_${_tmpID}
 /return
@@ -2096,25 +2094,6 @@ sub cast_nuke_rain()
 			/if (${Select[${castReturn},CAST_SUCCESS]}) /call create_timer timer_Nuke_Delay ${tNuke_Delay}
 		}
 	/next _count
-/return
-
-
-
-|***
- *	DES: use Banestrike AA
- *	USE: /call cast_AA_banestrike [target ID]
- *	INI: 
- *  NOTE: slap all the mobs
- ***|
-sub cast_AA_banestrike(int _tmpID)
-	DEBUGCAST ${cbug}cast_AA_banestrike(ID:${_tmpID})\ax
-	/if (!${Bool[${_tmpID}]}) /return
-	AMIDEAD
-	CHECKEXIT
-	/if (${is_target_dead[${_tmpID}]}) /return
-	/if (!${is_target_valid[${_tmpID}]}) /return
-	/if (!${cast_condition[BanestrikeCondition]}) /return 
-	/if (${validate_cast[FALSE, alt, "Banestrike", ${_tmpID}]}) /call core_cast2 "Banestrike" alt ${_tmpID} FALSE
 /return
 
 
@@ -3792,11 +3771,7 @@ sub tell_resident_mage(string _request)
  *  NOTE: looks for corpses.. rez them
  ***|
 sub check_for_corpse()
-	DEBUGREZ ${cbug}check_for_corpse()\ax
-	| AMIDEAD
-	| /if (${watch_for_death[]}) /return
-	
-	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) /return
+	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) /return FALSE
 	
 	| fuck your corpse
 	/if (!${switchRezGive}) /return	FALSE
@@ -3811,6 +3786,12 @@ sub check_for_corpse()
 	| no emergency tokens AND dont use them when a cleric is around
 	/if (${switchRezEmergency} && (!${Me.ItemReady[Token of Resurrection]} || ${Spawn[pc CLR radius ${maxRezRange}].ID})) /return FALSE
 	
+	| disable rezemergency if you dont have tokens
+	/if (${switchRezEmergency} && !${FindItem[Token of Resurrection].ID}) {
+		/varset switchRezEmergency FALSE
+		ECHOCHANNEL ${Me.DisplayName} needs Rez Tokens....
+	}
+		
 	| necro stuff
 	/if (${Select[${Me.Class.ShortName},NEC]}) {
 		/if (!${FindItem[Essence Emerald].ID}) /return FALSE
@@ -3858,11 +3839,11 @@ sub check_for_corpse()
 
 	UPDATEHUD "Resurrect"
 	| clerics first group or raid
-	/if (${SpawnCount[pccorpse cleric raid radius ${maxRezRange}]} && ${Raid.Members} || ${SpawnCount[pccorpse cleric group radius ${maxRezRange}]} && ${Bool[${Group.Members}]}) {
-		/for _count 1 to ${SpawnCount[pccorpse cleric raid radius ${maxRezRange}]}
+	/if (${SpawnCount[pccorpse cleric raid radius ${maxRezRange}]} && ${Raid.Members} || ${SpawnCount[pccorpse cleric group radius ${maxRezRange}]}) {
+		/for _count 1 to ${SpawnCount[pccorpse cleric radius ${maxRezRange}]}
 		AMIDEAD
-		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse cleric raid radius ${maxRezRange}].ID}}) {
-			/varset _tmpID ${NearestSpawn[${_count},pccorpse cleric raid radius ${maxRezRange}].ID}
+		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse cleric radius ${maxRezRange}].ID}}) {
+			/varset _tmpID ${NearestSpawn[${_count},pccorpse cleric radius ${maxRezRange}].ID}
 			/if (${DivineRezCleric}) {
 				/if (${Me.AltAbilityReady[${_divinerezCLR}]}) /call cast_rez ${_tmpID} ${_divinerezCLR}		
 			} else /if (${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) {
@@ -3875,52 +3856,58 @@ sub check_for_corpse()
 	} 
 	
 	| control toon
-	/if (${SpawnCount[pccorpse radius ${maxRezRange} ${toonControl}]}) {
-		/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange} ${toonControl}]}
-		AMIDEAD
-		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse radius ${maxRezRange} ${toonControl}].ID}}) {
-			/varset _tmpID ${NearestSpawn[${_count},pccorpse radius ${maxRezRange} ${toonControl}].ID}
-			/if (${switchRezEmergency}) {
-				/call cast_rez ${_tmpID} ${_rezEmergency}
-			} else {
-				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+	/if (${Bool[${toonControl}]}) {
+		/if (${SpawnCount[pccorpse radius ${maxRezRange}]}) {
+			/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange} ${toonControl}]}
+			AMIDEAD
+			/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse radius ${maxRezRange} ${toonControl}].ID}}) {
+				/varset _tmpID ${NearestSpawn[${_count},pccorpse radius ${maxRezRange} ${toonControl}].ID}
+				/if (${switchRezEmergency}) {
+					/call cast_rez ${_tmpID} ${_rezEmergency}
+				} else {
+					/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+				}
 			}
+			/next _count
 		}
-		/next _count
 	}
 	
 	| tanks
-	/if (${SpawnCount[pccorpse raid radius ${maxRezRange} tank]} && ${Raid.Members}) {
-		/for _count 1 to ${SpawnCount[pccorpse raid radius ${maxRezRange} tank]}
-		AMIDEAD
-		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange} tank].ID}}) {
-			/varset _tmpID ${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange} tank].ID}
-			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
-				/call cast_rez ${_tmpID} ${_rezEmergency}
-			} else {
-				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+	/if (${Raid.Members}) {
+		/if (${SpawnCount[pccorpse raid radius ${maxRezRange} tank]}) {
+			/for _count 1 to ${SpawnCount[pccorpse raid radius ${maxRezRange} tank]}
+			AMIDEAD
+			/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange} tank].ID}}) {
+				/varset _tmpID ${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange} tank].ID}
+				/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+					/call cast_rez ${_tmpID} ${_rezEmergency}
+				} else {
+					/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+				}
 			}
-		}
-		/next _count
-	} 
+			/next _count
+		} 
+	}
 	
 	| remaining raid members
-	/if (${SpawnCount[pccorpse raid radius ${maxRezRange}]} && ${Raid.Members}) {
-		/for _count 1 to ${SpawnCount[pccorpse raid radius ${maxRezRange}]}
-		AMIDEAD
-		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange}].ID}}) {
-			/varset _tmpID ${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange}].ID}
-			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
-				/call cast_rez ${_tmpID} ${_rezEmergency}
-			} else {
-				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+	/if (${Raid.Members}) {
+		/if (${SpawnCount[pccorpse raid radius ${maxRezRange}]}) {
+			/for _count 1 to ${SpawnCount[pccorpse raid radius ${maxRezRange}]}
+			AMIDEAD
+			/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange}].ID}}) {
+				/varset _tmpID ${NearestSpawn[${_count},pccorpse raid radius ${maxRezRange}].ID}
+				/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+					/call cast_rez ${_tmpID} ${_rezEmergency}
+				} else {
+					/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+				}
 			}
-		}
-		/next _count
-	} 
+			/next _count
+		} 
+	}
 	
 	| guildies - all the time
-	/if (${SpawnCount[pccorpse radius ${maxRezRange} guild]} && !${Raid.Members}) {
+	/if (${SpawnCount[pccorpse radius ${maxRezRange} guild]}) {
 		/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange} GUILD]}
 		AMIDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse radius ${maxRezRange} guild].ID}}) {
@@ -3935,7 +3922,7 @@ sub check_for_corpse()
 	}
 	
 	| group members out of raid
-	/if (${SpawnCount[pccorpse radius ${maxRezRange} group]} && !${Raid.Members}) {
+	/if (${SpawnCount[pccorpse radius ${maxRezRange} group]}) {
 		/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange} group]}
 		AMIDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse radius ${maxRezRange} group].ID}}) {
@@ -3951,19 +3938,21 @@ sub check_for_corpse()
 
 	| outside guild and raid
 	| needs /rez everyone switch to be true
-	/if (${SpawnCount[pccorpse radius ${maxRezRange}]} && ${switchRezEveryone}) {
-		/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange}]}
-		AMIDEAD
-		/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse radius ${maxRezRange}].ID}}) {
-			/varset _tmpID ${NearestSpawn[${_count}, pccorpse radius ${maxRezRange}].ID}
-			/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
-				/call cast_rez ${_tmpID} ${_rezEmergency}
-			} else {
-				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+	/if (${switchRezEveryone}) {
+		/if (${SpawnCount[pccorpse radius ${maxRezRange}]}) {
+			/for _count 1 to ${SpawnCount[pccorpse radius ${maxRezRange}]}
+			AMIDEAD
+			/if (!${timer_corpse_${NearestSpawn[${_count}, pccorpse radius ${maxRezRange}].ID}}) {
+				/varset _tmpID ${NearestSpawn[${_count}, pccorpse radius ${maxRezRange}].ID}
+				/if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
+					/call cast_rez ${_tmpID} ${_rezEmergency}
+				} else {
+					/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
+				}
 			}
-		}
-		/next _count
-	}	
+			/next _count
+		}	
+	}
 
 	UPDATEHUD FALSE
 /return
@@ -3977,8 +3966,8 @@ sub check_for_corpse()
  *  NOTE: 
  ***|
 sub cast_rez(int _tmpID, string _rezAA)
-	DEBUGCAST ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
-	DEBUGREZ ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
+	| DEBUGCAST ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
+	| DEBUGREZ ${cbug}cast_rez(${_tmpID}, ${_rezAA})\ax
 	/if (${Me.Dead}) /return
 	/if (${timer_corpse_${_tmpID}}) /return
 	AMIDEAD
@@ -4009,10 +3998,7 @@ sub cast_rez(int _tmpID, string _rezAA)
 			/delay 5s !${Me.Casting.ID}
 			/target ID ${_tmpID}
 			/delay 1s ${Target.ID} == ${_tmpID}
-			| /useitem Token of Resurrection
 			/if (${validate_cast[FALSE, item, "Token of Resurrection", ${Me.ID}]}) /call core_cast2 "Token of Resurrection" item ${_tmpID} FALSE
-			| VOUT Wasting Token of Resurrection ${sep} ${cinfo}${Spawn[${_tmpID}].DisplayName}\ax
-			| /call MQ2Cast "Token of Resurrection" item -targetid|${_tmpID} 
 		}
 	
 		/if (${Select[${castReturn},CAST_SUCCESS]}) { 
@@ -4124,14 +4110,12 @@ sub check_for_adds()
 
 	:loopnextmob
 	/if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los].ID}) {
-	| /if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los playerstate 4].ID}) {
 		/varset _tmpID ${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable ${If[${switchOverrideLos},,los]} playerstate 4].ID}
 			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
 			/if (${switchdeBuffTash} && !${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
 			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${_tmpID}]}) /call create_timer timer_slow_${_tmpID} 1
 			/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${_tmpID}]}) /call create_timer timer_cripple_${_tmpID} 1
 			/if (${switchdeBuffMezz} && !${Defined[timer_mez_${_tmpID}]}) /call create_timer timer_mez_${_tmpID} 1
-		| /if (${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Distance}<=${MobAgro} && ${Spawn[id ${_tmpID}].LineOfSight} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[${_tmpID}].DisplayName.Length}>1 && ${Spawn[${_tmpID}].Type.NotEqual[Untargetable]}) {
 		/if (${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Distance}<=${MobAgro} && ${Spawn[id ${_tmpID}].LineOfSight} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Untargetable]}) {
 			/if (!${timer_mez_${_tmpID}}) {
 				/if (${_tmpID} != ${Me.XTarget[1].ID}) /call list_add addList ${_tmpID}
@@ -4217,7 +4201,7 @@ sub queue_buff_delete(int _buffee, int _buffnumber)
  *  NOTE: queue counts start at 1, but they are empty.
  ***|
 sub check_buffs_tell()
-	DEBUG ${cbug}check_buffs_tell()\ax
+	| DEBUG ${cbug}check_buffs_tell()\ax
 	UPDATEHUD "BUFF tell"
 	/doevents
 	/declare _count					int local
@@ -4229,8 +4213,8 @@ sub check_buffs_tell()
 	}
 	
 	/for _count 1 to ${queueCount}
-		DEBUGARRAY _count:${_count}
-		DEBUGARRAY Tell queue count: ${queueCount}
+		| DEBUGARRAY _count:${_count}
+		| DEBUGARRAY Tell queue count: ${queueCount}
 
 		| make sure we are at least in the correct range
 		/if (!${Range.Between[1,${queueCount}:${Int[${_count}]}]}) /continue
@@ -4240,12 +4224,12 @@ sub check_buffs_tell()
 	
 		CHECKCOMBATCAST
 
-		DEBUGARRAY 1: Target: ${queueList[${_count},1]}
-		DEBUGARRAY 2: Buff: ${Buff${queueList[${_count},2]}}
+		| DEBUGARRAY 1: Target: ${queueList[${_count},1]}
+		| DEBUGARRAY 2: Buff: ${Buff${queueList[${_count},2]}}
 
 		| target dead or not in zone? fuck their request 
 		/if (${Spawn[${queueList[${_count},1]}].Dead} || !${Spawn[${queueList[${_count},1]}].ID}) {
-			DEBUGARRAY ${queueList[${_count},1]} is not here. deleting request
+			| DEBUGARRAY ${queueList[${_count},1]} is not here. deleting request
 			/call queue_buff_delete ${queueList[${_count},1]} ${queueList[${_count},2]}
 			/return
 		}
@@ -4260,7 +4244,7 @@ sub check_buffs_tell()
 	| no target. were out of here
 	/if (!${_tmpID}) /return
 
-	DEBUGARRAY were out of the loop check and have a target. 
+	| DEBUGARRAY were out of the loop check and have a target. 
 
 	| even more checks for items/spells
 	/if (${FindItem[${Buff${_tmpVAR}}].ID}) {
@@ -4269,7 +4253,7 @@ sub check_buffs_tell()
 		/if (!${Me.SpellReady[${Buff${_tmpVAR}}]} && ${Me.Gem[${Buff${_tmpVAR}}]}) /return
 	}	
 
-	DEBUGARRAY Passed spell/item checks
+	| DEBUGARRAY Passed spell/item checks
 
 	| bards are a pita..
 	/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
@@ -4279,13 +4263,13 @@ sub check_buffs_tell()
 	
 	| do something.. seriously we made it this far..
 	/if (${FindItem[${Buff${_tmpVAR}}].ID}) {
-		DEBUGARRAY  ${Spawn[ID ${_tmpID}].DisplayName} request is for an item
+		| DEBUGARRAY  ${Spawn[ID ${_tmpID}].DisplayName} request is for an item
 		/if (${validate_cast[FALSE, item, "${Buff${_tmpVAR}}", ${_tmpID}]}) /call core_cast2 "${Buff${_tmpVAR}}" item ${_tmpID} FALSE
 	} else /if (${Me.AltAbility[${Buff${_tmpVAR}}]}) {
-		DEBUGARRAY  ${Spawn[ID ${_tmpID}].DisplayName} request is for an AA
+		| DEBUGARRAY  ${Spawn[ID ${_tmpID}].DisplayName} request is for an AA
 		/if (${validate_cast[FALSE, alt, "${Buff${_tmpVAR}}", ${_tmpID}]}) /call core_cast2 "${Buff${_tmpVAR}}" alt ${_tmpID} FALSE
 	} else {
-		DEBUGARRAY ${Spawn[ID ${_tmpID}].DisplayName} request is for a spell
+		| DEBUGARRAY ${Spawn[ID ${_tmpID}].DisplayName} request is for a spell
 		/if (${validate_cast[FALSE, spell, "${Buff${_tmpVAR}}", ${_tmpID}]}) /call core_cast2 "${Buff${_tmpVAR}}" ${buffGem} ${_tmpID} FALSE
 	}
 
@@ -4974,7 +4958,7 @@ sub echo_augments()
 	
 	| worn inventory skip powersource (21)
 	/for _slot 0 to 22
-		/if (${_slot} == 21) /goto :noWornItemAug
+		/if (${_slot} == 21) /continue
 		/for _augslot 0 to ${Me.Inventory[${_slot}].Augs}
 			/if (${Me.Inventory[${_slot}].AugSlot[${_augslot}].Empty}) /continue
 			/ini "${INIAugDump}" "${Me.DisplayName} - Worn" "${Me.Inventory[${_slot}].Name} ${Me.Inventory[${_slot}].AugSlot[${_augslot}].Type}" "${Me.Inventory[${_slot}].AugSlot[${_augslot}].Name}"
@@ -6350,15 +6334,39 @@ sub cast_cripple(int _tmpID)
  ***|
 sub set_base_target_timers(int _tmpID)
 	DEBUG ${cbug}set_base_target_timers(ID: ${_tmpID})\ax
-	/if (${switchBanestrike} && !${Defined[timer_banestrike_${_tmpID}]}) /call create_timer timer_banestrike_${_tmpID} 1
-	/if (${SetStickBehind} && !${Defined[timer_snap_recheckID_${_tmpID}]}) /call create_timer timer_snap_recheckID_${_tmpID} 1
-	/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
-	/if (${switchdeBuffTash} && !${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
-	/if (${switchdeBuffSlow} && !${Defined[timer_slow_${_tmpID}]}) /call create_timer timer_slow_${_tmpID} 1
-	/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${_tmpID}]}) /call create_timer timer_cripple_${_tmpID} 1
-	/if (${switchdeBuffMezz} && !${Defined[timer_mez_${_tmpID}]}) /call create_timer timer_mez_${_tmpID} 1
-	/if (${switchdeBuffSnare} && !${Defined[timer_snare_${_tmpID}]}) /call create_timer timer_snare_${_tmpID} 1
-	/if (${switchdeBuffMalo} && !${Defined[timer_malo_${_tmpID}]}) /call create_timer timer_malo_${_tmpID} 1
+	
+	| movement stick behind
+	/if (${SetStickBehind}) {
+		/if (!${Defined[timer_snap_recheckID_${_tmpID}]}) /call create_timer timer_snap_recheckID_${_tmpID} 1
+	}
+	
+	| class eradicate buffs AA
+	/if (${switchdeBuffEradicate}) {
+		/if (!${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
+	}
+	
+	/if (${switchdeBuffTash}) {
+		/if (!${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
+	}
+	
+	/if (${switchdeBuffSlow}) {
+		/if (!${Defined[timer_slow_${_tmpID}]}) /call create_timer timer_slow_${_tmpID} 1
+	}
+	
+	/if (${switchdeBuffCripple}) {
+		/if (!${Defined[timer_cripple_${_tmpID}]}) /call create_timer timer_cripple_${_tmpID} 1
+	}
+	
+	/if (${switchdeBuffMezz}) {
+		/if (!${Defined[timer_mez_${_tmpID}]}) /call create_timer timer_mez_${_tmpID} 1
+	}
+	
+	/if (${switchdeBuffSnare}) {
+		/if (!${Defined[timer_snare_${_tmpID}]}) /call create_timer timer_snare_${_tmpID} 1
+	}
+	/if (${switchdeBuffMalo}) {
+		/if (!${Defined[timer_malo_${_tmpID}]}) /call create_timer timer_malo_${_tmpID} 1
+	}
 /return 
  
  
@@ -6467,7 +6475,6 @@ sub verify_build()
 	DEBUG ${cbug}verify_build(${classBuild} != ${coreBuild})\ax
 
 	| if mismatch #s
-	| /if (${Float[${classBuild}].Centi} != ${Float[${coreBuild}].Centi}) {
 	/if (${classBuild.NotEqual[${coreBuild}]}) {
 
 		/if (${forceINIcheck}) {
@@ -6565,7 +6572,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	
 	| check malo switch
 	/if (${Bool[${_deBuffType.Equal[malo]}]} || ${switchdeBuffMalo}) {
-		/if (!${validate_class[${_error}, |MAG|SHM]}) {
+		/if (!${validate_class[${_error}, |MAG|SHM|NEC]}) {
 			/call writeINI switchdeBuffMalo Buffs FALSE  
 			/return FALSE
 		}
@@ -6621,7 +6628,7 @@ sub validate_debuff(bool _error, string _deBuffType)
  *  NOTE: returns switchAmIDead TRUE if you died
  ***|
 sub watch_for_death()
-DEBUGREZ ${cbug}watch_for_death()\ax
+| DEBUGREZ ${cbug}watch_for_death()\ax
 
 	| check for current flags. watch for rez box if I have them
 	/if (${switchAmIDead}) /return TRUE
@@ -6638,21 +6645,21 @@ DEBUGREZ ${cbug}watch_for_death()\ax
 
 	| if we died, shut shit down
 	/if (${switchAmIDead}) {
-		DEBUGREZ into rez, all event markers cleared. delay 2s to let script catch up.
+		| DEBUGREZ into rez, all event markers cleared. delay 2s to let script catch up.
 		/doevents flush
 		/delay 2s
-		DEBUGREZ update death count
+		| DEBUGREZ update death count
 		/ini "${INICore}" "deathcount" "${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}" "${Int[${Math.Calc[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}+1]}]}"
 
-		DEBUGREZ stop all the things(s)
+		| DEBUGREZ stop all the things(s)
 		/call set_stop NOECHO
 		/call clear_combat
 		/if (${Me.Casting.ID}) /stopcast
 		/varset Target2Kill 0
-		VBC Needs a rez: "${Me.DisplayName}" 0 0 
+		VBC Needs a rez: "${Me.DisplayName}" 0 0
 	}
-	DEBUGREZ ${cbug}watch_for_death[${switchAmIDead}]\ax
-/return ${switchAmIDead}	
+	| DEBUGREZ ${cbug}watch_for_death[${switchAmIDead}]\ax
+/return ${switchAmIDead}
 	
 
 
@@ -6663,7 +6670,7 @@ DEBUGREZ ${cbug}watch_for_death()\ax
  *  NOTE: 
  ***|
 sub watch_for_rezbox()
-DEBUGREZ ${cbug}watch_for_rezbox()\ax
+| DEBUGREZ ${cbug}watch_for_rezbox()\ax
 	
 	| dont rezz me
 	/if (!${switchRezTake}) /return
@@ -6737,52 +6744,52 @@ DEBUGREZ ${cbug}watch_for_rezbox()\ax
 			/varset validRezFound TRUE
 		| we take call to corpse as well
 		} else /if (${Bool[${Window[ConfirmationDialogBox].Child[CD_TextOutput].Text.Find["you will still be able to get a resurrection later"]}]}) {
-			DEBUGREZ found call to corpse. setting flagCallNeedRez\ax
+			| DEBUGREZ found call to corpse. setting flagCallNeedRez\ax
 			/varset flagCallNeedRez TRUE
 			/varset validRezFound TRUE
 		} 
 			
 		| more waiting
-		DEBUGREZ is valid or not?
+		| DEBUGREZ is valid or not?
 		/if (${validRezFound}) {
-			DEBUGREZ yes we want a rez
+			| DEBUGREZ yes we want a rez
 			/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
 			/delay 5
-			DEBUGREZ sorting rez selection window
+			| DEBUGREZ sorting rez selection window
 			/if (${Window[RespawnWnd].Open}) {
 				/if (${Zone.ShortName.Equal[Powar]}) {
-					DEBUGREZ option 1 in respawn window\ax
+					| DEBUGREZ option 1 in respawn window\ax
 					/nomodkey /notify RespawnWnd RW_OptionsList listselect 1
 				} else {
-					DEBUGREZ option 2 in respawn window\ax
+					| DEBUGREZ option 2 in respawn window\ax
 					/nomodkey /notify RespawnWnd RW_OptionsList listselect 2 
 				}
 				/delay 1s
-				DEBUGREZ click RW_SelectButton
+				| DEBUGREZ click RW_SelectButton
 				/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
 			}
 
 			:cleardeadmarkers
-				DEBUGREZ delays for rez status to clear
+				| DEBUGREZ delays for rez status to clear
 				/delay 2s !${Me.State.Equal[HOVER]}
 				/delay 2s !${Me.Hovering}
 				/delay 2s !${Me.Dead}
-				DEBUGREZ Exit rez, clear event marker
+				| DEBUGREZ Exit rez, clear event marker
 				/call set_stop NOECHO
 				/varset switchAmIDead FALSE
 				/varset validRezFound FALSE
 				/varset rezWindowPct 0
 				/return TRUE			
 		} else /if (!${validRezFound}) {
-			DEBUGREZ This rez sucks. and not in a good way...
+			| DEBUGREZ This rez sucks. and not in a good way...
 			/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
 			/delay 5
 			/return FALSE
 		} 
 	}
 
-	DEBUGREZ ${cgood}EXIT\ax ${cbug}watch_for_rezbox(HOVER:(${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && SWITCHTAKEREZ:${switchRezTake} || SWITCHAMIDEAD:${switchAmIDead})\ax
-	DEBUGREZ call flagCallNeedRez: ${flagCallNeedRez}
+	| DEBUGREZ ${cgood}EXIT\ax ${cbug}watch_for_rezbox(HOVER:(${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) && SWITCHTAKEREZ:${switchRezTake} || SWITCHAMIDEAD:${switchAmIDead})\ax
+	| DEBUGREZ call flagCallNeedRez: ${flagCallNeedRez}
 /return
 
 
@@ -6872,7 +6879,7 @@ sub validate_zone(bool _error, bool _force)
 		/if (${burnForce}) /varset burnForce FALSE
 		/squelch /makecamp off
 		/if (${HomeSet}) /call writeINI HomeSet Movement FALSE
-		/call switch_clear_mode
+		/if (!${switchPersistentModes}) /call switch_clear_mode
 		/if (${coreAuto} && ${switchShrink}) /call check_shrink
 	}
 /return
@@ -6926,6 +6933,7 @@ sub validate_assist(string _echo, string _assist, string _name)
 		/call writeINI useForceAssist Common FALSE
 		/xtarget set 1 Autohater
 	
+	| group assist
 	} else /if (${_assist.Equal[g]}) {
 		DEBUG set group assist
  		/call writeINI useSmartAssist1 Common FALSE
@@ -6935,6 +6943,7 @@ sub validate_assist(string _echo, string _assist, string _name)
 		/call writeINI useForceAssist Common FALSE
 		/xtarget set 1 groupassisttarget	
 
+	| raid assist 1
 	} else /if (${_assist.Equal[1]}) {
  		/call writeINI useSmartAssist1 Common TRUE
  		/call writeINI useSmartAssist2 Common FALSE
@@ -6943,6 +6952,7 @@ sub validate_assist(string _echo, string _assist, string _name)
 		/call writeINI useForceAssist Common FALSE
 		/xtarget set 1 raidassist1target
 
+	| raid assist 2
 	} else /if (${_assist.Equal[2]}) {
  		/call writeINI useSmartAssist1 Common FALSE
  		/call writeINI useSmartAssist2 Common TRUE
@@ -6951,6 +6961,7 @@ sub validate_assist(string _echo, string _assist, string _name)
 		/call writeINI useForceAssist Common FALSE
 		/xtarget set 1 raidassist2target
 
+	| raid assist 3
 	} else /if (${_assist.Equal[3]}) {
  		/call writeINI useSmartAssist1 Common FALSE
  		/call writeINI useSmartAssist2 Common FALSE

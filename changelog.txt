@@ -15,6 +15,35 @@
      Enchanter, Shaman, Berserker
 
 
+20180719.00
+- check_for_corpse() -- this is the resurrection routine..
+  -- logic error where the cleric did not want to rez itself.
+  -- made some adjustments to help speed it up
+-- #event Zone
+  -- so an emote was found from monks that was causing zone updates to trigger. i know right.. damn monks..
+-- set_base_target_timers() rewite to speed up checks
+-- cast_AA_banestrike() removed due to AA change
+-- persistent modes.
+  -- the various off play modes will not end while zoning.
+  -- core.INI -> [general] -> switchPersistentModes = [TRUE|FALSE]
+    -- TRUE- modes will continue after zoning. use at your own risk.
+    -- FALSE - any zone and all modes will reset to off. THIS IS DEFAULT
+-- ALL CLASSES.inc
+  -- removed AA Banestrike casting from their respective routines
+- class.pal.inc
+  -- AA Hand of Piety will trigger of 50% of PALPoint health and the defcount number of mobs in area. not just 1
+  -- /pal loh [1,99] - percent health to use AA LoH on self
+  -- /pal loh - (on/off) enable/disable using AA LoH
+  -- AA Lay on Hands added to self healing
+  -- AA Gift of Life added to self healing
+- class.enc.inc
+  -- another adjustment to their summoned Mana Gem. in your toons INI put the name of the summoned item rank included. should work a lot better.
+- class.rng.inc
+  -- commented out all the debugs
+  -- removed the fast and slow heals. just heal1 and heal2 now. fix your INI
+  -- heals work/trigger off RNGPoint %
+
+
 20180702.00
 - cast_AA_slow() 
   -- removed. no longer needed
@@ -49,7 +78,6 @@
   -- agro and anti agro AAs conform to the agro switch now
 - class.mnk.inc
   -- fixed a couple spaces
-  
 
 
 20180624.00

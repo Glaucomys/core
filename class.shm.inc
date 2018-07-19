@@ -84,7 +84,6 @@ sub disc_SHM()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/doevents
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 /return
 
 

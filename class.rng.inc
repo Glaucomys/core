@@ -15,7 +15,7 @@
  *  NOTE: 
  ***|
 sub core_RNG()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
+	| DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	/doevents
 	AMIDEAD
 	CHECKTIE
@@ -25,7 +25,7 @@ sub core_RNG()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
+		| DEBUG combat:${cinfo}${combat.Upper}\ax		
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -68,14 +68,12 @@ sub core_RNG()
  *  NOTE: 
  ***|
 sub disc_RNG()
-	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
+	| DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
-
 	| agro control
 	/if (${switchAgro}) {
 		/if (${validate_cast[FALSE, disc, "${DiscEnrage}", ${Target2Kill}]}) /call core_cast2 "${DiscEnrage}" disc ${Target2Kill} FALSE
@@ -126,7 +124,7 @@ sub disc_RNG()
  *  NOTE: Will not cast spice if the buff is present or if your name is Norbert.
  ***|
 sub cast_AA_auspice()
-	DEBUGCLASS ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
+	| DEBUGCLASS ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -149,16 +147,29 @@ sub cast_AA_auspice()
  *  NOTE: 
  ***|
 sub patch_heal_RNG()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	| DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	AMIDEAD
 	CHECKEXIT
-	/if (${validate_cast[FALSE, spell, "${FastHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride}) /call core_cast2 "${FastHeal}" 0 ${Me.ID} cast_break
-	/call click_item_heal
-	/if (${validate_cast[FALSE, disc, "${DiscHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) {
-		/if (!${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast2 "${DiscHeal}" disc ${Target.ID} FALSE
+	| /if (${validate_cast[FALSE, spell, "${FastHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${FastHealPCT}*.${tmpHealOverride}) /call core_cast2 "${FastHeal}" 0 ${Me.ID} cast_break
+	
+	| heal 1
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) {
+		/if (${validate_cast[FALSE, spell, "${heal1}", ${Me.ID}]}) /call core_cast2 "${heal1}" 0 ${Me.ID}
 	}
-	/if (${validate_cast[FALSE, spell, "${SlowHeal}", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${SlowHeal}" 0 ${Me.ID} cast_break
+	
+	| Reflexive Healing Disc
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${SpawnCount[npc ${If[${setIgnoreLOS},,los]} radius ${Spell[${DiscHeal}].MyRange} playerstate 4 targetable]} >= 3) {
+		/if (${validate_cast[FALSE, disc, "${DiscHeal}", ${Me.ID}]} && !${Bool[${Me.Song[Bladespur Reflection]}]}) /call core_cast2 "${DiscHeal}" disc ${Target.ID} FALSE
+	}
+	
+	| heal 2
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) {
+		/if (${validate_cast[FALSE, spell, "${heal2}", ${Me.ID}]}) /call core_cast2 "${heal2}" 0 ${Me.ID}
+	}
+	
+	/call click_item_heal
+
 /return
 
 
@@ -170,7 +181,7 @@ sub patch_heal_RNG()
  *  NOTE: 
  ***|
 sub click_DPS_RNG()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	| DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -193,7 +204,7 @@ sub click_DPS_RNG()
  *  NOTE: When burn is engaged, the timer for this is ignored.
  ***|
 sub cast_nuke_summer(int _tmpID)
-	DEBUGCLASS ${cbug}cast_nuke_summer(ID: ${_tmpID})\ax 
+	| DEBUGCLASS ${cbug}cast_nuke_summer(ID: ${_tmpID})\ax 
 	/if (${timer_cast_nuke_summer}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -211,7 +222,7 @@ sub cast_nuke_summer(int _tmpID)
  *	NOTE: 
  ***| 
 sub synergy_RNG()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
+	| DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/doevents
@@ -282,13 +293,13 @@ sub synergy_RNG()
  ***|
 #bind setRNG /rng
 sub Bind_setRNG(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
+	| DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |fastheal|healpoint|spice|spiregroup|spireraid|summer
+  /declare _type string	local |healpoint|spice|spiregroup|spireraid|summer
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -304,8 +315,6 @@ sub Bind_setRNG(string _classType, string _verbage)
 	| enable/disable summer line of spells
 	/if (${Bool[${_classType.Find[summer]}]}) {
 		/call writeINI switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}
-		VOUT /${_bind} summer ${sep} ${If[${switchNukeSummer},${oenabled},${odisabled}]}
-		/return
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -336,7 +345,7 @@ sub Bind_setRNG(string _classType, string _verbage)
 			/return
 		}
 
-	| fast heal pct
+	|** fast heal pct
 	} else /if (${Bool[${_classType.Find[fastheal]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI FastHealPCT Spells ${_verbage}
@@ -344,6 +353,7 @@ sub Bind_setRNG(string _classType, string _verbage)
 			VOUT /${_bind} fastheal(${cnum}${FastHealPCT}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}
+		**|
 
 	}
 
@@ -353,7 +363,7 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${_type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
+		| /if (${_type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
 		/if (${_type.Arg[${_count},|].Equal[summer]}) /varset _listout ${_listout}(${If[${switchNukeSummer},${oon},${ooff}]})		
 		/varset _sep TRUE
 	/next _count

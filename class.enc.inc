@@ -187,7 +187,6 @@ sub disc_ENC()
 	CHECKEXIT
 	/doevents
 	CHECKTIE
-	/if (${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 	
 	/if (${validate_cast[FALSE, alt, "Crippling Aurora", ${Me.ID}]}) /call core_cast2 "Crippling Aurora" alt 0 FALSE
 	/if (${switchPcSwarm}) {
@@ -213,7 +212,7 @@ sub check_crystals()
 
 
 	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]}) {
-		/if (${validate_cast[FALSE, alt, "${mannaCrystal}", ${Me.ID}]}) /call core_cast2 "${mannaCrystal}" alt 0 check_for_adds
+		/if (${validate_cast[FALSE, alt, "Azure Mind Crystal", ${Me.ID}]}) /call core_cast2 "Azure Mind Crystal" alt 0 check_for_adds
 		/delay 20s !${Me.Casting.ID}
 		/delay 2s ${Cursor.Name.Equal[${mannaCrystal}]}
 		/call sort_cursor TRUE
