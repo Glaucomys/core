@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180719.01
+	/call setDeclare coreBuild											string	outer 20180726.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -2437,7 +2437,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	/if (${_cmd.Equal[rc]}) {
 		/if (!${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) /return FALSE
 		/if (!${Me.AltAbilityReady[Radiant Cure]}) /return FALSE
-		/if (${Me.Casting.ID}) /stopcast
+		/stopcast
 		/delay 1s !${Me.Casting.ID}
 		/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 		ECHOCHANNEL Radiant Cure
@@ -2491,7 +2491,7 @@ sub Event_EQBC_say(string line, string _sender, string _verbage)
 		/delay 5s ${Me.AssistComplete} 
 		/if (!${Target.ID}) /return
 	}
-	/while (${Me.Invis}) {
+	/if (${Me.Invis}) {
 		/makemevisible
 		/delay 1s !${Me.Invis}
 	}
@@ -3699,7 +3699,6 @@ sub Bind_petControl(string _pcType, string _verbage)
 		/if (!${validate_class[TRUE, ${PetList}]}) /return
 		/if (!${Bool[${_verbage}]}) {
 			/call writeINI switchPcPet Pet ${If[${switchPcPet},FALSE,TRUE]}
-			| /call echos switch "Use Pet" switchPcPet 0 0
 			/if (!${switchPcPet} && ${Pet.ID}) {
 				/if (${Me.AltAbilityReady[Suspended Minion]}) {
 					/if (${validate_cast[FALSE, alt, "Suspended Minion", ${Me.ID}]}) /call core_cast2 "Suspended Minion" alt 0 FALSE
@@ -3711,7 +3710,6 @@ sub Bind_petControl(string _pcType, string _verbage)
 			}
 		} else /if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI PcPetengageat Pet ${_verbage}
-			| /call echos number "Pet Engage" ${_verbage} 0 0
 		} else /if (!${Bool[${_pcNum}]} || !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} pet(${cnum}${PcPetengageat}\ax) valid range ${cinfo}1 - 99\ax
 			/return
@@ -3755,12 +3753,11 @@ sub Bind_petControl(string _pcType, string _verbage)
 	
 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]}
-		/if (${${_bind}Type.Arg[${_count},|].Equal[build]}) /varset _listout ${_listout} ${cinfo}build\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[pet]}) /varset _listout ${_listout} ${cinfo}pet\ax(${If[${PcPetengageat},${cnum}${PcPetengageat}\ax,${ooff}]})(${If[${switchPcPet},${oon},${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[swarm]}) /varset _listout ${_listout} ${cinfo}swarm\ax(${If[${PcSwarmengageat},${cnum}${PcSwarmengageat}\ax,${ooff}]})(${If[${switchPcSwarm},${oon},${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[type]}) /varset _listout ${_listout} ${cinfo}type\ax(${If[${Bool[${PcPettype}]},${cnum}${PcPettype}\ax,${ooff}]})
-		/if (${${_bind}Type.Arg[${_count},|].Equal[bag]}) /varset _listout ${_listout} ${cinfo}bag\ax(${If[${Bool[${PetBagSlotNumber}]},${cnum}${PetBagSlotNumber}\ax,${ooff}]})
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+		/if (${${_bind}Type.Arg[${_count},|].Equal[pet]}) /varset _listout ${_listout}(${If[${switchPcPet},${cnum}${PcPetengageat}\ax,${cbad}${PcPetengageat}\ax]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[swarm]}) /varset _listout ${_listout}(${If[${switchPcSwarm},${cnum}${PcSwarmengageat}\ax,${cbad}${PcSwarmengageat}\ax]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[type]}) /varset _listout ${_listout}(${If[${Bool[${PcPettype}]},${cnum}${PcPettype}\ax,${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[bag]}) /varset _listout ${_listout}(${If[${Bool[${PetBagSlotNumber}]},${cnum}${PetBagSlotNumber}\ax,${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -3983,7 +3980,6 @@ sub Bind_setCore(string _coreType, string _verbage)
 
 	| core auto/manual
 	/if (${Bool[${_coreType.Equal[auto]}]}) {
-		
 		/if (${Bool[${_verbage.Equal[on]}]}) {
 			/call writeINI coreAuto Common TRUE
 		} else /if (${Bool[${_verbage.Equal[off]}]}) {
@@ -4044,14 +4040,12 @@ sub Bind_setCore(string _coreType, string _verbage)
 
 	| reset core
 	} else /if (${Bool[${_coreType.Equal[reset]}]}) {
-		/call initialize_core
+		/call initialize_core ${_verbage}
 		/return
 		
 	| reset zone load INI
 	} else /if (${Bool[${_coreType.Equal[zonereset]}]}) {
 		/call validate_zone FALSE TRUE
-		| /call echos zone 0 0 0 0
-		| /call check_zone_INI ${_verbage}
 		/if (${switchShrink}) {
 			/if (${coreAuto}) /call check_shrink
 		}		
@@ -4599,7 +4593,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[smartengage]}) /varset _listout ${_listout}(${cnum}${smartengageAt}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[engage]}) /varset _listout ${_listout}(${cnum}${engageAt}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[nukedelay]}) /varset _listout ${_listout}(${cnum}${tNuke_Delay}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[agro]}) /varset _listout ${_listout}(${cnum}${MobAgro}\ax)(${If[${switchAgro},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[agro]}) /varset _listout ${_listout}(${If[${switchAgro},${cnum}${MobAgro}\ax,${cbad}${MobAgro}\ax]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[combatdistance]}) /varset _listout ${_listout}(${cnum}${CombatDistance}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[saferadius]}) /varset _listout ${_listout}(${cnum}${combatRadius}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[stopnuke]}) /varset _listout ${_listout}(${cnum}${stopnukeAt}\ax)
@@ -4693,9 +4687,6 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 	| set face fast
 	} else /if (${Bool[${_${_bind}Type.Equal[fast]}]}) {
 		/call writeINI SetFaceFast Movement ${If[${SetFaceFast},FALSE,TRUE]}  
-		VOUT /${_bind} fast ${sep} ${If[${SetFaceFast},${oenabled},${odisabled}]}
-		/if (${SetFaceFast}) VOUT ${owarning} ${sep} This is a MQ2 Dead Giveaway ${sep} ${owarning}
-		/return
 
 	| set home radius
 	} else /if (${Bool[${_${_bind}Type.Equal[radius]}]}) {
@@ -4774,16 +4765,13 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 
 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${${_bind}Type.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep},]} 
-		/if (${${_bind}Type.Arg[${_count},|].Equal[mount]}) /varset _listout ${_listout} ${cinfo}mount\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout} ${cinfo}gather\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[fast]}) /varset _listout ${_listout} ${If[${SetFaceFast},${cgood}fast\ax,${cinfo}fast\ax]}
-		/if (${${_bind}Type.Arg[${_count},|].Equal[behind]}) /varset _listout ${_listout} ${If[${SetStickBehind},${cgood}behind\ax,${cinfo}behind\ax]}
-		/if (${${_bind}Type.Arg[${_count},|].Equal[goto]}) /varset _listout ${_listout} ${cinfo}goto\ax
-		/if (${${_bind}Type.Arg[${_count},|].Equal[home]}) /varset _listout ${_listout} ${If[${HomeSet},${cgood}home\ax,${cinfo}home\ax]}
-		/if (${${_bind}Type.Arg[${_count},|].Equal[arc]}) /varset _listout ${_listout} ${cinfo}arc\ax(${cnum}${SetFaceArc}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[leash]}) /varset _listout ${_listout} ${cinfo}leash\ax(${cnum}${HomeLeash}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[radius]}) /varset _listout ${_listout} ${cinfo}radius\ax(${cnum}${HomeRadius}\ax)
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+		/if (${${_bind}Type.Arg[${_count},|].Equal[fast]}) /varset _listout ${_listout}(${If[${SetFaceFast},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[behind]}) /varset _listout ${_listout}(${If[${SetStickBehind},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[home]}) /varset _listout ${_listout}(${If[${HomeSet},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[arc]}) /varset _listout ${_listout}(${cnum}${SetFaceArc}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[leash]}) /varset _listout ${_listout}(${cnum}${HomeLeash}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[radius]}) /varset _listout ${_listout}(${cnum}${HomeRadius}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -5321,10 +5309,10 @@ sub Bind_set_combat_here()
 
 
 |***
- *	DES: deal with corpses
- *	USE: /cls
+ *	DES: sets all toons to override all engaeg HP% and attack as soon as there is a vlaid target in range
+ *	USE: /killmob
  *	INI: 
- *  NOTE: 
+ *  NOTE: this is just a simple broadcast of .override engageat. for like when your in a hurry and shit.
  ***|
 #bind killmob /killmob
 sub Bind_killmob()
@@ -5346,6 +5334,11 @@ sub Bind_killmob()
  ***|
 #bind imincharge /imincharge
 sub Bind_imincharge()
+	/call imincharge
+
+/return
+
+sub imincharge()
 
 	| set toons to off
 	/off
@@ -5357,6 +5350,9 @@ sub Bind_imincharge()
 	/bca //tc name ${Me.DisplayName}
 	/bca //tc time 5
 	/bca //tc distance 5
+
+
+
 
 /return
 

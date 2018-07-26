@@ -1562,7 +1562,9 @@ sub stick_to_target()
 		AMIDEAD	
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (!${Stick.Active} && ${Target.ID} && ${isValidTarget} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance} && ${switchCombatMelee}) {
-			/if (${coreAuto} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+			/if (${coreAuto}) {
+				/if (!${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+			}
 
 			DEBUG stick_to_target to mob. farther then:${CombatDistance}
 			/if (${coreAuto}) /squelch /stick id ${Target2Kill} ${CombatDistance} 
@@ -2624,7 +2626,6 @@ sub cast_cure()
 		| 100' 1 min
 		/if (${validate_class[FALSE, |PAL|SHM|CLR|DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				| /if (${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[radiant cure].MyRange}) /call core_cast "Radiant Cure" alt 0 FALSE
 				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 			}
 			/return
@@ -2634,7 +2635,6 @@ sub cast_cure()
 		| 200' 5 min
 		/if (${validate_class[FALSE, |PAL|CLR|DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				| /if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[Purify Soul].MyRange}) /call core_cast "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 				/if (${validate_cast[FALSE, alt, "Purify Soul", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 			}
 			/return
@@ -2644,23 +2644,10 @@ sub cast_cure()
 		| 0/100' 15 min
 		/if (${validate_class[FALSE, |CLR|DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
 			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				| /if (${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast "Group Purify Soul" alt 0 FALSE
 				/if (${validate_cast[FALSE, alt, "Group Purify Soul", ${Me.ID} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast2 "Group Purify Soul" alt 0 FALSE
 			}
 			/return
 		}
-
-		|** cure with spell
-		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed} && ${Spawn[${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCurse}].MyRange}) {
-			/call core_cast "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureCorrupt}].MyRange}) {
-			/call core_cast "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		} else /if (${Bool[${curePoison}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${curePoison}].MyRange}) {
-			/call core_cast "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= ${Spell[${cureDisease}].MyRange}) {
-			/call core_cast "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		}
-		**|
 
 		| cure with spell
 		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed}) {
@@ -2717,7 +2704,9 @@ sub use_skill_melee(int _tmpID)
 		/delay 5 ${Target.ID} == ${_tmpID}
 	}
 	
-	/if (${Target.ID} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${_tmpID} nolook ${If[${SetFaceFast},fast,]}
+	/if (${coreAuto}) {
+		/if (${Target.ID} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${_tmpID} nolook ${If[${SetFaceFast},fast,]}
+	}
 
 	| taunt /onoff agro
 	/if (${Bool[${taunt}]} && ${switchAgro}) {
@@ -2852,8 +2841,15 @@ sub set_combat(str _mode)
 		
 	| combat	
 	/if (${Bool[${_mode}]}) {
-		/if ((${switchCombatMelee} || ${switchCombatRange}) && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+		| /if ((${switchCombatMelee} || ${switchCombatRange}) && ${coreAuto} && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		
+		/if (${coreAuto}) {
+			/if (${switchCombatMelee} || ${switchCombatRange}) {
+				/if (!${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
+			}
+		}
+
+
 		| stop melee on DS ??
 		/if (${coreAuto} && ${Bool[${Target.DSed}]} && ${stoponDS} && !${switchAgro}) {
 			/call set_stop NOECHO
@@ -6160,20 +6156,19 @@ sub cast_slow(int _tmpID)
 	
 	| dont waste time if its slowed already
 	/if (${Target.Slowed.Duration} && ${Target.Slowed.Name.NotEqual[Tendon Slice]}) {
-		DEBUG Slowed already
 		/call create_timer timer_slow_${Target2Kill} ${Target.Slowed.Duration.TotalSeconds}s
 		/return
 	}
+	
+	| check the things	
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
+	
 	UPDATEHUD "Slow"	
 	
-	| get to business
-	/declare _spelltype string local FALSE
-	/declare _readytype string local FALSE
-
 	| if the spell is identified in the INI and memed we will use that over the AA
 	/if (${Bool[${Me.Gem[${spellSlow}]}]}) {
-		/varset _spelltype gem${Me.Gem[${spellSlow}]}
-		/varset _readytype SpellReady
+		/delay 2.25s ${Me.SpellReady[${spellSlow}]}	
+		/if (${validate_cast[FALSE, spell, "${spellSlow}", ${_tmpID}]}) /call core_cast2 "${spellSlow}"0 ${_tmpID} FALSE
 
 	| spell not identified, using AA.
 	} else /if (${spellSlow.Equal[NULL]} || !${Bool[${spellSlow}]} || !${Bool[${Me.Gem[${spellSlow}]}]}) {
@@ -6181,17 +6176,11 @@ sub cast_slow(int _tmpID)
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellSlow Turgur's Swarm
 		/if (${Select[${Me.Class.ShortName},BST]}) /varset spellSlow Sha's Reprisal
 		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellSlow Death's Malaise	
-		/varset _spelltype alt
-		/varset _readytype AltAbilityReady
+
+		/delay 2.25s ${Me.AltAbilityReady[${spellSlow}]}	
+		/if (${validate_cast[FALSE, alt, "${spellSlow}", ${_tmpID}]}) /call core_cast2 "${spellSlow}" alt ${_tmpID} FALSE
 	}
 	
-	| check the things	
-	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellSlow}]}) /return
-	
-	| wait for it to be ready
-	/delay 2.25s ${Me.${_readytype}[${spellSlow}]}	
-	/call core_cast "${spellSlow}" ${_spelltype} ${_tmpID} FALSE
-
 	| set time based upn cast return	
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 		/call create_timer timer_slow_${_tmpID} ${Spell[${spellSlow}].Duration.TotalSeconds}s
@@ -6220,6 +6209,9 @@ sub cast_malo(int _tmpID)
 	/squelch /target ID ${_tmpID}
 	/delay 1s ${Target.ID} == ${_tmpID}
 	
+	| check the things .. normal things	
+	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
+
 	| dont waste time if its Maloed already
 	/if (${Target.Maloed.Duration}) {
 		/call create_timer timer_malo_${Target2Kill} ${Target.Maloed.Duration.TotalSeconds}s
@@ -6227,35 +6219,33 @@ sub cast_malo(int _tmpID)
 	}
 	UPDATEHUD "Malo"
 
-	| can't touch this.... 
-	/declare _spelltype string local FALSE
-	/declare _readytype string local FALSE
-
-	| spell not identified, using AA.
-	/if (${spellMalo.Equal[NULL]} || !${Bool[${spellMalo}]} || !${Bool[${Me.Gem[${spellMalo}]}]}) {
-		/if (${Select[${Me.Class.ShortName},MAG]}) /varset spellMalo Malosinete
+	| now the spell 
+	/if (${Bool[${Me.Gem[${spellMalo}]}]}) {
+		/delay 2.25s ${Me.SpellReady[${spellMalo}]}	
+		/if (${validate_cast[FALSE, spell, "${spellMalo}", ${_tmpID}]}) /call core_cast2 "${spellMalo}" 0 ${_tmpID} FALSE
+		
+	| fall back to AA	
+	} else /if (${spellMalo.Equal[NULL]} || !${Bool[${spellMalo}]} || !${Bool[${Me.Gem[${spellMalo}]}]}) {
+		/if (${Select[${Me.Class.ShortName},MAG]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} >= 2) {
+			/varset spellMalo Wind of Malosinete
+		} else /if (${Select[${Me.Class.ShortName},MAG]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} == 1) {
+			/varset spellMalo Malosinete
+		}
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellMalo Malosinete
 		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellMalo Scent of Terris
-		/varset _spelltype alt
-		/varset _readytype SpellReady
-	} else /if (${Bool[${Me.Gem[${spellMalo}]}]}) {
-		/varset _spelltype gem${Me.Gem[${spellMalo}]}
-		/varset _readytype AltAbilityReady
-	}		
+
+		/delay 2.25s ${Me.AltAbilityReady[${spellMalo}]}	
+		/if (${validate_cast[FALSE, alt, "${spellMalo}", ${_tmpID}]}) /call core_cast2 "${spellMalo}" alt ${_tmpID} FALSE
 	
-	| check the things .. normal things	
-	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID} || !${Bool[${spellMalo}]}) /return
-	/delay 2.25s ${Me.${_readytype}[${spellMalo}]}	
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} > 2 && ${Select[${Me.Class.ShortName},MAG]}) {
-		/call core_cast "Wind of Malosinete" alt ${_tmpID} FALSE
-	} else {
-		/call core_cast "${spellMalo}" ${_spelltype} ${_tmpID} FALSE
-	}	
+	}
+	
+	| set the timers	
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 		/call create_timer timer_malo_${_tmpID} ${Spell[${spellMalo}].Duration.TotalSeconds}s
 	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
 		/call create_timer timer_malo_${_tmpID} 15s
 	}
+	
 	UPDATEHUD FALSE	
 /return
 
@@ -6281,41 +6271,38 @@ sub cast_cripple(int _tmpID)
 	/delay 1s ${Target.ID} == ${_tmpID}
 
 	| if its crippled, move on
-	/if (${Target.Crippled.Duration}) {
+	/if (${Target.Crippled.Duration} || ${Target.BuffDuration[${spellCripple}].TotalSeconds}) {
 		/call create_timer timer_cripple_${_tmpID} ${Target.Crippled.Duration.TotalSeconds}s
 		/return
 	}
 
-	| get to business
-	/declare _spelltype string local FALSE
 
-	| spwhat cripple to use?
-	
+	UPDATEHUD "Cripple"	
+
+	| spell first
 	/if (${Bool[${Me.Gem[${spellCripple}]}]}) {
-		/varset _spelltype gem${Me.Gem[${spellCripple}]}
-	} else /if (${Select[${Me.Class.ShortName},ENC,WIZ,SHM]} && (!${Bool[${Me.Gem[${spellCripple}]}]}|| ${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]})) {
-		/varset _spelltype alt
+		/delay 2.25s ${Me.SpellReady[${spellCripple}]}	
+		/if (${Select[${Me.Class.ShortName},ENC]}) {
+			/if (${validate_cast[FALSE, spell, "${spellCripple}", ${_tmpID}]})  /call core_cast2 "${spellCripple}" 0 ${_tmpID} check_for_adds
+		} else {
+			/if (${validate_cast[FALSE, spell, "${spellCripple}", ${_tmpID}]})  /call core_cast2 "${spellCripple}" 0 ${_tmpID}
+		}
+		
+	| fall back to alt ability	
+	} else /if (${Select[${Me.Class.ShortName},ENC,WIZ,SHM]} && (!${Bool[${Me.Gem[${spellCripple}]}]} || ${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]})) {
 		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellCripple Dreary Deeds
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellCripple Crippling Spirit
 		/if (${Select[${Me.Class.ShortName},WIZ]}) /varset spellCripple Lower Element
-	}
-	
-	| cripple spell already exists on
-	/if (${Target.BuffDuration[${spellCripple}].TotalSeconds}) {
-		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
-		/return		
+		
+		/if (${Select[${Me.Class.ShortName},ENC]}) {
+			/if (${validate_cast[FALSE, alt, "${spellCripple}", ${_tmpID}]})  /call core_cast2 "${spellCripple}" alt ${_tmpID} check_for_adds
+		} else {
+			/if (${validate_cast[FALSE, alt, "${spellCripple}", ${_tmpID}]})  /call core_cast2 "${spellCripple}" alt ${_tmpID}
+		}		
+		
 	}
 
-	UPDATEHUD "Cripple"	
-	DEBUG CRIPPLE CASTING
-	/if (${_spelltype.NotEqual[alt]}) /delay 2.25s ${Me.SpellReady[${spellCripple}]}	
-	
-	/if (${Select[${Me.Class.ShortName},ENC]}) {
-		/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID} check_for_adds
-	} else {
-		/call core_cast "${spellCripple}" ${_spelltype} ${_tmpID}
-	}
-	
+	| set timers
 	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 		/call create_timer timer_cripple_${_tmpID} ${Spell[${spellCripple}].Duration.TotalSeconds}s
 	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
@@ -6412,7 +6399,7 @@ sub check_deBuffs(int _tmpID)
 		/if (!${Bool[${timer_slow_${_tmpID}}]} && !${validate_class[FALSE, |BRD]}) {
 			/if (${Select[${Me.Class.ShortName},SHM]}) {
 				/if (${SpawnCount[npc radius ${MobAgro} playerstate 4]} > 2) {
-					/call core_cast "${spellAESlow}" 0 ${_tmpID} FALSE
+					/if (${validate_cast[FALSE, spell, "${spellAESlow}", ${_tmpID}]}) /call core_cast2 "${spellAESlow}" 0 ${_tmpID} FALSE
 				} else {
 					/call cast_slow ${_tmpID}
 				}
@@ -6813,7 +6800,7 @@ sub cast_AA_fireworks()
 		/return
 	} else /if (${Me.AltAbilityReady[Glyph of Fireworks II]}) {
 		VOUT 'yo .. hold my beer ..
-		/call core_cast "Glyph of Fireworks II" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Glyph of Fireworks II", ${Me.ID}]}) /call core_cast2 "Glyph of Fireworks II" alt 0 FALSE
 	}
 /return
 
@@ -6836,7 +6823,7 @@ sub click_item_heal()
 		/if (!${FindItem[${clickHealItem.Arg[${_count},|]}].ID}) /continue
 		/if (!${Me.ItemReady[${clickHealItem.Arg[${_count},|]}]}) /continue
 		
-		/call core_cast "${clickHealItem.Arg[${_count},|]}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${clickHealItem.Arg[${_count},|]}", ${Me.ID}]}) /call core_cast2 "${clickHealItem.Arg[${_count},|]}" item 0 FALSE
 	/next _count		
 /return
 
@@ -7035,7 +7022,7 @@ sub trigger_alliance(int _tmpID)
 		
 	| alliance time
 	/if (!${Target.BuffDuration[${${Me.Class.ShortName}Alliance}].TotalSeconds}) {
-		/call core_cast "${Spell[${${Me.Class.ShortName}Alliance}].RankName}" 0 ${_tmpID} FALSE
+		/if (${validate_cast[FALSE, spell, "${Spell[${${Me.Class.ShortName}Alliance}].RankName}", ${_tmpID}]}) /call core_cast3 "${Spell[${${Me.Class.ShortName}Alliance}].RankName}" 0 ${_tmpID} FALSE
 		/return
 	}
 
@@ -7050,7 +7037,7 @@ sub trigger_alliance(int _tmpID)
 	| is one of the trigger spells ready?
 	/for _count 1 to ${spellAllianceTrigger.Count[|]}
 		/if (${Me.SpellReady[${Spell[${spellAllianceTrigger.Arg[${_count},|]}].RankName}]}) {
-			/call core_cast "${Spell[${spellAllianceTrigger.Arg[${_count},|]}].RankName}" 0 ${_tmpID} FALSE
+			/if (${validate_cast[FALSE, spell, "${Spell[${spellAllianceTrigger.Arg[${_count},|]}].RankName}", ${_tmpID}]}) /call core_cast2 "${Spell[${spellAllianceTrigger.Arg[${_count},|]}].RankName}" 0 ${_tmpID} FALSE
 			/continue
 		}
 	/next _count
@@ -7065,7 +7052,6 @@ sub trigger_alliance(int _tmpID)
  *  NOTE: 
  ***|
 sub setDeclare(string _name, string _type, string _section, string _value)
-	| /echo \asetDeclare\ax(${_name.Left[1].Upper}${_name.Right[-1]} -> ${_type} -> ${_value})
 	/if (${Defined[${_name}]}) {
 		/varset ${_name} ${_value}
 	} else {
@@ -7115,3 +7101,22 @@ sub cast_AA_shield_flash()
 /return
 
 
+
+|***
+ *	DES: checks senders anme or guild status to the safelist ins core.ini
+ *	USE: ${validate_safelist[${_sender}]}
+ *	INI: core.ini
+ *  NOTE: we assume no one is trustable
+ ***|
+sub validate_safelist(string _sender)
+	| override and accept everyone
+	/if (${switchOverrideSafelist}) /return TRUE
+
+	| basic safe list check
+	/if (${safelist.Find[${_sender}]}) /return TRUE
+
+	| guild safe list check
+	/if (${switchGuildinSafelist} && ${Bool[${Me.Guild}]}) {
+		/if (${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]}) /return TRUE
+	}
+/return FALSE

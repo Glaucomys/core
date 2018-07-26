@@ -835,7 +835,7 @@ sub Bind_setCLR(string _classType, string _verbage)
 	| set XT refresh list Time
 	} else /if (${Bool[${_classType.Equal[xttime]}]}) {
 		/if (!${validate_expansion[TRUE, |16]}) /return
-		/if (${Range.Between:${Int[${_verbage}]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,5:${Int[${_verbage}]}]}) {
 			/call writeINI tXHeal Timer ${_verbage}
 		} else {
 			VOUT /${_bind} xttime [${cinfo}${tXHeal}m\ax] allowable range ${sep} ${cinfo}1 - 5 min\ax

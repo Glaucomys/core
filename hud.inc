@@ -70,17 +70,25 @@ sub Bind_hud(string _hcType, string _hcVerbage)
  *	DES: HUD adjustment
  *	USE: 
  *	INI: 
- 
- *  NOTE:
+  *  NOTE:
  ***|
 sub HUDUpdate()
 	DEBUG ${cbug}HUDUpdate()\ax
 	VOUT Updating MQ2HUD.INI - > [core]
-	/delay 1s
+	/delay 5
 	
 	| Build
 	/noparse /ini HUDPATH "core1" "3,5,26,255,255,255,Build"
 	/noparse /ini HUDPATH "core2" "19,44,26,100,149,237,${coreBuild}"
+	
+	
+	
+/return
+
+
+
+${Ini[${INICore},${section},${name.Left[1].Upper}${name.Right[-1]},"${value}",noparse]}
+	
 
 	| last tell
 	/noparse /ini HUDPATH "tell1" "3,5,38,255,255,255,Tell"

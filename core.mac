@@ -26,7 +26,7 @@
 	- test.inc									empty. testing purposes.
 	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
 	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
-	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell
+	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell, Announce
 	- blurb.inc									Expansion specific raid announcements. A lazy way to send raid instructions to all in RS.
 	- mode.inc									All Non-Standard Mode controlls.
 	- core.SERVER.CLS.NAME.ini	Character specific INI settings.
@@ -94,7 +94,9 @@
 #define CHECKEXIT "/if (${check_exit[]}) /return"
 #define CHECKTIE "/if ((${SetTie} && !${Bool[${timer_check_Tie}]}) || (${SetTie} && ${SetTieLock})) /call set_tie"
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"
-#define CHECKSAFELIST "/if ((!${safelist.Find[${_sender}]} || ${switchGuildinSafelist} && !${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]}) && !${switchOverrideSafelist}) /return"
+| #define CHECKSAFELIST "/if ((!${safelist.Find[${_sender}]} || ${switchGuildinSafelist} && !${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]}) && !${switchOverrideSafelist}) /return"
+| #define CHECKSAFELIST "/if ((!${safelist.Find[${_sender}]} || (!${switchGuildinSafelist} && !${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]})) && !${switchOverrideSafelist}) /return"
+#define CHECKSAFELIST "/if (!${validate_safelist[${_sender}]}) /return FALSE"
 #define UPDATEHUD "/call update_HUD_notices"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
@@ -126,14 +128,16 @@
 #include tc\fixini.inc
 
 
+
+
 |***
  *	DES: Main .. duhh..
  *	USE: 
  *	INI: bunches of 'em
  *  NOTE: 
  ***|
-sub main()
-	/call initialize_core
+sub main(string _ini)
+	/call initialize_core ${_ini}
 	  
 	:loopmain
   	DEBUG ${cbug}:loopmain (Core: ${coreBuild})\ax
@@ -151,7 +155,6 @@ sub main()
 		
 		| what is this for??
 		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}
-
 		| sort /heal override ##
 		/if (${tmpHealOverride} != ${HealOverride}) /varset tmpHealOverride ${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
 		| adjustHUD death count
@@ -261,10 +264,12 @@ sub main()
 			}
 		}
 		/doevents
+		
+		| time to take this bitch to church!
 		/call core_${Me.Class.ShortName}
 	/goto :loopmain
 	
-
+	| this is MQ reserverd..
 	| :OnExit	
 	
 /return
@@ -277,16 +282,50 @@ sub main()
  *	INI: 
  *  NOTE: what did you expect?
  ***| 	
-sub initialize_core()
+sub initialize_core(string _ini)
 	/mqclear
 	/if (${Target.ID}) /squelch /target clear
 
-	/if (!${Defined[INICore]}) /declare INICore 								string 	outer tc\core.ini
-	/if (!${Defined[INIClass]}) /declare INIClass 							string 	outer tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
-	/if (!${Defined[INIZone]}) /declare INIZone						     	string 	outer tc\core.zone.ini
-	/if (!${Defined[INILoot]}) /declare INILoot									string  outer	tc\core.loot.ini
-	/if (!${Defined[INIWiki]}) /declare INIWiki		   				  	string 	outer tc\core.wiki.ini
-	/if (!${Defined[INIBlurb]}) /declare INIBlurb								string	outer tc\core.blurb.ini
+	| set adjustable INIs if you're in to that kind of thing
+	/if (${Bool[${_ini}]}) {
+		| set core INI alternate
+		/if (!${Defined[INICore]}) /declare INICore string outer
+		/varset INICore tc\core.${_ini}.ini
+		
+		| set class INI alternate
+		/if (!${Defined[INIClass]}) /declare INIClass string outer 
+		/varset INIClass tc\core.${_ini}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
+		
+		| set zone INI alternate
+		/if (!${Defined[INIZone]}) /declare INIZone string outer 
+		/varset INIZone tc\core.${_ini}.zone.ini
+
+		| set loot INI alternate
+		/if (!${Defined[INILoot]}) /declare INILoot string outer 
+		/varset INILoot tc\core.${_ini}.loot.ini
+
+	| and if you are not, use the base
+	} else {
+		| set core INI
+		/if (!${Defined[INICore]}) /declare INICore string outer 
+		/varset INICore tc\core.ini
+		
+		| set class INI
+		/if (!${Defined[INIClass]}) /declare INIClass string outer 
+		/varset INIClass tc\core.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}.ini
+
+		| set zone INI
+		/if (!${Defined[INIZone]}) /declare INIZone string outer 
+		/varset INIZone tc\core.zone.ini
+		
+		| set loot INI
+		/if (!${Defined[INILoot]}) /declare INILoot string outer 
+		/varset INILoot tc\core.loot.ini
+	}
+	
+	| set remaining INIs
+	/if (!${Defined[INIWiki]}) /declare INIWiki string outer tc\core.wiki.ini
+	/if (!${Defined[INIBlurb]}) /declare INIBlurb string outer tc\core.blurb.ini
 	
 	/call set_declares
 	/if (${switchDispBuild}) /call echos initialize 0 0 0 0
@@ -303,6 +342,9 @@ sub initialize_core()
   /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
 	/if (${switchDispInfo}) VOUT Commands ${sep} ${cinfo}/info\ax
 	/if (${maintenance.Find[${Me.DisplayName}]}) VOUT ${owarning} maintenance ${sep} ${cinfo}${Me.DisplayName}\ax
+	/if (${Bool[${_ini}]}) {
+		OUT ${onotice} Alternate INI in use ${sep} ${cinfo}${_ini}\ax
+	}
 	OUT ${cgood}Ready\ax
 /return
 
@@ -407,5 +449,4 @@ sub base_preperation()
 		VOUT ${owarning} ${sep} FIX: \aw/core killcode=\ax${remoteKillKey}
 		VOUT ${cbad}CHANGE THIS\ax
 	}		
-		
 /return

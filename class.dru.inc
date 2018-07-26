@@ -251,7 +251,7 @@ sub check_heal_group_DRU()
  *	INI: 
  *  NOTE: 
  ***|
-sub check_healXTarget_DRU()
+sub check_heal_XTarget_DRU()
 	DEBUGCLASS ${cbug}check_HealXTarget_${Me.Class.ShortName}()\ax
 	AMIDEAD
 

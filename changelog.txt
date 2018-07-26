@@ -14,6 +14,40 @@
      Necromancer, Monk, Beastlord, 
      Enchanter, Shaman, Berserker
 
+
+20180726.00
+- migrated to new casting routines
+  -- cast_slow()
+  -- cast_malo()
+  -- cast_cripple()
+  -- cast_AA_fireworks()
+  -- click_item_heal()
+  -- check_deBuffs()
+- Facing Movements !!
+  -- Manual toons will no longer do facing movements. you are on your own to turn your damn toon
+- /pc
+  -- cosmetic changes
+- /movement
+  -- cosmetic changes
+- Safelist 
+  -- rewrite of the safelist functions.
+- alternate INI usage
+  -- alternate INI name is NOT required. the defaults ahve NOT changed
+  -- you can enter the INI alternate on mac start or while the mac is running.
+  -- on mac start it would look like tc\core.mac alt6
+  -- the ini files will have the name you give for the alternate as part of the file name
+    -- core.alt6.ini
+    -- core.alt6.loot.ini
+    -- core.alt6.zone.ini
+    -- core.alt6.server.CLS.Name.ini
+  -- there is no limit to the number of INIs
+  -- i would advise using contiguous words/phrases/numbers for the alternate ini names.
+  -- changing INIs while mac running would look like /core reset alt6
+  -- if the INI does not exist, it will be generated from scratch
+- class.dru.inc
+  -- type in xtarget healing sub name.
+
+
 20180719.01
  - class.rog.inc
    -- because fuck commas..
