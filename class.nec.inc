@@ -15,7 +15,7 @@
  ***|
 sub core_NEC()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 	CHECKREZ
@@ -97,7 +97,7 @@ sub patch_heal_NEC()
 sub disc_NEC()
 	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
 
@@ -129,7 +129,7 @@ sub disc_NEC()
 sub synergy_NEC()
     DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
     CHECKEXIT
-    /doevents
+    CHECKINPUTS
     
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Me.Song[Gift of Deathly Resolve].ID}) /call cast_DOT
@@ -163,7 +163,7 @@ sub click_DPS_NEC()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKTIE
-	/doevents
+	CHECKINPUTS
 	/call click_horn_of_unity 	
 /return
 
@@ -177,7 +177,7 @@ sub click_DPS_NEC()
  ***|
 sub cast_blood(int _tmpID)
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call create_timer timer_check_blood ${tCheck_Blood}
 	/if (${Bool[${Me.Song[Chaotic Power]}]}) /return
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -217,7 +217,7 @@ sub sac_toon()
 sub check_bloom()
 	DEBUGCLASS ${cbug}check_harvest()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 
 	/if (${switchGather}) {

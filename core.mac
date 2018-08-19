@@ -94,13 +94,15 @@
 #define CHECKEXIT "/if (${check_exit[]}) /return"
 #define CHECKTIE "/if ((${SetTie} && !${Bool[${timer_check_Tie}]}) || (${SetTie} && ${SetTieLock})) /call set_tie"
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"
-| #define CHECKSAFELIST "/if ((!${safelist.Find[${_sender}]} || ${switchGuildinSafelist} && !${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]}) && !${switchOverrideSafelist}) /return"
-| #define CHECKSAFELIST "/if ((!${safelist.Find[${_sender}]} || (!${switchGuildinSafelist} && !${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]})) && !${switchOverrideSafelist}) /return"
 #define CHECKSAFELIST "/if (!${validate_safelist[${_sender}]}) /return FALSE"
 #define UPDATEHUD "/call update_HUD_notices"
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
 #define CHECKCOMBATCAST "/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return TRUE"
+| #define CHECKBINDS "/varset bindtrigger TRUE"
+
+#define CHECKINPUTS "/multiline ; /doevents ; /varset bindtrigger TRUE"
+
 
 #include tc\declare.inc
 #include tc\common.inc
@@ -138,9 +140,12 @@
  ***|
 sub main(string _ini)
 	/call initialize_core ${_ini}
+	/declare _count int 0
 	  
 	:loopmain
   	DEBUG ${cbug}:loopmain (Core: ${coreBuild})\ax
+
+	  CHECKINPUTS
 
 		| locked in maintenance mode ?
 		/if (${maintenance.Find[${Me.DisplayName}]}) {
@@ -148,7 +153,6 @@ sub main(string _ini)
 			/goto :loopmain
 		} 
 	  AMIDEAD
-	  /doevents
   
 		/if (!${timer_check_EQBC}) /call check_one_mind
 		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
@@ -162,7 +166,6 @@ sub main(string _ini)
 		
 		CHECKREZ	
 	  UPDATEHUD FALSE	
-	 	/doevents
 		CLEARCURSOR
 		
 		/if (${coreAuto} || ${switchAADiscnowManual}) {
@@ -231,7 +234,7 @@ sub main(string _ini)
 		}
 
 		| guns need ammo
-		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
+		/if (${switchCombatRange}) /call check_ammo
 		
 		| pet dragon pissed in my boots!
 		/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]}) /pet get lost
@@ -243,7 +246,7 @@ sub main(string _ini)
 			/if ((${coreAuto} || ${switchOverrideLoot}) && (!${SafeZone} || ${switchOverrideSafezone})) /call do_loot
 		}
 
-		/doevents		
+		CHECKINPUTS		
 		
 		| non normal modes of operation
 		/call do_mode
@@ -263,7 +266,7 @@ sub main(string _ini)
 				}
 			}
 		}
-		/doevents
+		CHECKINPUTS
 		
 		| time to take this bitch to church!
 		/call core_${Me.Class.ShortName}

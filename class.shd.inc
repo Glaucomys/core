@@ -16,7 +16,7 @@
  ***|
 sub core_SHD()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 	
@@ -74,7 +74,7 @@ sub disc_SHD()
 	DEBUGCLASS ${cbug}disc_SHD()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	CHECKTIE
 
@@ -88,7 +88,16 @@ sub disc_SHD()
 	}
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
-	
+	| AA Voice of Thule AA
+	/if (${switchAgro} && !${timer_check_vot} && ${switchVoT}) {
+		/if (!${Me.Buff[Voice of Thule].ID}) {	
+			/if (${validate_cast[FALSE, alt, "Voice of Thule", ${Me.ID}]}) /call core_cast2 "Voice of Thule" alt ${Me.ID} FALSE
+			/call create_timer timer_check_vot ${tcheck_vot}
+		}
+	} else /if ((!${switchAgro} && ${Me.Buff[Voice of Thule].ID}) || !${switchVoT}) {
+			/invoke ${Me.Buff[Voice of Thule].Remove}
+	}
+
 	| get me sum...
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 
@@ -111,13 +120,9 @@ sub disc_SHD()
 		/if (${validate_cast[FALSE, alt, "Chattering Bones", ${Target2Kill}]}) /call core_cast2 "Chattering Bones" alt ${Target2Kill} FALSE
 	}
 	
-	
 	/if (${validate_cast[FALSE, disc, "${Withstand}", ${Me.ID}]}) /call core_cast2 "${Withstand}" disc 0 FALSE
 	/if (${validate_cast[FALSE, alt, "Thought Leech", ${Target2Kill}]} &&  ${Me.PctMana} <= 60*.${tmpHealOverride}) /call core_cast2 "Thought Leech" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${BladeStrike}", ${Target2Kill}]}) /call core_cast2 "${BladeStrike}" disc ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, alt, "Soul Flay", ${Me.ID}]}) /call core_cast2 "Soul Flay" alt 0 FALSE
-	
-	/if (${validate_cast[FALSE, activedisc, "Deflection Discipline", ${Me.ID}]} && ${Me.PctHPs} < 50*.${tmpHealOverride}) /call core_cast2 "Deflection Discipline" disc 0 FALSE
 
 /return
 
@@ -133,7 +138,7 @@ sub get_agro_SHD()
 	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchPcPet}) /call send_pet
 	
@@ -192,7 +197,7 @@ sub click_DPS_SHD()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 /return
@@ -210,7 +215,7 @@ sub check_skin()
 	AMIDEAD
 	SIMPLEEXIT
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return	
 	/if (!${Bool[${Me.Buff[${Skin}]}]} && ${Me.SpellReady[${Skin}]}) {
 		/call core_cast "${Skin}" 0 0 FALSE
@@ -230,7 +235,7 @@ sub synergy_SHD()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return		
 	
 	| defensive	
@@ -242,7 +247,17 @@ sub synergy_SHD()
 			/break
 		}			
 	/next _count	
+	
+	| deflection
+	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride}) {
+		/if (${validate_cast[FALSE, disc, "Deflection Discipline", ${Me.ID}]}) {
+			/call core_cast2 "Deflection Discipline" disc 0 FALSE
+			/return
+		}
+	}	
+	
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+
 
 	/if (${Me.AltAbilityReady[T`Vyl's Resolve]} && ${Target.Distance} <= ${Spell[T`Vyl's Resolve].MyRange}) /call core_cast "T`Vyl's Resolve" alt ${Target2Kill} FALSE
 	/if (${Me.CombatAbilityReady[${CrimsonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimsonBlade}].EnduranceCost}) /call core_cast "${CrimsonBlade}" disc 0 FALSE
@@ -284,7 +299,7 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|harmonious|healpoint|shieldflash|skin|spiregroup|spireraid|stance
+  /declare _type string	local |ae|defcount|harmonious|healpoint|shieldflash|skin|spiregroup|spireraid|stance|taunt|vot
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -342,9 +357,20 @@ sub Bind_setSHD(string _classType, string _verbage)
 			/return
 		}
 
+	| on/off taunt
+	} else /if (${Bool[${_classType.Equal[taunt]}]}) {
+		/call writeINI taunt meleedisc ${If[${taunt},FALSE,TRUE]}  
+
+
 	| AE or Focused Melee
 	} else /if (${Bool[${_classType.Equal[ae]}]}) {
 		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
+
+
+	| AA Voice of Thule
+	} else /if (${Bool[${_classType.Equal[vot]}]}) {
+		/call writeINI switchVoT Buffs ${If[${switchVoT},FALSE,TRUE]}
+
 
 	| defensive mob agro count
 	} else /if (${Bool[${_classType.Equal[defcount]}]}) {
@@ -369,9 +395,11 @@ sub Bind_setSHD(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[stance]}) /varset _listout ${_listout}(${If[${Bool[${switchStance}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${Bool[${AEMelee}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[vot]}) /varset _listout ${_listout}(${If[${Bool[${switchVoT}]},${oon},${ooff}]})
 
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
-
+switchVoT

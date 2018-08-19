@@ -15,7 +15,7 @@
  ***|
 sub core_MAG()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 
 	CHECKTIE
@@ -121,7 +121,7 @@ sub click_DPS_MAG()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call click_horn_of_unity 	
 	
 	| click summon rods. DPS fillers....
@@ -248,7 +248,7 @@ sub force_twincast_MAG()
 	/if (${is_target_dead[${Target2Kill}]}) /return 
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
 
 	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID} || ${Me.Buff[Twincast].ID}) /return
@@ -275,7 +275,7 @@ sub force_twincast_MAG()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/return	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
 	/if (!${Me.Buff[Improved Twincast].ID} && !${Me.Buff[Twincast].ID} && ${Me.SpellReady[${TwincastSpell}]}) {
 		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
@@ -299,7 +299,7 @@ sub force_twincast_MAG()
 sub check_gather()
 	DEBUGCLASS ${cbug}check_gather()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 
 	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID} || ${Me.Buff[Twincast].ID}) /return

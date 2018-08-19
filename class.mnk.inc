@@ -15,7 +15,7 @@
  ***|
 sub core_MNK()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 
@@ -62,7 +62,7 @@ sub core_MNK()
 sub disc_MNK()
 	DEBUGCLASS ${cbug}disc_MNK()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call check_deBuffs ${Target2Kill}
 	/call get_agro_${Me.Class.ShortName}
@@ -115,7 +115,7 @@ sub patch_heal_MNK()
 sub click_DPS_MNK()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call click_horn_of_unity 	
 /return
 
@@ -143,7 +143,7 @@ sub get_agro_MNK()
 sub synergy_MNK()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	
 	/call cast_AA_spire
 	

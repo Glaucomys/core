@@ -15,7 +15,7 @@
  ***|
 sub core_BST()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 
@@ -75,7 +75,7 @@ sub disc_BST()
 	/if (${Me.PctEndurance} < 3) /return
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 
 	/if (${is_target_dead[${Target2Kill}]}) /return
 			
@@ -205,7 +205,7 @@ sub cast_AA_paragon()
 	DEBUGCLASS ${cbug}cast_AA_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Paragon of Spirit]} && !${Bool[${Me.Song[Paragon of Spirit]}]}) {
 		/if (${validate_cast[FALSE, alt, "Mass Group Buff", ${Me.ID}]}) /call core_cast2 "Mass Group Buff" alt 0 FALSE
@@ -228,7 +228,7 @@ sub click_DPS_BST()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call click_horn_of_unity 	
 /return
@@ -245,7 +245,7 @@ sub synergy_BST()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	
 	/if (${validate_cast[FALSE, alt, "Bestial Alignment", ${Me.ID}]}) /call core_cast2 "Bestial Alignment" alt 0 FALSE

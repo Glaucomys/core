@@ -16,7 +16,7 @@
  ***|
 sub core_RNG()
 	| DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 
@@ -54,9 +54,6 @@ sub core_RNG()
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
 	} 
-
-
-
 /return
 
 
@@ -71,7 +68,7 @@ sub disc_RNG()
 	| DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	
 	| agro control
@@ -127,7 +124,7 @@ sub cast_AA_auspice()
 	| DEBUGCLASS ${cbug}cast_auspice()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[${RNGauspice}]},${cgood}Spice\ax,${cbad}Spice\ax]}
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[${RNGauspice}]} && !${Bool[${Me.Song[${RNGauspice}]}]}) {
 		/if (${validate_cast[FALSE, alt, "Mass Group Buff", ${Me.ID}]}) /call core_cast2 "Mass Group Buff" alt 0 FALSE
 		/if (${validate_cast[FALSE, alt, "${RNGauspice}", ${Me.ID}]}) /call core_cast2 "${RNGauspice}" alt 0 FALSE
@@ -184,7 +181,7 @@ sub click_DPS_RNG()
 	| DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 	
@@ -208,7 +205,7 @@ sub cast_nuke_summer(int _tmpID)
 	/if (${timer_cast_nuke_summer}) /return
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
 	/if (${validate_cast[FALSE, spell, "${NukeSummer}", ${_tmpID}]} && ${cast_condition[NukeSummerCondition]}) /call core_cast2 "${NukeSummer}" 0 ${_tmpID} cast_break
 /return
@@ -225,7 +222,7 @@ sub synergy_RNG()
 	| DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 
 	
 	| MELEE
@@ -299,7 +296,7 @@ sub Bind_setRNG(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |healpoint|spice|spiregroup|spireraid|summer
+  /declare _type string	local |healpoint|spice|spiregroup|spireraid|summer|taunt
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -328,6 +325,10 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		/return
+
+	| on/off taunt
+	} else /if (${Bool[${_classType.Equal[taunt]}]}) {
+		/call writeINI taunt meleedisc ${If[${taunt},FALSE,TRUE]}  
 		
 	| mgb spice
 	} else /if (${Bool[${_classType.Find[spice]}]}) {
@@ -345,16 +346,6 @@ sub Bind_setRNG(string _classType, string _verbage)
 			/return
 		}
 
-	|** fast heal pct
-	} else /if (${Bool[${_classType.Find[fastheal]}]}) {
-		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/call writeINI FastHealPCT Spells ${_verbage}
-		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} fastheal(${cnum}${FastHealPCT}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
-			/return
-		}
-		**|
-
 	}
 
 	/if (${switchMQclearonCLS}) /mqclear
@@ -364,7 +355,9 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		| /if (${_type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
-		/if (${_type.Arg[${_count},|].Equal[summer]}) /varset _listout ${_listout}(${If[${switchNukeSummer},${oon},${ooff}]})		
+		/if (${_type.Arg[${_count},|].Equal[summer]}) /varset _listout ${_listout}(${If[${switchNukeSummer},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

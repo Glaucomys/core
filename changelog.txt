@@ -15,6 +15,48 @@
      Enchanter, Shaman, Berserker
 
 
+
+20180819
+- new #define CHECKINPUTS
+  -- not sure how well this is going to work. / commands are triggerd off of /varset, so CHECKINPUTS will do a multiline 
+     that will check the events and bind buffers. this "should" make / commands respond a LOT faster. will have to see.
+  -- this affects all files.
+- fixed a typo in the slowing function
+- XTARGET HEALING..... 
+  -- Clerics and Shaman (i'll get to druids and pallys in a bit)
+	-- conforms to normal group healing flow
+	-- should be like 50 fucking times faster now. had no problems killing mobs in OT solo with cleric out of group
+	-- will obay the aggressive switch for clerics and shaman
+	-- xtarget healing will conform to the toons agro range
+	-- should heal NPCs in protected list now too. i hope
+- familiars
+  -- added in code for running two familiars
+  -- you can deal with the stacking issues...
+- pets
+  -- if the pet has the correct target, toon should not try and send it again
+- class.clr.inc
+  -- rewrite of the HP check sub for mid cast adjustments. will comply with the aggressive switch.
+  -- will not trigger spire3 unless in combat
+  -- should exit heal checks faster if no one is hurt
+- class.shd.inc
+  -- /shd vot (on/off) use aa voice of thule when agro is enabled. will remove it if agro is turned off
+- class.shm.inc
+  -- core heal logic rewritten to match the cleric
+- class.brd.inc
+  -- added in mod rod usage
+  
+
+
+- taunting
+  -- ranger, paladin, shadowknight, warrior
+  -- /cls taunt (on/off) to enable or disable using taunting 
+  -- if you have /cc agro on and taunt off, you will still do all the other agro skills you have, just not taunt.
+  -- this is just a way to isolate taunting for those that like to use it as a crutch
+- Range Item summoning
+  -- need /cc range or /cc pull to summon rainge item thingies
+  -- can summon more then one type of item
+
+
 20180726.00
 - migrated to new casting routines
   -- cast_slow()
@@ -45,7 +87,7 @@
   -- changing INIs while mac running would look like /core reset alt6
   -- if the INI does not exist, it will be generated from scratch
 - class.dru.inc
-  -- type in xtarget healing sub name.
+  -- typo in xtarget healing sub name.
 
 
 20180719.01
@@ -2085,7 +2127,7 @@ Rogue Version 1.6.0
 WHITEWASH
 - /debug [mode] - enable/disable mode specific debugs
 - adjustment to do_rest to force bard into hybrid class selection
-- class specific / commands
+- cswitchVoTlass specific / commands
 	-- core.rng.inc
 	  -- delete alias /spice
     -- /rng [summer|spice]

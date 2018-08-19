@@ -14,7 +14,7 @@
  ***|
 sub core_ROG()
 	DEBUGCLASS Loop start: ${cbug}core_ROG()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 
@@ -88,7 +88,7 @@ sub sneak_attack()
 sub disc_ROG()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${validate_cast[FALSE, disc, "${DiscAssault}", ${Target2Kill}]}) /call core_cast2 "${DiscAssault}" disc ${Target2Kill} FALSE
 	
@@ -130,7 +130,7 @@ sub disc_ROG()
 sub click_DPS_ROG()
 	DEBUGCLASS ${cbug}click_DPS_items_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call click_horn_of_unity 	
 	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
@@ -215,7 +215,7 @@ sub click_poison()
 	| check the buffs
 	/for _count 1 to ${clickPoisonBuff.Count[|]}
 		AMIDEAD
-		/doevents
+		CHECKINPUTS
 		/if (${Bool[${Me.Buff[${clickPoisonBuff.Arg[${_count},|]}]}]}) /varset _found TRUE
 	/next _count		
 	/if (!${_found}) {
@@ -235,7 +235,7 @@ sub click_poison()
 sub synergy_ROG()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 
 	/if (${Me.ActiveDisc.Name.Equal[${DiscPlay}]} && ${Me.CombatAbilityReady[${DiscFrenzy}]}) {
 		:loopmakestop

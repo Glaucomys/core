@@ -15,7 +15,7 @@
  ***|
 sub core_DRU()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
@@ -27,7 +27,7 @@ sub core_DRU()
   }	
 	
 	/if (${coreAuto}) {
-		/doevents
+		CHECKINPUTS
 		/call check_engaged
 		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
 	}	
@@ -83,7 +83,7 @@ sub core_DRU()
 sub disc_DRU()
 	DEBUGCLASS	${cbug}disc.${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 
 	/call core_cast "Storm Strike" alt ${Target2Kill} FALSE
@@ -101,7 +101,7 @@ sub disc_DRU()
 sub click_DPS_DRU()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Bool[${Epic}]} && ${Me.ItemReady[${Epic}]} && ${Spell[${FindItem[${Epic}].Spell}].Stacks} && !${Me.Buff[${FindItem[${Epic}].Spell}].ID} && !${Me.Song[${FindItem[${Epic}].Spell}].ID})  /call core_cast "${Epic}" item ${Target2Kill} FALSE
 	/call click_horn_of_unity 	
@@ -118,7 +118,7 @@ sub click_DPS_DRU()
 sub cast_AA_ro(int _tmpID)
 	DEBUGCLASS ${cbug}cast_AA_ro()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${timer_ro_${_tmpID}} || ${Target.Buff[Blessing of Ro].ID} || ${Target.Buff[Fixation of Ro].ID}) /return
 	/if (${is_target_dead[${_tmpID}]}) /return
 	
@@ -146,7 +146,7 @@ sub check_heal_group_DRU()
 
 	:loopheal
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	/varset WorstHurt 				${Me.ID}
 	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
@@ -176,7 +176,7 @@ sub check_heal_group_DRU()
     } else /if (!${Spawn[pc id ${Group.Member[${_count}].ID}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7 && ${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].Distance} <= ${Spell[${healWholeGroup}].AERange}) {
       /varcalc MajorHurt ${MajorHurt}+1
     }
-	 	/doevents
+	 	CHECKINPUTS
   /next _count
 	CHECKEXIT
 
@@ -203,7 +203,7 @@ sub check_heal_group_DRU()
 	}
   
 	| Group Heal
-	/doevents
+	CHECKINPUTS
 	/if (${useGroupHeal}) {
 	  /if (${MajorHurt}+${MinorHurt} > 1 && ${Me.SpellReady[${healWholeGroup}]}) {
 	    /call core_cast "${healWholeGroup}" 0 ${Me.ID} FALSE
@@ -219,7 +219,7 @@ sub check_heal_group_DRU()
 	}
 	
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 
 	| Rejuvilation Heal
 	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Me.SpellReady[${healRejuvilation}]}) {
@@ -229,7 +229,7 @@ sub check_heal_group_DRU()
 		/goto :loopheal
 	}
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
  	
 	| Adrenaline / Sanavida Heal 
 	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && (${Me.SpellReady[${healAdrenaline}]} || ${Me.SpellReady[${healSanavida}]})) {
@@ -258,7 +258,7 @@ sub check_heal_XTarget_DRU()
 	/if (${Me.State.Equal[FEIGN]}) /return
   /declare _count int local
   /for _count 1 to 13
-  	/doevents
+  	CHECKINPUTS
   	UPDATEHUD "HEAL XTarget"
 
     /if (${Spawn[${Me.XTarget[${_count}].ID}].ID} && (${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} || ${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].CleanName}]}) && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
@@ -303,7 +303,7 @@ sub check_pet_heal_DRU()
 	/varset pMajorHurt 0
 
 	/for _count 0 to ${Group.Members}
-		/doevents
+		CHECKINPUTS
 		/if (${Group.Member[${_count}].Pet.ID}) {
 			/if (${Group.Member[${_count}].Pet.Distance} <= ${Spell[${healRenewal1}].MyRange}) {
 				/if ((${Group.Member[${_count}].Pet.PctHPs} <= ${pWorstHP}) && (${Group.Member[${_count}].Pet.PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride})) {
@@ -336,7 +336,7 @@ sub check_pet_heal_DRU()
 sub cast_AA_spirit_wood()
 	DEBUGCLASS ${cbug}cast_AA_wood()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Spirit of the Wood]},${cgood}Wood\ax,${cbad}Wood\ax]}
 	AMIDEAD
-	/doevents
+	CHECKINPUTS
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Spirit of the Wood]} && !${Bool[${Me.Song[Spirit of the Wood]}]}) {
 		/call core_cast "Mass Group Buff" alt 0 FALSE
 		/call core_cast "Spirit of the Wood" alt 0 FALSE
@@ -356,7 +356,7 @@ sub cast_AA_spirit_wood()
 sub synergy_DRU()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	
 	| swarm pets
 	/if (${Me.AltAbilityReady[Natures Guardian]}) /call core_cast "Natures Guardian" alt ${Target2Kill} FALSE

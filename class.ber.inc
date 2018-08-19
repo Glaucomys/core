@@ -15,7 +15,7 @@
  ***|
 sub core_BER()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 
 	CHECKTIE
@@ -64,7 +64,7 @@ sub disc_BER()
 	DEBUGCLASS ${cbug}disc_BER()\ax
 	AMIDEAD
 
-	/doevents
+	CHECKINPUTS
 	/if (${validate_cast[FALSE, disc, "${DiscOverwhelmingFrenzy}", ${Target2Kill}]}) /call core_cast2 "${DiscOverwhelmingFrenzy}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscEnduranceTap}", ${Me.ID}]}) /call core_cast2 "${DiscEnduranceTap}" disc 0 FALSE
 	/if (${Bool[${Me.Buff[Frenzied Resolve]}]} && ${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
@@ -177,7 +177,7 @@ sub patch_heal_BER()
 sub click_DPS_BER()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call click_horn_of_unity 	
 
 	| epic 2.0
@@ -195,7 +195,7 @@ sub click_DPS_BER()
 sub synergy_BER()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	
 	/if (${Me.ActiveDisc.Name.Equal[${DiscDisconcert}]}) {
 		:loopmakestop

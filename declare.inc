@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180726.00
+	/call setDeclare coreBuild											string	outer 20180819.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -172,7 +172,9 @@ sub set_declares()
 	/call setDeclare RezerList											string 	outer "|CLR|DRU|SHM|PAL|NEC"
 	/call setDeclare AASnareList										string 	outer "|RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL"
 	/call setDeclare AAEradicateList								string 	outer "|RNG|DRU|NEC|WIZ|ENC|MAG"
-		
+	
+	| this is a makeshift /doevents to force binds to be cycled.
+	/call setDeclare bindtrigger										bool		outer TRUE
 		
 	| core control
 	/call setDeclare coreType 											string 	outer "|auto|checkcash|control|events|expadjust|expmaintain|explevel|fireworks|fixini|takeraidinvite|takegroupinvite|giveraidinvite|killcode|reset|rest|whitewash|zonereset"
@@ -727,6 +729,8 @@ sub set_declares()
 	/call setINIVar PcSwarmengageat									int			Pet 99
 	/call setINIVar sumFamiliar											string	Pet FALSE
 	/call setINIVar sumFamiliarBuff									string	Pet FALSE
+	/call setINIVar sumFamiliar2										string	Pet FALSE
+	/call setINIVar sumFamiliar2Buff								string	Pet FALSE
 	/call setINIVar sumFamiliarLeave								bool		Pet TRUE	
 
 	| debug
@@ -1300,6 +1304,9 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
+
+	/call setTimer tcheck_vot												string Timer 1215s timer_check_vot
+
 	/call setDeclare SHDspire1											string	outer "Fundament: First Spire of the Reavers"
 	/call setDeclare SHDspire2											string	outer "Fundament: Second Spire of the Reavers"
 	/call setDeclare SHDspire3											string	outer "Fundament: Third Spire of the Reavers"
@@ -1374,6 +1381,9 @@ sub declare_SHD()
 	/call setINIVar Stance 													string 	Buffs "Staunch Stance"
 	/call setINIVar switchSkin			 								bool	 	Buffs TRUE
 	/call setINIVar Skin			 											string 	Buffs "Tylix's Skin"
+	/call setINIVar switchVoT				 								bool	 	Buffs TRUE
+
+
 
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 	/call setINIVar useShieldFlash									bool		Discs FALSE
@@ -1868,13 +1878,22 @@ sub declare_SHM()
 	/call setDeclare SHMAAUnity											string	outer "Visionary's Unity"
 	/call setDeclare SHMAAFade											string	outer 
 	
-	/call setDeclare MajorHurt 											int 		outer 0
+	
+	
 	/call setDeclare WorstHurt 											string 	outer FALSE
-	/call setDeclare WorstHurtID 										int 		outer ${Me.ID}
 	/call setDeclare WorstHP 												int 		outer 100
 	/call setDeclare WorstClass 										string 	outer FALSE
-  /call setDeclare MinorHurt											int    	outer 0 
-  /call setDeclare WorstHp		 										int    	outer 100	
+	/call setDeclare MajorHurt 											int 		outer 0
+	/call setDeclare MinorHurt											int    	outer 0 
+	/call setDeclare groupHurt 											int 		outer 0
+	
+	| /call setDeclare MajorHurt 											int 		outer 0
+	| /call setDeclare WorstHurt 											string 	outer FALSE
+	| /call setDeclare WorstHurtID 										int 		outer ${Me.ID}
+	| /call setDeclare WorstHP 												int 		outer 100
+	| /call setDeclare WorstClass 										string 	outer FALSE
+  | /call setDeclare MinorHurt											int    	outer 0 
+  | /call setDeclare WorstHp		 										int    	outer 100	
 
   /call setDeclare pWorstHurt 										string 	outer ${Me.DisplayName}
   /call setDeclare pWorstHP												int			outer 100
@@ -1939,7 +1958,7 @@ sub declare_SHM()
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar RampageTank											string	Heal FALSE
 
-	/call setDeclare HealList 											string 	outer "|${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention1}|${healReckless}"
+	| /call setDeclare HealList 											string 	outer "|${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention1}|${healReckless}"
 /return	
 
 

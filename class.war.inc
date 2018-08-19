@@ -15,7 +15,7 @@
  ***|
 sub core_WAR()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 
@@ -63,7 +63,7 @@ sub disc_WAR()
 	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 
-	/doevents
+	CHECKINPUTS
 	/call check_exit TRUE
 	/if (${Bool[${Macro.Return}]}) /return
 	/call is_target_dead
@@ -98,7 +98,7 @@ sub get_agro_WAR()
 	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	AMIDEAD
 
-	/doevents
+	CHECKINPUTS
 	CHECKEXIT
 	/call is_target_dead
 	/if (${Bool[${Macro.Return}]}) /return
@@ -142,7 +142,7 @@ sub patch_heal_WAR()
 sub click_DPS_WAR()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
-	/doevents
+	CHECKINPUTS
 	/call click_horn_of_unity 	
 /return
 
@@ -158,7 +158,7 @@ sub synergy_WAR()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 
-	/doevents
+	CHECKINPUTS
 	/call check_exit
 	/if (${Bool[${Macro.Return}]}) /return	
 	
@@ -198,7 +198,7 @@ sub Bind_setWAR(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |healpoint|spiregroup|spireraid
+  /declare _type string	local |healpoint|spiregroup|spireraid|taunt
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -233,6 +233,10 @@ sub Bind_setWAR(string _classType, string _verbage)
 			/return
 		}
 
+	| on/off taunt
+	} else /if (${Bool[${_classType.Equal[taunt]}]}) {
+		/call writeINI taunt meleedisc ${If[${taunt},FALSE,TRUE]}  
+
 	| panic heal pct
 	} else /if (${Bool[${_classType.Find[panicheal]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -260,6 +264,8 @@ sub Bind_setWAR(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[panicheal]}) /varset _listout ${_listout}(${cnum}${PanicHPPCT}\ax)
 		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
+		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

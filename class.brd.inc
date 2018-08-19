@@ -15,7 +15,7 @@
  ***|
 sub core_BRD()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 		
@@ -69,7 +69,7 @@ sub core_BRD()
 			/call click_DPS_${Me.Class.ShortName}
 	
 			/if (${coreAuto}) {	
-				/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+				/if (${validate_class[FALSE, |BRD]}) /call use_mod_rod
 				/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 				/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 			} else /if (!${coreAuto}) {
@@ -92,7 +92,7 @@ sub disc_BRD()
 	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchdeBuffSlow} && !${timer_slow_${Target2Kill}}) /call pulse_slow ${Target2Kill}
 	/if (${Me.Casting.ID}) /call pulse_stop
@@ -147,7 +147,7 @@ sub click_DPS_BRD()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call stick_to_target
 	/call click_horn_of_unity 	
 /return
@@ -164,7 +164,7 @@ sub cast_servant_swarm(int _tmpID)
 	DEBUGCLASS ${cbug}cast_servant_swarm(target: ${_tmpID})\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${Spawn[${_tmpID}].LineOfSight} && ${Target.PctHPs} > 10 && ${Spawn[${_tmpID}].Distance} < ${MobAgro}) {
 		/if (${is_target_dead[${Target2Kill}]}) /return
 
@@ -199,7 +199,7 @@ sub mem_song_line(string _line)
  	DEBUGCLASS ${cbug}mem_song_line(group: ${_line})\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/declare _count 				int local
 	/declare _index 				int local	
 	/declare _list[1] 			string ${line${lineCurrent}}
@@ -236,7 +236,7 @@ sub pulse()
 	/for _count 1 to ${_list.Size}
 		AMIDEAD
 		CHECKEXIT
-		/doevents
+		CHECKINPUTS
 		/call is_target_dead
 		/if (${Macro.Return}) {
 			/call pulse_stop
@@ -245,7 +245,7 @@ sub pulse()
 		/for _index 1 to ${_list[${_count}].Count[|]}
 			AMIDEAD
 			| CHECKEXIT
-			/doevents
+			CHECKINPUTS
 			/call is_target_dead
 			/if (${Macro.Return}) {
 				/call pulse_stop
@@ -306,7 +306,7 @@ sub core_sing(_spellgem)
 	DEBUGCLASS ${cbug}core_sing(gem: ${_spellgem})\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem int local ${Macro.Return}
@@ -336,7 +336,7 @@ sub bard_nuke()
 	/for _count 1 to ${DoNuke}
 		AMIDEAD
 		CHECKEXIT
-		/doevents
+		CHECKINPUTS
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${Nuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${Nuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${Nuke${_count}}].Mana}) {
 			/call stick_to_target
@@ -361,7 +361,7 @@ sub bard_dot()
 	/for _count 1 to ${DoDoT}
 		AMIDEAD
 		CHECKEXIT
-		/doevents
+		CHECKINPUTS
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Target.BuffDuration[${DoT${_count}}]} >= 2) /return
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${DoT${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${DoT${_count}}].MyRange} && ${Me.CurrentMana} >= ${DoT[${DoT${_count}}].Mana}) {
@@ -383,7 +383,7 @@ sub mez_adds_BRD()
 	DEBUGCLASS ${cbug}mez_adds()\ax
 	AMIDEAD
 
-	/doevents
+	CHECKINPUTS
 	/declare _tmpID string local
 
 	:loopmezzadds
@@ -470,7 +470,7 @@ sub cast_AA_Rallying()
  	DEBUGCLASS ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Solo]})\ax
  	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Solo]}) /return
 	AMIDEAD
-	/doevents
+	CHECKINPUTS
  	/declare _endurancePoint		int local 30
  	/declare _manaPoint		int local 30
 
@@ -491,7 +491,7 @@ sub synergy_BRD()
 	DEBUGCLASS ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${Me.Casting.ID}) /call pulse_stop
 	
@@ -523,7 +523,7 @@ sub pulse_slow(int _tmpID)
 	/if (${timer_slow_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 		
 	| dont waste time if its slowed already

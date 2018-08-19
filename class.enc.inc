@@ -17,7 +17,7 @@
 sub core_ENC()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	AMIDEAD
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	
 	/if (${coreAuto} && !${Me.Invis}) {
@@ -142,7 +142,7 @@ sub check_rune_auspice()
 	/if (!${FindItemCount[Peridot]}) /return
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	/call check1offBuffs
 	
@@ -154,7 +154,7 @@ sub check_rune_auspice()
 		/if (!${Spawn[${runeAuspiceToon.Arg[${_count},|]}].ID}) /continue
 		/if (${NetBots[${runeAuspiceToon.Arg[${_count},|]}].Buff.Find[${Spell[${runeAuspice}].ID}]}) /continue
 		CHECKEXIT
-		/doevents
+		CHECKINPUTS
 		/if (${Bool[${Spawn[pc ${runeAuspiceToon.Arg[${_count},|]}]}]} && ${Spawn[pc ${runeAuspiceToon.Arg[${_count},|]}].Distance} < ${Spell[${runeAuspice}].MyRange}) {
 			/varset _AuspiceToon ${runeAuspiceToon.Arg[${_count},|]}
 			/break
@@ -185,7 +185,7 @@ sub disc_ENC()
 	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	
 	/if (${validate_cast[FALSE, alt, "Crippling Aurora", ${Me.ID}]}) /call core_cast2 "Crippling Aurora" alt 0 FALSE
@@ -207,7 +207,7 @@ sub check_crystals()
 	DEBUGCLASS ${cbug}check_crystals()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 
 
@@ -251,7 +251,7 @@ sub click_DPS_ENC()
 	DEBUGCLASS ${cbug}clickDPS_ENC()\ax
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	/call click_horn_of_unity 	
 /return
@@ -273,7 +273,7 @@ sub patch_heal_ENC()
 		/for _count 1 to ${SpawnCount[npc radius 15]}
 			AMIDEAD
 			CHECKEXIT
-			/doevents
+			CHECKINPUTS
 			CHECKTIE
 		/varset _tmpID ${NearestSpawn[${_count},npc radius 15].ID}
 		/if (!${NearestSpawn[${_count},npc radius 15].ID}) /next _count
@@ -312,7 +312,7 @@ sub patch_heal_ENC()
 sub mez_adds()
 	DEBUGCLASS ${cbug}mez_adds()\ax
 	AMIDEAD
-	/doevents
+	CHECKINPUTS
 	/declare _tmpID string local
 
 	:loopmezzadds
@@ -378,7 +378,7 @@ sub cast_mez(int _tmpID)
 
 	:loopmez
 	AMIDEAD
-	/doevents
+	CHECKINPUTS
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /return
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]}) /return
 	/if (!${Spawn[${_tmpID}].ID}) /return
@@ -437,7 +437,7 @@ sub cast_tash(int _tmpID)
 	/if (${timer_tash_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /return
@@ -543,7 +543,7 @@ sub get_target_ENC()
 sub synergy_ENC()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	
 	/if (${validate_cast[FALSE, alt, "${ENCIoG}", ${Me.ID}]}) /call core_cast2 "${ENCIoG}" alt 0
 	/call cast_AA_spire

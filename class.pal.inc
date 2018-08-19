@@ -15,7 +15,7 @@
  ***|
 sub core_PAL()
 	AMIDEAD
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	
   /if (${switchHealXtarget}) {
@@ -91,7 +91,7 @@ sub core_PAL()
 sub disc_PAL()
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	CHECKTIE
 
@@ -99,10 +99,10 @@ sub disc_PAL()
 	/if (${switchPull}) /call set_combat ${combat.Upper}
 
 	| defensive	
-	/if (${coreAuto} && ${switchAgro} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} >= ${defCount}) {
+	/if (${coreAuto} && ${switchAgro} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} >= ${defCount} && !${Bool[${Me.ActiveDisc}]}) {
 		/declare _count int local 0
 		/for _count 1 to 3
-			/if (${Bool[${Me.ActiveDisc}]}) /break
+			| /if (${Bool[${Me.ActiveDisc}]}) /break
 			/if (${validate_cast[FALSE, activedisc, "${DefensiveDisc${_count}}", ${Me.ID}]}) /call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 		/next _count
 	}
@@ -272,7 +272,7 @@ sub click_DPS_PAL()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/call click_horn_of_unity 	
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 	
@@ -300,7 +300,7 @@ sub click_DPS_PAL()
 sub check_splash_group_PAL()
 	AMIDEAD
 	CHECKEXIT
- 	/doevents	
+ 	CHECKINPUTS	
 	CHECKTIE
 	/varset WorstHurt 				${Me.ID}
 	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
@@ -324,6 +324,8 @@ sub check_splash_group_PAL()
 			}
 	  /next _count
 	}
+  
+  /if (!${groupHurt}) /return
   
 	UPDATEHUD "HEAL Spalsh"
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
@@ -358,7 +360,7 @@ sub check_splash_group_PAL()
 	}
 
 	AMIDEAD
- 	/doevents
+ 	CHECKINPUTS
 	| Touch Heal 
   /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
   	/if (${validate_cast[FALSE, spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt} FALSE
@@ -380,15 +382,16 @@ sub check_heal_XTarget_PAL()
   /declare _count int local 0
 	CHECKREZ
 
+ 	UPDATEHUD "HEAL XTarget"
+
   /for _count 1 to 13
   	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	/if (!${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
   	/if (${heallist.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
-  	UPDATEHUD "HEAL XTarget"
 		/call check_no_cast_buffs
 		AMIDEAD
 		SIMPLEEXIT
-		/doevents
+		CHECKINPUTS
 		/if (${useShieldFlash}) /call cast_AA_shield_flash
 		
 		| aa LoH
@@ -424,7 +427,7 @@ sub check_heal_XTarget_PAL()
 sub check_pet_heal_PAL()
  	AMIDEAD
 	SIMPLEEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKREZ
 	/declare _count int local
 	/varset pWorstHurt ${Me.CleanName}
@@ -508,7 +511,7 @@ sub check_HP_PAL()
 	}
 
 	| touch heal
-	/if (${Spawn[${WorstHurt}].PctHPs} < 20*.${HealOverride} && ${Spawn[${WorstHurt}].Distance}<=${Spell[${healPanic}].MyRange} && ${Cast.Timing}/1000<${Spell[${healTouch}].MyCastTime} && ${Me.SpellReady[${healTouch}]}) {
+	/if (${Spawn[${WorstHurt}].PctHPs} < 20*.${HealOverride}) {
 		/if (${Me.Casting.ID}) /stopcast
 		/if (${validate_cast[FALSE, spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt}
 	} 
@@ -625,7 +628,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|groupheal|harmonious|healpoint|loh|mg|rampage|shieldflash|spiregroup|spireraid|stance|steel|stun|xtradius|xttime|yaulp
+  /declare _type string	local |ae|defcount|groupheal|harmonious|healpoint|loh|mg|rampage|shieldflash|spiregroup|spireraid|stance|steel|stun|taunt|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -715,6 +718,10 @@ sub Bind_setPAL(string _classType, string _verbage)
 		VOUT /${_bind} healpoint [${_listout}]
 		/return
 			
+	| on/off taunt
+	} else /if (${Bool[${_classType.Equal[taunt]}]}) {
+		/call writeINI taunt meleedisc ${If[${taunt},FALSE,TRUE]}  
+
 	| on/off switch for Steel
 	} else /if (${Bool[${_classType.Equal[steel]}]}) {
 		/call writeINI switchSteel Buffs ${If[${switchSteel},FALSE,TRUE]}  
@@ -817,6 +824,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[loh]}) /varset _listout ${_listout}(${If[${useLoH},${cnum}${useLoHPct}\ax,${cbad}${useLoHPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
 
 		/varset _sep TRUE
 	/next _count

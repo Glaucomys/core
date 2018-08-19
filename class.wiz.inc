@@ -15,7 +15,7 @@
  ***|
 sub core_WIZ()
 	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
 	
@@ -72,7 +72,7 @@ sub core_WIZ()
 sub disc_WIZ()
 	DEBUGCLASS ${cbug}disc_WIZ()\ax 
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	
@@ -116,7 +116,7 @@ sub disc_WIZ()
  ***|
 sub click_DPS_WIZ()
 	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 	/call click_horn_of_unity 	
 /return
@@ -132,7 +132,7 @@ sub click_DPS_WIZ()
 sub check_harvest()
 	DEBUGCLASS ${cbug}check_harvest()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	CHECKTIE
 
 	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID}) /return
@@ -219,7 +219,7 @@ sub check_rune_WIZ()
 sub synergy_WIZ()
 	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	
 	| shhhhh..
 	/if (${validate_cast[FALSE, alt, "Silent Casting", ${Me.ID}]}) /call core_cast2 "Silent Casting" alt 0 FALSE
@@ -279,7 +279,7 @@ sub force_twincast_WIZ()
 	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	AMIDEAD
 	CHECKEXIT
-	/doevents
+	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
 	/if (!${cast_condition[NukeTwincastCondition]}) /return
