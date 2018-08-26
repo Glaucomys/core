@@ -12,7 +12,7 @@
  *	DES: This will clear all store alises that core has created in your MacroQuest2.INI file. or those with matching names.
  *	USE: /core whitewash [NOECHO]
  *	INI: MacroQuest2.INI
- *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time. Sorry it's slow as fuck.
+ *  NOTE: IF you instance/sandbox MQ/EQ it is best you run this on all toons at the same time.
  ***|
 sub whitewash(string _echo)
 	/if (!${_echo.Equal[NOECHO]}) VOUT ${owarning} ${sep} Deleting all Core ${cinfo}${Float[${coreBuild}].Precision[2]}\ax aliases. ${cbad}Please Wait\ax
@@ -34,12 +34,10 @@ sub whitewash(string _echo)
 	| /varset _todelete[xx] |here|take|homeradius|homeleash
 		
 	| core aliases
-	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson|clean
+	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson|clean|checkvar
 	
 	/for _count 1 to ${_todelete.Size}
-		DEBUG _count: ${_count}-${_todelete.Size}
 		/for _index 1 to ${_todelete[${_count}].Count[|]}
-			DEBUG _index: ${_count}-${_todelete.Size}: ${_index} ${_todelete[${_count}].Arg[${_index},|]}
 			/if (!${_echo.Equal[NOECHO]}) VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
 			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
 			/varcalc _increment ${_increment}+1
@@ -61,7 +59,6 @@ sub whitewash(string _echo)
  *  NOTE: 
  ***|
 sub writeINI(string _varName, string _section, string _value)
-	DEBUG ${cbug}writeINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
 	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
 		/varset ${_varName} ${_value}
 	 	/ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
@@ -77,7 +74,6 @@ sub writeINI(string _varName, string _section, string _value)
  *  NOTE: 
  ***|
 sub writeCoreINI(string _varName, string _section, string _value)
-	DEBUG ${cbug}writeCoreINI([${_section}] -> ${_varName.Left[1].Upper}${_varName.Right[-1]} -> ${_value})\ax 
 	/if (${Defined[${_varName}]} && ${Ini[${INICore},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
 		/varset ${_varName} ${_value}
 	 	/ini "${INICore}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
@@ -170,7 +166,6 @@ sub update_zone_list(string _list)
  *  NOTE: 
  ***| 
 sub check_zone_INI(string _sender)
-	DEBUG ${cbug}check_zone_INI(_sender: ${_sender})\ax 
 	/if (${Bool[${_sender}]} && !${Spawn[pc ${_sender}].ID}) /return
 
 	/declare _count 						int local	0
@@ -292,6 +287,11 @@ sub fix_ini_current()
 
 	| core.ini
 	
+	
+		| 20180822
+		| /call DeclareCoreIniVar mqlog										string	General FALSE
+		/ini "${INICore}" "General" "mqlog" NULL
+
 
 		| 20180429
 		/ini "${INICore}" "General" "switchAlwaysFaceTarget" NULL
@@ -355,7 +355,7 @@ sub fix_ini_current()
 		| BEASTLORD
 		} else /if (${Select[${Me.Class.ShortName},BST]}) {
 			
-		| 20180630
+			| 20180630
 			/ini "${INIClass}" "Spells" "selfParagon" NULL
 			/ini "${INIClass}" "Spells" "groupParagon" NULL
 			/ini "${INIClass}" "Spells" "FastHealPCT" NULL
@@ -363,6 +363,12 @@ sub fix_ini_current()
 			
 		| CLERIC
 		} else /if (${Select[${Me.Class.ShortName},CLR]}) {
+			
+			| corrections to AA fading and checks
+			/ini "${INIClass}" "Buffs" "AAFade" NULL
+			/ini "${INIClass}" "Buffs" "useAAFade" NULL
+			/ini "${INIClass}" "Buffs" "useVP" NULL
+
 			| remove cleric QM from 20 sep 2017 patch
 			/ini "${INIClass}" "Buffs" "useQM" NULL
 			/ini "${INIClass}" "Buffs" "useQMPct" NULL
@@ -370,15 +376,24 @@ sub fix_ini_current()
 
 		| DRUID
 		} else /if (${Select[${Me.Class.ShortName},DRU]}) {
+
+			| adjust AA fade controls
+			/ini "${INIClass}" "Buffs" "AAFade" NULL
+			/ini "${INIClass}" "Buffs" "useAAFade" NULL
+
 			
 		| ENCHANTER
 		} else /if (${Select[${Me.Class.ShortName},ENC]}) {
 			
 		| MAGICIAN
 		} else /if (${Select[${Me.Class.ShortName},MAG]}) {
+
+			| adjust AA fade controls
+			/ini "${INIClass}" "Buffs" "AAFade" NULL
+			/ini "${INIClass}" "Buffs" "useAAFade" NULL
+
 			
-		| 20180527
-		
+			| 20180527
 			/ini "${INIClass}" "Spells" "DoNuke" NULL
 			/ini "${INIClass}" "Spells" "Nuke1" NULL
 			/ini "${INIClass}" "Spells" "Nuke1Condition" NULL
@@ -390,8 +405,6 @@ sub fix_ini_current()
 			/ini "${INIClass}" "Spells" "Nuke4Condition" NULL
 			/ini "${INIClass}" "Spells" "NukeTwincast" NULL
 			
-
-
 			
 		| MONK
 		} else /if (${Select[${Me.Class.ShortName},MNK]}) {

@@ -124,7 +124,7 @@ sub Bind_port_list(string _class, string _location)
 
 #bind send_a_person /send_a_person
 sub send_a_person(string _sender, string _location)
-	SDEBUG ${cbug}Event_port_request(sender:${_sender}, location:${_location})\ax
+	| SDEBUG ${cbug}Event_port_request(sender:${_sender}, location:${_location})\ax
 	| /return
 	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]}) /return
 	/if (!${Defined[${_location}]}) /return
@@ -135,7 +135,7 @@ sub send_a_person(string _sender, string _location)
 	/declare _tmpID int local ${Spawn[pc ${_sender}].ID}
 	
 	| send 'em on their way with a valid location request
-	SDEBUG location: ${_location} - ${${_location}} @ ${_tmpID}
+	| SDEBUG location: ${_location} - ${${_location}} @ ${_tmpID}
 	
 	/memspell ${buffNum} "${${_location}}"
 	
@@ -191,7 +191,7 @@ sub Event_sendgroup(string line, string _sender, string _location)
 
 #event portlist "#1# tells you, 'portlist'"
 sub Event_portlist(string line, string _sender)
-	SDEBUG sender:${_sender}
+	| SDEBUG sender:${_sender}
 	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]}) /return
 	CHECKSAFELIST
 	/declare _portList[13]		string local

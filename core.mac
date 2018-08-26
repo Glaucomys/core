@@ -72,11 +72,11 @@
 
 | #warning
 #define DEBUG "/if (${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-#define DEBUGCAST "/if (${switchDebugCasting} || ${switchDebugCore}) /echo [\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax]"
-#define DEBUGCLASS "/if (${switchDebugClass} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-#define DEBUGREZ "/if (${switchDebugRez} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-#define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-#define DEBUGMODE "/if (${switchDebugMode} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
+| #define DEBUGCAST "/if (${switchDebugCasting} || ${switchDebugCore}) /echo [\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax]"
+| #define DEBUGCLASS "/if (${switchDebugClass} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
+| #define DEBUGREZ "/if (${switchDebugRez} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
+| #define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
+| #define DEBUGMODE "/if (${switchDebugMode} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax(\a-t${Macro.RunTime}\ax)"
 #define OUT "/echo ${c-}-\ax"
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
@@ -88,7 +88,6 @@
 #define VBC "/if (${switchEchoBC}) /call echos bc"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 #define HUDPATH ".\..\MQ2HUD.ini core"
-#define LOG "/if (${Bool[${mqlog}]}) /mqlog ${Me.CleanName}: "
 #define AMIDEAD "/if (${watch_for_death[]}) /call watch_for_rezbox"
 #define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Invis} || ${Select[${Me.State},DEAD,FEIGN,STUN,BIND]} || ${switchAmIDead} || ${flagCallNeedRez}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
@@ -99,8 +98,6 @@
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
 #define CHECKCOMBATCAST "/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return TRUE"
-| #define CHECKBINDS "/varset bindtrigger TRUE"
-
 #define CHECKINPUTS "/multiline ; /doevents ; /varset bindtrigger TRUE"
 
 
@@ -143,8 +140,6 @@ sub main(string _ini)
 	/declare _count int 0
 	  
 	:loopmain
-  	DEBUG ${cbug}:loopmain (Core: ${coreBuild})\ax
-
 	  CHECKINPUTS
 
 		| locked in maintenance mode ?
@@ -261,7 +256,6 @@ sub main(string _ini)
 				/if (!${switchPull}) {
 					/call get_assist_target	
 				} else /if (${switchPull} && !${Target2Kill}) {	
-					DEBUG get target <= ${MobAgro} = ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]}		
 					/call get_target
 				}
 			}
@@ -341,7 +335,6 @@ sub initialize_core(string _ini)
 	/call validate_zone FALSE TRUE
 	/call base_preperation
 
-	LOG .. Initialize Core:${coreBuild}.${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}
   /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax
 	/if (${switchDispInfo}) VOUT Commands ${sep} ${cinfo}/info\ax
 	/if (${maintenance.Find[${Me.DisplayName}]}) VOUT ${owarning} maintenance ${sep} ${cinfo}${Me.DisplayName}\ax

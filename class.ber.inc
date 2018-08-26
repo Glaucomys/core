@@ -14,7 +14,7 @@
  *  NOTE: 
  ***|
 sub core_BER()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
+	| DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 
@@ -44,6 +44,7 @@ sub core_BER()
 		}
 
 		/if (${coreAuto}) {	
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -61,7 +62,7 @@ sub core_BER()
  *  NOTE: 
  ***|
 sub disc_BER()
-	DEBUGCLASS ${cbug}disc_BER()\ax
+	| DEBUGCLASS ${cbug}disc_BER()\ax
 	AMIDEAD
 
 	CHECKINPUTS
@@ -157,7 +158,7 @@ sub get_agro_BER()
  *  NOTE: 
  ***|
 sub patch_heal_BER()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
+	| | DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	
@@ -175,7 +176,7 @@ sub patch_heal_BER()
  *  NOTE: 
  ***|
 sub click_DPS_BER()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
+	| DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -292,7 +293,7 @@ sub Bind_setBER(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|healpoint|spiregroup|spireraid
+  /declare _type string	local |ae|fade|healpoint|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -324,6 +325,17 @@ sub Bind_setBER(string _classType, string _verbage)
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		/return
 
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
+
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -340,6 +352,8 @@ sub Bind_setBER(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

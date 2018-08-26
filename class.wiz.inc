@@ -14,7 +14,6 @@
  *  NOTE: 
  ***|
 sub core_WIZ()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -28,8 +27,6 @@ sub core_WIZ()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 	
@@ -52,7 +49,8 @@ sub core_WIZ()
 		}
 		
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -70,7 +68,6 @@ sub core_WIZ()
  *  NOTE: 
  ***|
 sub disc_WIZ()
-	DEBUGCLASS ${cbug}disc_WIZ()\ax 
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -115,7 +112,6 @@ sub disc_WIZ()
  *  NOTE: 
  ***|
 sub click_DPS_WIZ()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKINPUTS
 	AMIDEAD
 	/call click_horn_of_unity 	
@@ -130,7 +126,6 @@ sub click_DPS_WIZ()
  *  NOTE: 
  ***|
 sub check_harvest()
-	DEBUGCLASS ${cbug}check_harvest()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -180,7 +175,6 @@ sub Event_gtfo(string line, string _sender)
  *  NOTE: 
  ***|
 sub patch_heal_WIZ()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -196,7 +190,6 @@ sub patch_heal_WIZ()
  *  NOTE: 
  ***|
 sub check_rune_WIZ()
-	DEBUGCLASS ${cbug}check_rune_WIZ()\aw
 	AMIDEAD
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
@@ -217,7 +210,6 @@ sub check_rune_WIZ()
  *	NOTE: 
  ***| 
 sub synergy_WIZ()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	
@@ -275,7 +267,6 @@ sub synergy_WIZ()
  *  NOTE: Twincast lets get it.
  ***|
 sub force_twincast_WIZ()
-	DEBUGCLASS ${cbug}force_twincast_WIZ()\ax 
 	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -300,7 +291,6 @@ sub force_twincast_WIZ()
  *  NOTE:
  ***|
 sub sort_mancy_lineAA()
-	DEBUGCAST ${cbug}sort_mancy_lineAA(line ${lineCurrent})\ax
 	/if (${lineCurrent.Equal[Fire]} && ${Me.Buff[${lineAAFire}].ID}) /return TRUE
 	/if (${lineCurrent.Equal[Ice]} && ${Me.Buff[${lineAAIce}].ID}) /return TRUE
 	/if (${lineCurrent.Equal[Magic]} && ${Me.Buff[${lineAAMagic}].ID}) /return TRUE
@@ -318,14 +308,13 @@ sub sort_mancy_lineAA()
  ***|
 #bind setWIZ /wiz
 sub Bind_setWIZ(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setWIZ(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |WIZ]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string local |forcetwincast|gather|healpoint|line|manaburn|spiregroup|spireraid
+  /declare _type string local |fade|forcetwincast|gather|healpoint|line|manaburn|rod|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -355,7 +344,6 @@ sub Bind_setWIZ(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[line]}]}) {
 		| mem a line of spells.
 		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
-			DEBUG ${lineType.Find[${_verbage.Lower}]}
 			/call writeINI lineCurrent Spells ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 			/if (${_verbage.Equal[off]}) {
 				VOUT Casting line ${sep} ${odisabled}
@@ -380,6 +368,21 @@ sub Bind_setWIZ(string _classType, string _verbage)
 		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
 		VOUT /${_bind} forcetwincast ${sep} ${If[${switchForceTwincast},${oenabled},${odisabled}]}
 		/return
+
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
+
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
 
 	| enable / disable manaburn AA
 	} else /if (${Bool[${_classType.Equal[manaburn]}]}) {
@@ -417,6 +420,8 @@ sub Bind_setWIZ(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

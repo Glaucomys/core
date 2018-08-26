@@ -15,7 +15,6 @@
  *  NOTE: 
  ***|
 sub core_ENC()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKINPUTS
 	CHECKTIE
@@ -30,8 +29,6 @@ sub core_ENC()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchdeBuffMezz}) {
 			/call get_target_ENC
 			/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
@@ -81,7 +78,8 @@ sub core_ENC()
 		}
 
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			| /if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
 			/if (${switchBuffItem}) /call check_crystals
@@ -103,7 +101,6 @@ sub core_ENC()
  *  NOTE: 
  ***|
 sub check_rune_ENC()
-	DEBUGCLASS ${cbug}check_rune_ENC()\aw
 	/call create_timer timer_check_runes ${tCheck_Runes}
 	AMIDEAD
 	CHECKEXIT
@@ -138,7 +135,6 @@ sub check_rune_ENC()
  *  NOTE: 
  ***|
 sub check_rune_auspice()
-	DEBUGCLASS ${cbug}check_rune_auspice(toons: ${runeAuspiceToon})\ax
 	/if (!${FindItemCount[Peridot]}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -167,7 +163,6 @@ sub check_rune_auspice()
 	/if (${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /return
 	
 	UPDATEHUD "BUFF: BC Auspice"
-	DEBUGCLASS BC Buffing ${sep} ${csp}${runeAuspice}\ax on [${cpc}${_AuspiceToon}\ax].
 
 	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${NetBots[${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
 	UPDATEHUD FALSE
@@ -182,7 +177,6 @@ sub check_rune_auspice()
  *  NOTE: 
  ***|
 sub disc_ENC()
-	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -204,7 +198,6 @@ sub disc_ENC()
  *  NOTE: 
  ***|
 sub check_crystals()
-	DEBUGCLASS ${cbug}check_crystals()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -248,7 +241,6 @@ sub check_crystals()
  *  NOTE: 
  ***|
 sub click_DPS_ENC()
-	DEBUGCLASS ${cbug}clickDPS_ENC()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -265,7 +257,6 @@ sub click_DPS_ENC()
  *  NOTE: 
  ***|
 sub patch_heal_ENC()
-	DEBUGCLASS ${cbug}patch_heal_ENC_${Me.Class.ShortName}()\ax
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	/declare _count int local
 	/declare _tmpID int local
@@ -310,7 +301,6 @@ sub patch_heal_ENC()
  *  NOTE: 
  ***|
 sub mez_adds()
-	DEBUGCLASS ${cbug}mez_adds()\ax
 	AMIDEAD
 	CHECKINPUTS
 	/declare _tmpID string local
@@ -371,8 +361,6 @@ sub mez_adds()
  *  NOTE: 
  ***|
 sub cast_mez(int _tmpID)
-	DEBUG ${cbug}cast_mez(ID: ${_tmpID})\ax
-	DEBUG ${Target.ID} - ${timer_mez_${_tmpID}}
 	/if (${timer_mez_${_tmpID}}) /return
 	/declare _resistCount int local 0
 
@@ -393,7 +381,6 @@ sub cast_mez(int _tmpID)
 	}
 	
 	/if (${Target.Mezzed.Duration} && ${Spell[${Target.Mezzed}].Name.Find[${spellMez}]}) {
-		DEBUG target mezed: ${Spell[${Target.Mezzed}].Name.Find[${spellMez}]}
 		/call create_timer timer_mez_${_tmpID} ${Target.Mezzed.Duration.TotalSeconds}s
 		/return
 	} else /if (${Target.PctHPs} < 90) {
@@ -404,7 +391,6 @@ sub cast_mez(int _tmpID)
 	| /if (${Me.CurrentMana} > ${Spell[${spellMez}].Mana}) {
 		/delay 2.25s ${Me.SpellReady[${spellMez}]}
 		/if (${validate_cast[FALSE, spell, "${spellMez}", ${_tmpID}]}) /call core_cast2 "${spellMez}" 0 ${_tmpID} check_for_adds
-		DEBUG ${spellMez} -> ${castReturn}
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
 			/if (${Select[${castReturn},CAST_IMMUNE]}) {
@@ -433,7 +419,6 @@ sub cast_mez(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_tash(int _tmpID)
-	DEBUG ${cbug}cast_tash(ID: ${_tmpID})\ax
 	/if (${timer_tash_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -448,7 +433,6 @@ sub cast_tash(int _tmpID)
 
 	| if it's tashed, mark it and move on. better things to do
 	/if (${Target.Tashed.Duration} && !${Target.Buff[Bite of Tashani].ID}) {
-		DEBUGCLASS ${Target.DisplayName} already has ${Target.Tashed}
 		/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s		
 		/return
 	}
@@ -476,7 +460,6 @@ sub is_attacking(int _tmpID)
 	/declare _ani int local
 	/declare _isAttacking FALSE
 	/varset _ani ${Spawn[${_tmpID}].Animation}
-	DEBUGCLASS Animation #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name}).
 	/if (${_ani} == 5) /varset _isAttacking TRUE
 	/if (${_ani} == 7) /varset _isAttacking TRUE
 	/if (${_ani} == 8) /varset _isAttacking TRUE
@@ -504,7 +487,6 @@ sub is_attacking(int _tmpID)
 	/if (${_ani} == 129) /varset _isAttacking TRUE
 	/if (${_ani} == 144) /varset _isAttacking TRUE
 	/if (${_ani} == 146) /varset _isAttacking FALSE
-	DEBUGCLASS ${cbad}Unknown Animation\ax #${_ani}, by mob ID: ${_tmpID} (${Spawn[${_tmpID}].Name})
 /return ${Bool[${_isAttacking}]}	
 
 
@@ -517,7 +499,6 @@ sub is_attacking(int _tmpID)
  *	----Need to work this out of the system. use get_assist_target instead..
  ***|
 sub get_target_ENC()
-	DEBUGCLASS ${cbug}get_target_ENC()\ax
 	/if (${Me.Moving}) /return
 	/call get_assist_target
 	/if (!${ExcludeList.Find[${Target.DisplayName}]}) {
@@ -541,7 +522,6 @@ sub get_target_ENC()
  *	NOTE: 
  ***| 
 sub synergy_ENC()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	
@@ -612,14 +592,13 @@ sub find_mob_to_charm()
  ***|
 #bind setENC /enc
 sub Bind_setENC(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setENC(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |ENC]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |charm|gather|healpoint|spiregroup|spireraid
+  /declare _type string	local |charm|fade|gather|healpoint|rod|spiregroup|spireraid
 
 
 	| get help
@@ -633,6 +612,10 @@ sub Bind_setENC(string _classType, string _verbage)
 		/return
 	}
 	
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
+
 	| charm pet
 	/if (${Bool[${_classType.Find[charm]}]}) {
 		/call writeINI switchCharmPet Pet ${If[${switchCharmPet},FALSE,TRUE]}  
@@ -652,6 +635,17 @@ sub Bind_setENC(string _classType, string _verbage)
 			/call echos switch "Gather Mana(${cnum}${GatherPercent}\ax)" switchGather 0 0
 			/return
 		}			
+
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -683,6 +677,9 @@ sub Bind_setENC(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

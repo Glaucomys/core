@@ -1738,7 +1738,7 @@ sub CureDeathStrikeDT()
 
 
 
-sub MoveToSpot()
+--sub MoveToSpot()
   /echo Spot is ${spot}
   /if (${spot}==0) {
     /echo Moving from Spot ${spot}
@@ -1832,3 +1832,38 @@ sub setAkkapanCamp()
  ** Ring of Scale (December 12, 2017)
  **|
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+|********************************************************************************************
+ ** Empires of Kunark (November 16, 2018)
+ **|
+
+
+| **Talendor (VP 2 group raid)
+#Event Nexona "#*#tiny dark flame on |${Me.DisplayName}|#*#"
+#Event Nexona "#*#tiny dark flame on #*#, |${Me.DisplayName}|#*#"
+#Event Nexona "#*#tiny dark flame on #*#, #*#, and |${Me.DisplayName}|#*#"
+sub Event_Nexona()
+	/if (!${coreEventsInc}) /return
+	AMIDEAD
+	/echo Got SILENCE Emote!!
+	/declare tempx float local ${Me.X}
+	/declare tempy float local ${Me.Y}
+	/target clear
+	/moveto loc 229.40 -956.84
+	/delay 2s ${Me.Moving}
+	/delay 15s
+	/moveto loc ${tempy} ${tempx}
+	/delay 1s
+/return

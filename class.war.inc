@@ -14,7 +14,6 @@
  *  NOTE: 
  ***|
 sub core_WAR()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -23,8 +22,6 @@ sub core_WAR()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 
@@ -42,6 +39,7 @@ sub core_WAR()
 		}
 
 		/if (${coreAuto}) {	
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
@@ -60,7 +58,6 @@ sub core_WAR()
  *  NOTE: 
  ***|
 sub disc_WAR()
-	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 
 	CHECKINPUTS
@@ -95,7 +92,6 @@ sub disc_WAR()
  *  NOTE: 
  ***|
 sub get_agro_WAR()
-	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	AMIDEAD
 
 	CHECKINPUTS
@@ -121,7 +117,6 @@ sub get_agro_WAR()
  *  NOTE: 
  ***|
 sub patch_heal_WAR()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -140,7 +135,6 @@ sub patch_heal_WAR()
  *  NOTE: 
  ***|
 sub click_DPS_WAR()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -155,7 +149,6 @@ sub click_DPS_WAR()
  *	NOTE: 
  ***| 
 sub synergy_WAR()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 
 	CHECKINPUTS
@@ -191,14 +184,13 @@ sub synergy_WAR()
  ***|
 #bind setWAR /war
 sub Bind_setWAR(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setWAR(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |WAR]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |healpoint|spiregroup|spireraid|taunt
+  /declare _type string	local |fade|healpoint|spiregroup|spireraid|taunt
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -233,6 +225,17 @@ sub Bind_setWAR(string _classType, string _verbage)
 			/return
 		}
 
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
+
 	| on/off taunt
 	} else /if (${Bool[${_classType.Equal[taunt]}]}) {
 		/call writeINI taunt meleedisc ${If[${taunt},FALSE,TRUE]}  
@@ -265,6 +268,7 @@ sub Bind_setWAR(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[panicheal]}) /varset _listout ${_listout}(${cnum}${PanicHPPCT}\ax)
 		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
 		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 
 		/varset _sep TRUE
 	/next _count

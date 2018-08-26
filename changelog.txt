@@ -13,7 +13,56 @@
      Paladin, Wizard, Magician, 
      Necromancer, Monk, Beastlord, 
      Enchanter, Shaman, Berserker
+     Druid,
 
+
+
+
+200180825.00
+- Tie pause on combat
+  -- core.ini->[General]->switchNoTieonCombat=TRUE|FALSE - will stop tie while the toon is in combat. FALSE by default
+- events.inc
+  -- added in even to watch for silence on Talendor 2group raid. (thanks budpaul)
+- DEBUGING
+  -- i'm slowly getting rid of all of it. the only debug i'll leave available is SDEBUG and that will be a manual input
+  -- completely removed from all class INC files
+- core_cast2()
+  -- self targeting SPELLS will watch for the sub listed in the called function 
+- check_exit()
+  -- should check for the differetn shaman DA versions
+- cast_AA_fade
+  -- redesigning the variables to match the same pattern for all classes. will still function the same.
+- GoM Nukes
+  -- Gift of Manna proc level requirements removed
+- /mode scorch
+  -- should use range attacks a little better  
+- Modulation Rod controls
+  -- /[CLS] rod (on/off) will enable or disable your toon from using mod rods.
+  -- PAL, CLR, BRD, BST, DRU, ENC, MAG, NEC, RNG, SHD, SHM, WIZ  
+  -- so /clr rod would turn it on or off.
+- class.shm.inc
+  -- small adjustment to cani to watch group health
+- HEALERS -- (Paladin, Cleric, Shaman, Druid) !!
+	-- redesign of the heal loops: /if structures to smaller /for next loops. this could be the dumbest mistake ever or genius, i'm not sure yet
+	-- complete renaming of all the loop variables to something that can be read clearer. resulting in the removal of 7 variables needed by the cleric
+  -- adjusted pet healing to pay more attention to group members over pets. seriously, i'd rather even not heal pets.. but that's just me
+  -- redesign of pet healing loop to function more like group healing
+  -- pet healing will conform to the aggressive switch (cleric and shaman)
+  -- all distance calculations for hurt toons/pets are now based off the healers agro range. spell checks will still catch ranges over the spells max range
+- class.clr.inc
+  -- adjusted cleric AA fade to match new pattern
+  -- /clr fade (on/off)
+  -- /clr fade [##] to set HP % to fade at
+  -- fixed the VP switch so when it's off it really wont get used
+  -- corrected several of the cosmetic outputs for the /clr command
+- class.dru.inc
+  -- adjusted druid AA fade to match new pattern
+  -- complete rewrite of all healing and DPS routines. have fun
+  -- correct Grasp of Ro from Blessing of Ro
+- class.pal.inc
+  -- all healing to match clerics
+- class.pal.inc
+  -- all healing to match clerics
 
 
 20180819

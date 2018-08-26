@@ -15,7 +15,6 @@
  ***| 
 #bind hud /hc
 sub Bind_hud(string _hcType, string _hcVerbage)
-	DEBUG ${cbug}Bind_hud()\ax
 
 	/declare _sep bool local
 	/declare _listout string local
@@ -73,7 +72,6 @@ sub Bind_hud(string _hcType, string _hcVerbage)
   *  NOTE:
  ***|
 sub HUDUpdate()
-	DEBUG ${cbug}HUDUpdate()\ax
 	VOUT Updating MQ2HUD.INI - > [core]
 	/delay 5
 	

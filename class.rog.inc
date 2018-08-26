@@ -13,7 +13,6 @@
  *  NOTE: 
  ***|
 sub core_ROG()
-	DEBUGCLASS Loop start: ${cbug}core_ROG()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -27,8 +26,6 @@ sub core_ROG()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 
@@ -47,6 +44,7 @@ sub core_ROG()
 		}
 
 		/if (${coreAuto}) {	
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
@@ -66,7 +64,6 @@ sub core_ROG()
  *  NOTE: 
  ***|
 sub sneak_attack()
-	DEBUG ${cbug}sneak_attack\ax
 	/if (${Bool[${DiscSneakAttack}]} && !${Me.CombatAbilityReady[${DiscSneakAttack}]}) /return
 	CHECKEXIT
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -86,7 +83,6 @@ sub sneak_attack()
  *  NOTE: 
  ***|
 sub disc_ROG()
-	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -128,7 +124,6 @@ sub disc_ROG()
  *  NOTE: 
  ***|
 sub click_DPS_ROG()
-	DEBUGCLASS ${cbug}click_DPS_items_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -145,7 +140,6 @@ sub click_DPS_ROG()
  *  NOTE: 
  ***|
 sub patch_heal_ROG()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -161,7 +155,6 @@ sub patch_heal_ROG()
  *  NOTE: Work in progress
  ***|
 sub automaticSoS()
-	DEBUGCLASS ${cbug}automaticSoS()\ax
 	/if (!${switchSos}) /return
 	AMIDEAD
 	CHECKTIE
@@ -199,7 +192,6 @@ sub automaticSoS()
  *  NOTE: 
  ***|
 sub click_poison()
-	DEBUGCLASS ${cbug}click_poison(${FindItemCount[${clickPoisonItem}]} <= ${clickPoisonCount})\ax
 	CHECKEXIT
 	CHECKTIE
 	/declare _count int local 0
@@ -207,7 +199,6 @@ sub click_poison()
 	
 	| keep a stock on hand
 	/if (${FindItemCount[${clickPoisonItem}]} < ${clickPoisonCount} && ${Me.ItemReady[${clickPoisonDispenser}]}) {
-		DEBUGCLASS click ${clickPoisonDispenser}
 		/if (${validate_cast[FALSE, item, "${clickPoisonDispenser}", ${Me.ID}]}) /call core_cast2 "${clickPoisonDispenser}" item ${Me.ID} FALSE
 		/call sort_cursor TRUE
 	}
@@ -233,7 +224,6 @@ sub click_poison()
  *	NOTE: 
  ***| 
 sub synergy_ROG()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKINPUTS
 
@@ -290,14 +280,13 @@ sub synergy_ROG()
  ***|
 #bind setROG /rog
 sub Bind_setROG(string _classType, string _verbage)
-	DEBUGCLASS ${cbug}Bind_setROG(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[FALSE, |ROG]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|autosos|healpoint|poison|spiregroup|spireraid
+  /declare _type string	local |ae|autosos|fade|healpoint|poison|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -321,6 +310,17 @@ sub Bind_setROG(string _classType, string _verbage)
 		} else /if (!${Bool[${_verbage}]} || !${Range.Between[1,100:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} poison [${cinfo}${clickPoisonCount}\ax] of poison to keep ${cinfo}1 - 100\ax
 			/return
+		}
+
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
 		}
 
 	| spire control
@@ -366,6 +366,8 @@ sub Bind_setROG(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[poison]}) /varset _listout ${_listout}(${cnum}${clickPoisonCount}\ax)
 		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${Bool[${AEMelee}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

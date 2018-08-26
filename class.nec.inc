@@ -14,7 +14,6 @@
  *  NOTE: 
  ***|
 sub core_NEC()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -33,8 +32,6 @@ sub core_NEC()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 		/if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
@@ -57,7 +54,8 @@ sub core_NEC()
 		}
 		
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -75,7 +73,6 @@ sub core_NEC()
  *  NOTE: 
  ***|
 sub patch_heal_NEC()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -95,7 +92,6 @@ sub patch_heal_NEC()
  *  NOTE: 
  ***|
 sub disc_NEC()
-	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -127,7 +123,6 @@ sub disc_NEC()
  *  NOTE: 
  ***| 
 sub synergy_NEC()
-    DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
     CHECKEXIT
     CHECKINPUTS
     
@@ -160,7 +155,6 @@ sub synergy_NEC()
  *  NOTE: 
  ***|
 sub click_DPS_NEC()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKTIE
 	CHECKINPUTS
@@ -215,7 +209,6 @@ sub sac_toon()
  *  NOTE: 
  ***|
 sub check_bloom()
-	DEBUGCLASS ${cbug}check_harvest()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -242,14 +235,13 @@ sub check_bloom()
  ***|
 #bind setNEC /nec
 sub Bind_setNEC(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setNEC(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |NEC]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |gather|healpoint|spiregroup|spireraid
+  /declare _type string	local |fade|gather|healpoint|rod|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -275,6 +267,10 @@ sub Bind_setNEC(string _classType, string _verbage)
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		/return
 		
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
+
 	| gather enable/disable /pct
 	} /if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_classVerbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -285,6 +281,17 @@ sub Bind_setNEC(string _classType, string _verbage)
 		}	else /if (!${Bool[${_classVerbage}]}) {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
 		}		
+
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
@@ -304,6 +311,9 @@ sub Bind_setNEC(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${If[${switchGather},${cnum}${GatherPercent}\ax,${ooff}]})		
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180819.00
+	/call setDeclare coreBuild											string	outer 20180825.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -51,7 +51,6 @@ sub set_declares()
 	/call DeclareCoreIniVar plist										string	Plugin "|MQ2Cast|MQ2EQBC|MQ2Exchange|MQ2MoveUtils|MQ2Netbots|MQ2Debuffs"
 	/call DeclareCoreIniVar EQBCServer							string	General 127.0.0.1
 	/call DeclareCoreIniVar EQBCPort								string	General 2112
-	/call DeclareCoreIniVar mqlog										string	General FALSE
 	/call DeclareCoreIniVar minMobPullLvl						int			General 1
 	/call DeclareCoreIniVar maxMobPullLvl						int			General 150
 	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
@@ -75,6 +74,7 @@ sub set_declares()
 	/call DeclareCoreIniVar switchGuildinSafelist		string	General FALSE
 	/call DeclareCoreIniVar switchCheckGameCash			string	General FALSE
 	/call DeclareCoreIniVar switchPersistentModes		string	General FALSE 			
+	/call DeclareCoreIniVar switchNoTieonCombat			string	General FALSE 			
 
 	| broadcast switches
 	| default on
@@ -541,7 +541,7 @@ sub set_declares()
 
 
 	| overrides
-  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|name|safelist|safezone|trainspell"
+  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|melee|name|range|safelist|safezone|trainspell"
 	/call setDeclare switchOverride									bool		outer FALSE
 	/call setDeclare switchOverrideStop							bool		outer FALSE
   /call setINIVar switchOverrideLos								bool		Override FALSE
@@ -549,6 +549,8 @@ sub set_declares()
   /call setINIVar switchOverrideExclude						bool		Override FALSE
   /call setINIVar switchOverrideName							bool		Override FALSE
   /call setINIVar switchOverrideEngageat					bool		Override FALSE
+  /call setINIVar switchOverrideRangecombat				bool		Override FALSE
+  /call setINIVar switchOverrideMeleecombat				bool		Override FALSE
   /call setINIVar switchOverrideLoot							bool		Override FALSE
   /call setINIVar switchOverrideSafelist					bool		Override FALSE
   /call setDeclare switchOverrideClasscheck				bool		outer FALSE
@@ -734,21 +736,21 @@ sub set_declares()
 	/call setINIVar sumFamiliarLeave								bool		Pet TRUE	
 
 	| debug
-  /call setDeclare debugType											string	outer "|stop|core|class|casting|rez|array|mode"
-  /call setDeclare switchDebugStop								bool 		outer FALSE
-	/call setINIVar switchDebugCore									bool		debug FALSE 
-	/call setINIVar switchDebugClass								bool		debug FALSE 
-	/call setINIVar switchDebugCasting							bool		debug FALSE 
-	/call setINIVar switchDebugRez									bool		debug FALSE 
-	/call setINIVar switchDebugArray								bool		debug FALSE 
-	/call setINIVar switchDebugMode									bool		debug FALSE 
+  | /call setDeclare debugType											string	outer "|stop|core|class|casting|rez|array|mode"
+  | /call setDeclare switchDebugStop								bool 		outer FALSE
+	| /call setINIVar switchDebugCore									bool		debug FALSE 
+	| /call setINIVar switchDebugClass								bool		debug FALSE 
+	| /call setINIVar switchDebugCasting							bool		debug FALSE 
+	| /call setINIVar switchDebugRez									bool		debug FALSE 
+	| /call setINIVar switchDebugArray								bool		debug FALSE 
+	| /call setINIVar switchDebugMode									bool		debug FALSE 
 	| SET THIS TO TRUE TO ENABLE DEBUGING. ALTERNATIVE USE /varset debug TRUE
 	| on a funny note: prepare your ass
 	/call setDeclare debug													bool		outer FALSE
 
 
 	| onoff types
-  /call setDeclare 		onoffType										string	outer "|horn|shrink"
+  /call setDeclare onoffType											string	outer "|horn|shrink"
 	/call setINIVar switchShrink										bool		Common FALSE
 	/call setINIVar switchHorn											bool		Common FALSE
 
@@ -883,6 +885,9 @@ sub declare_MAG()
 	/call setDeclare MAGAlliance										string	outer "Firebound Alliance"
 	/call setDeclare MAGAAUnity											string	outer "Thaumaturge's Unity"
 	/call setDeclare MAGAAFade											string	outer "Drape of Shadows"
+
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
 	
 	/call setINIVar ServantNuke 										string 	Pet "Remorseless Servant"
 	/call setTimer tCauldron_use										string 	Timer 360m timer_caldron_use
@@ -913,8 +918,7 @@ sub declare_MAG()
 	/call setINIVar RainNuke1 											string 	Spells "Rain of Cutlasses"
 	/call setINIVar RainNuke2 											string 	Spells "Coronal Rain"
 	/call setINIVar spellMalo 											string 	Spells "Malosinete"
-	/call setINIVar AAFade													string	Buffs "Dimensional Shield"
-	/call setINIVar useAAFade												int			Buffs 50
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 	
@@ -966,6 +970,9 @@ sub declare_WIZ()
 	/call setDeclare WIZAlliance										string	outer "Frostbound Alliance"
 	/call setDeclare WIZAAUnity											string	outer "Etherealist's Unity"
 	/call setDeclare WIZAAFade											string	outer "A Hole in Space"
+
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
 
 	/declare _count int local 0
 	/declare _list int local 0
@@ -1129,7 +1136,8 @@ sub declare_WIZ()
 	/call setINIVar runeCrystalwing									string	Rune "Armor of the Codex"
 	/call setINIVar runeGuard			 									string	Rune "Darkmist Guard"
 
-	/call setINIVar ${Me.Class.ShortName}Point 	int 		Heal 80
+	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 /return	
 
 
@@ -1153,6 +1161,9 @@ sub declare_ENC()
 	/call setDeclare ENCAlliance										string	outer "Chromatic Alliance"
 	/call setDeclare ENCAAUnity											string	outer "Orator's Unity"
 	/call setDeclare ENCAAFade											string	outer "Self Stasis"
+
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
 	
 	/call setDeclare mobList												string	outer
 	/call setDeclare addList 												string 	outer
@@ -1215,7 +1226,8 @@ sub declare_ENC()
 	/call setINIVar DoT4chk						 							string	Spells FALSE
 	/call setINIVar DoT4Condition 									string	Spells FALSE
 
-	/call setINIVar ${Me.Class.ShortName}Point 	int 		Heal 80
+	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 /return	
 
 
@@ -1236,8 +1248,10 @@ sub declare_NEC()
 	/call setDeclare NECEpic2												string	outer "Deathwhisper"
 	/call setDeclare NECAlliance										string	outer "Malevolent Alliance"
 	/call setDeclare NECAAUnity											string	outer "Mortifier's Unity"
-	/call setDeclare NECAAFade											string	outer 
+	/call setDeclare NECAAFade											string	outer FALSE
 
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
 
 	/call setTimer tCheck_Blood											string	Timer 8s	timer_check_blood
 
@@ -1293,6 +1307,7 @@ sub declare_NEC()
 	/call setINIVar Nuke5Condition 									string	Spells FALSE
 	/call setINIVar Nuke6					 									string	Spells FALSE
 	/call setINIVar Nuke6Condition 									string	Spells FALSE
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 /return	
 
 
@@ -1318,6 +1333,9 @@ sub declare_SHD()
 	/call setDeclare SHDAAUnity											string	outer "Dark Lord's Unity (Beza)"
 	/call setDeclare SHDAAFade											string	outer "Death Peace"
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
 	/call setTimer tcheck_Skin											string 	Timer 45s timer_check_Skin
 	/call setTimer tcheck_Stance										string 	Timer 3m timer_check_Stance
 
@@ -1382,6 +1400,7 @@ sub declare_SHD()
 	/call setINIVar switchSkin			 								bool	 	Buffs TRUE
 	/call setINIVar Skin			 											string 	Buffs "Tylix's Skin"
 	/call setINIVar switchVoT				 								bool	 	Buffs TRUE
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 
 
 
@@ -1411,26 +1430,21 @@ sub declare_PAL()
 	/call setDeclare PALAAUnity											string	outer "Divine Protector's Unity"
 	/call setDeclare PALAAFade											string	outer "Balefire Burst"
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
 	/call setTimer tcheck_MG												string	Timer	10s timer_check_MG
 	/call setTimer tcheck_Steel											string 	Timer 2m timer_check_Steel
 	/call setTimer tcheck_Stance										string 	Timer 7.5m timer_check_Stance
 
 	/call setDeclare mobAECount											int			outer 0 
 	
-	/call setDeclare WorstHurt 											string 	outer FALSE
-	/call setDeclare WorstHP 												int 		outer 100
-	/call setDeclare WorstClass 										string 	outer FALSE
-	/call setDeclare MajorHurt 											int 		outer 0
-	/call setDeclare MinorHurt											int    	outer 0 
-	/call setDeclare groupHurt 											int 		outer 0
-
-	/call setDeclare pWorstHurt 										string 	outer ${Me.DisplayName}
-	/call setDeclare pWorstHP												int			outer 100
-	/call setDeclare pWorstHurtID										int 		outer ${Me.ID}
-	/call setDeclare pWorstClass										string	outer FALSE
-	/call setDeclare pMajorHurt											int			outer 0
+	/call setDeclare hurtID		 											string 	outer FALSE
+	/call setDeclare hurtPctHP											int 		outer 100
+	/call setDeclare hurtCLS		 										string 	outer FALSE
+	/call setDeclare hurtCount 											int 		outer 0
 	
-	  /call setINIVar splashGroup											string 	Heal "Wave of Expiation"
+  /call setINIVar splashGroup											string 	Heal "Wave of Expiation"
   /call setINIVar splashPanic											string 	Heal "Aurora of Morninglight"
   /call setINIVar healPanic1											string 	Heal "Expiation"
   /call setINIVar healPanic2											string 	Heal "Grief"
@@ -1508,6 +1522,7 @@ sub declare_PAL()
 		                                      		
 	/call setINIVar Twincast												string 	Spells "Glorious Exoneration"
 	                                        		
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 	/call setINIVar switchHarmonious 								bool	 	Buffs TRUE
 	/call setINIVar Harmonious 											string 	Buffs "Harmonious Blessing"
 	/call setINIVar switchSteel			 								bool	 	Buffs TRUE
@@ -1542,8 +1557,11 @@ sub declare_WAR()
 	/call setDeclare WAREpic2												string	outer "Kreljnok's Sword of Eternal Power"
 	/call setDeclare WARAlliance										string	outer FALSE
 	/call setDeclare WARAAUnity											string	outer FALSE
-	/call setDeclare WARAAFade											string	outer 
+	/call setDeclare WARAAFade											string	outer FALSE
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
 	/call setINIVar DiscInsult 											string 	Discs "Insult"
 	/call setINIVar DiscCyclone			 								string	Discs "Cyclone Roar"
 	/call setINIVar DiscWade				 								string	Discs "Wade In To Battle"
@@ -1598,8 +1616,11 @@ sub declare_BER()
 	/call setDeclare BEREpic2												string	outer "Vengeful Taelosian Blood Axe"
 	/call setDeclare BERAlliance										string	outer "Demolisher's Alliance"
 	/call setDeclare BERAAUnity											string	outer FALSE
-	/call setDeclare BERAAFade											string	outer 
+	/call setDeclare BERAAFade											string	outer FALSE
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
 	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 	/call setINIVar DiscSnare 											string 	Discs FALSE
 	/call setINIVar SnareAxe 												string 	Discs FALSE
@@ -1677,6 +1698,9 @@ sub declare_RNG()
 	/call setDeclare RNGAAUnity											string	outer "Wildstalker's Unity (Azia)"
 	/call setDeclare RNGAAFade											string	outer "Cover Tracks"
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
 	/call setTimer tNuke_Summer											string	Timer 3s timer_cast_nuke_summer
 
 	/call setINIVar DoNuke					 								int			Spells 5
@@ -1732,6 +1756,7 @@ sub declare_RNG()
 	/call setINIVar AADefensive1 										string	Spells "Outrider's Evasion"
 	/call setINIVar AADefensive2 										string	Spells "Protection of the Spirit Wolf"
 	/call setINIVar AADefensive3 										string	Spells "Bulwark of the Brownies"
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 
 /return	
 
@@ -1753,12 +1778,18 @@ sub declare_DRU()
 	/call setDeclare DRUEpic2												string	outer "Staff of Everliving Brambles"
 	/call setDeclare DRUAlliance										string	outer "Bosquetender's Alliance"
 	/call setDeclare DRUAAUnity											string	outer "Wildtender's Unity"
-	/call setDeclare DRUAAFade											string	outer 
+	/call setDeclare DRUAAFade											string	outer "Veil of the Underbrush"
+
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 	
 	/call setINIVar debuffRo			 									string	Spells "Blessing of Ro"	
 	/call setINIVar WoodTXT													string	Spells "SoWood cast."
                                         		
 	/call setINIVar spellCripple 										string 	Spells FALSE
+
 	/call setINIVar DoNuke					 								int			Spells 0
 	/call setINIVar Nuke1					 									string	Spells FALSE
 	/call setINIVar Nuke1Condition 									string	Spells FALSE
@@ -1768,6 +1799,7 @@ sub declare_DRU()
 	/call setINIVar Nuke3Condition 									string	Spells FALSE
 	/call setINIVar Nuke4							 							string	Spells FALSE
 	/call setINIVar Nuke4Condition 									string	Spells FALSE
+	
 	/call setINIVar DoDoT								 						int			Spells 0
 	/call setINIVar DoT1							 							string	Spells FALSE
 	/call setINIVar DoT1chk						 							string	Spells FALSE
@@ -1781,20 +1813,12 @@ sub declare_DRU()
 	/call setINIVar DoT4							 							string	Spells FALSE
 	/call setINIVar DoT4chk						 							string	Spells FALSE
 	/call setINIVar DoT4Condition 									string	Spells FALSE
-	
-	/call setDeclare MajorHurt 											int 		outer 0
-	/call setDeclare WorstHurt 											string 	outer FALSE
-	/call setDeclare WorstHurtID 										int 		outer
-	/call setDeclare WorstHP 												int 		outer 100
-	/call setDeclare WorstClass 										string 	outer FALSE
-  /call setDeclare MinorHurt											int    	outer 0 
-  /call setDeclare WorstHp 												int    	outer 100
-  /call setDeclare pWorstHurt 										string 	outer ${Me.DisplayName}
-  /call setDeclare pWorstHP												int			outer 100
-  /call setDeclare pWorstHurtID										int 		outer ${Me.ID}
-  /call setDeclare pWorstClass										string	outer FALSE
-  /call setDeclare pMajorHurt											int			outer 0
-	
+
+	/call setDeclare hurtID		 											string 	outer FALSE
+	/call setDeclare hurtPctHP											int 		outer 100
+	/call setDeclare hurtCLS		 										string 	outer FALSE
+	/call setDeclare hurtCount 											int 		outer 0
+
 	/call setINIVar RandRezDelay										int 		Heal 10
 	/call setINIVar ProtectOutsideGroup							string	Heal "|FALSE|FALSE"
 	/call setINIVar ProtectInsideRaid								string	Heal "|FALSE|FALSE"
@@ -1876,30 +1900,17 @@ sub declare_SHM()
 	/call setDeclare SHMEpic2												string	outer "Blessed Spiritstaff of the Heyokah"
 	/call setDeclare SHMAlliance										string	outer "Ancient Alliance"
 	/call setDeclare SHMAAUnity											string	outer "Visionary's Unity"
-	/call setDeclare SHMAAFade											string	outer 
+	/call setDeclare SHMAAFade											string	outer FALSE
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
 	
-	
-	/call setDeclare WorstHurt 											string 	outer FALSE
-	/call setDeclare WorstHP 												int 		outer 100
-	/call setDeclare WorstClass 										string 	outer FALSE
-	/call setDeclare MajorHurt 											int 		outer 0
-	/call setDeclare MinorHurt											int    	outer 0 
-	/call setDeclare groupHurt 											int 		outer 0
-	
-	| /call setDeclare MajorHurt 											int 		outer 0
-	| /call setDeclare WorstHurt 											string 	outer FALSE
-	| /call setDeclare WorstHurtID 										int 		outer ${Me.ID}
-	| /call setDeclare WorstHP 												int 		outer 100
-	| /call setDeclare WorstClass 										string 	outer FALSE
-  | /call setDeclare MinorHurt											int    	outer 0 
-  | /call setDeclare WorstHp		 										int    	outer 100	
+	/call setDeclare hurtID		 											string 	outer FALSE
+	/call setDeclare hurtPctHP											int 		outer 100
+	/call setDeclare hurtCLS		 										string 	outer FALSE
+	/call setDeclare hurtCount 											int 		outer 0
 
-  /call setDeclare pWorstHurt 										string 	outer ${Me.DisplayName}
-  /call setDeclare pWorstHP												int			outer 100
-  /call setDeclare pWorstHurtID										int 		outer ${Me.ID}
-
-	/call setTimer tTalisman												string	Timer 30s timer_cast_talisman
+	/call setTimer 	tTalisman												string	Timer 30s timer_cast_talisman
 	/call setINIVar spellTalisman	 									string	Spells "Talisman of the Leopard"
 	/call setINIVar switchTalisman			 						bool		Spells TRUE
                                           		
@@ -1957,6 +1968,7 @@ sub declare_SHM()
 	/call setINIVar ProtectNPCList									string	Heal "|FALSE|FALSE"
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar RampageTank											string	Heal FALSE
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 
 	| /call setDeclare HealList 											string 	outer "|${healSurge}|${healWholeGroup}|${healWholeGroupHoT}|${healMain}|${healIntervention1}|${healReckless}"
 /return	
@@ -1979,7 +1991,10 @@ sub declare_BRD()
 	/call setDeclare BRDEpic2												string	outer "Prismatic Dragon Blade"
 	/call setDeclare BRDAlliance										string	outer "Alliance of Sticks and Stones"
 	/call setDeclare BRDAAUnity											string	outer FALSE
-	/call setDeclare BRDAAFade											string	outer 
+	/call setDeclare BRDAAFade											string	outer "Fading Memories"
+
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
 
 	/call setDeclare mobList												string 	outer
 	/call setDeclare addList 												string 	outer
@@ -2015,6 +2030,7 @@ sub declare_BRD()
 	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
 	                                          		
 	/call setINIVar switchIntimidKick 							bool	 	meleedisc FALSE
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 	
 	
 /return	
@@ -2036,8 +2052,11 @@ sub declare_BST()
 	/call setDeclare BSTEpic2												string	outer "Spiritcaller Totem of the Feral"
 	/call setDeclare BSTAlliance										string	outer "Venomous Alliance"
 	/call setDeclare BSTAAUnity											string	outer "Feralist's Unity"
-	/call setDeclare BSTAAFade											string	outer 
+	/call setDeclare BSTAAFade											string	outer FALSE
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
 	/call setINIVar DiscForay 											string 	Spells "Pummel"
 	/call setINIVar DiscFocusClaws 									string 	Spells "Focused Clamor of Claws"
 	/call setINIVar DiscSavage 											string 	Spells "Savage Rage"
@@ -2095,6 +2114,7 @@ sub declare_BST()
 	/call setINIVar spellCripple 										string 	Spells "Incapacitate"
                                              		
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 /return	
 
 
@@ -2115,7 +2135,7 @@ sub declare_MNK()
 	/call setDeclare MNKEpic2												string	outer "Transcended Fistwraps of Immortality"
 	/call setDeclare MNKAlliance										string	outer "Doomwalker's Alliance"
 	/call setDeclare MNKAAUnity											string	outer FALSE
-	/call setDeclare MNKAAFade											string	outer 
+	/call setDeclare MNKAAFade											string	outer FALSE
 	
 	/call setINIVar spellCripple 										string 	Spells FALSE
 	/call setINIVar switchMNKTrainMelee							bool		Common FALSE
@@ -2146,6 +2166,9 @@ sub declare_ROG()
 	/call setDeclare ROGAAUnity											string	outer FALSE
 	/call setDeclare ROGAAFade											string	outer "Escape"
 	
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
 	| keep on cooldown
 	/call setTimer tClick_Poison										string	Timer 30s 	timer_click_poison
 	/call setINIVar AEMelee					 								bool	 	Discs FALSE
@@ -2198,7 +2221,6 @@ sub declare_ROG()
  *  NOTE: 
  ***|
 sub declare_CLR()
-	DEBUG ${cbug}declare_CLR()\ax
 	/call setDeclare CLRspire1											string	outer "Fundament: First Spire of Divinity"
 	/call setDeclare CLRspire2											string	outer "Fundament: Second Spire of Divinity"
 	/call setDeclare CLRspire3											string	outer "Fundament: Third Spire of Divinity"
@@ -2210,21 +2232,16 @@ sub declare_CLR()
 	/call setDeclare CLRAAUnity											string	outer "Saint's Unity"
 	/call setDeclare CLRAAFade											string	outer "Divine Peace"
 	
-	/call setTimer tHealWard												string	Timer 185s timer_heal_ward
+	/call setINIVar switchAAFade										bool		Buffs FALSE
+	/call setINIVar useAAFadePct										int			Buffs 50
+
+	/call setTimer	tHealWard												string	Timer 185s timer_heal_ward
 	/call setINIVar switchLockMA										bool 		Heal FALSE
 		
-	/call setDeclare WorstHurt 											string 	outer FALSE
-	/call setDeclare WorstHP 												int 		outer 100
-	/call setDeclare WorstClass 										string 	outer FALSE
-	/call setDeclare MajorHurt 											int 		outer 0
-	/call setDeclare MinorHurt											int    	outer 0 
-	/call setDeclare groupHurt 											int 		outer 0
-
-	/call setDeclare pWorstHurt 										string 	outer ${Me.DisplayName}
-	/call setDeclare pWorstHP												int			outer 100
-	/call setDeclare pWorstHurtID										int 		outer ${Me.ID}
-	/call setDeclare pWorstClass										string	outer FALSE
-	/call setDeclare pMajorHurt											int			outer 0
+	/call setDeclare hurtID		 											string 	outer FALSE
+	/call setDeclare hurtPctHP											int 		outer 100
+	/call setDeclare hurtCLS		 										string 	outer FALSE
+	/call setDeclare hurtCount 											int 		outer 0
 	
 	/call setINIVar DivineRezCleric									bool 		Heal TRUE
 	/call setINIVar RandRezDelay										int 		Heal 5
@@ -2270,10 +2287,9 @@ sub declare_CLR()
 	/call setINIVar useYaulpPct											string	Buffs 98
 	/call setINIVar sumWeaponSpell									string	Buffs "Hammer of	Reverence"
 	/call setINIVar sumWeaponItem										string	Buffs "Hammer of	Reverence III"
-	/call setINIVar AAFade													string	Buffs "Divine Peace"
-	/call setINIVar useAAFade												int			Buffs 50
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
                                             		
-	/call setINIVar useVP														bool		Buffs TRUE
+	/call setINIVar switchVP												bool		Buffs TRUE
 	/call setINIVar useVPPct												int			Buffs 40
                                             		
 	/call setINIVar spellCripple 										string 	Spells FALSE
@@ -2313,19 +2329,9 @@ sub declare_CLR()
  *  NOTE: 
  ***|
 sub set_alias()
-	DEBUG ${cbug}set_alias()\ax Setting Aliases
-	| /if (!${Bool[${Alias[/take]}]}) 								/squelch /alias /take 											/bc take
-	| /if (!${Bool[${Alias[/door]}]}) 								/squelch /alias /door 											/bc door
-	| /if (!${Bool[${Alias[/stack]}]}) 								/squelch /alias /stack 											/bcaa //invis
-	| /if (!${Bool[${Alias[/here]}]}) 								/squelch /alias /here 											/bca //setcombathere
-	                                          			
   /if (!${Bool[${Alias[/sendpets]}]}) 						/squelch /alias /sendpets										VOUT SendPets: 
-	| /if (!${Bool[${Alias[/killmob]}]}) 							/squelch /alias /killmob 										/bc killmob
-	| /if (!${Bool[${Alias[/mirror]}]}) 							/squelch /alias /mirror 										/bc mirror
-	| /if (!${Bool[${Alias[/stein]}]}) 								/squelch /alias /stein 											/bcaa //stein
   /if (!${Bool[${Alias[/stop]}]}) 								/squelch /alias /stop 											/bc stop
 	/if (!${Bool[${Alias[/blurb]}]}) 								/squelch /alias /blurb 											VOUT Blurb: 
- 	| /if (!${Bool[${Alias[/clean]}]}) 								/squelch /alias /clean 											VOUT Clean this mess up.
   /if (!${Bool[${Alias[/bcsay]}]}) 								/squelch /alias /bcsay 											/bc bcsay
   /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
                                             			
@@ -2338,14 +2344,11 @@ sub set_alias()
                                             			
 	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/bca //core auto on
 	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /bca //core auto off
-	| /if (!${Bool[${Alias[/zonereset]}]}) 						/noparse /squelch /alias /zonereset			    /bc zonereset
                                             			
 	/if (!${Bool[${Alias[/givecoin]}]}) 						/noparse /squelch /alias /givecoin			    VOUT Bribe Time:
                                             			
-	| /if (!${Bool[${Alias[/oneoff]}]}) 							/noparse /squelch /alias /oneoff   					/bc oneoff
                                             			
 	/if (!${Bool[${Alias[/gtfo]}]}) 								/noparse /squelch /alias /gtfo    			 		/bc gtfo
-	
 	
 	| utility
 	| /if (!${Bool[${Alias[/checkvar]}]}) 						/noparse /squelch /alias /checkvar 			 		/invoke ${Macro.Undeclared}
@@ -2364,7 +2367,7 @@ sub set_alias()
  ***| 
 #event Join "#1# invites you to join a #2#.#*#"
 sub Event_Join(string line, string _sender, string _groupraid)
-	DEBUG ${cbug}Event_Join(\ax${_sender} ${_groupraid}\ax${cbug})\ax
+	| DEBUG ${cbug}Event_Join(\ax${_sender} ${_groupraid}\ax${cbug})\ax
 	CHECKSAFELIST
 
 	| group invites
@@ -2380,16 +2383,16 @@ sub Event_Join(string line, string _sender, string _groupraid)
 	| raid invites
 	/if (${_groupraid.Equal[raid]}) {
 		/delay 1s
-		DEBUG Raidinvite recieved
+		| DEBUG Raidinvite recieved
 		/if (!${switchTakeRaidInvite}) {
-			DEBUG NO RAIDINVITES FOR ME
+			| DEBUG NO RAIDINVITES FOR ME
 			/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["join a raid"]}) {
 				/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup
 				/return
 			}
 			/raiddecline
 		} else /if (${switchTakeRaidInvite}) {
-			DEBUG WE LIKE RAID INVITES
+			| DEBUG WE LIKE RAID INVITES
 			VOUT Accepting invite from ${cpc}${_sender}\ax for ${_groupraid}.
 			/if (${Window[ConfirmationDialogbox].Child[CD_TextOutPut].Text.Find["join a raid"]}) {
 				/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
@@ -2412,7 +2415,7 @@ sub Event_Join(string line, string _sender, string _groupraid)
 #event EQBC "<#1#> #2#"
 #event EQBC "[#1#(msg)] #2#"
 sub Event_EQBC(string line, string _sender, string _cmd)
-	DEBUG cmd: ${_cmd} _sender ${_sender}
+	| DEBUG cmd: ${_cmd} _sender ${_sender}
 
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
  
@@ -2503,7 +2506,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 #event EQBC_say "<#1#> bcsay #2#"
 #event EQBC_say "[#1#(msg)] bcsay #2#"
 sub Event_EQBC_say(string line, string _sender, string _verbage)
-	DEBUG _sender ${_sender} _verbage ${_verbage}
+	| DEBUG _sender ${_sender} _verbage ${_verbage}
  	| have everyone say the same thing to the same target with a touch of random delay
 	/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Bool[${Spawn[pc ${_sender} radius 60].ID}]}) {
 		/assist ${_sender}
@@ -2521,7 +2524,7 @@ sub Event_EQBC_say(string line, string _sender, string _verbage)
 	
 #event camping "It will take you about 30 seconds to prepare your camp."
 sub Event_camping(string line)
-	DEBUG ${cbug}Event_camping()\ax
+	| DEBUG ${cbug}Event_camping()\ax
 	/call clear_combat
 	VOUT Core Build ${cinfo}${coreBuild}\ax ${sep} ${cbad}STOPPED\ax for camp.
 	/endm
@@ -2587,7 +2590,7 @@ sub Event_raidinvite(string line, string _sender)
 #event Blurb "[MQ2] - Blurb: #1#"
 
 sub Event_Blurb(string line, string exp, string event)
-	DEBUG ${cbug}Event_Blurb(\ax${exp.Upper}, ${event.Upper}${cbug})\ax
+	| DEBUG ${cbug}Event_Blurb(\ax${exp.Upper}, ${event.Upper}${cbug})\ax
 	/declare blurb 			string 	local NULL
 	/declare explist 		string 	local ${Ini[${INIBlurb}]}
 	/declare eventlist	string	local	NULL
@@ -2614,7 +2617,7 @@ sub Event_Blurb(string line, string exp, string event)
 ***|
 #event Song "[MQ2] - Song: #1#"
 sub Event_Song(string line, string _group)
-	DEBUG ${cbug}Event_Song(\ax${exp.Upper}${cbug})\ax
+	| DEBUG ${cbug}Event_Song(\ax${exp.Upper}${cbug})\ax
 
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
 		/call mem_song_set ${_group}
@@ -2657,7 +2660,7 @@ sub Event_checkOneOff()
  ***| 	
 #event bribetime "[MQ2] - Bribe Time: #1# #2# #3#"
 sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
-	DEBUG ${cbug}Event_bribetime(${_amount}, ${_stacks}, ${_coin})\ax
+	| DEBUG ${cbug}Event_bribetime(${_amount}, ${_stacks}, ${_coin})\ax
 	/doevents flush
 	/declare _coinID			int local 99
 
@@ -2688,7 +2691,7 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
 		/for _count 1 to ${_stacks}
 			AMIDEAD
 
-			DEBUG stack count: ${_count}/${_stacks}
+			| DEBUG stack count: ${_count}/${_stacks}
 			/ctrl /notify InventoryWindow IW_Money${_coinID} leftmouseup
 			/delay 5
 			/click left target 
@@ -2810,7 +2813,7 @@ sub Event_NullSlot
 | #event Zone "You have entered #*#" 
 #event Zone "LOADING, PLEASE WAIT..."
 sub Event_Zone(string _line)
-	DEBUG ${cbug}Event_Zone(line: ${_line})\ax
+	| DEBUG ${cbug}Event_Zone(line: ${_line})\ax
 
 	| force a delay while zoning
 	:stillfuckingzoningOMG
@@ -2835,7 +2838,7 @@ sub Event_Zone(string _line)
  ***| 
 #event buystuff	"[MQ2] Buy: '#1#' #2#"
 sub Event_buystuff(string line, string _itemtoBuy, int _buyAmount)
-	DEBUG (string:${_itemtoBuy}, int:${_buyAmount})
+	| DEBUG (string:${_itemtoBuy}, int:${_buyAmount})
 	/if (${_itemtoBuy.Equal[NULL]}) {
 		VOUT Need an item to buy, in single qoutes.
 	} else /if (${_buyAmount} < 1) {
@@ -2855,7 +2858,7 @@ sub Event_buystuff(string line, string _itemtoBuy, int _buyAmount)
  ***| 
 #event sellstuff	"[MQ2] Sell: '#1#'"
 sub Event_sellstuff(string line, string _itemtoSell)
-	DEBUG ${cbug}Event_sellstuff(string: ${_itemtoSell})\ax
+	| DEBUG ${cbug}Event_sellstuff(string: ${_itemtoSell})\ax
 	/call vendor_sell "${_itemtoSell}"
 /return
 
@@ -3067,7 +3070,7 @@ sub Bind_watchspawn(string _spawn)
  ***|
 #bind override /override
 sub Bind_override(string _overrideType, string _verbage)
-	DEBUG ${cbug}Bind_override(type: ${_overrideType})\ax
+	| DEBUG ${cbug}Bind_override(type: ${_overrideType})\ax
 	
 	/declare _count		int local
 	/declare _bind string local override
@@ -3121,7 +3124,7 @@ sub Bind_override(string _overrideType, string _verbage)
  ***| 	
 #bind deBuff /debuff
 sub Bind_deBuff(string _deBuffType, string _verbage)
-	DEBUG ${cbug}Bind_deBuff(type: ${_deBuffType})\ax
+	| DEBUG ${cbug}Bind_deBuff(type: ${_deBuffType})\ax
 	
 	/declare _count int local 0
 	/declare _bind string local deBuff
@@ -3193,7 +3196,7 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
  ***| 	
 #bind heal /heal
 sub Bind_heal(string _healType, string _verbage)
-	DEBUG ${cbug}Bind_heal(type: ${_healType})\ax
+	| DEBUG ${cbug}Bind_heal(type: ${_healType})\ax
 	
 	/declare _count		int local
 	/declare _bind string local heal
@@ -3277,7 +3280,7 @@ sub Bind_heal(string _healType, string _verbage)
  ***| 	
 #bind buff /buff
 sub Bind_buff(string _buffType, string _verbage)
-	DEBUG ${cbug}Bind_buff(type: ${_buffType})\ax
+	| DEBUG ${cbug}Bind_buff(type: ${_buffType})\ax
 	/declare _count int local 0
 	/declare _bind string local buff
 	/declare _listout string local
@@ -3350,7 +3353,7 @@ sub Bind_buff(string _buffType, string _verbage)
  ***| 
 #bind cursor /cursor
 sub Bind_cursor(string _cursorType, string _verbage)
-	DEBUG ${cbug}Bind_cursor(type: ${_cursorType})\ax
+	| DEBUG ${cbug}Bind_cursor(type: ${_cursorType})\ax
 	/declare _properType 	string 	local
 	/declare _count 			int 		local 0
 	/declare _bind 				string 	local cursor
@@ -3425,7 +3428,7 @@ sub Bind_cursor(string _cursorType, string _verbage)
  ***| 	
 #bind rez /rez
 sub Bind_rez(string _rezType, string _verbage)
-	DEBUG ${cbug}Bind_rez(type: ${_rezType}, pct: ${_verbage})\ax
+	| DEBUG ${cbug}Bind_rez(type: ${_rezType}, pct: ${_verbage})\ax
 	/declare _count int local 0
 	/declare _listout string local
 	/declare _sep bool local FALSE
@@ -3450,7 +3453,7 @@ sub Bind_rez(string _rezType, string _verbage)
 	| turn off all rez controls	
 	} else /if (${_rezType.Equal[stop]}) {
 		/for _count 1 to ${rezType.Count[|]}
-			DEBUG switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}
+			| DEBUG switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}
 			/if (${switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower}}) {
 				/call writeINI switchRez${rezType.Arg[${_count},|].Left[1].Upper}${rezType.Arg[${_count},|].Right[-1].Lower} Heal FALSE
 			}
@@ -3503,7 +3506,7 @@ sub Bind_rez(string _rezType, string _verbage)
  ***| 
 #bind listControl /lc
 sub Bind_listControl(string _list, string _verbage)
-	DEBUG ${cbug}Bind_listControl (control: ${_list}, verbage: ${_verbage})\ax
+	| DEBUG ${cbug}Bind_listControl (control: ${_list}, verbage: ${_verbage})\ax
 	/declare _properType 			string 	local
 	/declare _count 					int 		local 0
 	/declare _listchanged 		bool 		local FALSE
@@ -3524,7 +3527,7 @@ sub Bind_listControl(string _list, string _verbage)
 
 	| require a target. one that is not a PC
 	/if ((!${Target.ID} || ${Bool[${Spawn[pc ID ${Target.ID}]}]}) && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
-		DEBUG NO /${_bind} Target
+		| DEBUG NO /${_bind} Target
 		/call echos needtarget 0 0 0 0
 		/return
 	} 
@@ -3541,11 +3544,11 @@ sub Bind_listControl(string _list, string _verbage)
 	| validate _list and correct the case
 	/if (${Bool[${_list}]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
 		/for _count 1 to ${listType.Count[|]}
-			DEBUG Match: ${listType.Arg[${_count},|]} ${If[${Bool[${_list.Find[${listType.Arg[${_count},|]}]}]},${cgood}==\ax,${cbad}!=\ax]} ${_list}
+			| DEBUG Match: ${listType.Arg[${_count},|]} ${If[${Bool[${_list.Find[${listType.Arg[${_count},|]}]}]},${cgood}==\ax,${cbad}!=\ax]} ${_list}
 			
 			/if (${Bool[${_list.Find[${listType.Arg[${_count},|]}]}]}) {
 				/if (${_list.Left[2].Equal[no]}) {
-					DEBUG ${_list.Left[2].Left[1].Upper}${_list.Left[2].Right[-1].Lower}${_list.Right[-2].Left[1].Upper}${_list.Right[-2].Right[-1].Lower}
+					| DEBUG ${_list.Left[2].Left[1].Upper}${_list.Left[2].Right[-1].Lower}${_list.Right[-2].Left[1].Upper}${_list.Right[-2].Right[-1].Lower}
 					/varset _list ${_list.Left[2].Left[1].Upper}${_list.Left[2].Right[-1].Lower}${_list.Right[-2].Left[1].Upper}${_list.Right[-2].Right[-1].Lower}
 				}	else /if (${_list.Left[4].Equal[hunt]}) {
 					/varset _list ${_list.Left[4].Left[1].Upper}${_list.Left[4].Right[-1].Lower}${_list.Right[3].Left[1].Upper}${_list.Right[3].Right[-1].Lower}
@@ -3553,7 +3556,7 @@ sub Bind_listControl(string _list, string _verbage)
 					/varset _list ${_list.Left[1].Upper}${_list.Right[-1].Lower}
 				}
 				/varset _validName TRUE
-				DEBUG ProperList: ${cinfo}${_list}\ax
+				| DEBUG ProperList: ${cinfo}${_list}\ax
 				/goto :validname
 			}	
 		/next _count
@@ -3563,9 +3566,9 @@ sub Bind_listControl(string _list, string _verbage)
 	}
 
 	:validname
-	DEBUG :validname
+	| DEBUG :validname
 	/if (${_list.Equal[safe]}) {
-		DEBUG SAFE zone adjustment
+		| DEBUG SAFE zone adjustment
 		/if (${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}) {
 			/ini "${INIZone}" "${Zone.ShortName}" "SafeZone" "FALSE"
 		} else /if (!${Ini[${INIZone},"${Zone.ShortName}","SafeZone"]}) {
@@ -3575,12 +3578,12 @@ sub Bind_listControl(string _list, string _verbage)
 		VOUT /${_bind} ${_list} ${sep} ${If[${SafeZone},${oenabled},${odisabled}]}
 		/varset _listchanged TRUE
 	} else /if (${_list.Equal[reset]}) {
-		DEBUG Reset Zone
+		| DEBUG Reset Zone
 		VOUT /${_bind} ${_list} ${sep} ${cinfo}${Zone.Name}\ax
 		/varset _listchanged TRUE
 		| /call check_zone_INI ${Me.DisplayName}
 	} else /if (${_list.Equal[remove]}) {
-		DEBUG remove from INI
+		| DEBUG remove from INI
 		/declare _mobName string local |${Target.DisplayName}
 		VOUT /${_bind} ${_list} ${sep} ${ctar}${Target.DisplayName}\ax
 
@@ -3606,11 +3609,11 @@ sub Bind_listControl(string _list, string _verbage)
 		/varset _listchanged TRUE
 
 	} else /if (${Bool[${listType.Find[${_list}]}]} && ${_list.NotEqual[remove]} && ${_list.NotEqual[safe]} && ${_list.NotEqual[reset]}) {
-		DEBUG Exists
+		| DEBUG Exists
 		/if (${${_list}List.Find[${Target.DisplayName}]}) {
 			VOUT ${onotice} ${sep} [${ctar}${Target.DisplayName}\ax] already exists in ${sep} ${cinfo}${Zone.Name}\ax
 		} else /if (!${${_list}List.Find[${Target.DisplayName}]}) {
-			DEBUG Adding |${Target.DisplayName} to ${${_list}List}
+			| DEBUG Adding |${Target.DisplayName} to ${${_list}List}
 			VOUT List ${_list} ${sep} ${ctar}${Target.DisplayName}\ax ${sep} ${cinfo}${Zone.Name}\ax
 			/if (${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "${${_list}List}|${Target.DisplayName}"
 			/if (!${Bool[${${_list}List}]}) /ini "${INIZone}" "${Zone.ShortName}" "${_list}List" "|${Target.DisplayName}"
@@ -3637,10 +3640,10 @@ sub Bind_listControl(string _list, string _verbage)
  *	USE: /debug []
  *	INI: NA
  *  NOTE: starts/ends debugs
- ***|
+
 #bind debug /debug
 sub Bind_debug(string _debugType, string _verbage)
-	DEBUG ${cbug}Bind_debug(Debug: ${_debugType})\ax
+	| DEBUG ${cbug}Bind_debug(Debug: ${_debugType})\ax
 	
 	/declare _count int local 0
 	/declare _bind string local debug
@@ -3677,7 +3680,7 @@ sub Bind_debug(string _debugType, string _verbage)
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
-
+***|
 
 
 |***
@@ -3688,7 +3691,7 @@ sub Bind_debug(string _debugType, string _verbage)
  ***|
 #bind petControl /pc
 sub Bind_petControl(string _pcType, string _verbage)
-	DEBUG ${cbug}Bind_petControl(type: ${_pcType}, #: ${_verbage})\ax
+	| DEBUG ${cbug}Bind_petControl(type: ${_pcType}, #: ${_verbage})\ax
 
 	/declare _count int local 0
 	/declare _bind string local pc
@@ -3792,7 +3795,7 @@ sub Bind_petControl(string _pcType, string _verbage)
  ***| 
 #bind setTieControl /tc
 sub Bind_setTieControl(string _tcType, string _verbage)
-	DEBUG ${cbug}Bind_setsetTieControl()\ax
+	| DEBUG ${cbug}Bind_setsetTieControl()\ax
 	
 	/declare _count int local 0
 	/declare _bind string local tc
@@ -3813,7 +3816,7 @@ sub Bind_setTieControl(string _tcType, string _verbage)
 	| set time to toon name
 	/if (${Bool[${_tcType.Equal[name]}]}) {
 		/if (${SetTieToon.NotEqual[${_verbage}]} && ${_verbage.NotEqual[${Me.DisplayName}]}) {	
-			/call writeINI SetTieToon Movement ${_verbage}	
+			/call writeINI SetTieToon Movement ${_verbage}
 		}
 
 	| forced tied
@@ -3911,7 +3914,7 @@ sub Bind_setTie(string _tieType)
  ***| 	
 #bind burn /burn
 sub Bind_burn(string _burnType, string _verbage)
-	DEBUG ${cbug}Bind_burn()\ax
+	| DEBUG ${cbug}Bind_burn()\ax
 	
 	/declare _count int local 0
 	/declare _bind string local burn
@@ -3979,7 +3982,7 @@ sub Bind_burn(string _burnType, string _verbage)
  ***|
 #bind setCore /core
 sub Bind_setCore(string _coreType, string _verbage)
-	DEBUG ${cbug}Bind_setCore(type:${_coreType}, verbage:${_verbage})\ax
+	| DEBUG ${cbug}Bind_setCore(type:${_coreType}, verbage:${_verbage})\ax
 
 	/declare _count int local 0
 	/declare _bind string local core
@@ -4160,7 +4163,7 @@ sub Bind_setCore(string _coreType, string _verbage)
  ***|
 #bind onoff /onoff
 sub Bind_onoff(string _onoffType)
-	DEBUG ${cbug}Bind_onoff(type: ${_onoffType})\ax
+	| DEBUG ${cbug}Bind_onoff(type: ${_onoffType})\ax
 	/if (${switchMQclearonCLS}) /mqclear
 	
 	/declare _count int local 0
@@ -4194,7 +4197,7 @@ sub Bind_onoff(string _onoffType)
  ***|
 #bind info /info
 sub Bind_info()
-	DEBUG ${cbug}Bind_info()\ax
+	| DEBUG ${cbug}Bind_info()\ax
 	/if (${switchMQclearonCLS}) /mqclear
 	
 	/declare _listout string local
@@ -4221,7 +4224,7 @@ sub Bind_info()
  ***|
 #bind ts /ts
 sub Bind_ts(string _tsType)
-	DEBUG ${cbug}Bind_ts(type:${_tsType})\ax
+	| DEBUG ${cbug}Bind_ts(type:${_tsType})\ax
 
 	/declare _listout string local
 	/declare _sep bool local
@@ -4290,7 +4293,7 @@ sub Bind_ts(string _tsType)
  ***| 	
 #bind setAssist /setassist
 sub Bind_setAssist(string _verbage, _name)
-	DEBUG ${cbug}Bind_setAssist(assist: ${_verbage}, name: ${_name})\ax
+	| DEBUG ${cbug}Bind_setAssist(assist: ${_verbage}, name: ${_name})\ax
 	/call validate_assist FALSE ${_verbage} ${If[${Bool[${_name}]},${_name},]}
 /return
 
@@ -4304,7 +4307,7 @@ sub Bind_setAssist(string _verbage, _name)
  ***|
 #bind setCombatControl /cc
 sub Bind_setCombatControl(string _ccType, string _verbage)
-	DEBUG ${cbug}Bind_setCombatControl(type:${_ccType}, verbage:${_verbage})\ax
+	| DEBUG ${cbug}Bind_setCombatControl(type:${_ccType}, verbage:${_verbage})\ax
 	
 	/declare _count int local 0
 	/declare _bind string local cc
@@ -4344,7 +4347,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 						VOUT ${owarning} ${sep} EQBC Error
 						/return
 					}		
-					DEBUG passing targetID: ${Target.ID}			
+					| DEBUG passing targetID: ${Target.ID}			
 					/bca //varset Target2Kill ${Target.ID}
 				}
 				VOUT /${_bind} force ${cinfo}${_verbage.Upper}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
@@ -4654,7 +4657,7 @@ sub Bind_MobAgro(int _MobAgro)
  ***|
 #bind setMovementControls /movement
 sub Bind_setMovementControls(string _movementType, string _verbage)
-	DEBUG ${cbug}Bind_setMovementControls(type:${_movementType}, verbage:${_verbage})\ax
+	| DEBUG ${cbug}Bind_setMovementControls(type:${_movementType}, verbage:${_verbage})\ax
 		
 	/if (!${validate_plugin[FALSE, |MQ2MoveUtils]}) /return
 
@@ -4813,7 +4816,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
  ***|
 #bind crew /crew
 sub Bind_crew(string _crewNumber)
- 	DEBUG ${cbug}Bind_crew(${Ini[${INICore},Group,_crewNumber]})\ax
+ 	| DEBUG ${cbug}Bind_crew(${Ini[${INICore},Group,_crewNumber]})\ax
 
 	| bail if now crey type listed
 	/if (!${Bool[${_crewNumber}]}) /return
@@ -4890,7 +4893,7 @@ sub Bind_crew(string _crewNumber)
  ***|
 #bind echos /echos
 sub Bind_echos(string _echoType, string _verbage)
- 	DEBUG ${cbug}Bind_echos(type ${_echoType}, verbage ${_verbage})\ax
+ 	| DEBUG ${cbug}Bind_echos(type ${_echoType}, verbage ${_verbage})\ax
 
 	/declare _count int local 0
 	/declare _bind string local echo
@@ -4965,7 +4968,7 @@ sub Bind_echos(string _echoType, string _verbage)
  ***|
 #bind oof /oof
 sub Bind_oof()
- 	DEBUG ${cbug}Bind_oof(type ${_echoType}, verbage ${_verbage})\ax
+ 	| DEBUG ${cbug}Bind_oof(type ${_echoType}, verbage ${_verbage})\ax
  	
  	/declare _pronoun 			string 	local FALSE
  	/declare _bitch					string 	local 
@@ -4997,7 +5000,7 @@ sub Bind_oof()
  ***|
 #bind lesson /lesson
 sub Bind_lesson()
- 	DEBUG ${cbug}Bind_lesson()\ax
+ 	| DEBUG ${cbug}Bind_lesson()\ax
   /if (${validate_cast[FALSE, alt, "Lesson of the Devoted", ${Me.ID}]}) /call core_cast2 "Lesson of the Devoted" alt 0 FALSE
 /return
 
@@ -5229,7 +5232,7 @@ sub Bind_broadcast_here()
  ***|
 #bind set_combat_here /set_combat_here 
 sub Bind_set_combat_here()
- 	DEBUG ${cbug}Bind_set_combat_here()\ax
+ 	| DEBUG ${cbug}Bind_set_combat_here()\ax
  	AMIDEAD
 	| /if (!${Bool[${Group.Members}]}) /return
 	UPDATEHUD "Combat Now"
@@ -5346,15 +5349,28 @@ sub Bind_killmob()
 
 
 |***
+ *	DES: look for undefined variables
+ *	USE: /checkvar
+ *	INI: 
+ *  NOTE: this is a utility for finding errors in code. nothing more
+ ***|
+#bind checkvar /checkvar
+sub Bind_checkvar()
+	/mqclear
+	/invoke ${Macro.Undeclared}
+/return
+
+
+
+|***
  *	DES: make adjustments for the drivetoon
  *	USE: /imincharge
  *	INI: 
- *  NOTE: 
+ *  NOTE: This is a work in progress.
  ***|
 #bind imincharge /imincharge
 sub Bind_imincharge()
 	/call imincharge
-
 /return
 
 sub imincharge()
@@ -5363,15 +5379,10 @@ sub imincharge()
 	/off
 
 	| set my tie name off
-	/tc name FALSE
+	/call writeINI SetTieToon Movement FALSE
 
 	| set everyone elses /tie defaults
 	/bca //tc name ${Me.DisplayName}
-	/bca //tc time 5
-	/bca //tc distance 5
-
-
-
 
 /return
 

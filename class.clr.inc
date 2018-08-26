@@ -29,7 +29,7 @@ sub core_CLR()
 	CHECKREZ
 	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
-		/if (!${check_exit[]} && !${SafeZone} && !${Me.Buff[Revival Sickness].ID}) {
+		/if (!${check_exit[]} && !${SafeZone} && !${Me.Buff[Revival Sickness].ID} && ${switchVP}) {
 		 	/if (${Me.PctMana} < ${useVPPct}*.${tmpHealOverride} && !${flagCallNeedRez} && !${switchAmIDead}) {
 		 		/if (${validate_cast[FALSE, alt, "Veturika's Perseverance", ${Me.ID}]}) /call core_cast2 "Veturika's Perseverance" alt 0 FALSE
 		 	}
@@ -37,7 +37,7 @@ sub core_CLR()
 	}	
 
 	:killtarget
-	/if (${coreAuto} && ${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
@@ -67,7 +67,8 @@ sub core_CLR()
 		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
 
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -145,53 +146,59 @@ sub cast_sum_weapon()
 sub check_heal_group_CLR()
 	AMIDEAD
 	CHECKEXIT
-	/declare _count int local 0
 	CHECKTIE
-	/varset WorstHurt 				${Me.ID}
-	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset WorstClass 				${Me.Class.ShortName}
-	/varset groupHurt					0
+
+	/declare _count 					int local 0
+	/varset hurtID 						${Me.ID}
+	/varset hurtPctHP 				${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	/varset hurtCLS 					${Me.Class.ShortName}
+	/varset hurtCount					0
 
 
 	| Does the control toon need healing?
 	/if (${toonControlProtect} && ${Bool[${toonControl}]} && ${Bool[${Spawn[${toonControl}]}]}) {
 		/if (!${Bool[${Group.Member[${toonControl}]}]} && ${RampageTank.NotEqual[${toonControl}]}) {
-			/if (!${Spawn[${toonControl}].Dead} && ${Spawn[${toonControl}].ID} && ${Spawn[${toonControl}].PctHPs} <= ${WorstHP} && (${Spawn[${toonControl}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride} || ${Spawn[${toonControl}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}*.7 )) {
-				/varset WorstHurt ${Spawn[${toonControl}].ID}
-				/varset WorstHP ${Spawn[${toonControl}].PctHPs}
-				/varset WorstClass ${Spawn[${toonControl}].Class.ShortName}
+			/if (!${Spawn[${toonControl}].Dead} && ${Spawn[pc ${toonControl}].ID} && ${Spawn[pc ${toonControl}].PctHPs} <= ${hurtPctHP} && ${Spawn[${toonControl}].Distance} <= ${MobAgro} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}) {
+				/varset hurtID ${Spawn[pc ${toonControl}].ID}
+				/varset hurtPctHP ${Spawn[pc ${toonControl}].PctHPs}
+				/varset hurtCLS ${Spawn[pc ${toonControl}].Class.ShortName}
 			} 
 		}
 	}
 
-	| Do group members need healing? ${Group.Member[${_count}].State.Equal[HOVER]}
+	| Do group members need healing? 
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
+
+			| no healing the rampage tank
 			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+
 			| no heallist bitches
 			/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
-			/if (!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID}) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && (${Group.Member[${_count}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} || ${Group.Member[${_count}].Distance} <= ${Spell[${healRenewal1}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}*.7)) {
-				/varset WorstHurt ${Group.Member[${_count}].ID}
-				/varset WorstHP ${Group.Member[${_count}].PctHPs}
-				/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
-			} 
 
-	 		| set count for # of toons hurt
-			/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
-				/varcalc groupHurt ${groupHurt}+1
-			}   
+			/if (${Spawn[${Group.Member[${_count}]}].ID} && ${Group.Member[${_count}].Distance} <= ${MobAgro}) {
+				/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} <= ${hurtPctHP} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
+					/varset hurtID ${Group.Member[${_count}].ID}
+					/varset hurtPctHP ${Group.Member[${_count}].PctHPs}
+					/varset hurtCLS ${Group.Member[${_count}].Class.ShortName}
+				} 
+
+		 		| set count for # of toons hurt
+				/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
+					/varcalc hurtCount ${hurtCount}+1
+				}   
+			}
 	    
 	  /next _count
 	}
 	
-  /if (${Bool[${Me.Buff["Divine Aura"]}]} || ${Bool[${Me.Buff["Divine Barrier"]}]} || ${Bool[${Me.Buff["Sacred Barrier"]}]} ) /return
+	CHECKEXIT
 	UPDATEHUD "HEAL"
 	CHECKREZ
-	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 	
 	| Regen Heals 
-	| Use all the time in combat. Don't care if hurt or not.
- 	/if (${useGroupHoT}) {
+ 	/if (${useGroupHoT} && !${hurtCount}) {
 	 	/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1 && !${SafeZone}) {
 	 	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
 		 		/if (${validate_cast[FALSE, alt, "Celestial Regeneration", ${Me.ID}]}) /call core_cast2 "Celestial Regeneration" alt 0 FALSE
@@ -202,62 +209,62 @@ sub check_heal_group_CLR()
 	}
 	
 	| if no one is hurt. back to the start
-	/if (!${groupHurt}) /return	
+	/if (!${hurtCount}) /return	
 
 	| Complete Heal
 	| requires group roll Main Tank set to function
 	/if (${switchCompleteHeal}) { 
 		/if (${Spawn[${Group.MainTank.ID}].ID}) { 
-			/if (${WorstHurt} == ${Group.MainTank.ID} && ${Spawn[${Group.MainTank.ID}].PctHPs} <= ${${Group.MainTank.Class.ShortName}Point}*.${CompleteHealpct}) {
+			/if (${hurtID} == ${Group.MainTank.ID} && ${Spawn[${Group.MainTank.ID}].PctHPs} <= ${${Group.MainTank.Class.ShortName}Point}*.${CompleteHealpct}) {
 				/if (${validate_cast[FALSE, spell, "Complete Heal", ${Group.MainTank.ID}]}) /call core_cast2 "Complete Heal" 0 ${Group.MainTank.ID} check_HP_${Me.Class.ShortName}
 			}
 		}
 	}
 
 	| Focused Celestial Regeneration
-	/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[Focused Celestial Regeneration].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
+	/if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride} && ${Spawn[${hurtID}].Distance} <= ${Spell[Focused Celestial Regeneration].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone}) { 
 		/if (${Me.AltAbilityReady[Focused Celestial Regeneration]}) {
-			/if (${validate_cast[FALSE, alt, "Focused Celestial Regeneration", ${WorstHurt}]}) /call core_cast2 "Focused Celestial Regeneration" alt ${WorstHurt} FALSE
+			/if (${validate_cast[FALSE, alt, "Focused Celestial Regeneration", ${hurtID}]}) /call core_cast2 "Focused Celestial Regeneration" alt ${hurtID} FALSE
 		}
 	}
 	
   | AA Spire
-	/if (!${Bool[${Raid.Members}]} && ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride} && ${Spawn[${WorstHurt}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone} && ${Me.Combat}) { 
-    /if (${validate_cast[FALSE, alt, "${CLRspire3}", ${WorstHurt}]}) /call core_cast2 "${CLRspire3}" alt ${WorstHurt} FALSE
+	/if (!${Bool[${Raid.Members}]} && ${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride} && ${Spawn[${hurtID}].Distance} <= ${Spell[${CLRspire3}].MyRange} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${SafeZone} && ${Me.Combat}) { 
+    /if (${validate_cast[FALSE, alt, "${CLRspire3}", ${hurtID}]}) /call core_cast2 "${CLRspire3}" alt ${hurtID} FALSE
   }	
   
 	| Dichotomic Heal
 	/if (${Me.Song[Gift of Mana (${GoMLevel})].ID}) {
-		/if (${Me.SpellReady[${GoMNuke}]} && ${Spawn[${WorstHurt}].PctHPs} < ${GoMpoint}*.${tmpHealOverride}) { 
-			/call cast_nuke_GoM ${WorstHurt}
+		/if (${Me.SpellReady[${GoMNuke}]} && ${Spawn[${hurtID}].PctHPs} < ${GoMpoint}*.${tmpHealOverride}) { 
+			/call cast_nuke_GoM ${hurtID}
 	  }
 	}
   
-	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 
 	| Panic AA 
 	/if (${Me.AltAbilityReady[Burst of Life]}) {
-	  /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride}) {
-			/if (${validate_cast[FALSE, alt, "Burst of Life", ${WorstHurt}]}) /call core_cast2 "Burst of Life" alt ${WorstHurt} FALSE
+	  /if (${Spawn[${hurtID}].PctHPs} <= 45*.${tmpHealOverride}) {
+			/if (${validate_cast[FALSE, alt, "Burst of Life", ${hurtID}]}) /call core_cast2 "Burst of Life" alt ${hurtID} FALSE
 	  }
 	}
   
 	| Panic heal
 	/if (${Me.SpellReady[${healPanic}]}) {
-		/if (${Spawn[${WorstHurt}].PctHPs} < 20*.${HealOverride}) {
+		/if (${Spawn[${hurtID}].PctHPs} < 20*.${HealOverride}) {
 			/if (${Me.Casting.ID}) /stopcast
-			/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]}) /call core_cast2 "${healPanic}" 0 ${WorstHurt} FALSE
+			/if (${validate_cast[FALSE, spell, "${healPanic}", ${hurtID}]}) /call core_cast2 "${healPanic}" 0 ${hurtID} FALSE
 		}
 	}  
 
 	| Arbitration
-  /if (${Spawn[${WorstHurt}].PctHPs} < ${${WorstClass}Point}*.${tmpHealOverride}*.5 || ${groupHurt} > 2) {
+  /if (${Spawn[${hurtID}].PctHPs} < ${${hurtCLS}Point}*.${tmpHealOverride}*.5 || ${hurtCount} > 2) {
     /call cast_divine_arbitration
   }
   
   | Forced Group Heals ONLY
 	/if (${switchForceGroupHeal}) {
-		/if ( ${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+		/if ( ${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 			/if (${Me.SpellReady[${healWholeGroup}]}) {
 				/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0 0 FALSE
 			} else /if (${Me.SpellReady[${healWholeGroup2}]}) {
@@ -267,14 +274,15 @@ sub check_heal_group_CLR()
 			}
 		}
 		| if forced group healing. restart heal cycle at this point.
-		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+		/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 		/return
 	}
     
   | Group Heal
   /if (${useGroupHeal}) {
-	  /if (${groupHurt} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
+	  /if (${hurtCount} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
 	    /if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0 0 FALSE
+	    /return
 	  } 
 	}
   
@@ -292,81 +300,116 @@ sub check_heal_group_CLR()
 	}
 	
 	| AA heal stuffs
-  /if (${groupHurt} && !${SafeZone}) {
-	  /if (${groupHurt} == 2) {
+  /if (${hurtCount} && !${SafeZone}) {
+	  /if (${hurtCount} == 2) {
 		  /if (${validate_cast[FALSE, alt, "Beacon of Life", ${Me.ID}]}) /call core_cast2 "Beacon of Life" alt 0 FALSE
-		} else /if (${groupHurt} == 3) {
+		} else /if (${hurtCount} == 3) {
 		 	/if (${validate_cast[FALSE, alt, "Channeling the Divine", ${Me.ID}]}) /call core_cast2 "Channeling the Divine" alt 0 FALSE
-		} else /if (${groupHurt} == 4) {
+		} else /if (${hurtCount} == 4) {
  			/if (${validate_cast[FALSE, alt, "Healing Frenzy", ${Me.ID}]}) /call core_cast2 "Healing Frenzy" alt 0 FALSE
  			/if (${validate_cast[FALSE, alt, "Fury of Life", ${Me.ID}]}) /call core_cast2 "Fury of Life" alt 0 FALSE
- 		} else /if (${groupHurt} >= 5) {
+ 		} else /if (${hurtCount} >= 5) {
 			/if (${validate_cast[FALSE, alt, "Exquisite Benediction", ${Me.ID}]}) /call core_cast2 "Exquisite Benediction" alt 0 FALSE
 			/if (${validate_cast[FALSE, alt, "Silent Casting", ${Me.ID}]}) /call core_cast2 "Silent Casting" alt 0 FALSE
-		} else /if (${groupHurt} == 6) {
+		} else /if (${hurtCount} == 6) {
 			/if (${validate_cast[FALSE, alt, "Divine Retribution", ${Me.ID}]}) /call core_cast2 "Divine Retribution" alt 0 FALSE
 			/call use_glyph
 		}
   } 
 	AMIDEAD
-	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
  	CHECKINPUTS
  	
  	| agressive healing sort
  	/if (${switchHealAggressive}) {
  		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
  	} 
+ 	
+ 	
+ 	| Remedy Heals 
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 3
+			/if (${Me.SpellReady[${healRemedy${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRemedy${_count}}", ${hurtID}]}) /call core_cast2 "${healRemedy${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count 
+	}	
+	
+	| Intervention Heals
+	:interventionheals
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 4
+			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healIntervention${_count}}", ${hurtID}]}) /call core_cast2 "${healIntervention${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count
+	}
+	
+	| Renewal Heals
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 3
+			/if (${Me.SpellReady[${healRenewal${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRenewal${_count}}", ${hurtID}]}) /call core_cast2 "${healRenewal${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count 
+	}			
 
+ 	
+|**
 	| Remedy Heals 
-	:remedyheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
     /if (${Me.SpellReady[${healRemedy1}]}) {
-      /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${WorstHurt}]}) /call core_cast2 "${healRemedy1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName} 
+      /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${hurtID}]}) /call core_cast2 "${healRemedy1}" 0 ${hurtID} check_HP_${Me.Class.ShortName} 
     } else /if (${Me.SpellReady[${healRemedy2}]}) {
-      /if (${validate_cast[FALSE, spell, "${healRemedy2}", ${WorstHurt}]}) /call core_cast2 "${healRemedy2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      /if (${validate_cast[FALSE, spell, "${healRemedy2}", ${hurtID}]}) /call core_cast2 "${healRemedy2}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healRemedy3}]}) {
-      /if (${validate_cast[FALSE, spell, "${healRemedy3}", ${WorstHurt}]}) /call core_cast2 "${healRemedy3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      /if (${validate_cast[FALSE, spell, "${healRemedy3}", ${hurtID}]}) /call core_cast2 "${healRemedy3}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
     } 
   }     	
 		
 	| Intervention Heals
 	:interventionheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
   	/if (${Me.SpellReady[${healIntervention1}]}) {
-     /if (${validate_cast[FALSE, spell, "${healIntervention1}", ${WorstHurt}]}) /call core_cast2 "${healIntervention1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+     /if (${validate_cast[FALSE, spell, "${healIntervention1}", ${hurtID}]}) /call core_cast2 "${healIntervention1}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healIntervention2}]}) {
-      /if (${validate_cast[FALSE, spell, "${healIntervention2}", ${WorstHurt}]}) /call core_cast2 "${healIntervention2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      /if (${validate_cast[FALSE, spell, "${healIntervention2}", ${hurtID}]}) /call core_cast2 "${healIntervention2}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healIntervention3}]}) {
-      /if (${validate_cast[FALSE, spell, "${healIntervention3}", ${WorstHurt}]}) /call core_cast2 "${healIntervention3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      /if (${validate_cast[FALSE, spell, "${healIntervention3}", ${hurtID}]}) /call core_cast2 "${healIntervention3}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
     } else /if (${Me.SpellReady[${healIntervention4}]}) {
-      /if (${validate_cast[FALSE, spell, "${healIntervention4}", ${WorstHurt}]}) /call core_cast2 "${healIntervention4}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+      /if (${validate_cast[FALSE, spell, "${healIntervention4}", ${hurtID}]}) /call core_cast2 "${healIntervention4}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
     }
   }
 
 	CHECKREZ
 
 	| Renewal Heals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
     /if (${Me.SpellReady[${healRenewal1}]}) {
-       /if (${validate_cast[FALSE, spell, "${healRenewal1}", ${WorstHurt}]}) /call core_cast2 "${healRenewal1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+       /if (${validate_cast[FALSE, spell, "${healRenewal1}", ${hurtID}]}) /call core_cast2 "${healRenewal1}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
      } else /if (${Me.SpellReady[${healRenewal2}]}) {
-       /if (${validate_cast[FALSE, spell, "${healRenewal2}", ${WorstHurt}]}) /call core_cast2 "${healRenewal2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+       /if (${validate_cast[FALSE, spell, "${healRenewal2}", ${hurtID}]}) /call core_cast2 "${healRenewal2}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
      } else /if (${Me.SpellReady[${healRenewal3}]}) {
-       /if (${validate_cast[FALSE, spell, "${healRenewal3}", ${WorstHurt}]}) /call core_cast2 "${healRenewal3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+       /if (${validate_cast[FALSE, spell, "${healRenewal3}", ${hurtID}]}) /call core_cast2 "${healRenewal3}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
      }
-  }  
+  } 
+**| 
 
+	| netbots single heal over time
 	/if (${Bool[${healHoT}]}) {
-		/if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
-			/if (${NetBots[${Spawn[ID ${WorstHurt}].DisplayName}].Stacks[${healHoT}]} && !${Bool[${NetBots[${Spawn[ID ${WorstHurt}].DisplayName}].ShortBuff.Find[${Spell[${healHoT}].ID}]}]}) {
-				/if (${validate_cast[FALSE, spell, "${healHoT}", ${WorstHurt}]}) /call core_cast2 "${healHoT}" 0 ${WorstHurt} FALSE
+		/if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+			/if (${NetBots[${Spawn[ID ${hurtID}].DisplayName}].Stacks[${healHoT}]} && !${Bool[${NetBots[${Spawn[ID ${hurtID}].DisplayName}].ShortBuff.Find[${Spell[${healHoT}].ID}]}]}) {
+				/if (${validate_cast[FALSE, spell, "${healHoT}", ${hurtID}]}) /call core_cast2 "${healHoT}" 0 ${hurtID} FALSE
 			}
 		}
 	}
 
   | check for group debuffs
 	/if (${switchHealCure}) {
-		/if (${Bool[${Group.Members}]} && ${groupHurt} >= 1) /call cast_cure
+		/if (${Bool[${Group.Members}]} && ${hurtCount}) /call cast_cure
 	}
 	
 	UPDATEHUD FALSE
@@ -388,10 +431,10 @@ sub check_heal_XTarget_CLR()
 	CHECKINPUTS
 	
 	/declare _count int local 0
-	/varset WorstHurt 				${Me.ID}
-	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset WorstClass 				${Me.Class.ShortName}
-	/varset groupHurt					0
+	/varset hurtID 					${Me.ID}
+	/varset hurtPctHP 			${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	/varset hurtCLS 				${Me.Class.ShortName}
+	/varset hurtCount				0
 
 	| does anyone need healing?
 	/for _count 1 to 13
@@ -415,72 +458,111 @@ sub check_heal_XTarget_CLR()
 		/if (!${Me.XTarget[${_count}].ID} || ${Me.XTarget[${_count}].PctHPs} > ${${Me.XTarget[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
 		
 		| out of whomever is left, which is hurt the worse?	
-		/if (!${Me.XTarget[${_count}].Dead} && ${Me.XTarget[${_count}].PctHPs} <= ${WorstHP}) {
-			/varset WorstHurt ${Me.XTarget[${_count}].ID}
-			/varset WorstHP ${Me.XTarget[${_count}].PctHPs}
-			/varset WorstClass ${Me.XTarget[${_count}].Class.ShortName}
-			/varset groupHurt 1
+		/if (!${Me.XTarget[${_count}].Dead} && ${Me.XTarget[${_count}].PctHPs} <= ${hurtPctHP}) {
+			/varset hurtID ${Me.XTarget[${_count}].ID}
+			/varset hurtPctHP ${Me.XTarget[${_count}].PctHPs}
+			/varset hurtCLS ${Me.XTarget[${_count}].Class.ShortName}
+			/varset hurtCount 1
 		} 
   /next _count
   	
 	UPDATEHUD "HEAL XTarget"
-	/if (!${groupHurt}) /return	
+	/if (!${hurtCount}) /return	
 
 	/call check_no_cast_buffs
 
 	| AA heal
-	/if (${Spawn[${WorstHurt}].PctHPs} < 45*.${tmpHealOverride} && ${Me.AltAbilityReady[Burst of Life]}) {
-		/if (${validate_cast[FALSE, alt, "Burst of Life", ${WorstHurt}]}) /call core_cast2 "Burst of Life" alt ${WorstHurt} FALSE
+	/if (${Spawn[${hurtID}].PctHPs} < 45*.${tmpHealOverride} && ${Me.AltAbilityReady[Burst of Life]}) {
+		/if (${validate_cast[FALSE, alt, "Burst of Life", ${hurtID}]}) /call core_cast2 "Burst of Life" alt ${hurtID} FALSE
 	}
 
 	| panic heal
 	/if (${Me.SpellReady[${healPanic}]}) {
-		/if (${Spawn[id ${WorstHurt}].PctHPs} < 20*.${HealOverride}) {
+		/if (${Spawn[id ${hurtID}].PctHPs} < 20*.${HealOverride}) {
 			/if (${Me.Casting.ID}) /stopcast
-			/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]}) /call core_cast2 "${healPanic}" 0 ${WorstHurt} FALSE
+			/if (${validate_cast[FALSE, spell, "${healPanic}", ${hurtID}]}) /call core_cast2 "${healPanic}" 0 ${hurtID} FALSE
 		}
 	}
 	
 	/if (${switchHealAggressive}) {
 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
 	} 
-
+	
 	| Remedy Heals 
-	:remedyheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
-		/if (${Me.SpellReady[${healRemedy1}]}) {
-		  /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${WorstHurt}]}) /call core_cast2 "${healRemedy1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName} 
-		} else /if (${Me.SpellReady[${healRemedy2}]}) {
-		  /if (${validate_cast[FALSE, spell, "${healRemedy2}", ${WorstHurt}]}) /call core_cast2 "${healRemedy2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
-		} else /if (${Me.SpellReady[${healRemedy3}]}) {
-		  /if (${validate_cast[FALSE, spell, "${healRemedy3}", ${WorstHurt}]}) /call core_cast2 "${healRemedy3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
-		}
-	} 
-		
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 3
+			/if (${Me.SpellReady[${healRemedy${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRemedy${_count}}", ${hurtID}]}) /call core_cast2 "${healRemedy${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count 
+	}	
+	
 	| Intervention Heals
 	:interventionheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 4
+			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healIntervention${_count}}", ${hurtID}]}) /call core_cast2 "${healIntervention${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count
+	}	
+	
+	| Renewal Heals
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 3
+			/if (${Me.SpellReady[${healRenewal${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRenewal${_count}}", ${hurtID}]}) /call core_cast2 "${healRenewal${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count 
+	}	
+
+
+
+	|**
+	| Remedy Heals 
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/if (${Me.SpellReady[${healRemedy1}]}) {
+		  /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${hurtID}]}) /call core_cast2 "${healRemedy1}" 0 ${hurtID} check_HP_${Me.Class.ShortName} 
+		} else /if (${Me.SpellReady[${healRemedy2}]}) {
+		  /if (${validate_cast[FALSE, spell, "${healRemedy2}", ${hurtID}]}) /call core_cast2 "${healRemedy2}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+		} else /if (${Me.SpellReady[${healRemedy3}]}) {
+		  /if (${validate_cast[FALSE, spell, "${healRemedy3}", ${hurtID}]}) /call core_cast2 "${healRemedy3}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+		}
+	} 
+	
+
+
+		
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/if (${Me.SpellReady[${healIntervention1}]}) {
-		 /if (${validate_cast[FALSE, spell, "${healIntervention1}", ${WorstHurt}]}) /call core_cast2 "${healIntervention1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+		 /if (${validate_cast[FALSE, spell, "${healIntervention1}", ${hurtID}]}) /call core_cast2 "${healIntervention1}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
 		} else /if (${Me.SpellReady[${healIntervention2}]}) {
-		  /if (${validate_cast[FALSE, spell, "${healIntervention2}", ${WorstHurt}]}) /call core_cast2 "${healIntervention2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+		  /if (${validate_cast[FALSE, spell, "${healIntervention2}", ${hurtID}]}) /call core_cast2 "${healIntervention2}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
 		} else /if (${Me.SpellReady[${healIntervention3}]}) {
-		  /if (${validate_cast[FALSE, spell, "${healIntervention3}", ${WorstHurt}]}) /call core_cast2 "${healIntervention3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+		  /if (${validate_cast[FALSE, spell, "${healIntervention3}", ${hurtID}]}) /call core_cast2 "${healIntervention3}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
 		} else /if (${Me.SpellReady[${healIntervention4}]}) {
-		  /if (${validate_cast[FALSE, spell, "${healIntervention4}", ${WorstHurt}]}) /call core_cast2 "${healIntervention4}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+		  /if (${validate_cast[FALSE, spell, "${healIntervention4}", ${hurtID}]}) /call core_cast2 "${healIntervention4}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
 		}
 	}
 	
+
+
 	| Renewal Heals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/if (${Me.SpellReady[${healRenewal1}]}) {
-			/if (${validate_cast[FALSE, spell, "${healRenewal1}", ${WorstHurt}]}) /call core_cast2 "${healRenewal1}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+			/if (${validate_cast[FALSE, spell, "${healRenewal1}", ${hurtID}]}) /call core_cast2 "${healRenewal1}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
 		} else /if (${Me.SpellReady[${healRenewal2}]}) {
-			/if (${validate_cast[FALSE, spell, "${healRenewal2}", ${WorstHurt}]}) /call core_cast2 "${healRenewal2}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+			/if (${validate_cast[FALSE, spell, "${healRenewal2}", ${hurtID}]}) /call core_cast2 "${healRenewal2}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
 		} else /if (${Me.SpellReady[${healRenewal3}]}) {
-			/if (${validate_cast[FALSE, spell, "${healRenewal3}", ${WorstHurt}]}) /call core_cast2 "${healRenewal3}" 0 ${WorstHurt} check_HP_${Me.Class.ShortName}
+			/if (${validate_cast[FALSE, spell, "${healRenewal3}", ${hurtID}]}) /call core_cast2 "${healRenewal3}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
 		}
 	}	
+	**|
+	
+	
 	
 	UPDATEHUD FALSE
 /return
@@ -498,9 +580,9 @@ sub check_HP_CLR()
 	/if (!${Me.Casting.ID}) /return
 	/declare _count int local 0
 
-	/varset WorstHurt 				${Me.ID}
-	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset WorstClass 				${Me.Class.ShortName}
+	/varset hurtID 					${Me.ID}
+	/varset hurtPctHP 			${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	/varset hurtCLS 				${Me.Class.ShortName}
 
 	/if (${Bool[${Group.Members}]}) {
 		/for _count 0 to ${Group.Members}
@@ -508,22 +590,22 @@ sub check_HP_CLR()
 	  	/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
 			SIMPLEEXIT
 			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
-				/if (${Group.Member[${_count}].Distance}<=${Spell[${healRemedy2}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} || !${WorstHurt}) {
-				/varset WorstHurt ${Group.Member[${_count}].ID} 
-				/varset WorstHP ${Group.Member[${_count}].PctHPs} 
-				/varset WorstClass ${Group.Member[${_count}].Class.ShortName} 
+				/if (${Group.Member[${_count}].PctHPs} <= ${hurtPctHP} || !${hurtID}) {
+				/varset hurtID ${Group.Member[${_count}].ID} 
+				/varset hurtPctHP ${Group.Member[${_count}].PctHPs} 
+				/varset hurtCLS ${Group.Member[${_count}].Class.ShortName} 
 			}
 		}
 		/next _count
 	}
 
-	/if (${WorstHurt}  == ${Me.ID}) /return
+	/if (${hurtID}  == ${Me.ID}) /return
 
 	| panic heal
 	/if (${Me.SpellReady[${healPanic}]}) {
-		/if (${Spawn[${WorstHurt}].PctHPs} < 20*.${HealOverride}) {
+		/if (${Spawn[${hurtID}].PctHPs} < 20*.${HealOverride}) {
 			/if (${Me.Casting.ID}) /stopcast
-			/if (${validate_cast[FALSE, spell, "${healPanic}", ${WorstHurt}]}) /call core_cast2 "${healPanic}" 0 ${WorstHurt} FALSE
+			/if (${validate_cast[FALSE, spell, "${healPanic}", ${hurtID}]}) /call core_cast2 "${healPanic}" 0 ${hurtID} FALSE
 		}
 	}
 		
@@ -531,34 +613,55 @@ sub check_HP_CLR()
  		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
  	} 
  	
-
+ 	| Remedy Heals 
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 3
+			/if (${Me.SpellReady[${healRemedy${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRemedy${_count}}", ${hurtID}]}) /call core_cast2 "${healRemedy${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count 
+	}	
+	
+	| Intervention Heals
+	:interventionheals
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 4
+			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healIntervention${_count}}", ${hurtID}]}) /call core_cast2 "${healIntervention${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count
+	}		
+  	
+|**
 	| Remedy Heals 
-	:remedyheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/if (${Me.Casting.ID}) /stopcast
     /if (${Me.SpellReady[${healRemedy1}]}) {
-      /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${WorstHurt}]}) /call core_cast2 "${healRemedy1}" 0 ${WorstHurt} FALSE 
+      /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${hurtID}]}) /call core_cast2 "${healRemedy1}" 0 ${hurtID} FALSE 
     } else /if (${Me.SpellReady[${healRemedy2}]}) {
-      /if (${validate_cast[FALSE, spell, "${healRemedy2}", ${WorstHurt}]}) /call core_cast2 "${healRemedy2}" 0 ${WorstHurt} FALSE
+      /if (${validate_cast[FALSE, spell, "${healRemedy2}", ${hurtID}]}) /call core_cast2 "${healRemedy2}" 0 ${hurtID} FALSE
     } else /if (${Me.SpellReady[${healRemedy3}]}) {
-      /if (${validate_cast[FALSE, spell, "${healRemedy3}", ${WorstHurt}]}) /call core_cast2 "${healRemedy3}" 0 ${WorstHurt} FALSE
+      /if (${validate_cast[FALSE, spell, "${healRemedy3}", ${hurtID}]}) /call core_cast2 "${healRemedy3}" 0 ${hurtID} FALSE
     } 
   }     	
 		
 	| Intervention Heals
 	:interventionheals
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/if (${Me.Casting.ID}) /stopcast
   	/if (${Me.SpellReady[${healIntervention1}]}) {
-     /if (${validate_cast[FALSE, spell, "${healIntervention1}", ${WorstHurt}]}) /call core_cast2 "${healIntervention1}" 0 ${WorstHurt} FALSE
+     /if (${validate_cast[FALSE, spell, "${healIntervention1}", ${hurtID}]}) /call core_cast2 "${healIntervention1}" 0 ${hurtID} FALSE
     } else /if (${Me.SpellReady[${healIntervention2}]}) {
-      /if (${validate_cast[FALSE, spell, "${healIntervention2}", ${WorstHurt}]}) /call core_cast2 "${healIntervention2}" 0 ${WorstHurt} FALSE
+      /if (${validate_cast[FALSE, spell, "${healIntervention2}", ${hurtID}]}) /call core_cast2 "${healIntervention2}" 0 ${hurtID} FALSE
     } else /if (${Me.SpellReady[${healIntervention3}]}) {
-      /if (${validate_cast[FALSE, spell, "${healIntervention3}", ${WorstHurt}]}) /call core_cast2 "${healIntervention3}" 0 ${WorstHurt} FALSE
+      /if (${validate_cast[FALSE, spell, "${healIntervention3}", ${hurtID}]}) /call core_cast2 "${healIntervention3}" 0 ${hurtID} FALSE
     } else /if (${Me.SpellReady[${healIntervention4}]}) {
-      /if (${validate_cast[FALSE, spell, "${healIntervention4}", ${WorstHurt}]}) /call core_cast2 "${healIntervention4}" 0 ${WorstHurt} FALSE
+      /if (${validate_cast[FALSE, spell, "${healIntervention4}", ${hurtID}]}) /call core_cast2 "${healIntervention4}" 0 ${hurtID} FALSE
     }
   } 
+**|
 
 /return
 
@@ -577,34 +680,50 @@ sub check_pet_heal_CLR()
 	CHECKREZ
 
 	/declare _count int local
-	/varset pWorstHurt ${Me.CleanName}
-	/varset pWorstHP 100
-	/varset pWorstHurtID ${Me.ID}
+	/varset hurtID 				${Me.ID}
+	/varset hurtPctHP 		100
   
   /for _count 0 to ${Group}
     /if (${Group.Member[${_count}].Pet.ID}) {
-      /if (${Group.Member[${_count}].Pet.Distance} <= ${Spell[${healRemedy1}].MyRange}) {
-        /if (${Group.Member[${_count}].Pet.PctHPs} < ${pWorstHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
-          /varset pWorstHurt ${Group.Member[${_count}].Pet.Name}
-          /varset pWorstHurtID ${Group.Member[${_count}].Pet.ID}
-          /varset pWorstHP ${Group.Member[${_count}].Pet.PctHPs}
+      /if (${Group.Member[${_count}].Pet.Distance} <= ${MobAGro}) {
+        /if (${Group.Member[${_count}].Pet.PctHPs} < ${hurtPctHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
+          /varset hurtID ${Group.Member[${_count}].Pet.ID}
+          /varset hurtPctHP ${Group.Member[${_count}].Pet.PctHPs}
         }
       }
     }
   /next _count
 
-  /if (${pWorstHurtID} == ${Me.ID}) /return
-  /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy1}].MyRange} && ${Me.SpellReady[${healRemedy1}]}) {
-    /if (${validate_cast[FALSE, spell, "${healRemedy1}", ${pWorstHurtID}]}) /call core_cast2 "${healRemedy1}" 0 ${pWorstHurtID} FALSE
-  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healRemedy2}].MyRange} && ${Me.SpellReady[${healRemedy2}]}) {
-    /if (${validate_cast[FALSE, spell, "${healRemedy2}", ${pWorstHurtID}]}) /call core_cast2 "${healRemedy2}" 0 ${pWorstHurtID}   FALSE
-  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention1}].MyRange} && ${Me.SpellReady[${healIntervention1}]}) {
-    /if (${validate_cast[FALSE, spell, "${healIntervention1}", ${pWorstHurtID}]}) /call core_cast2 "${healIntervention1}" 0 ${pWorstHurtID} FALSE
-  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention2}].MyRange} && ${Me.SpellReady[${healIntervention2}]}) {
-    /if (${validate_cast[FALSE, spell, "${healIntervention2}", ${pWorstHurtID}]}) /call core_cast2 "${healIntervention2}" 0 ${pWorstHurtID}} FALSE
-  } else /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healIntervention3}].MyRange} && ${Me.SpellReady[${healIntervention3}]}) {
-    /if (${validate_cast[FALSE, spell, "${healIntervention3}", ${pWorstHurtID}]}) /call core_cast2 "${healIntervention3}" 0 ${pWorstHurtID} FALSE
-  }
+	| any pets hurt?
+  /if (${hurtID} == ${Me.ID}) /return
+ 	UPDATEHUD "HEAL Pet"
+	
+ 	/if (${switchHealAggressive}) {
+ 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
+ 	} 
+ 	
+ 	| Remedy Heals 
+  /if (${Spawn[${hurtID}].PctHPs} <= ${PetPoint}) {
+		/for _count 1 to 3
+			/if (${Me.SpellReady[${healRenewal${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRemedy${_count}}", ${hurtID}]}) /call core_cast2 "${healRemedy${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count 
+	}	
+	
+	| Intervention Heals
+	:interventionheals
+  /if (${Spawn[${hurtID}].PctHPs} <= ${PetPoint) {
+		/for _count 1 to 4
+			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healIntervention${_count}}", ${hurtID}]}) /call core_cast2 "${healIntervention${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
+				/break
+			}
+		/next _count
+	}		
+
+	UPDATEHUD FALSE
 /return
 
 
@@ -628,8 +747,8 @@ sub cast_divine_arbitration()
   }
   /if (${validate_cast[FALSE, alt, "Celestial Rapidity", ${Me.ID}]}) /call core_cast2 "Celestial Rapidity" alt 0 FALSE
 	
-	/if (${setDivinetoGroupHeal} && ${useGroupHeal}) {
-		/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0 ${Me.ID} FALSE
+	/if (${setDivinetoGroupHeal} && ${useGroupHeal} && ${Me.SpellReady[${healWholeGroup}]}) {
+		/if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0  FALSE
 	}
 /return
 
@@ -653,7 +772,7 @@ Sub cast_AA_celest_regen()
 	} else /if (${Bool[${Me.Song[Celestial Regeneration]}]}) {
 		VOUT ${cbad}QUIT\ax trying to cast Celestial Regeneration while its running.	
 	}		
-	/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
+	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 /return
 
 
@@ -789,7 +908,6 @@ sub synergy_CLR()
  *	NOTE: 
 sub lock_ma()
 /return
-	DEBUG ${cbug}lock_ma()\ax
 	/if (${SafeZone} && !${switchOverrideSafezone} || !${autoCore}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -847,15 +965,14 @@ ${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
  ***|
 #bind setCLR /clr
 sub Bind_setCLR(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setCLR(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |CLR]}) /return
-	/if (${switchMQclearonCLS}) /mqclear
+	| /if (${switchMQclearonCLS}) /mqclear
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|rampage|regen|spiregroup|spireraid|vp|xtradius|xttime|yaulp
+  /declare _type string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|rampage|regen|rod|spiregroup|spireraid|vp|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -876,6 +993,10 @@ sub Bind_setCLR(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[forcegroupheal]}]}) {
 	 	/call writeINI switchForceGroupHeal Heal ${If[${switchForceGroupHeal},FALSE,TRUE]}  
 
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
+
 	| mgb celestial regen
 	} else /if (${Bool[${_classType.Equal[regen]}]}) {
 		/delay 2s !${Me.Casting.ID}
@@ -890,7 +1011,6 @@ sub Bind_setCLR(string _classType, string _verbage)
 		} else /if (!${Bool[${_verbage}]}) {
 			/call writeINI RampageTank Heal FALSE
 		}
-		| VOUT Rampage Tank ${sep} ${If[${Bool[${RampageTank}]},${cgood}${RampageTank}\ax,${odisabled}]}
 		
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -944,7 +1064,7 @@ sub Bind_setCLR(string _classType, string _verbage)
 			VOUT /${_bind} vp [${cinfo}${useVPPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}	else /if (!${Bool[${_verbage}]}) {
-			/call writeINI useVP Buffs ${If[${useVP},FALSE,TRUE]}  
+			/call writeINI switchVP Buffs ${If[${switchVP},FALSE,TRUE]}  
 		}	
 		
 	| use group Heals
@@ -983,11 +1103,14 @@ sub Bind_setCLR(string _classType, string _verbage)
 	| set AA fade use %	
 	} else /if (${Bool[${_classType.Equal[fade]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/call writeINI useAAFade Buffs ${_verbage}
+			/call writeINI useAAFadePct Buffs ${_verbage}
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} fade(${cnum}${useAAFade}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
 		}
+		
 	| Complete Heal
 	} else /if (${Bool[${_classType.Equal[ch]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -997,8 +1120,6 @@ sub Bind_setCLR(string _classType, string _verbage)
 			/return
 		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchCompleteHeal Heal ${If[${switchCompleteHeal},FALSE,TRUE]}  
-			VOUT /${_bind} ch(${cnum}${CompleteHealpct}\ax) ${sep} ${If[${switchCompleteHeal},${oenabled},${odisabled}]}
-			/return
 		}
 
 	}
@@ -1011,14 +1132,15 @@ sub Bind_setCLR(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
 		/if (${_type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[ch]}) /varset _listout ${_listout}(${If[${switchCompleteHeal},${cnum}${CompleteHealpct}\ax,${cbad}${CompleteHealpct}\ax]})
-		/if (${_type.Arg[${_count},|].Equal[vp]}) /varset _listout ${_listout}(${If[${useVP},${cnum}${useVPPct}\ax,${cbad}${useVPPct}\ax]})
-		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
+		/if (${_type.Arg[${_count},|].Equal[vp]}) /varset _listout ${_listout}(${If[${switchVP},${cnum}${useVPPct}\ax,${cbad}${useVPPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[forcegroupheal]}) /varset _listout ${_listout}(${If[${switchForceGroupHeal},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[grouphot]}) /varset _listout ${_listout}(${If[${useGroupHoT},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[aggressive]}) /varset _listout ${_listout}(${If[${switchHealAggressive},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
 		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
 	/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

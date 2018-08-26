@@ -14,7 +14,6 @@
  *  NOTE: 
  ***|
 sub core_BST()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -28,8 +27,6 @@ sub core_BST()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -52,7 +49,8 @@ sub core_BST()
 		}
 
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -71,7 +69,6 @@ sub core_BST()
  *  NOTE: 
  ***|
 sub disc_BST()
-	DEBUGCLASS ${cbug}disc_BST()\ax
 	/if (${Me.PctEndurance} < 3) /return
 	AMIDEAD
 	CHECKEXIT
@@ -147,7 +144,6 @@ sub check_mana_BST()
  *  NOTE: 
  ***|
 sub patch_heal_BST()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -171,7 +167,6 @@ sub patch_heal_BST()
  *  NOTE: 
  ***|
 sub pet_heal_BST()
-	DEBUGCLASS ${cbug}pet_heal_BST()\aw
 	/if (!${Me.Pet.ID}) /return
 	AMIDEAD
 	SIMPLEEXIT
@@ -197,12 +192,10 @@ sub pet_heal_BST()
  ***|
 #bind cast_AA_paragon /paragon
 sub Bind_cast_AA_paragon()
-	DEBUGCLASS ${cbug}Bind_cast_AA_paragon()\ax
 	/if (${Select[${Me.Class.ShortName},BST]}) /call cast_AA_paragon
 /return
 
 sub cast_AA_paragon()
-	DEBUGCLASS ${cbug}cast_AA_paragon()\ax ${If[${Me.AltAbilityReady[Mass Group Buff]},${cgood}MGB\ax,${cbad}MGB\ax]} ${If[${Me.AltAbilityReady[Paragon of Spirit]},${cgood}Paragon\ax,${cbad}Paragon\ax]}
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -225,7 +218,6 @@ sub cast_AA_paragon()
  *  NOTE: 
  ***|
 sub click_DPS_BST()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -242,7 +234,6 @@ sub click_DPS_BST()
  *	NOTE: 
  ***| 
 sub synergy_BST()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -292,14 +283,13 @@ sub synergy_BST()
  ***|
 #bind setBST /bst
 sub Bind_setBST(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setBST(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |BST]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |consume|healpoint|paragon|spiregroup|spireraid
+  /declare _type string	local |consume|fade|healpoint|paragon|rod|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -326,6 +316,21 @@ sub Bind_setBST(string _classType, string _verbage)
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		/return
 		
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
+
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
+
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -368,6 +373,9 @@ sub Bind_setBST(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
 		/if (${_type.Arg[${_count},|].Equal[paragon]}) /varset _listout ${_listout}(${If[${switchSelfParagon},${cnum}${selfParagonPct}\ax,${cbad}${selfParagonPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[consume]}) /varset _listout ${_listout}(${If[${switchConsumeSpirit},${cnum}${ConsumeSpiritPct}\ax,${cbad}${ConsumeSpiritPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

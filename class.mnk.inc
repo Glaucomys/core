@@ -14,7 +14,6 @@
  *  NOTE: 
  ***|
 sub core_MNK()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -23,8 +22,6 @@ sub core_MNK()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 
@@ -60,7 +57,6 @@ sub core_MNK()
  *  NOTE: 
  ***|
 sub disc_MNK()
-	DEBUGCLASS ${cbug}disc_MNK()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -95,7 +91,6 @@ sub disc_MNK()
  *  NOTE: 
  ***|
 sub patch_heal_MNK()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	AMIDEAD
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -113,7 +108,6 @@ sub patch_heal_MNK()
  *  NOTE: 
  ***|
 sub click_DPS_MNK()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -128,7 +122,6 @@ sub click_DPS_MNK()
  *  NOTE: manual/Named/raid. all sorts...
  ***|
 sub get_agro_MNK()
-	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 /return
 
@@ -141,7 +134,6 @@ sub get_agro_MNK()
  *	NOTE: 
  ***| 
 sub synergy_MNK()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	
@@ -165,24 +157,20 @@ sub synergy_MNK()
  *  NOTE:
  ***|
 sub melee_train_MNK()
-	DEBUG ${cbug}melee_train_MNK()\ax
 	
 	| mend training
 	/if (${switchMNKTrainMelee} && ${Me.Skill[Mend]} <= ${Me.SkillCap[Mend]} && ${Me.AbilityReady[Mend]}) /doability Mend
 
 	| kick skills
 	/if (${Me.Skill[Kick]} <= ${Me.Skill[Flying Kick]} && ${Me.Skill[Kick]} <= ${Me.Skill[Round Kick]}) {
-		SDEBUG setting: Kick
 		/varset kick TRUE
 		/varset flyingkick FALSE
 		/varset roundkick FALSE
 	} else /if (${Me.Skill[Flying Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Flying Kick]} <= ${Me.Skill[Round Kick]}) {
-		SDEBUG setting: Flying Kick
 		/varset kick FALSE
 		/varset flyingkick TRUE
 		/varset roundkick FALSE
 	} else /if (${Me.Skill[Round Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Round Kick]} <= ${Me.Skill[Flying Kick]}) {
-		SDEBUG setting: Round Kick
 		/varset kick FALSE
 		/varset flyingkick FALSE
 		/varset roundkick TRUE
@@ -190,17 +178,14 @@ sub melee_train_MNK()
 
 	| punch skills
 	/if (${Me.Skill[Dragon Punch]} <= ${Me.Skill[Eagle Strike]} && ${Me.Skill[Dragon Punch]} <= ${Me.Skill[Tiger Claw]}) {
-		SDEBUG setting: Dragon Punch
 		/varset dragonpunch TRUE
 		/varset eaglestrike FALSE
 		/varset tigerclaw FALSE
 	} else /if (${Me.Skill[Eagle Strike]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Eagle Strike]} <= ${Me.Skill[Tiger Claw]}) {
-		SDEBUG setting: Eagle Strike
 		/varset dragonpunch FALSE
 		/varset eaglestrike TRUE
 		/varset tigerclaw FALSE
 	} else /if (${Me.Skill[Tiger Claw]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Tiger Claw]} <= ${Me.Skill[Eagle Strike]}) {
-		SDEBUG setting: Tiger Claw
 		/varset dragonpunch FALSE
 		/varset eaglestrike FALSE
 		/varset tigerclaw TRUE
@@ -217,7 +202,6 @@ sub melee_train_MNK()
  ***|
 #bind setMNK /mnk
 sub Bind_setMNK(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setMNK(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |MNK]}) /return
 
 	/declare _sep bool local

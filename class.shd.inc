@@ -15,7 +15,6 @@
  *  NOTE: 
  ***|
 sub core_SHD()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -30,7 +29,6 @@ sub core_SHD()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
 
 		/if (${switchHealCure}) /call cast_cure
 
@@ -53,7 +51,8 @@ sub core_SHD()
 		}
 
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -71,7 +70,6 @@ sub core_SHD()
  *  NOTE: 
  ***|
 sub disc_SHD()
-	DEBUGCLASS ${cbug}disc_SHD()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -135,7 +133,6 @@ sub disc_SHD()
  *  NOTE: 
  ***|
 sub get_agro_SHD()
-	DEBUGCLASS ${cbug}get_agro_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -194,7 +191,6 @@ sub get_agro_SHD()
  *  NOTE: 
  ***|
 sub click_DPS_SHD()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -211,7 +207,6 @@ sub click_DPS_SHD()
  *  NOTE: 
  ***|
 sub check_skin()
-	DEBUGCLASS ${cbug}check_skin()\ax
 	AMIDEAD
 	SIMPLEEXIT
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
@@ -232,7 +227,6 @@ sub check_skin()
  *	NOTE: 
  ***| 
 sub synergy_SHD()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -292,14 +286,13 @@ sub synergy_SHD()
  ***|
 #bind setSHD /shd
 sub Bind_setSHD(string _classType, string _verbage)
-	DEBUGCLASS ${cbug}Bind_setSHD(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |SHD]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|harmonious|healpoint|shieldflash|skin|spiregroup|spireraid|stance|taunt|vot
+  /declare _type string	local |ae|defcount|fade|harmonious|healpoint|rod|shieldflash|skin|spiregroup|spireraid|stance|taunt|vot
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -322,6 +315,10 @@ sub Bind_setSHD(string _classType, string _verbage)
 		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI useShieldFlash Discs ${If[${useShieldFlash},FALSE,TRUE]}  
 		}			
+
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
 
 	| on/off switch for Vizat's Skin
 	} else /if (${Bool[${_classType.Find[skin]}]}) {
@@ -347,6 +344,17 @@ sub Bind_setSHD(string _classType, string _verbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		/return
+
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
@@ -397,6 +405,8 @@ sub Bind_setSHD(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[vot]}) /varset _listout ${_listout}(${If[${Bool[${switchVoT}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 
 		/varset _sep TRUE
 	/next _count

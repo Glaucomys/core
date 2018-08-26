@@ -45,7 +45,7 @@ sub core_PAL()
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
-		/if (${switchHealGroup}) /call check_splash_group_${Me.Class.ShortName}
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -70,11 +70,16 @@ sub core_PAL()
 		}
 
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+			/if (${Target.ID}) {
+				/if (${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+			} else /if (!${Target.ID}) {
+				/if (${Bool[${combat}]}) /call set_stop
+			}
 		}
 	}
 
@@ -292,42 +297,63 @@ sub click_DPS_PAL()
 
 
 |***
- *	DES: 
+ *	DES: Palading group heal. centered more to splashing
  *	USE: 
  *	INI: 
  *  NOTE: 
  ***|
-sub check_splash_group_PAL()
+sub check_heal_group_PAL()
 	AMIDEAD
 	CHECKEXIT
  	CHECKINPUTS	
 	CHECKTIE
-	/varset WorstHurt 				${Me.ID}
-	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset WorstClass 				${Me.Class.ShortName}
-	/varset groupHurt					0
-	
-	| lets see whos hurt
-	/if (${Bool[${Group.Members}]}) {
-		/declare _count int	local 0
-		/for _count 0 to ${Group.Members}
-			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
-			/if ((!${Group.Member[${_count}].Dead} && (${Spawn[pc id ${Group.Member[${_count}].ID}].ID} || ${Spawn[mercenary id ${Group.Member[${_count}].ID}].ID})) && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride} && (${Group.Member[${_count}].Distance} < ${Spell[${splashPanic}].MyRange} || ${Group.Member[${_count}].Distance} < ${Spell[${splashGroup}].MyRange})) {
-				/varset WorstHurt ${Group.Member[${_count}].ID}
-				/varset WorstHP ${Group.Member[${_count}].PctHPs}
-				/varset WorstClass ${Group.Member[${_count}].Class.ShortName}
+	/declare _count int local 0
+	/varset hurtID 						${Me.ID}
+	/varset hurtPctHP 				${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	/varset hurtCLS 					${Me.Class.ShortName}
+	/varset hurtCount					0
+
+	| Does the control toon need healing?
+	/if (${toonControlProtect} && ${Bool[${toonControl}]} && ${Bool[${Spawn[${toonControl}]}]}) {
+		/if (!${Bool[${Group.Member[${toonControl}]}]} && ${RampageTank.NotEqual[${toonControl}]}) {
+			/if (!${Spawn[${toonControl}].Dead} && ${Spawn[pc ${toonControl}].ID} && ${Spawn[pc ${toonControl}].PctHPs} <= ${hurtPctHP} && ${Spawn[${toonControl}].Distance} <= ${MobAgro} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}) {
+				/varset hurtID ${Spawn[pc ${toonControl}].ID}
+				/varset hurtPctHP ${Spawn[pc ${toonControl}].PctHPs}
+				/varset hurtCLS ${Spawn[pc ${toonControl}].Class.ShortName}
 			} 
-			
-			| set count for # of toons hurt
-			/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
-				/varcalc groupHurt ${groupHurt}+1
+		}
+	}
+
+	| Do group members need healing?
+	/if (${Bool[${Group.Members}]}) {
+		/for _count 0 to ${Group.Members}
+	
+			| toon even in zone
+			/if (!${Spawn[${Group.Member[${_count}]}].ID}) /continue
+
+			| rampage tank
+			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+
+			| no heallist bitches
+			/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
+
+			/if (${Group.Member[${_count}].Distance} <= ${MobAgro}) {
+				/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} <= ${hurtPctHP} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
+					/varset hurtID ${Group.Member[${_count}].ID}
+					/varset hurtPctHP ${Group.Member[${_count}].PctHPs}
+					/varset hurtCLS ${Group.Member[${_count}].Class.ShortName}
+				} 
+
+		 		| set count for # of toons hurt
+				/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
+					/varcalc hurtCount ${hurtCount}+1
+				}   
 			}
+	    
 	  /next _count
 	}
   
-  /if (!${groupHurt}) /return
-  
-	UPDATEHUD "HEAL Spalsh"
+	UPDATEHUD "HEAL"
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	| aa LoH
@@ -341,7 +367,7 @@ sub check_splash_group_PAL()
   
 	| Panic Splash
 	/if (${Bool[${Group.Members}]}) {
-	  /if (${Spawn[${WorstHurt}].PctHPs} <= 45*.${tmpHealOverride}) {
+	  /if (${Spawn[${hurtID}].PctHPs} <= 45*.${tmpHealOverride}) {
 			/if (${validate_cast[FALSE, spell, "${splashPanic}", ${Me.ID}]}) /call core_cast2 "${splashPanic}" 0 0 FALSE
 		}
 	}
@@ -349,12 +375,12 @@ sub check_splash_group_PAL()
 	| group heals
 	/if (${useGroupHeal}) {
 		| Group Splash
-	  /if (${groupHurt} >= 1) {
+	  /if (${hurtCount} >= 1) {
 	    /if (${validate_cast[FALSE, spell, "${splashGroup}", ${Me.ID}]}) /call core_cast2 "${splashGroup}" 0 0 FALSE
 	  } 
 			
 		| AA Splash
-	  /if (${groupHurt} >= 3) {
+	  /if (${hurtCount} >= 3) {
 	  	/if (${validate_cast[FALSE, alt, "${AAHandofPiety}", ${Me.ID}]}) /call core_cast2 "${AAHandofPiety}" alt 0 FALSE
 	  }
 	}
@@ -362,8 +388,8 @@ sub check_splash_group_PAL()
 	AMIDEAD
  	CHECKINPUTS
 	| Touch Heal 
-  /if (${Spawn[${WorstHurt}].PctHPs} <= ${${WorstClass}Point}*.${tmpHealOverride}) {
-  	/if (${validate_cast[FALSE, spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt} FALSE
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+  	/if (${validate_cast[FALSE, spell, "${healTouch}", ${hurtID}]}) /call core_cast2 "${healTouch}" 0 ${hurtID} FALSE
   }
 	 
 	UPDATEHUD
@@ -379,39 +405,57 @@ sub check_splash_group_PAL()
  ***|
 sub check_heal_XTarget_PAL()
 	/if (!${validate_expansion[FALSE, |16]}) /return
-  /declare _count int local 0
 	CHECKREZ
+	AMIDEAD
+	SIMPLEEXIT
+	CHECKINPUTS
+	
+	/declare _count int local 0
+	/varset hurtID 					${Me.ID}
+	/varset hurtPctHP 			${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	/varset hurtCLS 				${Me.Class.ShortName}
+	/varset hurtCount				0
 
- 	UPDATEHUD "HEAL XTarget"
-
-  /for _count 1 to 13
-  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
-  	/if (!${Spawn[${Me.XTarget[${_count}].ID}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
-  	/if (${heallist.Find[${Spawn[${Me.XTarget[${_count}].ID}].DisplayName}]}) /continue
-		/call check_no_cast_buffs
-		AMIDEAD
-		SIMPLEEXIT
-		CHECKINPUTS
-		/if (${useShieldFlash}) /call cast_AA_shield_flash
+	| does anyone need healing?
+	/for _count 1 to 13
 		
-		| aa LoH
-		/if (${switchHealSelf}) {
-			/if (${useLoH}) {
-			  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
-					/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
-				}
-			}	
-		}
-		
-		/if (!${Spawn[${Me.XTarget[${_count}].ID}].ID} || ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} > ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
+		| no xtarget position
+  	/if (!${Me.XTarget[${_count}].ID}) /continue
+  	
+  	| distance bequond agro?
+  	/if (${Me.XTarget[${_count}].Distance} > ${MobAgro}) /continue
 
-		| Touch Heal
+		| no heal rampage tanks
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Me.XTarget[${_count}].DisplayName}]}) /continue
+	
+		| no heallist bitches
+		/if (${heallist.Find[${Me.XTarget[${_count}].DisplayName}]}) /continue
+  
+  	| dont heal NPCs on the list unless they are part of the protected list
+  	/if (!${Me.XTarget[${_count}].Type.Equal[PC]} && !${ProtectNPCList.Find[${Me.XTarget[${_count}].DisplayName}]}) /continue
+  	
+		| if not hurt enough, skip'em
+		/if (!${Me.XTarget[${_count}].ID} || ${Me.XTarget[${_count}].PctHPs} > ${${Me.XTarget[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
+		
+		| out of whomever is left, which is hurt the worse?	
+		/if (!${Me.XTarget[${_count}].Dead} && ${Me.XTarget[${_count}].PctHPs} <= ${hurtPctHP}) {
+			/varset hurtID ${Me.XTarget[${_count}].ID}
+			/varset hurtPctHP ${Me.XTarget[${_count}].PctHPs}
+			/varset hurtCLS ${Me.XTarget[${_count}].Class.ShortName}
+			/varset hurtCount 1
+		} 
+  /next _count
+  	
+	UPDATEHUD "HEAL XTarget"
+	/if (!${hurtCount}) /return	
+
+	/call check_no_cast_buffs
+
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/if (${Me.SpellReady[${healTouch}]}) {
-			/if (${Spawn[${Me.XTarget[${_count}].ID}].Distance} <= ${Spell[${healTouch}].MyRange} && ${Spawn[${Me.XTarget[${_count}].ID}].PctHPs} <= ${${Spawn[id ${Me.XTarget[${_count}].ID}].Class.ShortName}Point}*.${tmpHealOverride}) {
-				/if (${validate_cast[FALSE, spell, "${healTouch}", ${Me.XTarget[${_count}].ID}]}) /call core_cast2 "${healTouch}" 0 ${Me.XTarget[${_count}].ID} check_HP_${Me.Class.ShortName}
-			}
-		}				
-	/next _count
+		  /if (${validate_cast[FALSE, spell, "${healTouch}", ${hurtID}]}) /call core_cast2 "${healTouch}" 0 ${hurtID} check_HP_${Me.Class.ShortName} 
+		}
+	}
 
 	UPDATEHUD FALSE
 /return
@@ -429,25 +473,25 @@ sub check_pet_heal_PAL()
 	SIMPLEEXIT
 	CHECKINPUTS
 	CHECKREZ
+
 	/declare _count int local
-	/varset pWorstHurt ${Me.CleanName}
-	/varset pWorstHP 100
-	/varset pWorstHurtID ${Me.ID}
+	/varset hurtID 				${Me.ID}
+	/varset hurtPctHP 		100
   
   /for _count 0 to ${Group}
     /if (${Group.Member[${_count}].Pet.ID}) {
-      /if (${Group.Member[${_count}].Pet.Distance} <= ${Spell[${healRemedy1}].MyRange}) {
-        /if (${Group.Member[${_count}].Pet.PctHPs} < ${pWorstHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
-          /varset pWorstHurt ${Group.Member[${_count}].Pet.Name}
-          /varset pWorstHurtID ${Group.Member[${_count}].Pet.ID}
-          /varset pWorstHP ${Group.Member[${_count}].Pet.PctHPs}
+      /if (${Group.Member[${_count}].Pet.Distance} <= ${MobAGro}) {
+        /if (${Group.Member[${_count}].Pet.PctHPs} < ${hurtPctHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
+          /varset hurtID ${Group.Member[${_count}].Pet.ID}
+          /varset hurtPctHP ${Group.Member[${_count}].Pet.PctHPs}
         }
       }
     }
   /next _count
 
-  /if (${pWorstHurtID} == ${Me.ID}) /return
-  /if (${useShieldFlash}) /call cast_AA_shield_flash
+	| any pets hurt?
+  /if (${hurtID} == ${Me.ID}) /return
+   /if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	| aa LoH
 	/if (${switchHealSelf}) {
@@ -459,8 +503,8 @@ sub check_pet_heal_PAL()
 	}
 
 	| touch heal
-  /if (${Spawn[${pWorstHurtID}].PctHPs} < ${PetPoint} && ${Spawn[${pWorstHurtID}].Distance} <= ${Spell[${healTouch}].MyRange} && ${Me.SpellReady[${healTouch}]}) {
-    /if (${validate_cast[FALSE, spell, "${healTouch}", ${pWorstHurtID}]}) /call core_cast2 "${healTouch}" 0 ${pWorstHurtID} FALSE
+  /if (${Spawn[${hurtID}].PctHPs} < ${PetPoint} ) {
+    /if (${validate_cast[FALSE, spell, "${healTouch}", ${hurtID}]}) /call core_cast2 "${healTouch}" 0 ${hurtID} FALSE
   }
 /return
 
@@ -474,31 +518,27 @@ sub check_pet_heal_PAL()
  ***|
 sub check_HP_PAL()
 	AMIDEAD
-	SIMPLEEXIT
+	/if (!${Me.Casting.ID}) /return
+	/declare _count int local 0
 
-	/varset WorstHurt 				${Me.ID}
-	/varset WorstHP 					${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset WorstClass 				${Me.Class.ShortName}
-	/varset MajorHurt					0
+	/varset hurtID 					${Me.ID}
+	/varset hurtPctHP 			${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	/varset hurtCLS 				${Me.Class.ShortName}
 
 	/if (${Bool[${Group.Members}]}) {
-		/declare _count int local 0
 		/for _count 0 to ${Group.Members}
 	  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
 	  	/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
-
+			SIMPLEEXIT
 			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
-				/if (${Group.Member[${_count}].Distance}<=${Spell[${healRemedy2}].MyRange} && ${Group.Member[${_count}].PctHPs} <= ${WorstHP} || !${WorstHurt}) {
-				/varset WorstHurt ${Group.Member[${_count}].ID} 
-				/varset WorstHP ${Group.Member[${_count}].PctHPs} 
-				/varset WorstClass ${Group.Member[${_count}].Class.ShortName} 
+				/if (${Group.Member[${_count}].PctHPs} <= ${hurtPctHP} || !${hurtID}) {
+				/varset hurtID ${Group.Member[${_count}].ID} 
+				/varset hurtPctHP ${Group.Member[${_count}].PctHPs} 
+				/varset hurtCLS ${Group.Member[${_count}].Class.ShortName} 
 			}
-			/if (${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${HealOverride}*.5) /varcalc MajorHurt ${MajorHurt}+1
 		}
 		/next _count
-	}
-
-	/if (!${WorstHurt}) /return
+	}	
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	| aa LoH
@@ -511,12 +551,11 @@ sub check_HP_PAL()
 	}
 
 	| touch heal
-	/if (${Spawn[${WorstHurt}].PctHPs} < 20*.${HealOverride}) {
+	/if (${Spawn[${hurtID}].PctHPs} < 20*.${HealOverride}) {
 		/if (${Me.Casting.ID}) /stopcast
-		/if (${validate_cast[FALSE, spell, "${healTouch}", ${WorstHurt}]}) /call core_cast2 "${healTouch}" 0 ${WorstHurt}
+		/if (${validate_cast[FALSE, spell, "${healTouch}", ${hurtID}]}) /call core_cast2 "${healTouch}" 0 ${hurtID}
 	} 
 /return
-
 
 
 
@@ -628,7 +667,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|groupheal|harmonious|healpoint|loh|mg|rampage|shieldflash|spiregroup|spireraid|stance|steel|stun|taunt|xtradius|xttime|yaulp
+  /declare _type string	local |ae|defcount|fade|groupheal|harmonious|healpoint|loh|mg|rampage|rod|shieldflash|spiregroup|spireraid|stance|steel|stun|taunt|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -697,9 +736,24 @@ sub Bind_setPAL(string _classType, string _verbage)
 			/call writeINI useShieldFlash Discs ${If[${useShieldFlash},FALSE,TRUE]}  
 		}			
 
+	| set AA fade use %	
+	} else /if (${Bool[${_classType.Equal[fade]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI useAAFadePct Buffs ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
+
 	| use group Heals
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
+		
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
 
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
@@ -825,7 +879,9 @@ sub Bind_setPAL(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[loh]}) /varset _listout ${_listout}(${If[${useLoH},${cnum}${useLoHPct}\ax,${cbad}${useLoHPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
-
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+		
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

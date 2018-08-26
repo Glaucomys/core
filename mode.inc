@@ -17,7 +17,6 @@
  ***|
 #bind mode /mode
 sub Bind_mode(string _modeType, string _verbage)
-	DEBUGMODE ${ctar}Bind_mode()\ax
 
 	/declare _sep bool local
 	/declare _listout string local
@@ -96,7 +95,6 @@ sub Bind_mode(string _modeType, string _verbage)
  *  NOTE: 
  ***|
 sub switch_clear_mode()
-	DEBUGMODE ${cbug}switch_clear_mode()\ax
 	/declare _count int local
 	/if (${setMode}) /varset setMode FALSE
 
@@ -121,7 +119,6 @@ sub switch_clear_mode()
  *  NOTE: 
  ***|
 sub do_mode()
-	DEBUGMODE ${ctar}do_mode()\ax
 	AMIDEAD
 
 	CLEARCURSOR TRUE
@@ -151,7 +148,6 @@ sub do_mode()
  *  NOTE: 
  ***|
 sub mode_get_mob()
-	DEBUGMODE ${cbug}mode_get_mob(${Target2Kill})\ax
 	:movetomob
 	/doevents
 	AMIDEAD
@@ -160,7 +156,6 @@ sub mode_get_mob()
 	/doevents
 	
 	/if (!${Spawn[${Target2Kill}].ID} || ${Spawn[${Target2Kill}].Dead}) {
-		DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
 		/call set_stop TRUE
 		/call clear_combat
 		/return
@@ -169,18 +164,14 @@ sub mode_get_mob()
 	/call check_watch_spawn
 
 	| get us to the mob
-	/if (${Spawn[${Target2Kill}].Distance} > ${CombatDistance}) {
+	/if (${Spawn[${Target2Kill}].Distance} > ${CombatDistance} && ${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} > ${MobAgro} ) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		
-		| use nave for movement
+		| use nav for movement
 		/if (${SetTieMode.Equal[nav]} && ${Bool[${Plugin[MQ2Nav]}]} && !${Navigation.Active}) {
 			| /echo nav to ${Target2Kill}
 			/if (${Navigation.Active}) /squelch /nav stop
 			/squelch /nav id ${Target2Kill}
-
-		| adjust nav	
-		| } else /if (${SetTieMode.Equal[nav]} && ${Bool[${Plugin[MQ2Nav]}]} && ${Navigation.Active}) {
-		| 	/squelch /nav id ${Target2Kill}
 
 		| use stick for movement
 		} else /if (${SetTieMode.Equal[stick]} && ${Bool[${Plugin[MQ2MoveUtils]}]} && !${Stick.Active}) {
@@ -188,21 +179,19 @@ sub mode_get_mob()
 		}
 		
 	| at the mob, do something about it		
-	} else /if (${Spawn[${Target2Kill}].Distance} <= ${CombatDistance} || ${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
+	| } else /if (${Spawn[${Target2Kill}].Distance} <= ${CombatDistance} || ${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
+	} else /if (${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		/target ID ${Target2Kill}
 	}
 					
 	/if (${Spawn[${Target2Kill}].Distance} < ${MobAgro} && ${Spawn[${Target2Kill}].Distance} > 31) {
-		DEBUG distance ${Spawn[${Target2Kill}].Distance} range
 		/target ID ${Target2Kill}
 		/if (${Me.Pet.ID} && !${Me.Pet.Target.ID}) /pet attack
 		/if (${Target.ID} && ${Spawn[${Target2Kill}].LineOfSight}) /range
 	} else /if (${Spawn[${Target2Kill}].Distance} < ${CombatDistance}) {
-		DEBUG distance ${Spawn[${Target2Kill}].Distance} melee
-		/call set_combat MELEE
+		/call set_combat COMBAT
 		/if (${Me.Pet.ID} && !${Me.Pet.Target.ID}) /pet attack
-		/if (${Target.ID} && ${switchBanestrike}) /call cast_aa_banestrike ${Target2Kill}
 		
 		/if (${Bool[${ModeNuke}]}) {
 			/if (${Me.Book[${ModeNuke}]}) /call core_cast "${ModeNuke}" ${buffGem} ${Target2Kill}
@@ -225,7 +214,6 @@ sub mode_get_mob()
  *  NOTE: This is not working yet...
  ***|
 sub mode_skill_train(string _skilltype)
-	DEBUGMODE ${cbug}mode_skill_train()\ax
 	
 	|**
 	/declare _sep bool local
@@ -272,12 +260,10 @@ sub mode_skill_train(string _skilltype)
  *  NOTE: 
  ***|
 sub mode_fish()
-	DEBUGMODE ${cbug}mode_fish()\ax
 	AMIDEAD
 	UPDATEHUD "Fish"
 	/if (!${Me.Standing}) /stand
 	/if (${Me.ItemReady[Fisherman's Companion]} && !${Me.ItemReady[Brell's Fishin' Pole]}) {
-		DEBUGMODE Pole broke. Learn to play with your things better..
 		/if (${Me.Invis}) /docommand /makemevisable
 		/call core_cast "Fisherman's Companion" item ${Me.ID}
 		CLEARCURSOR TRUE
@@ -298,7 +284,6 @@ sub mode_fish()
  *  NOTE: 
  ***|
 sub mode_forage()
-	DEBUGMODE ${cbug}mode_forage()\ax
 	/if (${Select[${Me.CombatState},COMBAT]}) /return
 	AMIDEAD
 	UPDATEHUD "Forage"
@@ -318,7 +303,6 @@ sub mode_forage()
  *  NOTE: 
  ***|
 sub mode_drag()
-	DEBUGMODE ${cbug}mode_drag()\ax
 	/declare _count 		int local
 	/declare _corpseID 	int local
 	UPDATEHUD "Drag"
@@ -350,7 +334,6 @@ sub mode_drag()
  *  NOTE: works better in open zones. don't say i didn't wan you.
  ***|
 sub mode_hunt()
-	DEBUGMODE ${cbug}mode_hunt()\ax
 	/declare _count int local 0
 	/doevents
 	AMIDEAD
@@ -381,7 +364,6 @@ sub mode_hunt()
 		/call mode_get_mob
 	} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
 		/if (!${timer_scorched_earth_fail}) /call create_timer timer_scorched_earth_ignore_${Target2Kill} ${tScorchedEarth_ignore} 
-		DEBUG DEAD: ${Spawn[${Target2Kill}].Dead}
 		/call set_stop TRUE
 		/call clear_combat
 	}	
@@ -398,7 +380,6 @@ sub mode_hunt()
  *  NOTE: Use with caution. For static pet classes only.
  ***|
 sub mode_petfarm()
-	DEBUGMODE ${cbug}mode_petfarm()\ax
 	AMIDEAD
 
 	/declare _tmpID					int local 0
@@ -430,7 +411,6 @@ sub mode_petfarm()
 		| skip excluded mobs
 		:loopnamedmob
 		/if (${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]})	{
-			DEBUGMODE name:${Spawn[id ${Target2Kill}].DisplayName} ID:${_tmpID} EXCLUDELIST .. loop:${_nameloop}
 			/varcalc _nameloop ${_nameloop}+1
 			/if (${_spawnCount} > 1) {
 				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, ${If[${switchOverrideLos},,los]} npc radius ${MobAgro} zradius ${zradius} targetable]}].ID}
@@ -440,14 +420,12 @@ sub mode_petfarm()
 				/varset Target2Kill 0
 				/varset _nameloop 1
 			}
-			DEBUGMODE _tmpID:${_tmpID}
 		}
 				
 		/if (!${Target2Kill}) /goto :nomob
 		/varset _resetCount 0
 	} else {
 		:nomob
-		DEBUGMODE :nomob RESET the numbers
 		/doevents
 		/varset _resetCount 0
 		/varset _spawnCount 0
@@ -463,7 +441,6 @@ sub mode_petfarm()
 	}
 	
 	:gettarget
-	DEBUGMODE :gettarget ID ${Target2Kill}
 	/doevents
 	/target ID ${Target2Kill}
 	/if (!${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]}) {
@@ -482,7 +459,6 @@ sub mode_petfarm()
 	}		
 		
 	:loopwaittilldead
-	DEBUG :loopwaittilldead
 	/delay 1s
 	/doevents
 	/if (${Spawn[${Target2Kill}].Type.Equal[CORPSE]} || !${Spawn[${_tmpID}].ID}) /goto :loopfindmob
@@ -504,7 +480,6 @@ sub mode_petfarm()
  *  NOTE: This will kill everything in a zone. or at least try /shrug
  ***|
 sub mode_scorched_earth()
-	DEBUGMODE ${cbug}mode_scorched_earth()\ax
 	AMIDEAD
 	/declare _spawnCount 		int local 0
 	/declare _resetCount		int local 0
@@ -532,12 +507,9 @@ sub mode_scorched_earth()
 		/varset Target2Kill ${Spawn[${NearestSpawn[1, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
 		/call create_timer timer_scorched_earth_fail ${tScorchedEarth_fail}
 
-		DEBUGMODE SpawnCount: ${_spawnCount} ${sep} Target2Kill:${Target2Kill}
-
 		:loopignoreddmob
 		
 		/if (${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]})	{
-			DEBUGMODE name:${Spawn[id ${Target2Kill}].DisplayName} ID:${Target2Kill} EXCLUDELIST .. loop:${_nameloop}
 			/varcalc _nameloop ${_nameloop}+1
 			/if (${_spawnCount} > 1) {
 				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
@@ -571,7 +543,6 @@ sub mode_scorched_earth()
 			/call mode_get_mob
 		} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
 			/if (!${timer_scorched_earth_fail}) /call create_timer timer_scorched_earth_ignore_${Target2Kill} ${tScorchedEarth_ignore} 
-			DEBUGMODE DEAD: ${Spawn[${Target2Kill}].Dead}
 			/call set_stop TRUE
 			/call clear_combat
 		}
@@ -607,7 +578,6 @@ sub mode_scorched_earth()
  *  NOTE: Will run around and pick up shit off the ground
  ***|
 sub mode_harvest()
-	DEBUGMODE ${cbug}mode_harvest()\ax
 	AMIDEAD
 	/declare _count int local
 	UPDATEHUD "Harvest"
@@ -639,7 +609,6 @@ sub mode_harvest()
  *  NOTE: 
  ***|
 sub get_ground_harvest(string _tmpItem)
-	DEBUGMODE ${cbug}get_ground_harvest(Harvest: ${_tmpItem})\ax
 	/squelch /itemtarget ${_tmpItem}
 	/delay 2s ${Bool[${Ground.ID}]}
 	/if (${Bool[${Ground.ID}]}) {
@@ -647,7 +616,6 @@ sub get_ground_harvest(string _tmpItem)
 			
 		/if (${Bool[${Plugin[MQ2Nav]}]} && ${SetTieMode.Equal[nav]}) {	
 			/if (${Navigation.MeshLoaded}) {	
-				SDEBUG ${_tmpItem}: ${Ground.Y} ${Ground.X} ${Ground.Z}
 				/delay 1 
 				
 				/if (${Navigation.PathExists[item]}) {
@@ -715,8 +683,6 @@ sub Event_mode_CombineError(string _line)
 /return
 
 sub mode_tradeskill()
-	DEBUGMODE ${cbug}mode_tradeskill()\ax
-	
 	/if (!${Window[TradeskillWnd].Open}) {
 		VOUT Tradeskill window must be open.
 		VOUT Make All option must be deselected.
@@ -742,7 +708,6 @@ sub mode_tradeskill()
  *  NOTE: 
  ***|
 sub mode_get_waisted()
-	DEBUGMODE ${cbug}mode_get_waisted()\ax
 	/declare _ale 				string 	local Summoned: Ale
 	/declare _aleCount		int		 	local 20	
 	/declare _pole				string	local Brell's Fishin' Pole
@@ -763,7 +728,6 @@ sub mode_get_waisted()
 	
 	| need booze! keep a stock on hand
 	/if (${FindItemCount[${_ale}]} < ${_aleCount} && ${Me.ItemReady[${_pole}]} && !${Me.Drunk}) {
-		DEBUGMODE click ${clickPoisonDispenser}
 		/call core_cast "${_pole}" item ${Me.ID} FALSE
 		CLEARCURSOR TRUE
 	}
@@ -785,7 +749,6 @@ sub mode_get_waisted()
  *  NOTE: 
  ***|
 sub mode_get_drunk()
-	DEBUGMODE ${cbug}mode_get_drunk()\ax
 	/if (!${FindItem[${modeDrinkofChoice}].ID} || !${Bool[${modeDrinkofChoice}]}) {
 		/varset switchModeDrink FALSE
 		/return
@@ -819,7 +782,6 @@ sub mode_get_drunk()
  *  NOTE: 
  ***|
 sub mode_trainspell(string _type)
-	DEBUG ${cbug}mode_trainspell()\ax
 	AMIDEAD
 	UPDATEHUD "Train Spell"
 	
@@ -837,9 +799,6 @@ sub mode_trainspell(string _type)
 
 	| figure out what we want to cast
 	/for _count 1 to ${_skill.Count[|]}
-		DEBUG _count:${_count}
-		DEBUG skill: ${_skill.Arg[${_count},|]}(${Me.Skill[${_skill.Arg[${_count},|]}]}:${Me.SkillCap[${_skill.Arg[${_count},|]}]})
-		DEBUG spell: ${${_skill.Arg[${_count},|]}}, skill: ${Spell[${${_skill.Arg[${_count},|]}}].Skill}
 		
 		| validate skill caps and spell. if cap is maxed, move on		
 		/if (!${switchOverrideTrainspell}) {
@@ -861,7 +820,6 @@ sub mode_trainspell(string _type)
 
 	| start getting things done
 	/for _count 1 to ${_skill.Count[|]}
-		DEBUG gem${_count}:${_gem[${_count}]}
 		/if (!${_gem[${_count}]}) /continue
 		/call core_cast "${${_skill.Arg[${_count},|]}}" 0 0 FALSE
 		/call sort_cursor TRUE
@@ -877,7 +835,6 @@ sub mode_trainspell(string _type)
  *  NOTE: 
  ***|
 sub mode_open(string _type)
-	DEBUG ${cbug}mode_trainspell()\ax
 	AMIDEAD
 	UPDATEHUD "Open"
 

@@ -14,14 +14,12 @@
  *  NOTE: 
  ***|
 sub core_MAG()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 
 	CHECKTIE
 
 	/if (${coreAuto}) {
-		/if (${Bool[${useAAFade}]} && ${Bool[${AAFade}]} && ${Me.PctHPs} <= ${useAAFade}) /call cast_AA_fade
 		/if (${switchGather}) {
 			/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_gather
 		}
@@ -37,8 +35,6 @@ sub core_MAG()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
-
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -64,7 +60,8 @@ sub core_MAG()
 		}
 
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -82,7 +79,6 @@ sub core_MAG()
  *  NOTE: 
  ***|
 sub disc_MAG()
-	DEBUGCLASS ${cbug}disc_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -98,7 +94,6 @@ sub disc_MAG()
  *  NOTE: 
  ***|
 sub use_cauldron()
-	DEBUGCLASS ${cbug}use_cauldron()\ax 
 	CHECKEXIT
 	CHECKTIE
 	/call create_timer timer_caldron_use ${tCauldron_use}
@@ -118,7 +113,6 @@ sub use_cauldron()
  *  NOTE: this is filler DPS; compensate for global cooldown
  ***|
 sub click_DPS_MAG()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -143,7 +137,6 @@ sub click_DPS_MAG()
  *  NOTE: 
  ***|
 sub cast_nuke_salvo()
-	DEBUGCLASS ${cbug}cast_nuke_salvo()\ax
 	CHECKEXIT
 	CHECKTIE
 	/if (${SpawnCount[pet radius ${MobAgro}]} < 3) /return
@@ -160,7 +153,6 @@ sub cast_nuke_salvo()
  *  NOTE: 
  ***|
 sub pet_heal_MAG()
-	DEBUGCLASS ${cbug}pet_heal_${Me.Class.ShortName}()${citem}
 	CHECKEXIT
 	CHECKTIE
 	/if (${validate_cast[FALSE, alt, "${PetAAHeal}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 40) /call core_cast2 "${PetAAHeal}" alt ${Me.Pet.ID} FALSE
@@ -177,7 +169,6 @@ sub pet_heal_MAG()
  *  NOTE: 
  ***|
 sub patch_heal_MAG()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKTIE
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -193,7 +184,6 @@ sub patch_heal_MAG()
  *	NOTE: 
  ***| 
 sub synergy_MAG()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKTIE
 	/if (${validate_cast[FALSE, alt, "Elemental Ward", ${Me.ID}]}) /call core_cast2 "Elemental Ward" alt 0 FALSE
@@ -242,7 +232,6 @@ sub synergy_MAG()
  *  NOTE: Twincast lets get it.
  ***|
 sub force_twincast_MAG()
-	DEBUG ${cbug}force_twincast_MAG()\ax 
 |**
 	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	/if (${is_target_dead[${Target2Kill}]}) /return 
@@ -297,7 +286,6 @@ sub force_twincast_MAG()
  *  NOTE: 
  ***|
 sub check_gather()
-	DEBUGCLASS ${cbug}check_gather()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -342,14 +330,13 @@ sub check_gather()
  ***|
 #bind setMAG /mag
 sub Bind_setMAG(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setMAG(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |MAG]}) /return
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |fade|forcetwincast|gather|healpoint|line|rods|spiregroup|spireraid
+  /declare _type string	local |fade|forcetwincast|gather|healpoint|line|rod|rods|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -362,6 +349,10 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/return
 	}
 	
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
+
 	| gather enable/disable /pct
 	/if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -375,12 +366,14 @@ sub Bind_setMAG(string _classType, string _verbage)
 	| set AA fade use %	
 	} else /if (${Bool[${_classType.Equal[fade]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/call writeINI useAAFade Buffs ${_verbage}
+			/call writeINI useAAFadePct Buffs ${_verbage}
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} fade(${cnum}${useAAFade}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
-		}		
-	
+		} else {
+		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
+		}
+
 	| enable/disable force twincasting
 	} else /if (${Bool[${_classType.Equal[forcetwincast]}]}) {
 		/call writeINI switchForceTwincast Spells ${If[${switchForceTwincast},FALSE,TRUE]}
@@ -447,7 +440,6 @@ sub Bind_setMAG(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[line]}]}) {
 		| mem a line of spells.
 		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
-			DEBUG ${lineType.Find[${_verbage.Lower}]}
 			/call writeINI lineCurrent Spells ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 			/if (${_verbage.Equal[off]}) {
 				VOUT Casting line ${sep} ${odisabled}
@@ -475,9 +467,9 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${If[${switchGather},${cnum}${GatherPercent}\ax,${ooff}]}\ax)
-		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${cnum}${useAAFade}\ax)
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[forcetwincast]}) /varset _listout ${_listout}(${If[${switchForceTwincast},${oon},${ooff}]})
-
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
 
 		/varset _sep TRUE
 	/next _count
