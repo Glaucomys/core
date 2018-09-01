@@ -17,6 +17,47 @@
 
 
 
+20180831.00
+- Custom Work
+  -- as a request, I've added a custom.inc file to Core's initialization
+  -- in the custom.inc is a declare routine that is called on initial start
+  -- this will allow people to create their own INI variables and initialize them with the same /call routines that are in the declare.inc file
+  -- you can also add whatever functions want in custom.inc and call them or binds, or whatever.
+  -- i will not be changing this file. by default, this is a blank routine in an otherwise empty file
+  -- if you find you've built something useful, let me know, always looking for new ideas 
+- help/info
+  -- trying to catch up on the info help options and the wiki
+- /mode scorch
+  -- mob search logic will hunt mobs closest to the mob within the agro range before looking the entire modeagro range
+- /debug is no more.. say goodby..
+- MA1/MA2
+  -- no longer part of the /cc control and /setassist. only under /setassist now.
+- /setassist
+  -- now shows help w/info option
+- core_cast2()
+  -- will adhear to the /echos output controls for the different types (VALT,VSPELL,VBC,VDISC,VITEM)
+  -- removed the /goto for :cooldown. natural flow should get it there just fine
+- class.mag.inc
+  -- correctd a logic error in the rod control
+- class.clr.inc
+  -- corrected a mispelling in the pet heal routine
+  -- /clr xtclass [WAR|SHD|PAL|BER|ROG|MNK|RNG|BST|BRD|NEC|ENC|WIZ|MAG|CLR|SHM|DRU]
+     sets the class you want to use on xtarget healing
+     so /clr xtclass WAR would enable the class. doing the same command again would disable it
+     i'm still working with this. if it pans out, i'll add it to the other healers
+- class.shm.inc
+  -- small adjustment to the cani routine
+- class.enc.inc
+  -- fixed if/else structure in class control
+- class.dru.inc
+  -- fixed a typo in Storm Strike
+- class.mnk.inc
+  -- it has a burn routine now
+  -- re order of several discs
+  -- addition of /mnk ae (on/off) switch to control use of AE skills. just gotta find out which ones those are still.
+  -- adjustments to the FD code
+  -- this is not the monks final form
+
 
 200180825.00
 - Tie pause on combat
@@ -29,7 +70,7 @@
 - core_cast2()
   -- self targeting SPELLS will watch for the sub listed in the called function 
 - check_exit()
-  -- should check for the differetn shaman DA versions
+  -- should check for the different shaman DA versions
 - cast_AA_fade
   -- redesigning the variables to match the same pattern for all classes. will still function the same.
 - GoM Nukes

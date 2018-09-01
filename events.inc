@@ -49,8 +49,6 @@ sub Event_16anniStein(string line, string _verbage)
 
 
 
-|*** Anni stuff  
-****|
 #event 16stein1 "Galdorin Visigothe says, 'My stinky stein has rough dirty lips,'"
 #event 16stein2 "Galdorin Visigothe says, 'but she loves a deep carouse.'"
 #event 16stein3 "Galdorin Visigothe says, 'Beer or ale are her great trips.'"
@@ -1092,6 +1090,22 @@ sub Event_AaryonarGaze()
    /melee on
    /bc Gaze is off me!
 /return
+
+
+
+#Event AaryonarGaze	"Aaryonar turns a dreadful gaze upon YOU!"
+sub Event_AaryonarGaze()
+	/if (!${coreEventsInc}) /return
+	/call set_stop NOECHO
+	/call clear_combat
+	/face away "Aaryonar" fast nolook
+	/delay 3s
+	/while (${Me.Buff[Dreadgaze].ID}) {
+		/delay 1s
+	}
+/return
+
+
 
 
 #Event AaryonarGazeOff "Aaryonar turns his gaze away from you."

@@ -59,7 +59,7 @@ sub Bind_mode(string _modeType, string _verbage)
 		/if (${Defined[switchMode${setModeType}]}) {
 			/varset switchMode${setModeType} ${If[${switchMode${setModeType}},FALSE,TRUE]}
 			/if ((${_modeType.Equal[hunt]} || ${_modeType.Equal[scorch]}) && ${Bool[${setModeType}]}) {
-				/call set_stop TRUE
+				/call set_stop NOECHO
 				/call clear_combat
 			}
 		} 
@@ -67,7 +67,7 @@ sub Bind_mode(string _modeType, string _verbage)
 	| clear all modes
 	} else /if (${Bool[${modeType.Find[${_modeType}]}]} && ${_modeType.Equal[stop]} && ${Bool[${setModeType}]}) {
 		/call switch_clear_mode
-		/call set_stop TRUE
+		/call set_stop NOECHO
 		/call clear_combat
 	}
 		
@@ -156,7 +156,7 @@ sub mode_get_mob()
 	/doevents
 	
 	/if (!${Spawn[${Target2Kill}].ID} || ${Spawn[${Target2Kill}].Dead}) {
-		/call set_stop TRUE
+		/call set_stop NOECHO
 		/call clear_combat
 		/return
 	}
@@ -179,7 +179,6 @@ sub mode_get_mob()
 		}
 		
 	| at the mob, do something about it		
-	| } else /if (${Spawn[${Target2Kill}].Distance} <= ${CombatDistance} || ${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
 	} else /if (${Spawn[${Target2Kill}].LineOfSight} && ${Spawn[${Target2Kill}].Distance} <= ${MobAgro}) {
 		/squelch /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 		/target ID ${Target2Kill}
@@ -364,7 +363,7 @@ sub mode_hunt()
 		/call mode_get_mob
 	} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
 		/if (!${timer_scorched_earth_fail}) /call create_timer timer_scorched_earth_ignore_${Target2Kill} ${tScorchedEarth_ignore} 
-		/call set_stop TRUE
+		/call set_stop NOECHO
 		/call clear_combat
 	}	
 		
@@ -484,6 +483,10 @@ sub mode_scorched_earth()
 	/declare _spawnCount 		int local 0
 	/declare _resetCount		int local 0
 	/declare _nameloop			int local 1
+	/declare _tmpID 				int local
+	/declare _tmpRange 			int local ${Math.Calc[${MobAgro}/10]}
+	/declare _count 				int local 0
+
 
 	/varset switchOverrideEngageat TRUE
 	/varset switchOverrideLos TRUE
@@ -502,25 +505,49 @@ sub mode_scorched_earth()
 	/if ((${coreAuto} || ${switchOverrideLoot}) && !${SafeZone} && !${switchOverrideSafezone}) /call do_loot
 	/call check_buff_routines TRUE
 	/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}) {
-		/varset _spawnCount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}	
-		/varset Target2Kill ${Spawn[${NearestSpawn[1, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
-		/call create_timer timer_scorched_earth_fail ${tScorchedEarth_fail}
 
-		:loopignoreddmob
+
+
+	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}) {
 		
-		/if (${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]})	{
-			/varcalc _nameloop ${_nameloop}+1
-			/if (${_spawnCount} > 1) {
-				/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
-				/goto :loopignoreddmob
-			} else {
-				/varset Target2Kill 0
-				/varset _nameloop 1
+		| find something in our local range first
+		/while (${_tmpRange} <= ${MobAgro} && !${Target2Kill}) {
+			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable]}) {
+				/for _count 1 to ${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable]}
+					AMIDEAD
+					/if (!${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]}) {
+						/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable].ID}
+					}
+			
+				/next _count
+			}
+			/varcalc _tmpRange ${_tmpRange}+10
+		}	
+		
+		| nothing in local range, check our max range
+		/if (!${Target2Kill}) {
+			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}) {
+				/varset _spawnCount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}	
+				/varset Target2Kill ${Spawn[${NearestSpawn[1, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
+				/call create_timer timer_scorched_earth_fail ${tScorchedEarth_fail}
+
+				:loopignoreddmob
+				
+				/if (${ExcludeList.Find[${Spawn[id ${Target2Kill}].DisplayName}]})	{
+					/varcalc _nameloop ${_nameloop}+1
+					/if (${_spawnCount} > 1) {
+						/varset Target2Kill ${Spawn[${NearestSpawn[${_nameloop}, npc ${If[${switchOverrideLos},,los]} radius ${setModeAgro} targetable]}].ID}
+						/goto :loopignoreddmob
+					} else {
+						/varset Target2Kill 0
+						/varset _nameloop 1
+					}
+				}
+				/if (!${Target2Kill}) /goto :nomob
+				/varset _resetCount 0
 			}
 		}
-		/if (!${Target2Kill}) /goto :nomob
-		/varset _resetCount 0
+				
 	} else {
 		:nomob
 		/doevents
@@ -543,7 +570,7 @@ sub mode_scorched_earth()
 			/call mode_get_mob
 		} else /if (${Spawn[${Target2Kill}].Dead} || !${Spawn[${Target2Kill}].ID} || !${timer_scorched_earth_fail}) {
 			/if (!${timer_scorched_earth_fail}) /call create_timer timer_scorched_earth_ignore_${Target2Kill} ${tScorchedEarth_ignore} 
-			/call set_stop TRUE
+			/call set_stop NOECHO
 			/call clear_combat
 		}
 	}

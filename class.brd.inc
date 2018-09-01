@@ -14,7 +14,6 @@
  *  NOTE: 
  ***|
 sub core_BRD()
-	DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -23,7 +22,6 @@ sub core_BRD()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
 	
 		/if (${switchdeBuffMezz}) {
 			/call get_assist_target
@@ -90,7 +88,6 @@ sub core_BRD()
  *  NOTE: 
  ***|
 sub disc_BRD()
-	DEBUGCLASS	${cbug}disc_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -129,7 +126,6 @@ sub disc_BRD()
  *  NOTE: 
  ***|
 sub patch_heal_BRD()
-	DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -145,7 +141,6 @@ sub patch_heal_BRD()
  *  NOTE: 
  ***|
 sub click_DPS_BRD()
-	DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -162,7 +157,6 @@ sub click_DPS_BRD()
  *  NOTE: send in ALL THE PETS
  ***|
 sub cast_servant_swarm(int _tmpID)
-	DEBUGCLASS ${cbug}cast_servant_swarm(target: ${_tmpID})\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -197,7 +191,6 @@ sub cast_servant_swarm(int _tmpID)
  *  NOTE:
  ***|
 sub mem_song_line(string _line)
- 	DEBUGCLASS ${cbug}mem_song_line(group: ${_line})\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -225,8 +218,6 @@ sub mem_song_line(string _line)
  *  NOTE:
  ***|
 sub pulse()
- 	DEBUGCLASS ${cbug}pulse()\ax
-
 	/declare _pulseSong			bool local FALSE
 	/declare _count 				int local
 	/declare _index 				int local	
@@ -272,14 +263,12 @@ sub pulse()
  *  NOTE:
  ***|
 sub pulse_valid(_gem)
-	DEBUGCLASS ${cbug}pulse_valid(gem: ${_gem})\ax
 	/declare _pulseSong bool local TRUE
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}].Name}].Mana}) /varset _pulseSong FALSE
 	/if (${Me.Buff[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (!${Me.SpellReady[${Me.Gem[${_gem}].Name}]}) /varset _pulseSong FALSE
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
-	DEBUGCLASS VALID PULSE: ${If[${_pulseSong},${cgood}${Me.Gem[${_gem}].Name}\ax,${cbad}${Me.Gem[${_gem}].Name}\ax]}
 /return ${Bool[${_pulseSong}]}
 
 
@@ -291,7 +280,6 @@ sub pulse_valid(_gem)
  *  NOTE: 
  ***|
 sub pulse_stop()
-	DEBUGCLASS ${cbug}pulse_stop()\ax 
 	/delay 2
 	/if (${Me.Casting.ID}) /stopcast
 /return
@@ -304,7 +292,6 @@ sub pulse_stop()
  *  NOTE:
  ***|
 sub core_sing(_spellgem)
-	DEBUGCLASS ${cbug}core_sing(gem: ${_spellgem})\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -331,7 +318,6 @@ sub core_sing(_spellgem)
  *  NOTE: 
  ***|
 sub bard_nuke()
-	DEBUGCLASS ${cbug}bard_nuke()\ax
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoNuke}
@@ -356,7 +342,6 @@ sub bard_nuke()
  *  NOTE: 
  ***|
 sub bard_dot()
-	DEBUGCLASS ${cbug}bard_dot()\ax
 	/call get_assist_target
 	/declare _count int local
 	/for _count 1 to ${DoDoT}
@@ -381,7 +366,6 @@ sub bard_dot()
  *  NOTE: 
  ***|
 sub mez_adds_BRD()
-	DEBUGCLASS ${cbug}mez_adds()\ax
 	AMIDEAD
 
 	CHECKINPUTS
@@ -424,7 +408,6 @@ sub mez_adds_BRD()
  *  NOTE: 
  ***|
 sub cast_mez_BRD(int _tmpID)
-	DEBUGCLASS ${cbug}cast_mez_BRD(${_tmpID})\ax
 
 	:loopmez
 	AMIDEAD
@@ -468,7 +451,6 @@ sub cast_mez_BRD(int _tmpID)
  *  Song - Rallying Solo Azia V
  ***|
 sub cast_AA_Rallying()
- 	DEBUGCLASS ${cbug}cast_AA_Rallying(${Me.AltAbilityReady[Rallying Solo]})\ax
  	/if (${SafeZone} && !${switchOverrideSafezone} || !${Me.AltAbilityReady[Rallying Solo]}) /return
 	AMIDEAD
 	CHECKINPUTS
@@ -489,7 +471,6 @@ sub cast_AA_Rallying()
  *	NOTE: 
  ***| 
 sub synergy_BRD()
-	DEBUGCLASS ${cbug}synergy_${Me.Class.ShortName}()\ax
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -520,7 +501,6 @@ sub synergy_BRD()
  *  NOTE: 
  ***|
 sub pulse_slow(int _tmpID)
-	DEBUGCLASS ${cbug}pulse_slow(ID ${_tmpID})\ax
 	/if (${timer_slow_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -529,7 +509,6 @@ sub pulse_slow(int _tmpID)
 		
 	| dont waste time if its slowed already
 	/if (${Target.Slowed.Duration}) {
-		DEBUG Target Slowed: ${Target.Slowed.Duration.TotalSeconds}s
 		/call create_timer timer_slow_${_tmpID} ${Target.Slowed.Duration.TotalSeconds}s
 		/return
 	}
@@ -543,7 +522,6 @@ sub pulse_slow(int _tmpID)
 
 | Under Construction...
 sub validate_pulse(string _type, string _spell)
-	DEBUGCLASS ${cbug}validate_pulse(type: ${_type}, ${_spell})\ax
 	/if (${_type.Equal[alt]} && ${Me.AltAbilityReady[${_spell}]}) {
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 		/call pulse_stop
@@ -568,7 +546,6 @@ sub validate_pulse(string _type, string _spell)
  ***|
 #bind setBRD /brd
 sub Bind_setBRD(string _classType, string _verbage)
-	DEBUGCLASS ${cbug}Bind_setBRD(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |BRD]}) /return
 
 	/declare _sep bool local
@@ -586,8 +563,8 @@ sub Bind_setBRD(string _classType, string _verbage)
 	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}	
-	
+	}
+
 	| enable/disable rest song
 	/if (${Bool[${_classType.Equal[restsong]}]}) {
 		/call writeINI switchRestSong Song ${If[${switchRestSong},FALSE,TRUE]}
@@ -611,7 +588,6 @@ sub Bind_setBRD(string _classType, string _verbage)
 	| enable/disable sets bard song line
 	} else /if (${Bool[${_classType.Equal[line]}]}) {
 		/if (${Bool[${lineType.Find[${_verbage.Lower}]}]}) {
-			DEBUGCLASS ${lineType.Find[${_verbage.Lower}]}
 			/call writeINI lineCurrent Song ${_verbage.Left[1].Upper}${_verbage.Right[-1].Lower}
 			/delay 2
 			/call mem_song_line ${lineCurrent}

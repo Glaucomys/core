@@ -282,14 +282,12 @@ sub synergy_RNG()
  ***|
 #bind setRNG /rng
 sub Bind_setRNG(string _classType, string _verbage)
-	| DEBUG ${cbug}Bind_setRNG(type:${_classType}, verbage:${_verbage})\ax
-
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
   /declare _type string	local |fade|healpoint|rod|spice|spiregroup|spireraid|summer|taunt
-
+		
 	| get help
 	/if (${_classType.Equal[info]}) {
 		/for _count 1 to ${_type.Count[|]}
@@ -299,8 +297,8 @@ sub Bind_setRNG(string _classType, string _verbage)
 	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}	
-		
+	}
+	
 	| enable/disable summer line of spells
 	/if (${Bool[${_classType.Find[summer]}]}) {
 		/call writeINI switchNukeSummer Spells ${If[${switchNukeSummer},FALSE,TRUE]}

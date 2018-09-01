@@ -31,6 +31,7 @@
 	- mode.inc									All Non-Standard Mode controlls.
 	- core.SERVER.CLS.NAME.ini	Character specific INI settings.
 	- core.augmentdump.ini			list of all augments by toon.
+	- custom.inc								initialized blank file for people that want to add custom ... whatever ... 
 	
 	Naming Conventions:
 	Local/Private Variables: _camelCasing						eg. _loopOutside, _count
@@ -71,12 +72,6 @@
 ***|
 
 | #warning
-#define DEBUG "/if (${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-| #define DEBUGCAST "/if (${switchDebugCasting} || ${switchDebugCore}) /echo [\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax]"
-| #define DEBUGCLASS "/if (${switchDebugClass} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-| #define DEBUGREZ "/if (${switchDebugRez} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-| #define DEBUGARRAY "/if (${switchDebugArray} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
-| #define DEBUGMODE "/if (${switchDebugMode} || ${switchDebugCore}) /echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax"
 #define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax(\a-t${Macro.RunTime}\ax)"
 #define OUT "/echo ${c-}-\ax"
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
@@ -125,6 +120,7 @@
 #include tc\class.wiz.inc
 #include tc\hud.inc
 #include tc\fixini.inc
+#include tc\custom.inc
 
 
 
@@ -325,6 +321,7 @@ sub initialize_core(string _ini)
 	/if (!${Defined[INIBlurb]}) /declare INIBlurb string outer tc\core.blurb.ini
 	
 	/call set_declares
+	/call set_declares_custom
 	/if (${switchDispBuild}) /call echos initialize 0 0 0 0
 	/call declare_${Me.Class.ShortName}
 	/call check_plugin

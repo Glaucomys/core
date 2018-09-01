@@ -19,6 +19,7 @@ sub core_MNK()
 	CHECKTIE
 
 	:killtarget
+	/call check_fd
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
@@ -50,7 +51,7 @@ sub core_MNK()
 	
 	
 	
-	|***
+|***
  *	DES: 
  *	USE: 
  *	INI: 
@@ -69,16 +70,17 @@ sub disc_MNK()
 		/delay 1
 	}
 
-	/if (${validate_cast[FALSE, alt, "Five Point Palm", ${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, alt, "Two-Finger Wasp Touch", ${Target2Kill}]}) /call core_cast2 "Two-Finger Wasp Touch" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, disc, "Whorl of Fists", ${Me.ID}]}) /call core_cast2 "Whorl of Fists" disc 0 FALSE
-	/if (${validate_cast[FALSE, alt, "Zan Fi's Whistle", ${Target2Kill}]}) /call core_cast2 "Zan Fi's Whistle" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, disc, "Drunken Monkey Style", ${Me.ID}]}) /call core_cast2 "Drunken Monkey Style" disc 0 FALSE
-	/if (${validate_cast[FALSE, disc, "Doomwalker's Synergy", ${Me.ID}]}) /call core_cast2 "Doomwalker's Synergy" disc 0 FALSE
-	/if (${validate_cast[FALSE, disc, "Zalikor's Fang", ${Me.ID}]}) /call core_cast2 "Zalikor's Fang" disc 0 FALSE
-	/if (${validate_cast[FALSE, disc, "Curse of the Thirteen Fingers", ${Me.ID}]}) /call core_cast2 "Curse of the Thirteen Fingers" disc 0 FALSE
-	/if (${validate_cast[FALSE, alt, "Five Point Palm", ${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, disc, "Curse of the Thirteen Fingers", ${Me.ID}]}) /call core_cast2 "Curse of the Thirteen Fingers" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscDoubleAttack}", ${Me.ID}]}) /call core_cast2 "${DiscDoubleAttack}" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAZanFi}", ${Me.ID}]}) /call core_cast2 "${AAZanFi}" alt 0 FALSE
+	/if (${Me.AbilityReady["Intimidation"]}) /doability Intimidation  
+	/if (${validate_cast[FALSE, alt, "${AAWasp}", ${Target2Kill}]}) /call core_cast2 "${AAWasp}" alt ${Target2Kill} FALSE   
+	/if (${validate_cast[FALSE, disc, "${DiscFists}", ${Target2Kill}]}) /call core_cast2 "${DiscFists}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscSynergy}", ${Target2Kill}]}) /call core_cast2 "${DiscSynergy}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscFang}", ${Target2Kill}]}) /call core_cast2 "${DiscFang}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscCurse}", ${Target2Kill}]}) /call core_cast2 "${DiscCurse}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscThrowing}", ${Target2Kill}]}) /call core_cast2 "${DiscThrowing}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscShuriken}", ${Target2Kill}]}) /call core_cast2 "${DiscShuriken}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscStorm}", ${Me.ID}]}) /call core_cast2 "${DiscStorm}" disc 0 FALSE
 
 /return
 
@@ -137,17 +139,35 @@ sub synergy_MNK()
 	CHECKEXIT
 	CHECKINPUTS
 	
+	/if (${validate_cast[FALSE, disc, "Dichotomic Form", ${Me.ID}]}) /call core_cast2 "Dichotomic Form" disc 0 FALSE    
+	/if (${validate_cast[FALSE, disc, "Doomwalker's Alliance", ${Target2Kill}]}) /call core_cast2 "Doomwalker's Alliance" disc ${Target2Kill} FALSE 
 	/call cast_AA_spire
-	
-	| AA Zan Fi's Whistle - DPS increase
-	| aa Focused Destructive Force
-	| AA Silent Strikes
-	| aa five point palm
-	
-	/call use_glyph
-	/call synergy_click_Circle
-	/call click_item_burn
+	/if (${validate_cast[FALSE, disc, "Tiger's Poise", ${Me.ID}]}) /call core_cast2 "Tiger's Poise" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Infusion of Thunder", ${Me.ID}]}) /call core_cast2 "Infusion of Thunder" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Focused Destructive Force", ${Target2Kill}]}) /call core_cast2 "Focused Destructive Force" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "Drunken Monkey Style", ${Me.ID}]}) /call core_cast2 "Drunken Monkey Style" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Silent Strikes", ${Me.ID}]}) /call core_cast2 "Silent Strikes" alt 0 FALSE
+	/if (${validate_cast[FALSE, disc, "Heel of Zagali", ${Target2Kill}]}) {
+		/if (!${flyingkick} || !${eaglestrike}) {
+			/varset kick FALSE
+			/varset flyingkick TRUE
+			/varset roundkick FALSE
+			/varset dragonpunch FALSE
+			/varset eaglestrike TRUE
+			/varset tigerclaw FALSE
+		}
+		/call core_cast2 "Heel of Zagali" disc ${Target2Kill} FALSE
+	}
+	|   /if (${validate_cast[FALSE, disc, "Ironfist Discipline", ${Me.ID}]}) /call core_cast2 "Ironfist Discipline" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "Crane Stance", ${Target2Kill}]}) /call core_cast2 "Crane Stance" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Five Point Palm", ${Target2Kill}]}) /call core_cast2 "Five Point Palm" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Swift Tail's Chant", ${Me.ID}]}) /call core_cast2 "Swift Tail's Chant" alt 0 FALSE    
+
+  /call use_glyph
+  /call synergy_click_Circle
+  /call click_item_burn
 /return
+
 
 
 |***
@@ -194,6 +214,53 @@ sub melee_train_MNK()
 
 
 
+#event MNKfdcheck "You have fallen to the ground"
+sub Event_MNKfdcheck(string line, string _verbage)
+	/if (!${validate_class[FALSE, |MNK]}) /return
+	/if (${Me.State.Equal[FEIGN]} && !${switchAmIDead}) {
+		/if (${Me.AltAbilityReady["Imitate Death"]}) {
+			/if (${validate_cast[FALSE, alt, "Imitate Death", ${Me.ID}]}) /call core_cast2 "Imitate Death" alt 0 FALSE
+			/return
+		}
+		/stand
+		/if (${Me.AbilityReady["Mend"]}) /doability Mend
+		/if (${validate_cast[FALSE, alt, "Refuse Death", ${Me.ID}]}) /call core_cast2 "Refuse Death" disc 0 FALSE
+	}
+/return
+
+
+
+|***
+ *  DES: To FD when hitpoints get low, cancel combat if driving, or stand up if healthy
+ *  USE: 
+ *  INI: 
+ *  NOTE: 
+ ***|   
+sub check_fd()
+	AMIDEAD
+	/if (${Me.Combat} && ${Me.PctHPs} <= ${setFDPct}) {
+		/if (!${Me.State.Equal[FEIGN]} && !${switchAmIDead}) {
+			/if (${Me.AbilityReady[Feign Death]}) {
+				/attack off
+				/doability "Feign Death"
+				/delay 5
+			}
+			/doevents MNKfdcheck
+			/if (!${coreAuto}) {
+				/call set_stop
+				/call clear_combat
+				/return
+			}
+		}
+	}
+
+	/if (${Me.State.Equal[FEIGN]}) {
+		/if (${Me.PctHPs} > ${setFDPct} && ${coreAuto} && ${Me.PctAggro} <= ${setAgroPct}) /stand
+	}
+/return 
+
+
+
 |***
  *	DES: Class controls
  *	USE: /mnk []
@@ -208,8 +275,8 @@ sub Bind_setMNK(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |fdpct|healpoint|spiregroup|spireraid|trainmelee
-
+  /declare _type string	local |ae|agpct|fdpct|healpoint|spiregroup|spireraid|trainmelee
+	
 	| get help
 	/if (${_classType.Equal[info]}) {
 		/for _count 1 to ${_type.Count[|]}
@@ -219,9 +286,9 @@ sub Bind_setMNK(string _classType, string _verbage)
 	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}	
-	
-	| set FD agro PCT
+	}
+
+	| set FD HP PCT
 	/if (${Bool[${_classType.Find[fdpct]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI setFDAgroPct Melee ${_verbage}
@@ -229,7 +296,16 @@ sub Bind_setMNK(string _classType, string _verbage)
 			VOUT /${_bind} fdpct(${cnum}${setFDAgroPct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}	
-	
+		
+	| set FD agro PCT
+	/if (${Bool[${_classType.Find[agpct]}]}) {
+		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI setAgroPct Melee ${_verbage}
+		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} agpct(${cnum}${setAgroPct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		}
+
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
 		/declare _spiretype string local ${_classType.Left[5].Lower}${_classType.Mid[6,1].Upper}${_classType.Right[-6].Lower}
@@ -242,6 +318,10 @@ sub Bind_setMNK(string _classType, string _verbage)
 		/next _count
 		VOUT /${_bind} ${_classType.Lower} [${_listout}]	
 		/return
+
+	| AE or Focused Melee
+	} else /if (${Bool[${_classType.Equal[ae]}]}) {
+		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
 
 	| healpoint
 	} else /if (${Bool[${_classType.Find[healpoint]}]}) {
@@ -264,6 +344,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 	/for _count 1 to ${_type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
 		/if (${_type.Arg[${_count},|].Equal[fdpct]}) /varset _listout ${_listout}(${cnum}${setFDAgroPct}\ax)
+		/if (${${_bind}Type.Arg[${_count},|].Equal[agpct]}) /varset _listout ${_listout}(${cnum}${setAgroPct}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)

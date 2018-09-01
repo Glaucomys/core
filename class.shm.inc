@@ -602,8 +602,10 @@ sub check_cani()
 		/if (${spellCannibalization.Equal[Tribal Bargain Rk. III]} && ${Me.CurrentHPs} > 8949) /varset _cancast TRUE
 
 		/if (${_cancast}) {
-			/if (${validate_cast[FALSE, spell, "${spellCannibalization}", ${Me.ID}]}) /call core_cast2 "${spellCannibalization}" 0 0 check_HP_${Me.Class.ShortName}
-			/return
+			/if (${Me.SpellReady[${spellCannibalization}]}) {
+				/if (${validate_cast[FALSE, spell, "${spellCannibalization}", ${Me.ID}]}) /call core_cast2 "${spellCannibalization}" 0 0 check_HP_${Me.Class.ShortName}
+				/return
+			}
 		}
 
 		| use the aa cani
@@ -639,7 +641,7 @@ sub Bind_setSHM(string _classType, string _verbage)
 	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}	
+	}
 
 	| enable/disable talisman line of spells
 	/if (${Bool[${_classType.Find[talisman]}]}) {

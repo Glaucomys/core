@@ -337,7 +337,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
   /declare _type string	local |fade|forcetwincast|gather|healpoint|line|rod|rods|spiregroup|spireraid
-
+	
 	| get help
 	/if (${_classType.Equal[info]}) {
 		/for _count 1 to ${_type.Count[|]}
@@ -350,11 +350,11 @@ sub Bind_setMAG(string _classType, string _verbage)
 	}
 	
 	| use Modulation Rods
-	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+	/if (${Bool[${_classType.Equal[rod]}]}) {
 		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
 
 	| gather enable/disable /pct
-	/if (${Bool[${_classType.Find[gather]}]}) {
+	} else /if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI GatherPercent Spells ${_verbage} 
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {

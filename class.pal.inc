@@ -678,8 +678,8 @@ sub Bind_setPAL(string _classType, string _verbage)
 	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}	
-
+	}
+	
 	| to Yaulp or not		
 	/if (${Bool[${_classType.Equal[yaulp]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {

@@ -37,7 +37,6 @@ sub core_CLR()
 	}	
 
 	:killtarget
-	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
@@ -200,9 +199,9 @@ sub check_heal_group_CLR()
 	| Regen Heals 
  	/if (${useGroupHoT} && !${hurtCount}) {
 	 	/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1 && !${SafeZone}) {
-	 	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
+	 	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]} && !${Bool[${Me.Song[Ghost of Renewal]}]}) {
 		 		/if (${validate_cast[FALSE, alt, "Celestial Regeneration", ${Me.ID}]}) /call core_cast2 "Celestial Regeneration" alt 0 FALSE
-		  } else /if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]}) {
+		  } else /if (${Me.SpellReady[${healWholeGroupHoT}]} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]} && !${Bool[${Me.Song[Ghost of Renewal]}]}) {
 		    /if (${validate_cast[FALSE, spell, "${healWholeGroupHoT}", ${Me.ID}]}) /call core_cast2 "${healWholeGroupHoT}" 0 0 FALSE
 		  }
 		}
@@ -685,7 +684,7 @@ sub check_pet_heal_CLR()
   
   /for _count 0 to ${Group}
     /if (${Group.Member[${_count}].Pet.ID}) {
-      /if (${Group.Member[${_count}].Pet.Distance} <= ${MobAGro}) {
+      /if (${Group.Member[${_count}].Pet.Distance} <= ${MobAgro}) {
         /if (${Group.Member[${_count}].Pet.PctHPs} < ${hurtPctHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
           /varset hurtID ${Group.Member[${_count}].Pet.ID}
           /varset hurtPctHP ${Group.Member[${_count}].Pet.PctHPs}
@@ -714,7 +713,7 @@ sub check_pet_heal_CLR()
 	
 	| Intervention Heals
 	:interventionheals
-  /if (${Spawn[${hurtID}].PctHPs} <= ${PetPoint) {
+  /if (${Spawn[${hurtID}].PctHPs} <= ${PetPoint}) {
 		/for _count 1 to 4
 			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
 				/if (${validate_cast[FALSE, spell, "${healIntervention${_count}}", ${hurtID}]}) /call core_cast2 "${healIntervention${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
@@ -966,13 +965,12 @@ ${Me.GroupMarkNPC[]} Current group marked NPC (1-3)
 #bind setCLR /clr
 sub Bind_setCLR(string _classType, string _verbage)
 	/if (!${validate_class[TRUE, |CLR]}) /return
-	| /if (${switchMQclearonCLS}) /mqclear
 
 	/declare _sep bool local
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|rampage|regen|rod|spiregroup|spireraid|vp|xtradius|xttime|yaulp
+  /declare _type string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|rampage|regen|rod|spiregroup|spireraid|vp|xtclass|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -984,7 +982,7 @@ sub Bind_setCLR(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	
+
 	| enable/disable lead with aggerssive heals
 	/if (${Bool[${_classType.Equal[aggressive]}]}) {
 		/call writeINI switchHealAggressive Heal ${If[${switchHealAggressive},FALSE,TRUE]}
@@ -1100,6 +1098,32 @@ sub Bind_setCLR(string _classType, string _verbage)
 		VOUT /${_bind} [${_listout}]
 		/return
 
+	| set the XTarget class to heal
+	} else /if (${Bool[${_classType.Equal[xtclass]}]}) {
+		/if (${Bool[${_verbage}]} && ${AllClassList.Find[${_verbage}]}) {
+			| if its there, delete
+			/if (${XHealClass.Find[${_verbage}]}) {
+				/declare _tmpList string local
+				/for _count 1 to ${XHealClass.Count[|]}
+					/if (${${XHealClass.Arg[${_count},|]}.Equal[FALSE]}) /continue
+					/if (${AllClassList.Find[${XHealClass.Arg[${_count},|]}]}) /continue
+					/if (${Bool[${XHealClass.Arg[${_count},|]}]}) /varset _tmpList ${_tmpList}|${XHealClass.Arg[${_count},|]}
+					/echo ${_tmpList}
+				/next _count
+				/call writeINI XHealClass Heal ${If[${Bool[${_tmpList}]},${_tmpList},|FALSE]}
+			| if its not there, add	
+			}	else /if (!${XHealClass.Find[${_verbage}]} && ${AllClassList.Find[${_verbage}]}) {
+				/call writeINI XHealClass Heal ${If[${Bool[${XHealClass}]},${XHealClass}|${_verbage.Upper},|${_verbage.Upper}]}
+			}			
+		}
+		/mqclear
+		/for _count 1 to ${AllClassList.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${AllClassList.Arg[${_count},|].Upper}\ax(${If[${XHealClass.Find[${AllClassList.Arg[${_count},|]}]},${oon},${ooff}]})
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
+		/return	
+
 	| set AA fade use %	
 	} else /if (${Bool[${_classType.Equal[fade]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -1128,6 +1152,7 @@ sub Bind_setCLR(string _classType, string _verbage)
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
+		/if (${_type.Arg[${_count},|].Equal[xtclass]}) /varset _listout ${_listout}(${cnum}->\ax)
 		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
 		/if (${_type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})
@@ -1145,4 +1170,6 @@ sub Bind_setCLR(string _classType, string _verbage)
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+
 

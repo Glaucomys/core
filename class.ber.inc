@@ -14,7 +14,6 @@
  *  NOTE: 
  ***|
 sub core_BER()
-	| DEBUGCLASS Class Start: ${cbug}core_${Me.Class.ShortName}()\ax
 	CHECKINPUTS
 	AMIDEAD
 
@@ -24,7 +23,6 @@ sub core_BER()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		DEBUG combat:${cinfo}${combat.Upper}\ax		
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -62,7 +60,6 @@ sub core_BER()
  *  NOTE: 
  ***|
 sub disc_BER()
-	| DEBUGCLASS ${cbug}disc_BER()\ax
 	AMIDEAD
 
 	CHECKINPUTS
@@ -158,7 +155,6 @@ sub get_agro_BER()
  *  NOTE: 
  ***|
 sub patch_heal_BER()
-	| | DEBUGCLASS ${cbug}patch_heal_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	
@@ -176,7 +172,6 @@ sub patch_heal_BER()
  *  NOTE: 
  ***|
 sub click_DPS_BER()
-	| DEBUGCLASS ${cbug}click_DPS_${Me.Class.ShortName}()\ax 
 	CHECKEXIT
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -194,7 +189,6 @@ sub click_DPS_BER()
  *	NOTE: 
  ***| 
 sub synergy_BER()
-	DEBUG ${cbug}synergy_${Me.Class.ShortName}()\ax
 	CHECKEXIT
 	CHECKINPUTS
 	
@@ -286,7 +280,6 @@ sub synergy_BER()
  ***|
 #bind setBER /ber
 sub Bind_setBER(string _classType, string _verbage)
-	DEBUG ${cbug}Bind_setBER(type:${_classType}, verbage:${_verbage})\ax
 	/if (!${validate_class[TRUE, |BER]}) /return
 
 	/declare _sep bool local
@@ -304,7 +297,7 @@ sub Bind_setBER(string _classType, string _verbage)
 	} else /if (${Bool[${_type.Find[${_classType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
-	}	
+	}
 
 	| AE or Focused Melee
 	/if (${Bool[${_classType.Equal[ae]}]}) {

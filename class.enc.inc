@@ -599,8 +599,7 @@ sub Bind_setENC(string _classType, string _verbage)
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
   /declare _type string	local |charm|fade|gather|healpoint|rod|spiregroup|spireraid
-
-
+	
 	| get help
 	/if (${_classType.Equal[info]}) {
 		/for _count 1 to ${_type.Count[|]}
@@ -611,16 +610,16 @@ sub Bind_setENC(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	
-	| use Modulation Rods
-	} else /if (${Bool[${_classType.Equal[rod]}]}) {
-		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
 
 	| charm pet
 	/if (${Bool[${_classType.Find[charm]}]}) {
 		/call writeINI switchCharmPet Pet ${If[${switchCharmPet},FALSE,TRUE]}  
 		VOUT /${_bind} charm ${sep} ${If[${switchCharmPet},${oenabled},${odisabled}]}
 		/return
+
+	| use Modulation Rods
+	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
 
 	| gather enable/disable /pct
 	} else /if (${Bool[${_classType.Find[gather]}]}) {

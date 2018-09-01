@@ -79,7 +79,7 @@ sub disc_DRU()
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
 
-	/if (${validate_cast[FALSE, alt, "Storm Strike", ${Target2Kill}]}) /call core_cast2"Storm Strike" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Storm Strike", ${Target2Kill}]}) /call core_cast2 "Storm Strike" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, alt, "Season's Wrath", ${Target2Kill}]}) /call core_cast2 "Season's Wrath" alt ${Target2Kill} FALSE
 /return
 
@@ -491,7 +491,7 @@ sub Bind_setDRU(string _classType, string _verbage)
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
   /declare _type string	local |fade|groupheal|healpoint|rampage|rod|spiregroup|spireraid|xtradius|xttime
-
+	
 	| get help
 	/if (${_classType.Equal[info]}) {
 		/for _count 1 to ${_type.Count[|]}
@@ -502,7 +502,7 @@ sub Bind_setDRU(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-	
+
 	| use Modulation Rods
 	} else /if (${Bool[${_classType.Equal[rod]}]}) {
 		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	

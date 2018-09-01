@@ -304,7 +304,7 @@ sub Bind_setSHD(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-
+	
 	| Shield Flash oh shit
 	/if (${Bool[${_classType.Equal[shieldflash]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${_verbage}]}) {
