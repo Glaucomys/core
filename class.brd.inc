@@ -106,7 +106,7 @@ sub disc_BRD()
 
 	/if (${validate_cast[FALSE, alt, "Cacophony", ${Target2Kill}]}) /call core_cast2 "Cacophony" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, alt, "Bladed Song", ${Target2Kill}]}) /call core_cast2 "Bladed Song" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, alt, "Boastful Bellow", ${Target2Kill}]}) /call core_cast2 "Boastful Bellow" alt ${Target2Kill} FALSE	
+	/if (${validate_cast[FALSE, alt, "Boastful Bellow", ${Target2Kill}]} && ${Target.PctHPs} > 3) /call core_cast2 "Boastful Bellow" alt ${Target2Kill} FALSE	
 	
 	| trigger Frenzied kicks AA for bards if target is debuffed from intimidate
 	/if (${switchIntimidKick}) {

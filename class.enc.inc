@@ -15,22 +15,33 @@
  *  NOTE: 
  ***|
 sub core_ENC()
+	| SDEBUG core_ENC()
 	AMIDEAD
 	CHECKINPUTS
 	CHECKTIE
-	
+			
 	/if (${coreAuto} && !${Me.Invis}) {
 		/call check_engaged
 		/if (!${Bool[${Macro.Return}]} && ${switchPcPet} && !${switchCharmPet}) /call check_pet
 	}
 
-
 	:killtarget
 	CHECKREZ
+
+	| validate/fix lists
+	/if (!${timer_validate_lists}) {
+		/if (!${SpawnCount[NPC radius ${MobAgro} playerstate 4]}) {
+			/if (${mobList.Count[|]}) /varset mobList
+			/if (${addList.Count[|]}) /varset addList
+		}
+		/call create_timer timer_validate_lists ${tValidate_Lists}
+	}
+	
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
 		/if (${switchdeBuffMezz}) {
 			/call get_target_ENC
+			/if (${switchOverrideCombat}) /goto :loop
 			/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
 			/if (${Bool[${mobList}]}) /call list_delete mobList ${Target2Kill}
 			/return
@@ -78,12 +89,13 @@ sub core_ENC()
 		}
 
 		/if (${coreAuto}) {	
-			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
-			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			| /if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
 			/if (${switchBuffItem}) /call check_crystals
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
+			/if (!${is_target_dead[${Target2Kill}]}) {
+				/goto :killtarget
+			}
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
@@ -104,7 +116,7 @@ sub check_rune_ENC()
 	/call create_timer timer_check_runes ${tCheck_Runes}
 	AMIDEAD
 	CHECKEXIT
-	UPDATEHUD "BUFF: Rune"
+	UPDATEHUD "BUFF Rune"
 
 	/if (${validate_cast[FALSE, alt, "${runeVeil}", ${Me.ID}]}) /call core_cast2 "${runeVeil}" alt 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${runeEldritch}", ${Me.ID}]}) /call core_cast2 "${runeEldritch}" alt 0 FALSE
@@ -203,31 +215,34 @@ sub check_crystals()
 	CHECKINPUTS
 	CHECKTIE
 
-
-	/if (${Bool[${mannaCrystal}]} && !${FindItem[${mannaCrystal}].ID} && !${Cursor.Name.Equal[${mannaCrystal}]}) {
-		/if (${validate_cast[FALSE, alt, "Azure Mind Crystal", ${Me.ID}]}) /call core_cast2 "Azure Mind Crystal" alt 0 check_for_adds
-		/delay 20s !${Me.Casting.ID}
-		/delay 2s ${Cursor.Name.Equal[${mannaCrystal}]}
-		/call sort_cursor TRUE
-	}
-
-	/if (${Bool[${healCrystal}]} && !${FindItem[${healCrystal}].ID} && !${Cursor.Name.Equal[${healCrystal}]}) {
-		/if (${validate_cast[FALSE, alt, "${healCrystal}", ${Me.ID}]}) /call core_cast2 "${healCrystal}" alt 0 check_for_adds
-		/delay 20s !${Me.Casting.ID}
-		/delay 2s ${Cursor.Name.Equal[${healCrystal}]}
-		/call sort_cursor TRUE
-	}
-
-	/if (${Bool[${mannaCrystal}]}) {
-		/if (${Me.PctMana} < 70*.${tmpHealOverride} && ${FindItem[${mannaCrystal}].ID} && !${FindItem[${mannaCrystal}].Timer}) {
-			/if (${validate_cast[FALSE, item, "${mannaCrystal}", ${Me.ID}]}) /call core_cast2 "${mannaCrystal}" item 0 FALSE
+	/if (!${FindItem[${mannaCrystal}].ID}) {
+		/if (${Bool[${mannaCrystal}]} && !${Cursor.Name.Equal[${mannaCrystal}]}) {
+			/if (${validate_cast[FALSE, alt, "${mannaCrystal}", ${Me.ID}]}) /call core_cast2 "${mannaCrystal}" alt 0 check_for_adds
+			/call sort_cursor TRUE
 		}
 	}
 
-	/call cast_AA_spire
-	
+	/if (!${FindItem[${healCrystal}].ID}) {
+		/if (${Bool[${healCrystal}]} && !${Cursor.Name.Equal[${healCrystal}]}) {
+			/if (${validate_cast[FALSE, alt, "${healCrystal}", ${Me.ID}]}) /call core_cast2 "${healCrystal}" alt 0 check_for_adds
+			/call sort_cursor TRUE
+		}
+	}
+
+
 	/if (${switchGather}) { 
-		/if (${validate_cast[FALSE, alt, "Gather Mana", ${Me.ID}]} && ${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) /call core_cast2 "Gather Mana" alt 0 FALSE
+		
+		| AA manna crystal
+		/if (${Bool[${mannaCrystal}]}) {
+			/if (${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride} && ${Me.ItemReady[${mannaCrystal}]}) {
+				/if (${validate_cast[FALSE, alt , "${mannaCrystal}", ${Me.ID}]}) /call core_cast2 "${mannaCrystal}" item 0 FALSE
+			}
+		}	
+
+		| aa Gather Mana 
+		/if (${Me.PctMana} < ${GatherPercent}*.${tmpHealOverride}) {
+			/if (${validate_cast[FALSE, alt, "Gather Mana", ${Me.ID}]}) /call core_cast2 "Gather Mana" alt 0 FALSE
+		}
 	}
 
 /return
@@ -312,6 +327,7 @@ sub mez_adds()
 		/varset _tmpID ${addList.Arg[1,|]}
 		/if (${_tmpID} == ${Target2Kill}) {
 			/call list_delete addList ${_tmpID}
+			/call list_delete mobList ${_tmpID}
 			/goto :loopmezzadds
 		}
 		/if (!${Spawn[${_tmpID}].Type.Equal[NPC]}) {
@@ -319,7 +335,7 @@ sub mez_adds()
 		} else {
 			/squelch /target id ${_tmpID}
 			/delay 5 ${Target.ID} == ${_tmpID}
-			/delay 2.25s ${Me.SpellReady[${spellMez}]}
+			| /delay 2.25s ${Me.SpellReady[${spellMez}]}
 			/if (${SpawnCount[npc los radius 30 zradius 15 targetable]} > 1 ) {
 				VOUT ${sepO} ${cinfo}${SpawnCount[npc radius 30 zradius 15]}\ax ${sepC} ${If[${SpawnCount[npc los radius 30 zradius 15 targetable]} == 1,Target,Targets]} in point blank range.
 
@@ -329,11 +345,11 @@ sub mez_adds()
 				
 				/if (${Me.Gem[${spellpbaeMez}]} && ${Me.SpellReady[${spellpbaeMez}]}) {
 					/if (${Me.Casting.Name.NotEqual[${spellpbaeMez}]}) /call interrupt
-					/if (${validate_cast[FALSE, spell, "${spellpbaeMez}", ${Me.ID}]}) /call core_cast2 "${spellpbaeMez}" 0 0 check_for_adds
+					/if (${validate_cast[FALSE, spell, "${spellpbaeMez}", ${Me.ID}]}) /call core_cast2 "${spellpbaeMez}" 0 0 FALSE
 				}
 				/if (${Me.Gem[${spellStun}]} && ${Me.SpellReady[${spellStun}]}) {
 					/if (${Me.Casting.Name.NotEqual[${spellStun}]}) /call interrupt
-					/if (${validate_cast[FALSE, spell, "${spellStun}", ${Me.ID}]}) /call core_cast2 "${spellStun}" 0 0 check_for_adds
+					/if (${validate_cast[FALSE, spell, "${spellStun}", ${Me.ID}]}) /call core_cast2 "${spellStun}" 0 0 FALSE
 				}
 			}
 			/if (${Spawn[${_tmpID}].NearestSpawn[3,npc radius 30].ID} && ${Spawn[${_tmpID}].Distance3D} <= 200 && ${Spawn[${_tmpID}].Distance3D} >= ${MobAgro}*.5) {
@@ -404,7 +420,7 @@ sub cast_mez(int _tmpID)
 			/varcalc _resistCount ${_resistCount}+1
 			/if (${_resistCount}==2 && !${timer_tash_${_tmpID}}) /call cast_tash ${_tmpID}
 		}
-	| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
+		| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
 
 		/goto :loopmez
 	| }
@@ -598,8 +614,9 @@ sub Bind_setENC(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |charm|fade|gather|healpoint|rod|spiregroup|spireraid
-	
+  /declare _type string	local |charm|gather|healpoint|spiregroup|spireraid
+
+
 	| get help
 	/if (${_classType.Equal[info]}) {
 		/for _count 1 to ${_type.Count[|]}
@@ -610,41 +627,23 @@ sub Bind_setENC(string _classType, string _verbage)
 		VOUT /${_bind} ${cinfo}${_classType.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_classType.Lower}]}
 		/return
 	}
-
+	
 	| charm pet
 	/if (${Bool[${_classType.Find[charm]}]}) {
 		/call writeINI switchCharmPet Pet ${If[${switchCharmPet},FALSE,TRUE]}  
 		VOUT /${_bind} charm ${sep} ${If[${switchCharmPet},${oenabled},${odisabled}]}
 		/return
 
-	| use Modulation Rods
-	} else /if (${Bool[${_classType.Equal[rod]}]}) {
-		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
-
 	| gather enable/disable /pct
 	} else /if (${Bool[${_classType.Find[gather]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI GatherPercent Spells ${_verbage} 
-			/call echos number "Gather Mana %" ${_verbage} 0 0
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			VOUT /${_bind} gather [${cinfo}${GatherPercent}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}	else /if (!${Bool[${_verbage}]}) {
 			/call writeINI switchGather Spells ${If[${switchGather},FALSE,TRUE]}  
-			/call echos switch "Gather Mana(${cnum}${GatherPercent}\ax)" switchGather 0 0
-			/return
 		}			
-
-	| set AA fade use %	
-	} else /if (${Bool[${_classType.Equal[fade]}]}) {
-		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			/call writeINI useAAFadePct Buffs ${_verbage}
-		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
-			VOUT /${_bind} fade(${cnum}${useAAFadePct}\ax) allowable range ${sep} ${cinfo}1 - 99\ax
-			/return
-		} else {
-		 	/call writeINI switchAAFade Buffs ${If[${switchAAFade},FALSE,TRUE]}  
-		}
 
 	| spire control
 	} else /if (${Bool[${_classType.Equal[spiregroup]}]} || ${Bool[${_classType.Equal[spireraid]}]}) {
@@ -675,12 +674,11 @@ sub Bind_setENC(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
-		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
-
+		| /if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
+		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${If[${switchGather},${cnum}${GatherPercent}\ax,${cbad}${GatherPercent}\ax]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 
 /return
+

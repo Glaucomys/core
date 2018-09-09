@@ -22,3 +22,4 @@ sub set_declares_custom()
 
 
 /return
+

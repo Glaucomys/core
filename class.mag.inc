@@ -1,4 +1,4 @@
-3|***
+|***
  *	class.mag.inc
  *	Core Magician Include
  *
@@ -470,7 +470,7 @@ sub Bind_setMAG(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[forcetwincast]}) /varset _listout ${_listout}(${If[${switchForceTwincast},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
-
+		/if (${_type.Arg[${_count},|].Equal[line]}) /varset _listout ${_listout}(${cnum}->\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

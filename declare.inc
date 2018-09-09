@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180831.00
+	/call setDeclare coreBuild											string	outer 20180908.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -542,7 +542,7 @@ sub set_declares()
 
 	| overrides
   | /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|melee|name|range|safelist|safezone|trainspell"
-  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|name|safelist|safezone|trainspell"
+  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combat|loot|los|name|safelist|safezone|trainspell"
 	/call setDeclare switchOverride									bool		outer FALSE
 	/call setDeclare switchOverrideStop							bool		outer FALSE
   /call setINIVar switchOverrideLos								bool		Override FALSE
@@ -555,8 +555,9 @@ sub set_declares()
   /call setINIVar switchOverrideLoot							bool		Override FALSE
   /call setINIVar switchOverrideSafelist					bool		Override FALSE
   /call setDeclare switchOverrideClasscheck				bool		outer FALSE
-	/call setINIVar switchOverrideCombatheal				string	Override FALSE
+	| /call setINIVar switchOverrideCombatheal				string	Override FALSE
   /call setINIVar switchOverrideTrainspell				bool		Override FALSE
+	/call setINIVar switchOverrideCombat				string	Override FALSE
 
 
 	| General class combat skills
@@ -1136,6 +1137,10 @@ sub declare_WIZ()
  *  NOTE: 
  ***|
 sub declare_ENC()
+	/call setTimer tValidate_Lists									string	Timer 15s timer_validate_lists
+	/call setDeclare mobList												string	outer
+	/call setDeclare addList 												string 	outer
+
 	/call setDeclare ENCspire1											string	outer "Fundament: First Spire of Enchantment"
 	/call setDeclare ENCspire2											string	outer "Fundament: Second Spire of Enchantment"
 	/call setDeclare ENCspire3											string	outer "Fundament: Third Spire of Enchantment"
@@ -1152,8 +1157,6 @@ sub declare_ENC()
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
 	
-	/call setDeclare mobList												string	outer
-	/call setDeclare addList 												string 	outer
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer "|5|8|12|17|18|42|44|80|106|129|144"
 	
 	/call setINIVar switchCharmPet									bool		Pet FALSE
@@ -2096,6 +2099,8 @@ sub declare_BST()
 	/call setINIVar selfParagonPct 									int			Spells 80
 	/call setINIVar switchConsumeSpirit	 						bool		Spells TRUE
 	/call setINIVar ConsumeSpiritPct								int			Spells 80
+	/call setINIVar switchGroupParagon		 					bool		Spells TRUE
+	/call setINIVar groupParagonPct 								int			Spells 50
                                           		
 	/call setINIVar spellSlow		 										string	Spells "Sha's Reprisal"		
 	/call setINIVar spellCripple 										string 	Spells "Incapacitate"
@@ -2496,7 +2501,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	* DES: Magician AA Call of Heroe
 	* USE: /g coh
 	***|
-	/if (${_cmd.Equal[coh]} && ${Select[${Me.Class.ShortName},MAG]}) {
+	/if (${_cmd.Equal[coh]} && ${Select[${Me.Class.ShortName},MAG]}) 8888..{
 		CHECKSAFELIST
 	  /delay 15s ${Me.AltAbilityReady[Call of the Hero]}
 	  /if (${Me.Invis}) /makemevisible
@@ -3183,9 +3188,9 @@ sub Bind_deBuff(string _deBuffType, string _verbage)
 sub Bind_heal(string _healType, string _verbage)
 	
 	/declare _count		int local
-	/declare _bind string local heal
+	/declare _bind 		string local heal
 	/declare _listout string local
-	/declare _sep bool local
+	/declare _sep 		bool local
 
 	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
@@ -3233,7 +3238,7 @@ sub Bind_heal(string _healType, string _verbage)
 			/call writeINI switchHealXtarget Heal FALSE 
 			/return
 		}
-		
+
 	| heal override
 	} else /if (${_healType.Equal[override]}) {
 		/if (${Range.Between[0,99:${Int[${_verbage}]}]}) {

@@ -78,10 +78,10 @@ sub disc_BST()
 			
 	| do we want the mobs attention?
 	/if (${switchAgro}) {
-		/if (${validate_cast[FALSE, alt, "Roaring Strike", ${Target2Kill}]}) /call core_cast2 "Roaring Strike" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Roaring Strike", ${Target2Kill}]} && ${Me.PctAggro} < 80) /call core_cast2 "Roaring Strike" alt ${Target2Kill} FALSE
 	} else /if (!${switchAgro}) {
-		/if (${validate_cast[FALSE, alt, "Roar of Thunder", ${Target2Kill}]}) /call core_cast2 "Roar of Thunder" alt ${Target2Kill} FALSE
-		/if (${validate_cast[FALSE, alt, "Chameleon Strike", ${Target2Kill}]}) /call core_cast2 "Chameleon Strike" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Roar of Thunder", ${Target2Kill}]} && ${Me.PctAggro} > 50) /call core_cast2 "Roar of Thunder" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Chameleon Strike", ${Target2Kill}]} && ${Me.PctAggro} > 30) /call core_cast2 "Chameleon Strike" alt ${Target2Kill} FALSE
 	}
 
 	/if (${Me.Pet.ID}) {
@@ -127,9 +127,42 @@ sub check_mana_BST()
 	| self paragon
 	/if (${switchSelfParagon}) {
 		/if (${Me.PctMana} < ${selfParagonPct}*.${tmpHealOverride}) {
-			/if (!${Me.Song[Focused Paragon].ID}) {
+			/if (!${Me.Song[Focused Paragon].ID} && !${Me.Song[Paragon of Spirits].ID}) {
 				/if (${validate_cast[FALSE, alt, "Focused Paragon of Spirits", ${Me.ID}]}) /call core_cast2 "Focused Paragon of Spirits" alt ${Me.ID} FALSE
 			}
+		}
+	}
+	
+	| group paragon
+	/if (${switchGroupParagon} && !${Raid.Members} && ${Me.AltAbilityReady[Paragon of Spirit]}) {
+		/declare _count int local 0
+		/if (${Group}) {
+			/declare _hurtCount int local 0
+			/for _count 0 to ${Group}
+				/if (${Group.Member[${_count}].Type.NotEqual[CORPSE]} && ${Group.Member[${_count}].ID}) /continue
+				/if (${Group.Member[${_count}].Distance} < 100) /contine
+				/if (${Group.Member[${_count}].DisplayName.Equal[${Me.DisplayName}]}) /continue
+
+				| Manna				
+				/if (${CastList.Find[${Group.Member[${_count}].Class.ShortName}]}) {
+					/if (${Group.Member[${_count}].PctMana} < ${groupParagonPct}*.${tmpHealOverride}) {
+						/varcalc _hurtCount ${_hurtCount}+1
+				 	}
+				}
+			 	
+			 	| Endurance
+				/if (${MeleeList.Find[${Group.Member[${_count}].Class.ShortName}]}) {
+					/if (${Group.Member[${_count}].PctEndurance} < ${groupParagonPct}*.${tmpHealOverride}) {
+						/varcalc _hurtCount ${_hurtCount}+1
+				 	}
+				}			 	
+			 	
+			/next _count
+			
+			/if (${_hurtCount} > 1) {
+				ECHOCHANNEL Paragon of Spirits
+				/if (${validate_cast[FALSE, alt, "Paragon of Spirit", ${Me.ID}]}) /call core_cast2 "Paragon of Spirit" alt 0 FALSE
+			}	
 		}
 	}
 	
@@ -289,7 +322,7 @@ sub Bind_setBST(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |consume|fade|healpoint|paragon|rod|spiregroup|spireraid
+  /declare _type string	local |consume|fade|groupparagon|healpoint|rod|selfparagon|spiregroup|spireraid
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -341,7 +374,7 @@ sub Bind_setBST(string _classType, string _verbage)
 		}
 		
 	| focused paragon	AA
-	} else /if (${Bool[${_classType.Equal[paragon]}]}) {
+	} else /if (${Bool[${_classType.Equal[selfparagon]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI selfParagonPct Spells ${_verbage}
 		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -351,6 +384,18 @@ sub Bind_setBST(string _classType, string _verbage)
 		 	/call writeINI switchSelfParagon Spells ${If[${switchSelfParagon},FALSE,TRUE]}  
 		}
 		
+	| group paragon	AA
+	} else /if (${Bool[${_classType.Equal[groupparagon]}]}) {
+		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			/call writeINI groupParagonPct Spells ${_verbage}
+		} else /if (${Bool[${_verbage}]} && !${Range.Between[1,99:${Int[${_verbage}]}]}) {
+			VOUT /${_bind} paragon [${cinfo}${groupParagonPct}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
+			/return
+		} else {
+		 	/call writeINI switchGroupParagon Spells ${If[${switchGroupParagon},FALSE,TRUE]}  
+		}
+
+
 	| consume spirit AA
 	} else /if (${Bool[${_classType.Equal[consume]}]}) {
 		/if (${Bool[${_verbage}]} && ${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -371,7 +416,8 @@ sub Bind_setBST(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[fastheal]}) /varset _listout ${_listout}(${cnum}${FastHealPCT}\ax)
-		/if (${_type.Arg[${_count},|].Equal[paragon]}) /varset _listout ${_listout}(${If[${switchSelfParagon},${cnum}${selfParagonPct}\ax,${cbad}${selfParagonPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[selfparagon]}) /varset _listout ${_listout}(${If[${switchSelfParagon},${cnum}${selfParagonPct}\ax,${cbad}${selfParagonPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[groupparagon]}) /varset _listout ${_listout}(${If[${switchGroupParagon},${cnum}${groupParagonPct}\ax,${cbad}${groupParagonPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[consume]}) /varset _listout ${_listout}(${If[${switchConsumeSpirit},${cnum}${ConsumeSpiritPct}\ax,${cbad}${ConsumeSpiritPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})

@@ -82,6 +82,8 @@ sub core_SHM()
 sub disc_SHM()
 	CHECKEXIT
 	CHECKINPUTS
+	/if (${switchTalisman}) /call cast_talisman
+	
 /return
 
 
@@ -543,7 +545,6 @@ sub synergy_SHM()
  *  NOTE: keeps talisman buff line up
  ***|
 sub cast_talisman()
-	/if (!${switchTalisman}) /return	
 	/if (${Me.Buff[${spellTalisman}].ID}) /return
 	AMIDEAD
 	CHECKEXIT

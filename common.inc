@@ -1371,31 +1371,33 @@ sub set_xtarget()
 		/return
 	}
 	
-
-	/call create_timer timer_set_xtarget ${tXHeal}
-
 	VOUT Sorting XTargets ${sep} ${cinfo}${tXHeal}\ax
 	/declare _x 				int 		local
 	/declare _b 				int 		local
 	/declare _count 		int			local 0
-	
+
 	| reset extended target slots	
-	/for _x 1 to 13
-		/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} == ${_x} && ${toonControlProtect}) /continue
-		/xtarget set ${_x} Autohater
-	/next _x
+	/for _count 1 to 13
+		/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} == ${_count} && ${toonControlProtect}) /continue
+		/xtarget set ${_count} Autohater
+	/next _count
+	
+	/call create_timer timer_set_xtarget ${tXHeal}
+		
+	| bail if we are not healing the slackers and xtarget is clear
+	/if (!${switchHealXtarget}) /return
 
 	| set protection for NPCs
 	/if (${Bool[${ProtectNPCList}]}) {
-		/for _x 1 to ${ProtectNPCList.Count[|]}
-			/if (${_b} > 13 || !${Bool[${Spawn[${ProtectNPCList.Arg[${_x},|]}]}]}) {
-			} else /if (${Bool[${Me.XTarget[${ProtectNPCList.Arg[${_x},|]}]}]}) {
+		/for _count 1 to ${ProtectNPCList.Count[|]}
+			/if (${_b} > 13 || !${Bool[${Spawn[${ProtectNPCList.Arg[${_count},|]}]}]}) {
+			} else /if (${Bool[${Me.XTarget[${ProtectNPCList.Arg[${_count},|]}]}]}) {
 				/varcalc _b ${_b}+1
-			} else /if (${Bool[${Spawn[${ProtectNPCList.Arg[${_x},|]}]}]}) {
+			} else /if (${Bool[${Spawn[${ProtectNPCList.Arg[${_count},|]}]}]}) {
 				/varcalc _b ${_b}+1
-				/xtarget set ${_b} ${Spawn[${ProtectNPCList.Arg[${_x},|]}].Name}
+				/xtarget set ${_b} ${Spawn[${ProtectNPCList.Arg[${_count},|]}].Name}
 			}
-		/next _x
+		/next _count
 	}	
 
 	| protect PCs when outside group
@@ -1526,7 +1528,7 @@ sub get_assist_target()
 	/if (${useForceAssist} && ${Target2Kill} == ${Me.ID}) /return
 	
 	| if no MA present. move along..	
-	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG} && !${useForceAssist}) {
+	/if (!${Bool[${Spawn[pc ${MA1}].ID}]} && !${Bool[${Spawn[pc ${MA2}].ID}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG} && !${useForceAssist}) {
 		/delay 1
 		/return
 	} 	
@@ -1540,8 +1542,12 @@ sub get_assist_target()
 	/if (${useForceAssist}) /goto :skippingtoMAforcedtarget
 
 	| no, you still cannot assist yourself. get over it
-	/if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call validate_assist NOECHO X
-	/if (${Spawn[pc ${Raid.MainAssist}].ID} == ${Me.ID}) /call validate_assist NOECHO X
+	| /if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call validate_assist NOECHO X
+	| /if (${Spawn[pc ${Raid.MainAssist}].ID} == ${Me.ID}) /call validate_assist NOECHO X
+	/if (${Group.MainAssist.Spawn.ID} == ${Me.ID}) /call validate_assist NOECHO X
+	/if (${Spawn[=${Raid.MainAssist} pc].ID} == ${Me.ID}) /call validate_assist NOECHO X	
+	
+	
 
 	| tar acquisition when using smart assist. set XTarget positions.
 	/if (${useSmartAssistG} || ${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) {
@@ -1662,7 +1668,7 @@ sub get_assist_target()
 	}
 /return
 
-
+/target ${Spawn[pc risla]}
 
 |***
  *	DES: Make sure that what ever we are targeting is something we want to kill.
@@ -3161,7 +3167,7 @@ sub check_free_ingame_cash()
 *	DES: will click items and autoinventory the result on a timer.
 *	USE: /call odds_and_ends
 *	INI: [Odds]
-*  NOTE: good for poisons, foods, whatevers.
+*  NOTE: good for poisons, whatevers.
 ***|
 sub odds_and_ends()
 	CHECKEXIT
@@ -3172,7 +3178,7 @@ sub odds_and_ends()
 		AMIDEAD
 		CLEARCURSOR TRUE
 		CHECKINPUTS
-		/if (${validate_cast[FALSE, item, "${clickOddItem${_count}}]}", ${Me.ID}) /call core_cast2 "${clickOddItem${_count}}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${clickOddItem${_count}}", ${Me.ID}]}) /call core_cast2 "${clickOddItem${_count}}" item 0 FALSE
 	/next _count
 	/call sort_cursor TRUE
 /return
@@ -3228,12 +3234,6 @@ sub check_exit()
 	/if (${Me.Ducking}) /return TRUE
 	/if (${Me.Stunned}) /return TRUE
 	/if (${Me.Charmed.ID}) /return TRUE
-	
-	| check for ${noCastWith} buffs on self and target
-	| /declare _count int local 0
-	| /for _count 1 to ${noCastWith.Count[|]}
-	| 	/if (${Bool[${Me.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Target.Buff[${noCastWith.Arg[${_count},|]}]}]} || ${Bool[${Me.Song[${noCastWith.Arg[${_count},|]}]}]}) /return TRUE
-	| /next _count	
 	
 	| check no cast list and mezz?
 	/if (${coreAuto} && ${Target.ID} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) /return TRUE
@@ -3940,9 +3940,11 @@ sub list_add(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_delete(string _listName, string _tmpID)
+	| SDEBUG list_delete ${_listName} ${_tmpID}
 	/if (${Bool[${${_listName}.Equal[NULL]}]}) /return
-	/if (!${Bool[${_tmpID}]} || ${_tmpID} == 0) /return
-	/if (!${Bool[${${_listName}.Find[${_tmpID}]}]}) /return
+	/if (!${Bool[${_tmpID}]}) /return
+	/declare _count int local 0
+	/declare _tmpList string local
 
 	/varset _tmpID |${_tmpID}
 	/declare _a int local
@@ -3954,6 +3956,16 @@ sub list_delete(string _listName, string _tmpID)
 	/varcalc _b ${${_listName}.Length}-${_tmpID.Length}-${_a}
 	/if (${_a} > 0) /varset _strLeft ${${_listName}.Left[${_a}]}
 	/if (${_a} > 0) /varset _strRight ${If[${Select[${_b},0,NULL,FALSE,""]},,${${_listName}.Right[${_b}]}]} 
+	
+	|**
+	/for _count 1 to ${${_listName}.Count[|]}
+		/if (${${${_listName}.Arg[${_count},|]}.Equal[FALSE]}) /continue
+		/if (${_tmpID.Find[${${_listName}.Arg[${_count},|]}]}) /continue
+		/varset ${_listName} ${_tmpList}|${${_listName}.Arg[${_count},|]}
+	/next _count	
+	**|
+	
+	| SDEBUG ${_listName}: ${${_listName}}
 	/varset ${_listName} ${_strLeft}${_strRight}
 /return
 
@@ -3966,18 +3978,30 @@ sub list_delete(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_update(string _listName, string _tmpID)
-	/declare _found bool local TRUE 
+| SDEBUG list_update:${_listName}  ${_tmpID}
+	/declare _remove bool local FALSE 
 
-	/if (${${_listName}.Find[|]}) {
-		/if (!${Spawn[${_tmpID}].Type.Equal[NPC]} && !${Spawn[${_tmpID}].Master.Type.Equal[NPC]}) /varset _found FALSE
-		/if (${Spawn[${_tmpID}].Distance} > ${MobAgro}) /varset _found FALSE
-		/if (${Spawn[${_tmpID}].Type.Equal[Corpse]}) /varset _found FALSE
-		/if (!${Bool[${Spawn[${_tmpID}].ID}]}) /varset _found FALSE
+	/if (${${_listName}.Find[${_tmpID}]}) {
 		
-		/if (!${_found}) {
-			/call list_delete mobList ${_tmpID}
-			/call list_delete addList ${_tmpID}
+		| not an NPC or its a pet
+		/if (!${Spawn[${_tmpID}].Type.Equal[NPC]} && !${Spawn[${_tmpID}].Master.Type.Equal[NPC]}) /varset _remove TRUE
+		
+		| no spawn in zone
+		/if (!${Spawn[${_tmpID}].ID}) /varset _remove TRUE
+
+		| mob out of range
+		/if (${Spawn[${_tmpID}].Distance} > ${MobAgro}) /varset _remove TRUE
+		
+		| NPC corpse
+		/if (${Spawn[npccorpse ${_tmpID}].ID}) /varset _remove TRUE
+		/if (${Spawn[${_tmpID}].Type.Equal[Corpse]}) /varset _remove TRUE
+
+		
+		/if (${_remove}) {
+			/call list_delete ${_listName} ${_tmpID}
 		}
+		
+		
 	}
 /return
 
@@ -4006,7 +4030,7 @@ sub check_for_adds()
 				/if (${_tmpID} != ${Me.XTarget[1].ID}) /call list_add addList ${_tmpID}
 				/call list_add mobList ${_tmpID}
 				/if (${Macro.Return.Equal[1]}) {
-					VOUT ${owarning} ADD ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax] ${sep} [${ctar}${_tmpID}\ax]
+					| VOUT ${owarning} ADD ${sep} [${ctar}${Spawn[${_tmpID}].DisplayName}\ax] ${sep} [${ctar}${_tmpID}\ax]
 					/if (${Me.Casting.Name.NotEqual[${spellMez}]} && ${Me.Casting.ID}) {
 						/if (${validate_plugin[FALSE, |mq2cast]}) /call Interrupt
 						/stopcast
@@ -4016,7 +4040,9 @@ sub check_for_adds()
 						/call create_timer timer_mez_${_tmpID} 1.5m
 					}          	
 				}
-			}		
+			} else /if (${timer_mez_${_tmpID}}) {
+				/call list_delete mobList ${_tmpID}
+			}
 		}
 		/varcalc _numMobs ${_numMobs}+1
 		/goto :loopnextmob
@@ -4956,8 +4982,30 @@ sub prep_combat()
 	/declare _gokillstuff bool local FALSE
 	CLEARCURSOR
 	CHECKINPUTS
+	
+	
+	/if (${coreAuto} && ${switchOverrideCombat}) {
+		
+		| mez override check
+		/if (${Select[${Me.Class.ShortName},ENC,BRD,NEC]} && ${switchdeBuffMezz}) {
+			/if (${SpawnCount[npc radius ${MobAgro} playerstate 4]}) {
+				/varset combat COMBAT
+				/return TRUE
+			}
+		}		
 
-	| healers get a pass... kind of
+		| healer override check
+		/if (${switchHealGroup} || ${switchHealXtarget}) {
+			/call is_target_valid ${Target2Kill}
+			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
+			/varset combat COMBAT
+			/return TRUE
+		}
+	
+	}
+	
+	
+	|** healers get a pass... kind of
 	/if (${coreAuto} && ${switchOverrideCombatheal}) {
 		| /if ((${switchHealGroup} || ${switchHealXtarget}) && ${SpawnCount[npc radius ${MobAgro} playerstate 4]}) {
 		/if (${switchHealGroup} || ${switchHealXtarget}) {
@@ -4967,6 +5015,7 @@ sub prep_combat()
 			/return TRUE
 		}
 	}
+	**|
 	
 	| automatic mode
 	/if (${coreAuto}) {
@@ -5125,7 +5174,7 @@ sub click_summon_food()
 	CHECKEXIT
 	CHECKINPUTS
 	
-	/if (${FindItemCount[=${clickFoodItem}]} < ${clickFoodCount}-) {
+	/if (${FindItemCount[=${clickFoodItem}]} < ${clickFoodCount}) {
 		/if (${validate_cast[FALSE, item, "${clickFoodDispenser}", ${Me.ID}]}) /call core_cast2 "${clickFoodDispenser}" item ${Me.ID} FALSE
 		CLEARCURSOR TRUE
 	}
@@ -5958,7 +6007,6 @@ sub validate_class(bool _error, string _class)
  *	NOTE: cycle all plugins. return FALSE if any passed are not loaded
  ***|
 sub validate_plugin(bool _error, string _plugin)
-	
 	/if (!${Bool[${_plugin}]}) VOUT ${owarning} ${sep} validate_plugin failure.
 	/declare _plugcount int local 0	
 	/declare _count int local 0

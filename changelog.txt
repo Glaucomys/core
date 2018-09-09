@@ -17,6 +17,36 @@
 
 
 
+20180908.00
+- odds_and_ends()
+  -- fixed a concantination error
+- get_target()
+  -- adjusted the GroupAssist ID/self ID for assist conflicts.
+- changed the |MON to |MNK for stamina recover in the main loop
+  -- will add a random |MON somewhere else in the code to compensate.. cannot have monks working correctly!
+- summoned food
+  -- removed a "-" typo
+- /override [combatheal] has been removed
+- /override [combat]
+  -- allows the prep_combat() routine to automatically return TRUE even when it could be FALSE.
+  -- made it generic so i can add other classes as needed and not just the cleric
+  -- YOU WILL NEED TO FIX YOUR CLERICS IF YOU USE THIS 
+- class.ber.inc
+  -- added an ammo checker in the main routine. should keep better track of the axe army now
+- class.bst.inc
+  -- changed /bst [paragon] to /bst [selfparagon] 
+  -- /bst [groupparagon] [##| (on/off)] enables use of group paragon (NON raids) at whataver # you need. if the bst has focused, it will not use it
+     works off of mana or endurance
+-- class.shd.inc
+  -- Projection of Doom AA added to agro routines
+  -- admustments to AE hate routine
+- class.brd.inc
+  -- update to boastful bellows AA to check for HP%
+- class.enc.inc
+  -- some adjustments to HP/Manna gem summoning
+  -- use of mana gem is tied to gather % now
+   
+
 20180831.00
 - Custom Work
   -- as a request, I've added a custom.inc file to Core's initialization

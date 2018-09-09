@@ -315,9 +315,14 @@ sub fix_ini_current()
 	
 	| toon INI non specific class --------------------------------------------------------------------------------------
 
+
+		/ini "${INIClass}" "Common" "verbose" NULL	
+			| /call setINIVar switchOverrideCombatheal				string	Override FALSE
+
+		/ini "${INIClass}" "Override" "switchOverrideCombatheal" NULL	
+
+
 		| 20180831.00
-		
-		
 		/ini "${INIClass}" "debug" NULL NULL
 		
 		| 20180718.00 -- removal of banestrike

@@ -34,7 +34,7 @@ sub core_NEC()
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-		/if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
+		| /if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
 	
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}

@@ -29,9 +29,7 @@ sub core_SHD()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
-
 		/if (${switchHealCure}) /call cast_cure
-
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
@@ -49,7 +47,6 @@ sub core_SHD()
 			/if (${switchSkin} && !${timer_check_Skin}) /call check_skin	
 			/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
 		}
-
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
@@ -101,7 +98,7 @@ sub disc_SHD()
 
 	| tap 'dat ass..
 	/if (${switchHealSelf}) {
-		/if (${validate_cast[FALSE, disc, "${DiscRancor}", ${Me.ID}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${DiscRancor}" disc ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, disc, "${DiscRancor}", ${Target2Kill}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${DiscRancor}" disc ${Target2Kill} FALSE
 		/if (${validate_cast[FALSE, alt, "Leech Touch", ${Target2Kill}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Leech Touch" alt ${Target2Kill} FALSE
 		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} >= ${defCount}) {
 			/if (${validate_cast[FALSE, disc, "${DiscLeech}", ${Me.ID}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${DiscLeech}" disc 0 FALSE
@@ -141,14 +138,20 @@ sub get_agro_SHD()
 	
 	/call cast_challenge ${Target2Kill}
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
+	
+	| AA pet hate
+	/if (${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+		/if (${validate_cast[FALSE, alt, "Projection of Doom", ${Target2Kill}]}) /call core_cast2 "Projection of Doom" alt ${Target2Kill} FALSE
+	}	
+	
 
 	| single hate
 	/if ((!${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
 		/if (${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-			/call core_cast "${Hate1}" 0 ${Target2Kill} FALSE
+			/if (${validate_cast[FALSE, spell, "${Hate1}", ${Target2Kill}]}) /call core_cast2 "${Hate1}" 0 ${Target2Kill} FALSE
 		}
 		/if (${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-			/call core_cast "${Hate2}" 0 ${Target2Kill} FALSE
+			/if (${validate_cast[FALSE, spell, "${Hate2}", ${Target2Kill}]}) /call core_cast2 "${Hate2}" 0 ${Target2Kill} FALSE
 		}
 	}
 
@@ -157,29 +160,40 @@ sub get_agro_SHD()
 		/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50]}
 		/if (${mobAECount} > 1) {
 			/if (${Me.AltAbilityReady[Explosion of Hatred]}) {
-				/call core_cast "Explosion of Hatred" alt 0 FALSE
+				/if (${validate_cast[FALSE, alt, "Explosion of Hatred", ${Me.ID}]}) /call core_cast2 "Explosion of Hatred" alt 0 FALSE
 			} else /if (${Me.SpellReady[${AEHate1}]}) {
-				/call core_cast "${AEHate1}" 0 0 FALSE
+				/if (${validate_cast[FALSE, spell, "${AEHate1}", ${Me.ID}]}) /call core_cast2 "${AEHate1}" 0 0 FALSE
 			}
-		} else /if (${mobAECount} > 3) {
+		} 
+		/if (${mobAECount} > 3) {
 			/if (${Me.AltAbilityReady[Explosion of Spite]}) {
-				/call core_cast "Explosion of Spite" alt 0 FALSE
+				/if (${validate_cast[FALSE, alt, "Explosion of Spite", ${Me.ID}]}) /call core_cast2 "Explosion of Spite" alt 0 FALSE
 			} else /if (${Me.SpellReady[${AEHate2}]}) {
-				/call core_cast "${AEHate2}" 0 0 FALSE
+				/if (${validate_cast[FALSE, spell, "${AEHate2}", ${Me.ID}]}) /call core_cast2 "${AEHate2}" 0 0 FALSE
 			}
 		}	
 	}
 
 	| AE lifetap	
 	/if (${AEMelee}) {
-		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]} && ${Me.SpellReady[${AELifeTap}]}) /call core_cast "${AELifeTap}" 0 ${Target2Kill} FALSE
+		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]}) {
+			/if (${validate_cast[FALSE, spell, "${AELifeTap}", ${Target2Kill}]}) /call core_cast2 "${AELifeTap}" 0 ${Target2Kill} FALSE
+		}
 	}
 	
 	| fake hate
-	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && ${Me.AltAbilityReady[Ageless Enmity]}) /call core_cast "Ageless Enmity" alt ${Target2Kill} FALSE
+	/if (${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) { 
+		/if (${validate_cast[FALSE, alt, "Ageless Enmity", ${Target2Kill}]}) /call core_cast2 "Ageless Enmity" alt ${Target2Kill} FALSE
+	}
 	| named fake hate
-	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName}) && ${Me.AltAbilityReady[Mindless Hatred]} && ${Target.Level} <= 110) /call core_cast "Mindless Hatred" alt ${Target2Kill} FALSE
-	/if ((${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) && (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName}) && ${Me.CombatAbilityReady[${DiscFakeHate}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFakeHate}].EnduranceCost}) /disc ${DiscFakeHate}
+	/if (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName}) {
+		/if (${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
+			/if (${validate_cast[FALSE, alt, "Mindless Hatred", ${Target2Kill}]} && ${Target.Level} <= 110) /call core_cast2 "Mindless Hatred" alt ${Target2Kill} FALSE
+		}
+		/if (${Me.PctAggro} < 90 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) { 
+			/if (${validate_cast[FALSE, disc, "${DiscFakeHate}", ${Target2Kill}]}) /disc ${DiscFakeHate}
+		}
+	}
 /return
 
 
@@ -213,7 +227,7 @@ sub check_skin()
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return	
 	/if (!${Bool[${Me.Buff[${Skin}]}]} && ${Me.SpellReady[${Skin}]}) {
-		/call core_cast "${Skin}" 0 0 FALSE
+		/if (${validate_cast[FALSE, spell, "${Skin}", ${Me.ID}]}) /call core_cast2 "${Skin}" 0 0 FALSE
 		/call create_timer timer_check_Skin ${tcheck_Skin}
 	}
 /return
@@ -236,11 +250,11 @@ sub synergy_SHD()
 	/declare _count int local 0
 	/for _count 1 to 3
 		/if (${Bool[${Me.ActiveDisc}]}) /break
-		/if (${Me.CombatAbilityReady[${DefensiveDisc${_count}}]}) {
-			/call core_cast "${DefensiveDisc${_count}}" disc 0 FALSE
+		/if (${validate_cast[FALSE, disc, "${DefensiveDisc${_count}}", ${Me.ID}]}) {
+			/call core_cast2 "${DefensiveDisc${_count}}" disc 0 FALSE
 			/break
-		}			
-	/next _count	
+		}
+	/next _count
 	
 	| deflection
 	/if (!${Bool[${Me.ActiveDisc}]} && ${Me.PctHPs} < 50*.${tmpHealOverride}) {
@@ -253,23 +267,25 @@ sub synergy_SHD()
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 
-	/if (${Me.AltAbilityReady[T`Vyl's Resolve]} && ${Target.Distance} <= ${Spell[T`Vyl's Resolve].MyRange}) /call core_cast "T`Vyl's Resolve" alt ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${CrimsonBlade}]} && ${Me.CurrentEndurance} > ${Spell[${CrimsonBlade}].EnduranceCost}) /call core_cast "${CrimsonBlade}" disc 0 FALSE
+	/if (${validate_cast[FALSE, alt, "T`Vyl's Resolve", ${Me.ID}]}) /call core_cast2 "T`Vyl's Resolve" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${CrimsonBlade}", ${Me.ID}]}) /call core_cast2 "${CrimsonBlade}" disc 0 FALSE
 	/call cast_AA_spire
-	/if (${Me.AltAbilityReady[Veil of Darkness]}) /call core_cast "Veil of Darkness" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[Harm Touch]}) /call core_cast "Harm Touch" alt ${Target2Kill} FALSE
-	/if (${switchAgro} && ${Me.AltAbilityReady[Scourge Skin]}) /call core_cast "Scourge Skin" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Veil of Darkness", ${Me.ID}]}) /call core_cast2 "Veil of Darkness" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "Harm Touch", ${Me.ID}]}) /call core_cast2 "Harm Touch" alt ${Target2Kill} FALSE
+	/if (${switchAgro}) {
+		/if (${validate_cast[FALSE, alt, "Scourge Skin", ${Me.ID}]}) /call core_cast2 "Scourge Skin" alt 0 FALSE
+	}
 
 	| AA Visage of Decay/Death stacking issues
-	/if (${Me.AltAbilityReady[Visage of Death]} && !${Me.Buff[Visage of Decay].ID}) {
-		/call core_cast "Visage of Death" alt 0 FALSE
-	} else /if (${Me.AltAbilityReady[Visage of Decay]} && !${Me.AltAbilityReady[Visage of Death]} && !${Me.Buff[Visage of Death].ID}) {
-		/call core_cast "Visage of Decay" alt 0 FALSE
+	/if (!${Me.Buff[Visage of Decay].ID}) {
+		/if (${validate_cast[FALSE, alt, "Visage of Death", ${Me.ID}]}) /call core_cast2 "Visage of Death" alt 0 FALSE
+	} else /if (!${Me.AltAbilityReady[Visage of Death]} && !${Me.Buff[Visage of Death].ID}) {
+		/if (${validate_cast[FALSE, alt, "Visage of Decay", ${Me.ID}]})	/call core_cast2 "Visage of Decay" alt 0 FALSE
 	}
 
 	
 	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]} && ${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 
 	/call use_glyph	
 	/call synergy_click_Circle

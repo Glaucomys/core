@@ -667,7 +667,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|fade|groupheal|harmonious|healpoint|loh|mg|rampage|rod|shieldflash|spiregroup|spireraid|stance|steel|stun|taunt|xtradius|xttime|yaulp
+  /declare _type string	local |ae|defcount|fade|groupheal|harmonious|healpoint|loh|mg|rampage|rod|shieldflash|spiregroup|spireraid|stance|steel|stun|taunt|xtclass|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -793,6 +793,38 @@ sub Bind_setPAL(string _classType, string _verbage)
 		/call writeINI switchStance Buffs ${If[${switchStance},FALSE,TRUE]}  
 		VOUT /${_bind} stance (${cnum}${Stance}\ax) ${sep} ${If[${switchStance},${oenabled},${odisabled}]}
 		/return
+
+	| set the XTarget class to heal
+	} else /if (${Bool[${_classType.Equal[xtclass]}]}) {
+		/if (${Bool[${_verbage}]} && ${AllClassList.Find[${_verbage}]}) {
+			| if its there, delete
+			/if (${XHealClass.Find[${_verbage}]}) {
+				/declare _tmpList string local
+				/for _count 1 to ${XHealClass.Count[|]}
+					/if (${${XHealClass.Arg[${_count},|]}.Equal[FALSE]}) /continue
+					/if (${AllClassList.Find[${XHealClass.Arg[${_count},|]}]}) /continue
+					/if (${Bool[${XHealClass.Arg[${_count},|]}]}) /varset _tmpList ${_tmpList}|${XHealClass.Arg[${_count},|]}
+					/echo ${_tmpList}
+				/next _count
+				/call writeINI XHealClass Heal ${If[${Bool[${_tmpList}]},${_tmpList},|FALSE]}
+			| if its not there, add	
+			}	else /if (!${XHealClass.Find[${_verbage}]} && ${AllClassList.Find[${_verbage}]}) {
+				/call writeINI XHealClass Heal ${If[${Bool[${XHealClass}]},${XHealClass}|${_verbage.Upper},|${_verbage.Upper}]}
+			}			
+			
+		  /if (${switchHealXtarget}) {
+		    /call set_xtarget
+		    /call create_timer timer_set_xtarget ${tXHeal}
+			}			
+			
+		}
+		/mqclear
+		/for _count 1 to ${AllClassList.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${AllClassList.Arg[${_count},|].Upper}\ax(${If[${XHealClass.Find[${AllClassList.Arg[${_count},|]}]},${oon},${ooff}]})
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} [${_listout}]
+		/return	
 		
 	| set XTar heal radius
 	} else /if (${Bool[${_classType.Equal[xtradius]}]}) {
@@ -865,6 +897,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
 		/if (${_type.Arg[${_count},|].Equal[mg]}) /varset _listout ${_listout}(${If[${useMG},${cnum}${useMGPct}\ax,${cbad}${useMGPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[xtclass]}) /varset _listout ${_listout}(${cnum}->\ax)
 		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
 		/if (${_type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})

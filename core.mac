@@ -211,7 +211,7 @@ sub main(string _ini)
 		}
 		
 		/if (${Me.PctEndurance} < 32) {
-			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MON|BST]}) /call cast_stamina_recovery
+			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MNK|BST]}) /call cast_stamina_recovery
 		}
 
 		| use those AA.. hoarding bastard

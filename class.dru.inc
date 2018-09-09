@@ -504,11 +504,11 @@ sub Bind_setDRU(string _classType, string _verbage)
 	}
 
 	| use Modulation Rods
-	} else /if (${Bool[${_classType.Equal[rod]}]}) {
+	/if (${Bool[${_classType.Equal[rod]}]}) {
 		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
 
 	| use group Heals
-	/if (${Bool[${_classType.Equal[groupheal]}]}) {
+	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal" useGroupHeal 0 0
 	 	/return

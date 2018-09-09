@@ -1115,6 +1115,12 @@ sub Bind_setCLR(string _classType, string _verbage)
 			}	else /if (!${XHealClass.Find[${_verbage}]} && ${AllClassList.Find[${_verbage}]}) {
 				/call writeINI XHealClass Heal ${If[${Bool[${XHealClass}]},${XHealClass}|${_verbage.Upper},|${_verbage.Upper}]}
 			}			
+			
+		  /if (${switchHealXtarget}) {
+		    /call set_xtarget
+		    /call create_timer timer_set_xtarget ${tXHeal}
+			}			
+			
 		}
 		/mqclear
 		/for _count 1 to ${AllClassList.Count[|]}
