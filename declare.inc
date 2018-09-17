@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180908.00
+	/call setDeclare coreBuild											string	outer 20180917.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -511,9 +511,12 @@ sub set_declares()
 	/call setINIVar clickItemBurn6									string	Items FALSE 	
 	
 	/call setINIVar Breastplate1		 								string	Items FALSE	
+	/call setINIVar Breastplate1Condition						string	Items FALSE	
 	/call setINIVar Breastplate1effect							string	Items FALSE
 	/call setINIVar Breastplate2		 								string	Items FALSE
+	/call setINIVar Breastplate2Condition						string	Items FALSE	
 	/call setINIVar Breastplate2effect							string	Items FALSE	
+	
 	/call setINIVar useCircle												string	Items FALSE		
 	/call setINIVar CircleofPower										string	Items FALSE	
 	/call setINIVar CircleofLife										string	Items FALSE	
@@ -1156,6 +1159,7 @@ sub declare_ENC()
 
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
+	/call setINIVar switchAABeamofSlumber						bool		Spells FALSE
 	
 	| /if (!${Defined[aggroAnim]}) /declare aggroAnim string outer "|5|8|12|17|18|42|44|80|106|129|144"
 	
@@ -2303,6 +2307,9 @@ sub declare_CLR()
 	/call setINIVar switchHealAggressive						bool		Heal FALSE
 	/call setINIVar switchCompleteHeal							bool		Heal FALSE
 	/call setINIVar CompleteHealpct									int 		Heal 70	
+	/call setINIVar switchIssuance									bool		Heal FALSE
+	/call setINIVar issuanceMobCount								int			Heal 4
+	
 	                                          		
 	/call setINIVar doYaulp 												string	Buffs TRUE
 	/call setINIVar spellYaulp 											string	Buffs FALSE
@@ -2338,6 +2345,11 @@ sub declare_CLR()
 	/call setINIVar DoT4							 							string	Spells FALSE
 	/call setINIVar DoT4chk						 							string	Spells FALSE
 	/call setINIVar DoT4Condition 									string	Spells FALSE
+	
+	/call setINIVar BreastplateHeal		 							string	Items FALSE
+	/call setINIVar BreastplateHealCondition				string	Items FALSE	
+
+
 /return	
 
 
@@ -2501,7 +2513,7 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 	* DES: Magician AA Call of Heroe
 	* USE: /g coh
 	***|
-	/if (${_cmd.Equal[coh]} && ${Select[${Me.Class.ShortName},MAG]}) 8888..{
+	/if (${_cmd.Equal[coh]} && ${Select[${Me.Class.ShortName},MAG]}) {
 		CHECKSAFELIST
 	  /delay 15s ${Me.AltAbilityReady[Call of the Hero]}
 	  /if (${Me.Invis}) /makemevisible
@@ -2901,12 +2913,23 @@ sub Bind_itembuffs()
  ***| 	
 #bind selfbuffs /sb
 sub Bind_selfbuffs()
+
+	/declare _tmpSpell string local FALSE
+	/if (${Bool[${Me.Gem[${fix_gem_id[${buffGem}]}]}]})  {
+		/varset _tmpSpell ${Me.Gem[${fix_gem_id[${buffGem}]}]}
+	}
+	
 	/call check_buffs_self
 	/if (${Select[${Me.Class.ShortName},SHD,PAL]}) /call check_harmonious
 	/if (${Select[${Me.Class.ShortName},WIZ,ENC]}) /call check_rune_${Me.Class.ShortName}
 	/if (${Bool[${AANow1}]} || ${Bool[${AANow2}]}) /call check_AA_now
 	/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 	/if (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) /call check_aura
+	
+	/if (${Bool[${_tmpSpell}]}) {
+		/call mem_spell TRUE "${_tmpSpell}" ${buffGem} FALSE	
+		/varset _tmpSpell FALSE
+	}	
 /return
 
 

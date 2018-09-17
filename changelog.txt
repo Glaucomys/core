@@ -13,8 +13,50 @@
      Paladin, Wizard, Magician, 
      Necromancer, Monk, Beastlord, 
      Enchanter, Shaman, Berserker
-     Druid,
+     Druid, Shadowknight
 
+
+
+
+20180917.00
+- buffgem
+  -- the buff gem now remembers what was in it before it starts casting buffs and puts that spell back in it when done
+  -- if you remove the spell, it will not put it back
+- GoM nukes
+  -- should only trigger while in an active combat routine
+  -- because I dried to dicho force stunn myself while buffing in the guild hall
+  -- let us never speak of this again
+- check_debuffs
+  -- nolonger forces a target swap
+- is_target_valid()
+  -- commented out ${Target.Type.Equal[PC]} check to help healers with their targeting issue
+- click_BP()
+  -- added conditions to the toons INI Breastplate1 and Breastplate2
+- cast_temp_pet()
+  -- updated to core_cast2 routines
+- class.enc.inc
+  -- /enc [bos] - enable/disable using AA Beam of Slumber
+- class.clr.inc
+  -- will hold its last healed target until it has a reason to change
+  -- fixed the swarm pet/aa hammer
+  -- added in BreastplateHeal and a condition to Items for cleric (this still needs lots of work)
+     -- more then 2 people hurt
+     -- will accept conditions
+     -- i dont realy like this. the idea was for the conflag BP and its rune. but its rather limiting and useless for a lot. does not heal like the raid BP do
+  -- Issuance AE Healing.....
+     -- /clr issuance (on/off) enable/disable using issuance healing
+     -- /clr issuance [1,50] sets the mob count in your agro range to use issuance
+     -- issuance will try and use the AA Forceful Rejuvenation so it can get 2 casts of the shield
+     -- will not work in safe zones
+     -- requires LOS to the current assists target !!! you have to be using an assisst for this to work !!!
+- class.bst.inc
+  -- update to the burn routine
+  -- corrected Fury spelling
+- class.shm.inc
+  -- shmy epic call matches correct design
+  -- added a surge check to heal group when no one in group is hurt (this might be a bad idea)
+- class.nec.inc
+  -- updated burn routine
 
 
 20180908.00

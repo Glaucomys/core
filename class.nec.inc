@@ -111,6 +111,8 @@ sub disc_NEC()
 	
 	/if (${validate_cast[FALSE, alt, "Hand of Death", ${Target2Kill}]}) /call core_cast2 "Hand of Death" alt ${Target2Kill} FALSE
 	
+	| epic 2.0
+	/if (${validate_cast[FALSE, epicitem, "2", ${Target2Kill}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item ${Target2Kill} FALSE 
 	
 /return
 
@@ -128,11 +130,23 @@ sub synergy_NEC()
     
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Me.Song[Gift of Deathly Resolve].ID}) /call cast_DOT
+		/if (!${Me.Song[Gift of Deathly Resolve].ID} && ${Me.Buff[Deathly Resolve].ID}) /call cast_nuke
 		/call cast_AA_spire
+
+
+		| Pet Burnage
+		/if (${switchPcPet} && ${Me.Pet.ID}) {
+			/if (${validate_cast[FALSE, alt, "Companion's Fury", ${Me.Pet.ID}]}) /call core_cast2 "Companion's Fury" alt ${Me.Pet.ID} FALSE
+		}   
 
 		/if (${Target.PctHPs} > 15 && ${Me.PctHPs} > 90) {
 			/if (${validate_cast[FALSE, alt, "Life Burn", ${Target2Kill}]}) /call core_cast2 "Life Burn" alt ${Target2Kill} FALSE
 		}
+
+		/if (!${Me.Buff[Third Spire of Necromancy].ID}) {
+			/if (${validate_cast[FALSE, alt, "Embalmer's Carapace", ${Target2Kill}]}) /call core_cast2 "Embalmer's Carapace" alt ${Target2Kill} FALSE
+		}		
+		
 		/if (${validate_cast[FALSE, alt, "Funeral Pyre", ${Target2Kill}]}) /call core_cast2 "Funeral Pyre" alt ${Target2Kill} FALSE
 
 		/if (${validate_cast[FALSE, alt, "Gift of Deathly Resolve", ${Me.ID}]}) /call core_cast2 "Gift of Deathly Resolve" alt 0 FALSE
@@ -144,6 +158,7 @@ sub synergy_NEC()
 		/call use_glyph
 		/call synergy_click_Circle
 		/call click_item_burn
+		
 /return
 
 

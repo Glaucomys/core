@@ -280,8 +280,10 @@ sub synergy_BST()
 	}
 
 	/if (${Me.Pet.ID}) {
-		/if (${validate_cast[FALSE, alt, "Companions Furry", ${Me.ID}]}) /call core_cast2 "Companions Furry" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "Companions Fury", ${Me.ID}]}) /call core_cast2 "Companions Fury" alt 0 FALSE
 	}
+	
+	/if (${validate_cast[FALSE, disc, "Al`ele's Vindication", ${Me.ID}]}) /call core_cast2 "Al`ele's Vindication" disc 0 FALSE
 
 	/call use_glyph
 
@@ -298,9 +300,6 @@ sub synergy_BST()
 		/if (${validate_cast[FALSE, alt, "Group Bestial Alignment", ${Me.ID}]} && !${Me.Buff[Ferociousness].ID}) /call core_cast2 "Group Bestial Alignment" alt 0 FALSE
 	}
 	
-	| epic 2.0
-	| /if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
-
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn	

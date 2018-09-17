@@ -172,7 +172,15 @@ sub check_heal_group_SHM()
 	}	
 	
 	| no one is hurt. we're out of here
-	/if (!${hurtCount}) /return
+	/if (!${hurtCount}) {
+		
+	  | check for surge
+	  /if (${switchSurge}) {
+			/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]}) /call cast_surge_heal
+		}	
+			
+		/return
+	}
 
 	CHECKREZ
 	
@@ -527,7 +535,7 @@ sub synergy_SHM()
 	CHECKINPUTS
 
 	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 
 	/call cast_AA_spire
 
@@ -614,6 +622,80 @@ sub check_cani()
 	}
 	
 /return
+
+
+
+
+
+|***
+ *	DES: Shaman Alliance
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+ sub shm_alliance
+	CHECKEXIT
+	CHECKINPUTS
+	
+	/if (!${Me.Gem[Ancient Alliance]}) /return
+	
+	/if (${useSmartAssistG}) {
+		/target pc ${Group.MainAssist}
+		/delay 5 ${Target.BuffsPopulated}==TRUE
+		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
+			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${Group.MainAssist}]}) /call core_cast2 "Ancient Alliance" 0 ${Group.MainAssist} FALSE
+		}
+	} else /if (${useSmartAssist1}) {
+		/target pc ${Raid.MainAssist}
+		/delay 5 ${Target.BuffsPopulated}==TRUE
+		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
+			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${Raid.MainAssist}]}) /call core_cast2 "Ancient Alliance" 0 ${Raid.MainAssist} FALSE
+		}
+	}
+	/if (${Bool[${MA1}]} && ${Bool[${Spawn[pc ${MA1}].ID}]}) {
+		/target pc {MA1}
+		/delay 5 ${Target.BuffsPopulated}==TRUE
+		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
+			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${MA1}]}) /call core_cast2 "Ancient Alliance" 0 ${MA1} FALSE
+		}
+	} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[pc ${MA2}].ID}]}) {
+		/target pc ${MA2}
+		/delay 5 ${Target.BuffsPopulated}==TRUE
+		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
+			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${MA2}]}) /call core_cast2 "Ancient Alliance" 0 ${MA2} FALSE
+		}
+	} 
+/return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

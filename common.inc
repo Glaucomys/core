@@ -1542,12 +1542,8 @@ sub get_assist_target()
 	/if (${useForceAssist}) /goto :skippingtoMAforcedtarget
 
 	| no, you still cannot assist yourself. get over it
-	| /if (${Spawn[pc ${Group.MainAssist}].ID} == ${Me.ID}) /call validate_assist NOECHO X
-	| /if (${Spawn[pc ${Raid.MainAssist}].ID} == ${Me.ID}) /call validate_assist NOECHO X
 	/if (${Group.MainAssist.Spawn.ID} == ${Me.ID}) /call validate_assist NOECHO X
 	/if (${Spawn[=${Raid.MainAssist} pc].ID} == ${Me.ID}) /call validate_assist NOECHO X	
-	
-	
 
 	| tar acquisition when using smart assist. set XTarget positions.
 	/if (${useSmartAssistG} || ${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) {
@@ -1668,7 +1664,7 @@ sub get_assist_target()
 	}
 /return
 
-/target ${Spawn[pc risla]}
+
 
 |***
  *	DES: Make sure that what ever we are targeting is something we want to kill.
@@ -1693,11 +1689,10 @@ sub is_target_valid(int _tmpID)
 		/if (${Target.ID}) {
 			/if ((${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 				/call clear_combat
-			} else /if (${useSmartAssistG} && ${Bool[${Group.MainAssist}]} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
+			} else /if (${useSmartAssistG} && ${Group.MainAssist.ID} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
 				/call clear_combat
 			}
 		}
-	
 		/if (!${switchOverrideEngageat} && !${switchPull}) {
 			/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG}) {
 				/delay 1
@@ -1713,18 +1708,17 @@ sub is_target_valid(int _tmpID)
 	
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /varset isValidTarget FALSE
 	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /varset isValidTarget FALSE
-	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro} ) /varset isValidTarget FALSE
+	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro}) /varset isValidTarget FALSE
 	/if (${Spawn[${_tmpID}].Type.Equal[PC]}) /varset isValidTarget FALSE
-	/if (${Spawn[${Target.ID}].Type.Equal[PC]}) /varset isValidTarget FALSE
+	| /if (${Target.Type.Equal[PC]}) /varset isValidTarget FALSE
 	/if (${_tmpID} == ${Me.ID} || ${_tmpID} == ${Me.Pet.ID}) /varset isValidTarget FALSE
 
 	/if (${Select[${Me.Class.ShortName},ROG]}) {
 		/if (${isValidTarget} && ${switchSos}) /makemevisible
 	}
-		
 /return ${isValidTarget}
 
-
+${Target.Type.Equal[PC]}
 
 |***
  *	DES: Seriously, do you need to ask?
@@ -2024,12 +2018,13 @@ sub cast_nuke_rain()
 sub get_target_2kill()
 	AMIDEAD
 	CHECKEXIT
-	/call is_target_dead
 	CHECKINPUTS
-	/if (!${Macro.Return} && ${Target.ID} != ${Target2Kill} || ${Spawn[id ${Target2Kill}].Distance} > ${MobAgro}) {
+
+	/if (${is_target_dead[${Target2Kill}]}) /return
+	/if (${Target.ID} != ${Target2Kill} && ${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro}) {
 		/target ID ${Target2Kill}
 	}	
-	/if (${coreAuto} && ${Target.Distance} > ${MobAgro}) /call clear_combat
+	| /if (${coreAuto} && ${Target.Distance} > ${MobAgro}) /call clear_combat
 /return
 
 
@@ -2140,12 +2135,23 @@ sub click_BP()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
+	
+	| is at least one ready?
 	/if (!${Me.ItemReady[${Breastplate1}]} && !${Me.ItemReady[${Breastplate2}]}) /return
+	
+	| do I have one of the effects?
 	/if (${Bool[${Me.Song[${Breastplate1effect}]}]} || ${Bool[${Me.Buff[${Breastplate2effect}]}]}) /return
-	/if (!${Bool[${Me.Song[${Breastplate1effect}]}]} && ${Me.ItemReady[${Breastplate2}]} && ${Spell[${Breastplate2effect}].Stacks}) {
-		/if (${validate_cast[FALSE, item, "${Breastplate2}", ${Me.ID}]}) /call core_cast2 "${Breastplate2}" item 0 FALSE
-	} else /if (!${Bool[${Me.Buff[${Breastplate2effect}]}]} && ${Me.ItemReady[${Breastplate1}]} && ${Spell[${Breastplate1effect}].Stacks}) {
-		/if (${validate_cast[FALSE, item, "${Breastplate1}", ${Me.ID}]}) /call core_cast2 "${Breastplate1}" item 0 FALSE
+	
+	/if (${Me.ItemReady[${Breastplate1}]}) {
+		/if (!${cast_condition[Breastplate1Condition]}) /return
+		/if (!${Bool[${Me.Buff[${Breastplate2effect}]}]} && ${Spell[${Breastplate1effect}].Stacks}) {
+			/if (${validate_cast[FALSE, item, "${Breastplate1}", ${Me.ID}]}) /call core_cast2 "${Breastplate1}" item 0 FALSE
+		}
+	} else /if (${Me.ItemReady[${Breastplate2}]}) {
+		/if (!${cast_condition[Breastplate2Condition]}) /return
+		/if (!${Bool[${Me.Song[${Breastplate1effect}]}]} && ${Spell[${Breastplate2effect}].Stacks}) {
+			/if (${validate_cast[FALSE, item, "${Breastplate2}", ${Me.ID}]}) /call core_cast2 "${Breastplate2}" item 0 FALSE
+		}
 	}
 /return
 
@@ -2220,7 +2226,7 @@ sub use_mod_rod()
  ***| 
 sub send_pet(int _tmpID)
 	/if (!${coreAuto}) /return
-	/if (!${switchPcSwarm} && !${switchPcPet}) /return
+	/if (!${switchPcPet}) /return
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -2233,7 +2239,6 @@ sub send_pet(int _tmpID)
 	}
 
 	/target ID ${Target2Kill}
-
 	
 	/if (${switchPcPet}) {
 		/if (${Me.Pet.ID} && (${Target.PctHPs} <= ${PcPetengageat} || ${switchOverrideEngageat}) && !${Bool[${Me.Pet.Target}]}) {
@@ -2241,7 +2246,6 @@ sub send_pet(int _tmpID)
 			/pet attack
 		}
 	}
-	
 	
 	| send in the swarm
 	/if (${switchPcSwarm} && (${Target.PctHPs} <= ${PcSwarmengageat} || ${switchOverrideEngageat})) /pet swarm
@@ -2273,7 +2277,7 @@ sub use_glyph()
  *	INI: 
  *  NOTE: MQ2Cast ["spell name"|"item name"|"AA name"|"AA#"] [[item|slotname]|alt|gem#] [give up time][s|m] [custom subroutine name] [-targetid|###] [-maxtries|#] [-recast|#] [-setin|setname] [-bandolier|setname]
  *  NOTE2: How about we quit making changes to this....
- ***|
+
 sub core_cast(string _spell, string _type, int _tmpID, string _sub, bool _forcewait)
 	AMIDEAD
 	/declare _bail string local FALSE
@@ -2439,7 +2443,7 @@ sub core_cast(string _spell, string _type, int _tmpID, string _sub, bool _forcew
 	}
 
 /return ${Bool[${Macro.Return}]}
-
+ ***|
 
 
 |***
@@ -2461,7 +2465,7 @@ sub cast_break()
 		
 	/if (${Target.Mezzed.ID} || !${Spawn[${Target2Kill}].ID} || !${Bool[${Target2Kill}]}) {
 		/stopcast
-	} else /if (${Bool[${Me.Song[Gift of Mana (${GoMLevel})]}]} && (${Bool[${GoMNuke}]} || ${Bool[${GoMNuke2}]})) {
+	} else /if (${Bool[${Me.Song[Gift of Mana (${GoMLevel})]}]} && ${Bool[${combat}]} && (${Bool[${GoMNuke}]} || ${Bool[${GoMNuke2}]})) {
 		/stopcast
 		/call cast_nuke_GoM ${Target2Kill}
 	}
@@ -3462,12 +3466,8 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
-	/if (!${switchPcPet} || ${Me.Pet.ID}) /return
 	/if (${is_target_dead[${_tmpID}]}) /return
-	/if (${Spawn[${_tmpID}].Distance} < ${MobAgro} && ${Spawn[${_tmpID}].PctHPs} <= ${sendPetPerc}) {
-		VOUT Sending ${cpc}${_tmpSpell}\ax after [${If[${Bool[${Target.ID}]},${ctar}${Target.DisplayName}\ax,${cbad}BAD TARGET\ax]}] ${Target.Distance} ${If[${Spawn[${Target}].LineOfSight},${cgood}LoS\ax,${cbad}LoS\ax]}
-		/call MQ2Cast "${_tmpSpell}" -targetid|${_tmpID}
-	}
+	/if (${validate_cast[FALSE, spell, "${_tmpSpell}", ${_tmpID}]}) /call core_cast2 "${_tmpSpell}" 0 ${_tmpID} FALSE
 /return
 
 
@@ -3940,7 +3940,6 @@ sub list_add(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_delete(string _listName, string _tmpID)
-	| SDEBUG list_delete ${_listName} ${_tmpID}
 	/if (${Bool[${${_listName}.Equal[NULL]}]}) /return
 	/if (!${Bool[${_tmpID}]}) /return
 	/declare _count int local 0
@@ -3965,7 +3964,6 @@ sub list_delete(string _listName, string _tmpID)
 	/next _count	
 	**|
 	
-	| SDEBUG ${_listName}: ${${_listName}}
 	/varset ${_listName} ${_strLeft}${_strRight}
 /return
 
@@ -3978,7 +3976,6 @@ sub list_delete(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_update(string _listName, string _tmpID)
-| SDEBUG list_update:${_listName}  ${_tmpID}
 	/declare _remove bool local FALSE 
 
 	/if (${${_listName}.Find[${_tmpID}]}) {
@@ -4633,7 +4630,10 @@ sub get_target()
 				}
 			/next _count
 		}
-		/varcalc _tmpRange ${_tmpRange}+10
+		
+		/if (${_priorityMob}) /goto :looppull
+		| /varcalc _tmpRange ${_tmpRange}+10
+		/varcalc _tmpRange ${_tmpRange}+${CombatDistance}
 	}		
 		
 	| lastly, kill all the evil pets. if the owner is dead.
@@ -4646,7 +4646,7 @@ sub get_target()
 		/next _count	
 	} 
 		
-	/if (${Spawn[${Target2Kill}].Type.NotEqual[Aura]} && ${Target2Kill}) /target id ${Target2Kill}
+	/if (${Spawn[${Target2Kill}].Type.NotEqual[Aura]} && ${Target2Kill}) /target ID ${Target2Kill}
 
 	/call echos pull 0 0 0 0
 	UPDATEHUD "Pull"
@@ -4996,8 +4996,8 @@ sub prep_combat()
 
 		| healer override check
 		/if (${switchHealGroup} || ${switchHealXtarget}) {
-			/call is_target_valid ${Target2Kill}
 			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
+			/call is_target_valid ${Target2Kill}
 			/varset combat COMBAT
 			/return TRUE
 		}
@@ -5215,6 +5215,12 @@ sub check_buff_routines(bool _force)
 	CHECKINPUTS
 	/if (!${Me.Invis} || (${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
 		
+		/declare _tmpSpell string local FALSE
+		/if (${Bool[${Me.Gem[${fix_gem_id[${buffGem}]}]}]})  {
+			/varset _tmpSpell ${Me.Gem[${fix_gem_id[${buffGem}]}]}
+		}		
+
+		
 		| check tell request for buffs
 	  /if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
 		
@@ -5258,6 +5264,12 @@ sub check_buff_routines(bool _force)
 			/if (${switchBuffMerc} && !${timer_check_buffs_merc}) /call check_buffs_manual mercenary
 			/if (${switchBuffGroup} && !${timer_check_buffs_group}) /call check_buffs_manual group
 		}
+	
+		/if (${Bool[${_tmpSpell}]}) {
+			/call mem_spell TRUE "${_tmpSpell}" ${buffGem} FALSE	
+			/varset _tmpSpell FALSE
+		}
+		
 	}
 /return
 
@@ -5769,8 +5781,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 
 |***
  *	DES: spell/disc/aa/item cast wrapper
- *	USE: /call core_cast2 "SPELLNAME" [alt|disc|gem#|item] [TargetID|0 (for castless spells)] [subname|FALSE]
- *	USE: /call core_cast2 "SPELLNAME" NULL NULL if you want to let the sub decide what you have to cast/use.
+ *	USE: /call core_cast2 "SPELLNAME" [alt|activedisc|disc|gem#|item|epicitem|pulse] [TargetID|0 (for castless skills)] [subname|FALSE]
  *	INI: 
  *  NOTE: MQ2Cast ["spell name"|"item name"|"AA name"|"AA#"] [[item|slotname]|alt|gem#] [give up time][s|m] [custom subroutine name] [-targetid|###] [-maxtries|#] [-recast|#] [-setin|setname] [-bandolier|setname]
  ***|
@@ -6262,7 +6273,7 @@ sub check_deBuffs(int _tmpID)
 	
 	/call set_base_target_timers ${Target2Kill}
 
-	/if (${Target.ID} != ${_tmpID}) /squelch /target ID ${_tmpID}
+	| /if (${Target.ID} != ${_tmpID}) /squelch /target ID ${_tmpID}
 	
 	| tash
 	/if (${switchdeBuffTash}) {
@@ -6522,7 +6533,7 @@ sub watch_for_death()
 		/call clear_combat
 		/if (${Me.Casting.ID}) /stopcast
 		/varset Target2Kill 0
-		VBC Needs a rez: "${Me.DisplayName}" 0 0
+		/if (${coreAuto}) ECHOCHANNEL Needs a rez .. "${Me.DisplayName}"
 	}
 /return ${switchAmIDead}
 	

@@ -97,7 +97,9 @@ sub patch_heal_MNK()
 	AMIDEAD
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride} || ${switchMNKTrainMelee}) /doability Mend
-	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast "Defer Death" disc 0 FALSE
+	/if (${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) {
+		/if (${validate_cast[FALSE, disc, "Defer Death", ${Me.ID}]}) /call core_cast2 "Defer Death" disc 0 FALSE
+	}
 	/call click_item_heal
 /return
 
@@ -298,7 +300,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 		}	
 		
 	| set FD agro PCT
-	/if (${Bool[${_classType.Find[agpct]}]}) {
+	} else /if (${Bool[${_classType.Find[agpct]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
 			/call writeINI setAgroPct Melee ${_verbage}
 		} else /if (!${Range.Between[1,99:${Int[${_verbage}]}]}) {

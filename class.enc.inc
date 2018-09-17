@@ -125,9 +125,6 @@ sub check_rune_ENC()
 	/if (${validate_cast[FALSE, alt, "${runeMind}", ${Me.ID}]}) /call core_cast2 "${runeMind}" alt 0 FALSE
 	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
 	
-	| /if (${validate_buff[spell, rune, runeEntAuspice]} && ${FindItemCount[Peridot]}) /call core_cast "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE TRUE
-	| /if (${validate_cast[FALSE, spell, "${runeEntAuspice}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeEntAuspice}" ${buffGem} ${Me.ID} FALSE
-	 
 	/if (${validate_cast[FALSE, spell, "${runeWard}", ${Me.ID}]}) /call core_cast2 "${runeWard}" 0 0 FALSE
 	/if (${validate_cast[FALSE, spell, "${runePoly}", ${Me.ID}]}) /call core_cast2 "${runePoly}" ${buffGem} ${Me.ID} FALSE
 	/if (${validate_cast[FALSE, spell, "${runeBrimstone}", ${Me.ID}]}) /call core_cast2 "${runeBrimstone}" ${buffGem} ${Me.ID} FALSE
@@ -289,11 +286,7 @@ sub patch_heal_ENC()
 		/if (${Me.TargetOfTarget.ID} == ${Me.ID} && ${Target.ID} && ${Target.ID} != ${Me.ID} && (!${NoMezzList.Find[${Target.DisplayName}]} || ${timer_mez_${Target.ID}} > 0)) {
 			/call is_attacking ${NearestSpawn[${_count},npc radius 15].ID}
 			/if (${Bool[${Macro.Return}]}) {
-				| /if (${Me.SpellReady[${spellStun}]}) /call core_cast "${stunSpell}" 0 0
-				| /if (${Me.PctHPs} <= 80*.${tmpHealOverride} && ${Me.AltAbilityReady[Color Shock]}) /call core_cast "Color Shock" alt
 				/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Doppelganger", ${Me.ID}]}) /call core_cast2 "Doppelganger" alt ${Me.ID} FALSE
-				| /if (${Me.PctHPs} <= 50*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Banishment]} && ${SpawnCount[npc radius 20]} > 2) /call core_cast "Beguiler's Banishment" alt
-				| /if (${Me.PctHPs} <= 40*.${tmpHealOverride} && ${Me.AltAbilityReady[Beguiler's Directed Banishment]}) /call core_cast "Beguiler's Directed Banishment" alt ${Target2Kill} FALSE
 				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Nightmare Stasis", ${Target2Kill}]} && ${Target.Level} < 76) /call core_cast2 "Nightmare Stasis" alt ${Target2Kill} FALSE
 				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Dimensional Shield", ${Me.ID}]}) /call core_cast2 "Dimensional Shield" alt ${Me.ID} FALSE
 				/if (${Defined[timer_mez_${Target.ID}]} && ${timer_mez_${Target.ID}} != -1) {
@@ -352,13 +345,18 @@ sub mez_adds()
 					/if (${validate_cast[FALSE, spell, "${spellStun}", ${Me.ID}]}) /call core_cast2 "${spellStun}" 0 0 FALSE
 				}
 			}
-			/if (${Spawn[${_tmpID}].NearestSpawn[3,npc radius 30].ID} && ${Spawn[${_tmpID}].Distance3D} <= 200 && ${Spawn[${_tmpID}].Distance3D} >= ${MobAgro}*.5) {
-				/if (${Me.AltAbilityReady[Beam of Slumber]}) {
-					/if (${Me.Casting.ID}) /call interrupt
-					/face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
-					/if (${validate_cast[FALSE, alt, "Beam of Slumber", ${Me.ID}]}) /call core_cast2 "Beam of Slumber" alt 0				
-				} 
+			
+			| use AA beam of slumber?
+			/if (${switchAABeamofSlumber}) {
+				/if (${Spawn[${_tmpID}].NearestSpawn[3,npc radius 30].ID} && ${Spawn[${_tmpID}].Distance3D} <= 200 && ${Spawn[${_tmpID}].Distance3D} >= ${MobAgro}*.5) {
+					/if (${Me.AltAbilityReady[Beam of Slumber]}) {
+						/if (${Me.Casting.ID}) /call interrupt
+						/face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
+						/if (${validate_cast[FALSE, alt, "Beam of Slumber", ${Me.ID}]}) /call core_cast2 "Beam of Slumber" alt 0				
+					} 
+				}
 			}
+			
 			/if (!${timer_mez_${_tmpID}}) /call cast_mez ${_tmpID}
 		}
 		/call list_delete addList ${_tmpID}
@@ -547,7 +545,6 @@ sub synergy_ENC()
 	/if (${validate_cast[FALSE, alt, "Calculated Insanity", ${Me.ID}]}) /call core_cast2 "Calculated Insanity" alt 0
 
 	| epic 2.0
-	| /if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item ${Me.Pet.ID} FALSE
 
 	
@@ -614,7 +611,7 @@ sub Bind_setENC(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |charm|gather|healpoint|spiregroup|spireraid
+  /declare _type string	local |bos|charm|gather|healpoint|spiregroup|spireraid
 
 
 	| get help
@@ -633,6 +630,10 @@ sub Bind_setENC(string _classType, string _verbage)
 		/call writeINI switchCharmPet Pet ${If[${switchCharmPet},FALSE,TRUE]}  
 		VOUT /${_bind} charm ${sep} ${If[${switchCharmPet},${oenabled},${odisabled}]}
 		/return
+
+	| AA Beam of slumber
+	} else /if (${Bool[${_classType.Find[bos]}]}) {
+		/call writeINI switchAABeamofSlumber Spells ${If[${switchAABeamofSlumber},FALSE,TRUE]}  
 
 	| gather enable/disable /pct
 	} else /if (${Bool[${_classType.Find[gather]}]}) {
@@ -674,11 +675,10 @@ sub Bind_setENC(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		| /if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
 		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${If[${switchGather},${cnum}${GatherPercent}\ax,${cbad}${GatherPercent}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[bos]}) /varset _listout ${_listout}(${If[${Bool[${switchAABeamofSlumber}]},${oon},${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 
 /return
-
