@@ -15,6 +15,77 @@
      Enchanter, Shaman, Berserker
      Druid, Shadowknight
 
+MQ2DanNet.DLL download https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
+
+
+20180922.00
+- Testing of plugin MQ2DanNet beta will commence --------------------
+  -- there are now 4 new files [common2, declare2, class.clr2.inc, class.enc2.inc]. if you have access to this plugin or DL it from the link above and wish to test, adjust core.mac includes for these four files.
+    - example change in core.mac: 
+      - #include tc\declare2.inc
+      - #include tc\common2.inc
+      - #include tc\class.clr2.inc
+      - #include tc\class.enc2.inc
+
+  -- This is a manual change. Expect bugs for a bit. It's a rather drastic change to how Core works.
+- toon.ini
+  -- Default broad cast group for MQ2DanNet. change if you like. Common->broadcastGroup=Core
+     - this sets the base channel you will use for communication to other toons
+- core.mac
+  -- no longer requires MQ2Netbots or MQ2EQBC(s) Plugins
+  -- MQ2EQBC validation has been commented out
+- core.ini
+  -- adjust your plist setting to remove eqbc and netbots and add MQ2DanNet
+     - something like this plist=|MQ2Cast|MQ2Exchange|MQ2MoveUtils|MQ2DanNet|MQ2Debuffs|MQ2ADVPath|MQ2Nav|MQ2AutoLogin
+- common2.inc
+  -- deleted
+     - check_one_mind()
+  -- updated
+     - broadcast_status()
+- declare2.inc
+  -- the following are commented out/disabled for now
+     - #event task_update
+     - verbage BC echo
+     - /rc
+     - /purify
+     - stop
+     - gtfo
+  -- broadcasts updated: 
+     - /anchor
+     - /cc force assist
+     - /movement gather
+     - /crew (whole thing)
+     - /take
+     - /invis
+     - /enter
+     - /cls
+     - /here
+     - /killmob
+     - /imincharge
+- events.inc 
+  -- commented out the /bc echo commands only 
+- check_buffs_BC()
+  -- converted to MQ2DanNet
+- cast_cure()
+  -- converted to MQ2DanNet
+  -- rewrite of the flow for debuff checks
+  -- no longer checks for counters. simply checks if you have that debuff or not
+- class.clr2.inc
+  -- converted check_heal_ward() to use DanNet. complete rewrite too
+-class.enc2.inc
+  -- converted check_rune_auspice() to use DanNet. complete rewrite too
+
+- END of Changes for MQ2DanNet beta testing --------------------
+
+
+- TGB
+  -- removed the settings from the mac prep
+- class.bst.inc
+  -- fixed a typo. would appear i cannot spell continue correctly
+  
+
+
+
 
 
 

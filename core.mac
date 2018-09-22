@@ -96,8 +96,8 @@
 #define CHECKINPUTS "/multiline ; /doevents ; /varset bindtrigger TRUE"
 
 
-#include tc\declare.inc
-#include tc\common.inc
+#include tc\declare2.inc
+#include tc\common2.inc
 #include tc\MQ2Cast_Spell_Routines.inc
 #include tc\mode.inc
 #include tc\events.inc
@@ -105,9 +105,9 @@
 #include tc\class.ber.inc
 #include tc\class.brd.inc
 #include tc\class.bst.inc
-#include tc\class.clr.inc
+#include tc\class.clr2.inc
 #include tc\class.dru.inc
-#include tc\class.enc.inc
+#include tc\class.enc2.inc
 #include tc\class.mag.inc
 #include tc\class.mnk.inc
 #include tc\class.nec.inc
@@ -145,7 +145,7 @@ sub main(string _ini)
 		} 
 	  AMIDEAD
   
-		/if (!${timer_check_EQBC}) /call check_one_mind
+		| /if (!${timer_check_EQBC}) /call check_one_mind
 		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
 		
 		| what is this for??
@@ -352,8 +352,13 @@ sub initialize_core(string _ini)
 sub base_preperation()
 
 	| reset some of the variables so the toons dont act all stupid.
-	/if (!${Bool[${Raid.Members}]}) {
-		/call Event_noRaid
+	| /if (!${Bool[${Raid.Members}]}) {
+	| 	/call Event_noRaid
+	| }
+	
+	| set communications group
+	/if (${validate_plugin[FALSE, |MQ2DanNet]}) {
+		/djoin ${broadcastGroup}
 	}
 	
 	| fuck these plugins in particular
@@ -384,7 +389,7 @@ sub base_preperation()
 
 	| why the fuck did Verant/SOE/DayBreak ever implement these as a default..??	
 	/squelch /assist ${setAutoAssist}
-	/squelch /tgb ${setTGB}
+	| /squelch /tgb ${setTGB}
 	
 	| disable the melee plugin and reset combat so you just stand there.
 	/if (${validate_plugin[FALSE, |mq2melee]}) {
@@ -406,9 +411,9 @@ sub base_preperation()
 	}
 
 	| make sure netbots is running	
-	/if (${validate_plugin[FALSE, |mq2netbots]}) {
-		/squelch /netbots ON send=ON grab=ON	
-	}
+	| /if (${validate_plugin[FALSE, |mq2netbots]}) {
+	| 	/squelch /netbots ON send=ON grab=ON	
+	| }
 
 	| turn off rez non guildies/group if it is still on. 'cause fuck everyone else.
 	/if (${switchRezEveryone}) {

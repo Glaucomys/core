@@ -2,7 +2,7 @@
  *	declare.inc
  *	Core Declares common and class specific.
  *	All manual forced events.
- *	All created alias', binds and /bc commands
+ *	All created alias', binds and /dg commands
  *
  ***|
 
@@ -48,9 +48,9 @@ sub set_declares()
 	/call setDeclare Target2Kill										int			outer 0
 	/call setDeclare currentLootCount								int			outer	0
 
-	/call DeclareCoreIniVar plist										string	Plugin "|MQ2Cast|MQ2EQBC|MQ2Exchange|MQ2MoveUtils|MQ2Netbots|MQ2Debuffs"
-	/call DeclareCoreIniVar EQBCServer							string	General 127.0.0.1
-	/call DeclareCoreIniVar EQBCPort								string	General 2112
+	/call DeclareCoreIniVar plist										string	Plugin "|MQ2Cast|MQ2Exchange|MQ2MoveUtils|MQ2Debuffs|MQ2DanNet"
+	| /call DeclareCoreIniVar EQBCServer							string	General 127.0.0.1
+	| /call DeclareCoreIniVar EQBCPort								string	General 2112
 	/call DeclareCoreIniVar minMobPullLvl						int			General 1
 	/call DeclareCoreIniVar maxMobPullLvl						int			General 150
 	/call DeclareCoreIniVar autoinihousekeeping			string	General FALSE
@@ -136,8 +136,6 @@ sub set_declares()
 	/call setDeclare oadd														string	outer "${cgood}Add\ax"
 	/call setDeclare okeep													string	outer "${cgood}Keep\ax"
 	/call setDeclare onotice												string	outer "\ayNotice\ax"
-	| /declare prelink												string	outer "3Rorcex^11000004^0^1^1362119591^10000^'"
- 	| /declare postlink												string	outer ""	
  	/call setDeclare ocombat												string	outer "\amCombat\ax"	
 	/call setDeclare oremove												string	outer "${cbad}Removing\ax"
 
@@ -428,6 +426,7 @@ sub set_declares()
 	/call setINIVar switchCombatRange								bool		Common FALSE
 	/call setINIVar switchCombatNuke								bool		Common FALSE
 	/call setINIVar switchCombatDoT									bool		Common FALSE
+	/call setINIVar	broadcastGroup									string	Common Core
 	
 	
 			
@@ -816,7 +815,7 @@ sub declare_timers()
 	/call setTimer tCheck_Familiar									string	Timer	30s		timer_Check_Familiar
 	/call setTimer tHarvest_delay										string	Timer	1s 		timer_Harvest_delay
 	/call setTimer tScorchedEarth_delay							string	Timer	5s 		timer_ScorchedEarth_delay
-	/call setTimer tCheck_EQBC											string	Timer	10m		timer_check_EQBC
+	| /call setTimer tCheck_EQBC											string	Timer	10m		timer_check_EQBC
 	/call setTimer tOdds_and_Ends										string	Timer	30m 	timer_check_odds_and_ends
 	/call setTimer tCheck_EXP												string	Timer	5m 		timer_check_EXP
 	/call setTimer tCheck_Tie												string	Timer	5 		timer_check_Tie
@@ -2366,23 +2365,23 @@ sub set_alias()
   /if (!${Bool[${Alias[/sendpets]}]}) 						/squelch /alias /sendpets										VOUT SendPets: 
   /if (!${Bool[${Alias[/stop]}]}) 								/squelch /alias /stop 											/bc stop
 	/if (!${Bool[${Alias[/blurb]}]}) 								/squelch /alias /blurb 											VOUT Blurb: 
-  /if (!${Bool[${Alias[/bcsay]}]}) 								/squelch /alias /bcsay 											/bc bcsay
+  | /if (!${Bool[${Alias[/bcsay]}]}) 								/squelch /alias /bcsay 											/bc bcsay
   /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
                                             			
 	| quick cleric cure commands              			
-	/if (!${Bool[${Alias[/rc]}]}) 									/squelch /alias /rc 												/bc rc
-	/if (!${Bool[${Alias[/purify]}]}) 							/squelch /alias /purify 										/bc purify
+	| /if (!${Bool[${Alias[/rc]}]}) 									/squelch /alias /rc 												/bc rc
+	| /if (!${Bool[${Alias[/purify]}]}) 							/squelch /alias /purify 										/bc purify
 		                                        			
   /if (!${Bool[${Alias[/buy]}]}) 									/squelch /alias /buy												/echo Buy:
   /if (!${Bool[${Alias[/sell]}]}) 								/squelch /alias /sell												/echo Sell:
                                             			
-	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/bca //core auto on
-	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /bca //core auto off
+	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/dgexecute ${broadcastGroup} /core auto on
+	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /dgexecute ${broadcastGroup} /core auto off
                                             			
 	/if (!${Bool[${Alias[/givecoin]}]}) 						/noparse /squelch /alias /givecoin			    VOUT Bribe Time:
                                             			
                                             			
-	/if (!${Bool[${Alias[/gtfo]}]}) 								/noparse /squelch /alias /gtfo    			 		/bc gtfo
+	| /if (!${Bool[${Alias[/gtfo]}]}) 								/noparse /squelch /alias /gtfo    			 		/bc gtfo
 	
 	| utility
 	| /if (!${Bool[${Alias[/checkvar]}]}) 						/noparse /squelch /alias /checkvar 			 		/invoke ${Macro.Undeclared}
@@ -2442,9 +2441,9 @@ sub Event_Join(string line, string _sender, string _groupraid)
  *	INI: 
  *  NOTE: works off tells or broadcasts
  ***| 
-#event EQBC "<#1#> #2#"
-#event EQBC "[#1#(msg)] #2#"
-sub Event_EQBC(string line, string _sender, string _cmd)
+#event broadcast_command "<#1#> #2#"
+#event broadcast_command "[#1#(msg)] #2#"
+sub Event_broadcast_command(string line, string _sender, string _cmd)
 
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
  
@@ -2528,13 +2527,13 @@ sub Event_EQBC(string line, string _sender, string _cmd)
 
 |***
  *	DES: contains the various BC commands witn ONE variable passed
- *	USE: /bcsay SOMETHINGORANOTHER
+ *	USE: 
  *	INI: 
  *  NOTE: works off tells or broadcasts
  ***|
-#event EQBC_say "<#1#> bcsay #2#"
-#event EQBC_say "[#1#(msg)] bcsay #2#"
-sub Event_EQBC_say(string line, string _sender, string _verbage)
+#event BC_say "<#1#> bcsay #2#"
+#event BC_say "[#1#(msg)] bcsay #2#"
+sub Event_BC_say(string line, string _sender, string _verbage)
  	| have everyone say the same thing to the same target with a touch of random delay
 	/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Bool[${Spawn[pc ${_sender} radius 60].ID}]}) {
 		/assist ${_sender}
@@ -2560,6 +2559,7 @@ sub Event_camping(string line)
 	/squelch /stick off
 /return
 
+
 #event skillup "#*#You have become better at #1#! (#2#)"
 sub Event_skillup(string line, string skillname, int skillup)
 	VOUT [${cinfo}${skillname}\ax] has increased to (${cnum}${skillup}\ax)! [Max:${cnum}${Skill[${skillname}].SkillCap}\ax]
@@ -2569,16 +2569,6 @@ sub Event_skillup(string line, string skillname, int skillup)
    
 /return
 
-#event task_update "Your task '#1#' has been updated."
-sub Event_task_update(string line, string skillname)
-   /bc [+g+]'[+x+][+y+]${skillname}[+x+][+g+]'[+x+] updated!
-/return
-
-#event noRaid "Your raid was disbanded."
-sub Event_noRaid()
- 		| /if (${useSmartAssistR}) /call writeINI useSmartAssistR Common FALSE
-		| /if (${switchRaidInvite}) /call writeINI switchRaidInvite Common FALSE
-/return
 
 |***
 	DES: This is for lazy people like me that have to invite people to raids and dont wanna do the work.
@@ -2785,7 +2775,7 @@ sub Event_Talk(string line, string _sender, string _chatText)
   
   | take a tell to reform your group.
   /if (${_chatText.Equal[formgroup]}) /call set_crew main
-  /if (${_chatText.Equal[disbandgroup]}) /bcaa //disband
+  | /if (${_chatText.Equal[disbandgroup]}) /bcaa //disband
   /if (${_chatText.Equal[makemeleader]}) /makeleader ${_sender}
   /if (${_chatText.Equal[makememasterlooter]}) /delegategmasterlooter ${_sender}
   
@@ -2995,9 +2985,7 @@ sub Bind_click_secondary_anchor()
 #bind anchor /anchor
 sub Bind_anchor()
 	/if (${broadcastAnchor}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bca //prisec_anchor
-		}
+		/dgexecute ${broadcastGroup} /prisec_anchor
 	} 
 	/call Bind_prisec_anchor
 /return
@@ -3622,8 +3610,8 @@ sub Bind_listControl(string _list, string _verbage)
 
 	| do we need to reset the zone
 	/if (${_listchanged}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bcaa //core zonereset
+		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
+			/dgaexecute ${broadcastGroup} /core zonereset
 		} else {
 			/core zonereset
 		}
@@ -4300,13 +4288,13 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset combat COMBAT
 					/varset Target2Kill ${Target.ID}
 
-				| force assist for other eqbc toons
+				| force assist for other peer toons
 				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
-					/if (!${validate_plugin[FALSE, |mq2eqbc]} || (!${EQBC.Connected} && ${Bool[${EQBCServer}]})) {
-						VOUT ${owarning} ${sep} EQBC Error
+					/if (!${validate_plugin[FALSE, |MQ2DanNet]}) {
+						VOUT ${owarning} ${sep} MQ2DanNet Error
 						/return
 					}		
-					/bca //varset Target2Kill ${Target.ID}
+					/dgexecute ${broadcastGroup} /varset Target2Kill ${Target.ID}
 				}
 				VOUT /${_bind} force ${cinfo}${_verbage.Upper}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 			}
@@ -4644,7 +4632,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			/if (${_clist.Arg[${_count},|].Equal[${Me.DisplayName}]}) /continue
 			/if (${Bool[${Spawn[pc ${_clist.Arg[${_count},|]}]}]}) {
 				VOUT Gathering ${sep} ${cinfo}${_clist.Arg[${_count},|]}\ax
-				/bct ${_clist.Arg[${_count},|]} //nav spawn pc ${Me.DisplayName}
+				/dexecute ${_clist.Arg[${_count},|]} /nav spawn pc ${Me.DisplayName}
 				
 			}
 
@@ -4737,8 +4725,7 @@ sub Bind_crew(string _crewNumber)
 	/if (${Raid.Members}) {
 		/for _count 1 to ${_clist.Count[|]}
 			/if (${Me.Name.Equal[${_clist.Arg[${_count},|]}]}) /continue
-			| /if (${Bool[${Raid.Member[${_clist.Arg[${_count},|]}]}]}) /bct ${_clist.Arg[${_count},|]} //raiddisband
-			/bct ${_clist.Arg[${_count},|]} //raiddisband
+			/dexecute ${_clist.Arg[${_count},|]} /raiddisband
 			/delay 2
 		/next _count	
 		/if (${Raid.Members}) /raiddisband
@@ -4746,7 +4733,7 @@ sub Bind_crew(string _crewNumber)
 	
 	| drop group. we dont care if you are in one or not.
 	/for _count 1 to ${_clist.Count[|]}
-		/bct ${_clist.Arg[${_count},|]} //disband
+		/dexecute ${_clist.Arg[${_count},|]} /disband
 		/delay 1
 	/next _count			
 	
@@ -4829,7 +4816,7 @@ sub Bind_echos(string _echoType, string _verbage)
 		} 
 		VOUT /${_bind}s channel(${cnum}${echoChannel}\ax)
 
-	| enable/disable verbose EQBC Echos
+	| enable/disable verbose BC Echos
 	} else /if (${Bool[${_echoType.Equal[verbose]}]}) {
 		/call writeINI verbose Echo ${If[${verbose},FALSE,TRUE]}
 
@@ -4959,8 +4946,8 @@ sub Bind_nav_to_target(string _name)
 #bind broadcast_take /take
 sub Bind_broadcast_take()
 	/if (${broadcastTake}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bca //click_window_option
+		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
+			/dgexecute ${broadcastGroup} /click_window_option
 		}
 	}
 	/call Bind_click_window_option
@@ -5001,11 +4988,7 @@ sub Bind_click_window_option()
  ***|
 #bind broadcast_invis /invis
 sub Bind_broadcast_invis()
-	/if (${broadcastInvis}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bca //cast_AA_invis
-		}
-	} 
+	/if (${broadcastInvis}) /dgexecute ${broadcastGroup} /cast_AA_invis
 	/call Bind_cast_AA_invis
 /return
 
@@ -5050,8 +5033,8 @@ sub Bind_cast_AA_invis()
 #bind broadcast_door /enter
 sub Bind_broadcast_door()
 	/if (${broadcastDoor}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bca //click_door
+		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
+			/dgexecute ${broadcastGroup} /click_door
 		}
 	}
 	/call Bind_click_door
@@ -5092,8 +5075,8 @@ sub Bind_click_door()
 sub Bind_cls()
 	/call Bind_clear_corpse_sub
 	/if (${broadcastClean}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bca //clear_corpse_sub
+		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
+			/dgaexecute ${broadcastGroup} /clear_corpse_sub
 		}
 	} 
 /return
@@ -5123,11 +5106,7 @@ sub Bind_clear_corpse_sub()
  ***|
 #bind broadcast_here /here
 sub Bind_broadcast_here()
-	/if (${broadcastHere}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bca //set_combat_here
-		}
-	}
+	/if (${broadcastHere}) /dgexecute ${broadcastGroup} /set_combat_here
 /return
 
 |***
@@ -5241,10 +5220,12 @@ sub Bind_set_combat_here()
 sub Bind_killmob()
 	/call Bind_override engageat
 	/if (${broadcastKillmob}) {
-		/if (${Bool[${Plugin[MQ2EQBC]}]} && ${EQBC.Connected}) {
-			/bca //override engageat
+		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
+			/dgexecute ${broadcastGroup} /override engageat
 		}
 	} 
+	/override engageat
+
 /return
 
 
@@ -5277,13 +5258,13 @@ sub Bind_imincharge()
 sub imincharge()
 
 	| set toons to off
-	/off
+	/dgexecute /core auto off
 
 	| set my tie name off
 	/call writeINI SetTieToon Movement FALSE
 
 	| set everyone elses /tie defaults
-	/bca //tc name ${Me.DisplayName}
+	/dgexecute ${broadcastGroup} /tc name ${Me.DisplayName}
 
 /return
 

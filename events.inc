@@ -1450,7 +1450,7 @@ sub Event_ToRWither()
 sub Event_AM4()
 	/if (!${coreEventsInc}) /return
 	/if (!${Zone.ShortName.Equal[arxmentis_raid]}) /return
-	/bc I have to run away from raid!!!
+	| /bc I have to run away from raid!!!
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
 	| =/moveto loc 104 1.06
@@ -1512,7 +1512,7 @@ sub Event_VitioWeapon()
 #Event VitioClose		"#*#begins to focus the power of the citadel#*#"
 sub Event_VitioClose()
 	/if (!${coreEventsInc}) /return
-  /bc Get close to him!
+  | /bc Get close to him!
 	/declare tempx float local ${Me.X}
 	/declare tempy float local ${Me.Y}
 	/call create_timer VitioWeaponTimer 10s
@@ -1528,7 +1528,7 @@ sub Event_VitioClose()
 #Event AMGolemLT "#*#a mortuis vifens gains health as he drains the life force from those standing nearby#*#"
 sub Event_AMGolemLT()
 	/if (!${coreEventsInc}) /return
-  /bc need to get away from golem!
+  | /bc need to get away from golem!
 /return
 
 
@@ -1536,7 +1536,7 @@ sub Event_AMGolemLT()
 #Event AMRunAwayBlob "#*#a phasma frigasia points a bony finger at you!#*#"
 sub Event_AMRunAwayBlob()
  	/if (!${coreEventsInc}) /return
-	/bc Got Blob emote!
+	| /bc Got Blob emote!
   /if (${Spawn[Principal Ex-Vicarum Nomia].Distance}>150) /return
   /target clear
   /play runfromboss3 smart
@@ -1550,7 +1550,7 @@ sub Event_AMRunAwayBlob()
 #Event AMRunAwayFive "#*#Heads up, |${Me.CleanName}|!#*#"
 sub Event_AMRunAwayFive()
 	/if (!${coreEventsInc}) /return
-  /bc Got Heads up Emote!!
+  | /bc Got Heads up Emote!!
   /declare tempx float local ${Me.X}
   /declare tempy float local ${Me.Y}
   /target clear
@@ -1565,7 +1565,7 @@ sub Event_AMRunAwayFive()
 #Event AMRunAwayFiveOne "#*#You feel energy gathering. Only motion can set if free#*#"
 sub Event_AMRunAwayFiveOne()
 	/if (!${coreEventsInc}) /return
-  /bc Got Gathering Emote!!
+  | /bc Got Gathering Emote!!
   /declare tempx float local ${Me.X}
   /declare tempy float local ${Me.Y}
   /target clear
@@ -1668,7 +1668,7 @@ sub Event_DecayRaid()
 #Event InnyDT "#*#You feel a sense of doom upon you#*#"
 sub Event_InnyDT()
   /if (!${coreEventsInc}) /return
-  /bc Got Inny DT emote!
+  | /bc Got Inny DT emote!
   /if (${Spawn[Innoruuk].Distance}>150) /return
   /play CureInnyDT
   /target clear

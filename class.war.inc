@@ -156,19 +156,19 @@ sub synergy_WAR()
 	/if (${Bool[${Macro.Return}]}) /return	
 	
 	
-	/if (${Me.CombatAbilityReady[${DiscAttention}]} && ${Me.CurrentEndurance} > ${Spell[${DiscAttention}].EnduranceCost}) /call core_cast "${DiscAttention}" disc ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${DiscPhantom}]} && ${Me.CurrentEndurance} > ${Spell[${DiscPhantom}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast "${DiscPhantom}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscAttention}", ${Me.ID}]}) /call core_cast2 "${DiscAttention}" disc ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscPhantom}", ${Me.ID}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast2 "${DiscPhantom}" disc ${Target2Kill} FALSE
 
 	/if (${Me.AltAbilityReady[${AAResplendentGlory}]} && !${Me.Song[${AAHoldtheLine}].ID}) {
 		/call core_cast "${AAResplendentGlory}" alt 0 FALSE
 	} else /if (${Me.AltAbilityReady[${AAHoldtheLine}]} && !${Me.Song[${AAResplendentGlory}].ID}) {
 		/call core_cast "${AAHoldtheLine}" alt 0 FALSE
 	}
-	/if (${Me.AltAbilityReady[${AAWarlordsTenacity}]}) /call core_cast "${AAWarlordsTenacity}" alt 0 FALSE
-	/if (${Me.AltAbilityReady[${AAWarlordsBravery}]}) /call core_cast "${AAWarlordsBravery}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAWarlordsTenacity}", ${Me.ID}]}) /call core_cast2 "${AAWarlordsTenacity}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAWarlordsBravery}"m ${Me.ID}]}) /call core_cast2 "${AAWarlordsBravery}" alt 0 FALSE
 
 	/call cast_AA_spire
-	/if (${Me.CombatAbilityReady[${DiscFlash}]} && ${Me.CurrentEndurance} > ${Spell[${DiscFlash}].EnduranceCost}) /call core_cast "${DiscFlash}" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscFlash}", ${Me.ID}]}) /call core_cast2 "${DiscFlash}" disc 0 FALSE
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn

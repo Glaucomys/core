@@ -172,6 +172,92 @@ sub synergy_MNK()
 
 
 
+
+
+
+
+
+
+
+
+    CHECKEXIT
+    CHECKINPUTS
+    
+    /if (${validate_cast[FALSE, disc, "${DiscDicho}", ${Me.ID}]}) /call core_cast2 "${DiscDicho}" disc 0 FALSE
+    /if (${validate_cast[FALSE, disc, "${MNKAlliance}", ${Target2Kill}]}) /call core_cast2 "${MNKAlliance}" disc ${Target2Kill} FALSE 
+    /call cast_AA_spire
+    /if (${validate_cast[FALSE, disc, "${DiscBalance}", ${Me.ID}]}) /call core_cast2 "${DiscBalance}" disc 0 FALSE
+    /if (${validate_cast[FALSE, alt, "${AAThunder}", ${Me.ID}]}) /call core_cast2 "${AAThunder}" alt 0 FALSE
+    /if (${validate_cast[FALSE, alt, "${AAFocus}", ${Target2Kill}]}) /call core_cast2 "${AAFocus}" alt ${Target2Kill} FALSE
+    /if (${validate_cast[FALSE, disc, "${DiscMonkey}", ${Me.ID}]}) /call core_cast2 "${DiscMonkey}" disc 0 FALSE
+    /if (${validate_cast[FALSE, alt, "${AASilent}", ${Me.ID}]}) /call core_cast2 "${AASilent}" alt 0 FALSE
+    
+|   Check if we're using a disc, if not use Heel, if another, cancel it and use Heel
+    /if (!${Bool[${Me.ActiveDisc.Name}]}) {
+        /if (${validate_cast[FALSE, disc, "${DiscHeel}", ${Target2Kill}]}) {
+        /if (!${flyingkick} || !${eaglestrike}) {
+            /varset kick FALSE
+            /varset flyingkick TRUE
+            /varset roundkick FALSE
+            /varset dragonpunch FALSE
+            /varset eaglestrike TRUE
+            /varset tigerclaw FALSE
+        }
+        /call core_cast2 "${DiscHeel}" disc ${Target2Kill} FALSE
+        }
+    } else /if (${Bool[${Me.ActiveDisc.Name}]} && !${Bool[${Me.ActiveDisc.Name.Find[Heel]}]}) {
+        /if (${validate_cast[FALSE, disc, "${DiscHeel}", ${Target2Kill}]}) {
+            /stopdisc
+            /if (!${flyingkick} || !${eaglestrike}) {
+                /varset kick FALSE
+                /varset flyingkick TRUE
+                /varset roundkick FALSE
+                /varset dragonpunch FALSE
+                /varset eaglestrike TRUE
+                /varset tigerclaw FALSE
+            }
+            /call core_cast2 "${DiscHeel}" disc ${Target2Kill} FALSE
+        }
+    }
+    /if (${validate_cast[FALSE, disc, "${DiscAshenhand}", ${Me.ID}]}) /call core_cast2 "${DiscAshenhand}" disc 0 FALSE
+    /if (${validate_cast[FALSE, disc, "${DiscCrane}", ${Target2Kill}]}) /call core_cast2 "${DiscCrane}" disc ${Target2Kill} FALSE
+    /if (${validate_cast[FALSE, alt, "${AATwinStrike}", ${Target2Kill}]}) /call core_cast2 "${AATwinStrike}" alt ${Target2Kill} FALSE
+    /if (${validate_cast[FALSE, alt, "${AAChant}", ${Me.ID}]}) /call core_cast2 "${AAChant}" alt 0 FALSE    
+  /call use_glyph
+  /call synergy_click_Circle
+  /call click_item_burn
+/return
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 |***
  *	DES: swap melee skills to train them
  *	USE: /mnk trainmelee | /call melee_train_MNK
@@ -179,18 +265,26 @@ sub synergy_MNK()
  *  NOTE:
  ***|
 sub melee_train_MNK()
-	
-	| mend training
-	/if (${switchMNKTrainMelee} && ${Me.Skill[Mend]} <= ${Me.SkillCap[Mend]} && ${Me.AbilityReady[Mend]}) /doability Mend
 
-	| kick skills
-	/if (${Me.Skill[Kick]} <= ${Me.Skill[Flying Kick]} && ${Me.Skill[Kick]} <= ${Me.Skill[Round Kick]}) {
-		/varset kick TRUE
-		/varset flyingkick FALSE
-		/varset roundkick FALSE
-	} else /if (${Me.Skill[Flying Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Flying Kick]} <= ${Me.Skill[Round Kick]}) {
+	| This code catches the call in the skillup sub and returns out using most efficient skills if not training melee
+	/if (!${switchMNKTrainMelee}) {
 		/varset kick FALSE
 		/varset flyingkick TRUE
+		/varset roundkick FALSE
+		/varset dragonpunch FALSE
+		/varset eaglestrike TRUE
+		/varset tigerclaw FALSE
+		/return
+	}
+	
+	| kick skills
+	/if (${Me.Skill[Flying Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Flying Kick]} <= ${Me.Skill[Round Kick]}) {
+		/varset kick FALSE
+		/varset flyingkick TRUE
+		/varset roundkick FALSE
+	} else /if (${Me.Skill[Kick]} <= ${Me.Skill[Flying Kick]} && ${Me.Skill[Kick]} <= ${Me.Skill[Round Kick]}) {
+		/varset kick TRUE
+		/varset flyingkick FALSE
 		/varset roundkick FALSE
 	} else /if (${Me.Skill[Round Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Round Kick]} <= ${Me.Skill[Flying Kick]}) {
 		/varset kick FALSE
@@ -199,11 +293,7 @@ sub melee_train_MNK()
 	}
 
 	| punch skills
-	/if (${Me.Skill[Dragon Punch]} <= ${Me.Skill[Eagle Strike]} && ${Me.Skill[Dragon Punch]} <= ${Me.Skill[Tiger Claw]}) {
-		/varset dragonpunch TRUE
-		/varset eaglestrike FALSE
-		/varset tigerclaw FALSE
-	} else /if (${Me.Skill[Eagle Strike]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Eagle Strike]} <= ${Me.Skill[Tiger Claw]}) {
+	/if (${Me.Skill[Eagle Strike]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Eagle Strike]} <= ${Me.Skill[Tiger Claw]}) {
 		/varset dragonpunch FALSE
 		/varset eaglestrike TRUE
 		/varset tigerclaw FALSE
@@ -211,7 +301,12 @@ sub melee_train_MNK()
 		/varset dragonpunch FALSE
 		/varset eaglestrike FALSE
 		/varset tigerclaw TRUE
+	} else /if (${Me.Skill[Dragon Punch]} <= ${Me.Skill[Eagle Strike]} && ${Me.Skill[Dragon Punch]} <= ${Me.Skill[Tiger Claw]}) {
+		/varset dragonpunch TRUE
+		/varset eaglestrike FALSE
+		/varset tigerclaw FALSE
 	}
+
 /return
 
 

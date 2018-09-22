@@ -140,7 +140,7 @@ sub check_mana_BST()
 			/declare _hurtCount int local 0
 			/for _count 0 to ${Group}
 				/if (${Group.Member[${_count}].Type.NotEqual[CORPSE]} && ${Group.Member[${_count}].ID}) /continue
-				/if (${Group.Member[${_count}].Distance} < 100) /contine
+				/if (${Group.Member[${_count}].Distance} < 100) /contiune
 				/if (${Group.Member[${_count}].DisplayName.Equal[${Me.DisplayName}]}) /continue
 
 				| Manna				
