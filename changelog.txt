@@ -13,10 +13,59 @@
      Paladin, Wizard, Magician, 
      Necromancer, Monk, Beastlord, 
      Enchanter, Shaman, Berserker
-     Druid, Shadowknight
+     Druid, Shadowknight, Warrior
 
 MQ2DanNet.DLL download https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
+
+
+
+20180922.01
+
+
+  
+- MQ2DanNet Changes
+  -- group broadcast commands defualt to the "All" group
+  
+  
+  
+  
+- check_exit()
+  -- should watch for debuffs that make the toon invulnerable
+  -- commented out several of the detremental invuln buffs
+  -- ToTD catch is no longer a loop. it wil be a single time catch. this will result in more spam, but should prevent the healers from getting locked  
+  
+  
+
+- class.war.inc
+  -- updated to core_cast2() routines
+  -- /war [ae] (on/off) use AE skills or not (man not have gotten them all)
+- class.pal.inc
+  -- corrected a math error in the LoH calculation
+  -- shiledflash, xtarget healing adjustments, AA Mars Gift have been moved to automatic mode only
+- class.mnk.inc
+  -- corrected alt/disc error in monk Refuse Death
+  -- removed mod rod check
+- class.ber.inc
+  -- adjusted the massive amount of patch healing they have to be a little faster /s
+- class.clr.inc / class.clr2.inc
+  -- xtarget healing and control toon adjustments have been moved to automatic mode only
+  -- removed stamina recover check
+- class.enc.inc / class.enc2.inc
+  -- removed some of the debug echos
+  -- removed stamina recover check
+- class.mag.inc
+  -- adjusted some logic in the twin cast function
+  -- removed stamina recover check
+- class.rog.inc
+  -- removed mod rod check
+- class.wiz.inc
+  -- removed stamina recover check
+- class.brd.inc
+  -- adopted enchanter list validation/checking
+  
+
+  
 
 20180922.00
 - Testing of plugin MQ2DanNet beta will commence --------------------

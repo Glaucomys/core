@@ -3210,7 +3210,7 @@ sub check_exit()
 
 	| clear ToTD if it procs.
 	/if (${coreAuto} && ${Select[${Me.Class.ShortName},CLR,SHM,BER]}) {
-		/while (${Me.Song[Touch of the Divine].ID}) {
+		/if (${Me.Song[Touch of the Divine].ID}) {
 			/delay 3s
 			/docommand /removebuff Touch of the Divine
 			ECHOCHANNEL REMOVING .. Touch of the Divine
@@ -3218,18 +3218,21 @@ sub check_exit()
 		}
 	}
 	
+	| invulnerable debuff?
+	/if (${Debuff.Invulnerable}) /return TRUE	
+	
 	| SELF BUFFS/SONGS
 	/if (${Me.Song[Divine Aura].ID}) /return TRUE
 	/if (${Me.Song[Divine Barrier].ID}) /return TRUE
 	/if (${Me.Song[Sacred Barrier].ID}) /return TRUE
 	/if (${Me.Song[Touch of the Divine].ID}) /return TRUE
 	/if (${Me.Song[Bestowed Divine Aura Beza].ID} || ${Me.Song[Bestowed Divine Aura Azia].ID}) /return TRUE
-	/if (${Me.Buff[Death Overcomes].ID}) /return TRUE
-	/if (${Me.Buff[Fermata of Preservation].ID}) /return TRUE
-	/if (${Me.Buff[Kazumi's Note of Preservation].ID}) /return TRUE
+	| /if (${Me.Buff[Death Overcomes].ID}) /return TRUE
+	| /if (${Me.Buff[Fermata of Preservation].ID}) /return TRUE
+	| /if (${Me.Buff[Kazumi's Note of Preservation].ID}) /return TRUE
 
 	| bad self buffs
-	/if (${Me.Buff[Protection of Sul].ID}) /return TRUE
+	| /if (${Me.Buff[Protection of Sul].ID}) /return TRUE
 	/if (${Me.Buff[Bewilder].ID}) /return TRUE
 	/if (${Me.Buff[Chaotic Bewildering].ID}) /return TRUE
 	

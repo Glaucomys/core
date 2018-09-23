@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180922.00
+	/call setDeclare coreBuild											string	outer 20180923.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -1554,6 +1554,7 @@ sub declare_WAR()
 	
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
+	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 
 	/call setINIVar DiscInsult 											string 	Discs "Insult"
 	/call setINIVar DiscCyclone			 								string	Discs "Cyclone Roar"
@@ -1975,6 +1976,7 @@ sub declare_SHM()
  *  NOTE: 
  ***|
 sub declare_BRD()
+	/call setTimer tValidate_Lists									string	Timer 15s timer_validate_lists
 	/call setDeclare BRDspire1											string	outer "Fundament: First Spire of the Minstrel"
 	/call setDeclare BRDspire2											string	outer "Fundament: Second Spire of the Minstrel"
 	/call setDeclare BRDspire3											string	outer "Fundament: Third Spire of the Minstrel"
@@ -2375,8 +2377,8 @@ sub set_alias()
   /if (!${Bool[${Alias[/buy]}]}) 									/squelch /alias /buy												/echo Buy:
   /if (!${Bool[${Alias[/sell]}]}) 								/squelch /alias /sell												/echo Sell:
                                             			
-	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/dgexecute ${broadcastGroup} /core auto on
-	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /dgexecute ${broadcastGroup} /core auto off
+	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/dgexecute All /core auto on
+	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /dgexecute All /core auto off
                                             			
 	/if (!${Bool[${Alias[/givecoin]}]}) 						/noparse /squelch /alias /givecoin			    VOUT Bribe Time:
                                             			
@@ -2985,7 +2987,7 @@ sub Bind_click_secondary_anchor()
 #bind anchor /anchor
 sub Bind_anchor()
 	/if (${broadcastAnchor}) {
-		/dgexecute ${broadcastGroup} /prisec_anchor
+		/dgexecute All /prisec_anchor
 	} 
 	/call Bind_prisec_anchor
 /return
@@ -3611,7 +3613,7 @@ sub Bind_listControl(string _list, string _verbage)
 	| do we need to reset the zone
 	/if (${_listchanged}) {
 		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
-			/dgaexecute ${broadcastGroup} /core zonereset
+			/dgaexecute All /core zonereset
 		} else {
 			/core zonereset
 		}
@@ -4294,7 +4296,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 						VOUT ${owarning} ${sep} MQ2DanNet Error
 						/return
 					}		
-					/dgexecute ${broadcastGroup} /varset Target2Kill ${Target.ID}
+					/dgexecute All /varset Target2Kill ${Target.ID}
 				}
 				VOUT /${_bind} force ${cinfo}${_verbage.Upper}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 			}
@@ -4947,7 +4949,7 @@ sub Bind_nav_to_target(string _name)
 sub Bind_broadcast_take()
 	/if (${broadcastTake}) {
 		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
-			/dgexecute ${broadcastGroup} /click_window_option
+			/dgexecute All /click_window_option
 		}
 	}
 	/call Bind_click_window_option
@@ -4988,7 +4990,7 @@ sub Bind_click_window_option()
  ***|
 #bind broadcast_invis /invis
 sub Bind_broadcast_invis()
-	/if (${broadcastInvis}) /dgexecute ${broadcastGroup} /cast_AA_invis
+	/if (${broadcastInvis}) /dgexecute All /cast_AA_invis
 	/call Bind_cast_AA_invis
 /return
 
@@ -5034,7 +5036,7 @@ sub Bind_cast_AA_invis()
 sub Bind_broadcast_door()
 	/if (${broadcastDoor}) {
 		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
-			/dgexecute ${broadcastGroup} /click_door
+			/dgexecute All /click_door
 		}
 	}
 	/call Bind_click_door
@@ -5076,7 +5078,7 @@ sub Bind_cls()
 	/call Bind_clear_corpse_sub
 	/if (${broadcastClean}) {
 		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
-			/dgaexecute ${broadcastGroup} /clear_corpse_sub
+			/dgaexecute All /clear_corpse_sub
 		}
 	} 
 /return
@@ -5106,7 +5108,7 @@ sub Bind_clear_corpse_sub()
  ***|
 #bind broadcast_here /here
 sub Bind_broadcast_here()
-	/if (${broadcastHere}) /dgexecute ${broadcastGroup} /set_combat_here
+	/if (${broadcastHere}) /dgexecute all /set_combat_here
 /return
 
 |***
@@ -5221,7 +5223,7 @@ sub Bind_killmob()
 	/call Bind_override engageat
 	/if (${broadcastKillmob}) {
 		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
-			/dgexecute ${broadcastGroup} /override engageat
+			/dgexecute All /override engageat
 		}
 	} 
 	/override engageat
@@ -5264,7 +5266,7 @@ sub imincharge()
 	/call writeINI SetTieToon Movement FALSE
 
 	| set everyone elses /tie defaults
-	/dgexecute ${broadcastGroup} /tc name ${Me.DisplayName}
+	/dgexecute All /tc name ${Me.DisplayName}
 
 /return
 

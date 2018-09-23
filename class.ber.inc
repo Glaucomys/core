@@ -159,8 +159,8 @@ sub patch_heal_BER()
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	
-	/if (${validate_cast[FALSE, alt, "Uncanny Resilience", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Uncanny Resilience" alt 0 FALSE
-	/if (${validate_cast[FALSE, alt, "Blood Sustenance", ${Me.ID}]} && ${Me.PctHPs} <= ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Blood Sustenance" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Uncanny Resilience", ${Me.ID}]}) /call core_cast2 "Uncanny Resilience" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "Blood Sustenance", ${Me.ID}]}) /call core_cast2 "Blood Sustenance" alt 0 FALSE
 	/call click_item_heal
 /return
 

@@ -40,7 +40,6 @@ sub core_WAR()
 
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -63,23 +62,23 @@ sub disc_WAR()
 	CHECKINPUTS
 	/call check_exit TRUE
 	/if (${Bool[${Macro.Return}]}) /return
-	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return
+	
 	/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 
-	/if (${Me.AltAbilityReady[${AABraceforImpact}]}) /call core_cast "${AABraceforImpact}" alt 0 FALSE
-	/if (${Me.AltAbilityReady[${AAWarStomp}]}) /call core_cast "${AAWarStomp}" alt 0 FALSE
-	/if (${Me.AltAbilityReady[${AAGutPunch}]} && ${Target.Distance} <= ${Spell[Gut Punch].MyRange}) /call core_cast "${AAGutPunch}" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "${AABraceforImpact}", ${Me.ID}]}) /call core_cast2 "${AABraceforImpact}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAWarStomp}", ${Me.ID}]]}) /call core_cast2 "${AAWarStomp}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAGutPunch}", ${Target2Kill}]}) /call core_cast2 "${AAGutPunch}" alt ${Target2Kill} FALSE
 
-	/if (${Me.AltAbilityReady[${AAImpCommand}]}) /call core_cast "${AAImpCommand}" alt 0 FALSE
-	/if (${Me.AltAbilityReady[${AAKneeStrike}]} && ${Target.Distance} <= ${Spell[${AAKneeStrike}].MyRange}) /call core_cast "${AAKneeStrike}" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[${AAMageHunter}]} && !${Me.Buff[${AAMageHunter}].ID}) /call core_cast "${AAMageHunter}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAImpCommand}", ${Me.ID}]}) /call core_cast2 "${AAImpCommand}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAKneeStrike}", ${Target2Kill}]}) /call core_cast2 "${AAKneeStrike}" alt ${Target2Kill} FALSE
+	/if (${validate_cast[FALSE, alt, "${AAMageHunter}", ${Me.ID}]]}) /call core_cast2 "${AAMageHunter}" alt 0 FALSE
 	
-	/if (${Me.AltAbilityReady[${AAHeroicBlade}]} && ${Target.Distance} <= ${Spell[${AAHeroicBlade}].MyRange} && !${switchAgro}) /call core_cast "${AAHeroicBlade}" alt 0 FALSE
-	/if (${Me.AltAbilityReady[${AABladeGuardian}]} && ${Me.Song[${AABladeGuardian}].Stacks}) /call core_cast "${AABladeGuardian}" alt 0 FALSE
-	/if (${Me.AltAbilityReady[${AAVehementRage}]}) /call core_cast "${AAVehementRage}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAHeroicBlade}", ${Me.ID}]]} && !${switchAgro}) /call core_cast2 "${AAHeroicBlade}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AABladeGuardian}", ${Me.ID}]]}) /call core_cast2 "${AABladeGuardian}" alt 0 FALSE
+	/if (${validate_cast[FALSE, alt, "${AAVehementRage}", ${Me.ID}]]}) /call core_cast2 "${AAVehementRage}" alt 0 FALSE
 
-	/if (${Me.CombatAbilityReady[${DiscField}]} && ${Me.CurrentEndurance} > ${Spell[${DiscField}].EnduranceCost} && !${Me.Song[${DiscField}].ID} ) /call core_cast "${DiscField}" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscField}", ${Me.ID}]]} && !${Me.Song[${DiscField}].ID}) /call core_cast2 "${DiscField}" disc 0 FALSE
 
 /return
 
@@ -96,16 +95,32 @@ sub get_agro_WAR()
 
 	CHECKINPUTS
 	CHECKEXIT
-	/call is_target_dead
-	/if (${Bool[${Macro.Return}]}) /return
-	/if (${Me.AltAbilityReady[${AARageoftheForsaken}]} && ${Target.Distance} <= ${Spell[${AARageoftheForsaken}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AARageoftheForsaken}" alt ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${DiscInsult}]} && ${Me.CurrentEndurance} > ${Spell[${DiscInsult}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscInsult}" disc ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${DiscWade}]} && ${Me.CurrentEndurance} > ${Spell[${DiscWade}].EnduranceCost} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscWade}" disc 0 FALSE
-	/if (${Me.CombatAbilityReady[${DiscCyclone}]} && ${Me.CurrentEndurance} > ${Spell[${DiscCyclone}].EnduranceCost} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${DiscCyclone}" disc ${Target2Kill} FALSE
-	/if (${Me.CombatAbilityReady[${DiscChallenge}]} && ${Me.CurrentEndurance} > ${Spell[${DiscChallenge}].EnduranceCost} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast "${DiscChallenge}" disc 0 FALSE
-	/if (${Me.CombatAbilityReady[${DiscShout}]} && ${Me.CurrentEndurance} > ${Spell[${DiscShout}].EnduranceCost} ) /call core_cast "${DiscShout}" disc 0 FALSE
-	/if (${Me.AltAbilityReady[${AABlastofAnger}]} && ${Target.Distance} <= ${Spell[${AABlastofAnger}].MyRange} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast "${AABlastofAnger}" alt ${Target2Kill} FALSE
-	/if (${Me.AltAbilityReady[${AAAETaunt}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50 targetable]} >= 2) /call core_cast "${AAAETaunt}" alt 0 FALSE
+	/if (${is_target_dead[${Target2Kill}]}) /return
+	
+	
+	/if (${validate_cast[FALSE, alt, "${AARageoftheForsaken}", ${Target2Kill}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast2 "${AARageoftheForsaken}" alt ${Target2Kill} FALSE
+
+	/if (${validate_cast[FALSE, disc, "${DiscInsult}", ${Target2Kill}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast2 "${DiscInsult}" disc ${Target2Kill} FALSE
+
+
+	/if (${AEMelee}) {
+		/if (${validate_cast[FALSE, disc, "$${DiscWade}", ${Me.ID}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast2 "${DiscWade}" disc 0 FALSE
+		/if (${validate_cast[FALSE, alt, "${AAAETaunt}", ${Me.ID}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50 targetable]} >= 2) /call core_cast2 "${AAAETaunt}" alt 0 FALSE
+
+		/if (${validate_cast[FALSE, disc, "$${DiscChallenge}", ${Me.ID}]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 30 targetable]} >= 3) /call core_cast2 "${DiscChallenge}" disc 0 FALSE
+
+	}
+
+
+	/if (${validate_cast[FALSE, disc, "$${DiscCyclone}", ${Target2Kill}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast2 "${DiscCyclone}" disc ${Target2Kill} FALSE
+
+
+	/if (${validate_cast[FALSE, disc, "${DiscShout}", ${Me.ID}]) /call core_cast2 "${DiscShout}" disc 0 FALSE
+
+	/if (${validate_cast[FALSE, alt, "${AABlastofAnger}", ${Target2Kill}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast2 "${AABlastofAnger}" alt ${Target2Kill} FALSE
+
+
+
 /return
 
 
@@ -121,8 +136,12 @@ sub patch_heal_WAR()
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 
-	/if (!${Raid.Members} && !${Bool[${Me.ActiveDisc}]}) /call core_cast "${DiscStoutDefense}" disc 0 FALSE
-	/if (${Me.PctHPs} <= ${PanicHPPCT}*.${tmpHealOverride}) /call core_cast "${DiscNoTime}" disc 0 FALSE
+	/if (!${Raid.Members}) {
+		/if (${validate_cast[FALSE, activedisc, "${DiscStoutDefense}", ${Me.ID}]]}) /call core_cast2 "${DiscStoutDefense}" disc 0 FALSE
+	}
+	/if (${Me.PctHPs} <= ${PanicHPPCT}*.${tmpHealOverride}) {
+		/if (${validate_cast[FALSE, disc, "${DiscNoTime}", ${Me.ID}]]}) /call core_cast2 "${DiscNoTime}" disc 0 FALSE
+	}
 	/call click_item_heal
 /return
 
@@ -160,9 +179,9 @@ sub synergy_WAR()
 	/if (${validate_cast[FALSE, disc, "${DiscPhantom}", ${Me.ID}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /call core_cast2 "${DiscPhantom}" disc ${Target2Kill} FALSE
 
 	/if (${Me.AltAbilityReady[${AAResplendentGlory}]} && !${Me.Song[${AAHoldtheLine}].ID}) {
-		/call core_cast "${AAResplendentGlory}" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "${AAResplendentGlory}", ${Me.ID}]]}) /call core_cast2 "${AAResplendentGlory}" alt 0 FALSE
 	} else /if (${Me.AltAbilityReady[${AAHoldtheLine}]} && !${Me.Song[${AAResplendentGlory}].ID}) {
-		/call core_cast "${AAHoldtheLine}" alt 0 FALSE
+		/if (${validate_cast[FALSE, alt, "${AAHoldtheLine}", ${Me.ID}]]}) /call core_cast2 "${AAHoldtheLine}" alt 0 FALSE
 	}
 	/if (${validate_cast[FALSE, alt, "${AAWarlordsTenacity}", ${Me.ID}]}) /call core_cast2 "${AAWarlordsTenacity}" alt 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${AAWarlordsBravery}"m ${Me.ID}]}) /call core_cast2 "${AAWarlordsBravery}" alt 0 FALSE
@@ -190,7 +209,7 @@ sub Bind_setWAR(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |fade|healpoint|spiregroup|spireraid|taunt
+  /declare _type string	local |ae|fade|healpoint|spiregroup|spireraid|taunt
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -248,6 +267,10 @@ sub Bind_setWAR(string _classType, string _verbage)
 			VOUT /${_bind} panicheal [${cinfo}${${PanicHPPCT}\ax] allowable range ${sep} ${cinfo}1 - 99\ax
 			/return
 		}
+		
+	| AE or Focused Melee
+	} else /if (${Bool[${_classType.Equal[ae]}]}) {
+		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
 
 	| defensive mob agro count
 	} else /if (${Bool[${_classType.Equal[defcount]}]}) {
@@ -269,6 +292,8 @@ sub Bind_setWAR(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
 		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
+
 
 		/varset _sep TRUE
 	/next _count

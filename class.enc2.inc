@@ -15,7 +15,6 @@
  *  NOTE: 
  ***|
 sub core_ENC()
-	| SDEBUG core_ENC()
 	AMIDEAD
 	CHECKINPUTS
 	CHECKTIE
@@ -90,7 +89,6 @@ sub core_ENC()
 
 		/if (${coreAuto}) {	
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
-			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			| /if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
 			/if (${switchBuffItem}) /call check_crystals
 			/if (!${is_target_dead[${Target2Kill}]}) {

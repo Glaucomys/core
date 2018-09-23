@@ -17,9 +17,9 @@ sub core_CLR()
 	AMIDEAD
 	CHECKINPUTS
 	CHECKTIE
-	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
+	/if (${coreAuto} && ${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 
-  /if (${switchHealXtarget}) {
+  /if (${coreAuto} && ${switchHealXtarget}) {
   	/if (!${timer_set_xtarget}) {
 	    /call set_xtarget
 	    /call create_timer timer_set_xtarget ${tXHeal}
@@ -67,7 +67,6 @@ sub core_CLR()
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
-			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
@@ -365,7 +364,7 @@ sub check_heal_group_CLR()
 		/next _count 
 	}			
 
- 	| netbots single heal over time
+ 	| Broadcast single heal over time
 	/if (${Bool[${healHoT}]}) {
 		/if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 			/if (${NetBots[${Spawn[ID ${hurtID}].DisplayName}].Stacks[${healHoT}]} && !${Bool[${NetBots[${Spawn[ID ${hurtID}].DisplayName}].ShortBuff.Find[${Spell[${healHoT}].ID}]}]}) {

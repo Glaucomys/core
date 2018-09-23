@@ -29,7 +29,9 @@ sub core_SHD()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		
 		/if (${switchHealCure}) /call cast_cure
+		
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet

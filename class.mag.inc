@@ -35,6 +35,7 @@ sub core_MAG()
 	CHECKREZ
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
+		
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -51,7 +52,7 @@ sub core_MAG()
 				/if (${switchForceTwincast}) /call force_twincast_${Me.Class.ShortName}
 				/if (${switchPcPet}) /call cast_nuke_salvo
 				/call cast_nuke_line
-				| /if (${useRain}) /call cast_nuke_rain
+				/if (${useRain}) /call cast_nuke_rain
 			}
 			/call click_BP
 			/call click_item
@@ -62,7 +63,6 @@ sub core_MAG()
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
-			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
 			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
@@ -232,37 +232,9 @@ sub synergy_MAG()
  *  NOTE: Twincast lets get it.
  ***|
 sub force_twincast_MAG()
-|**
-	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
-	/if (${is_target_dead[${Target2Kill}]}) /return 
-	AMIDEAD
-	CHECKEXIT
-	CHECKINPUTS
-	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
-
-	/if (${Me.Buff[Improved Twincast].ID} || ${Me.Buff[${TwincastSpell}].ID} || ${Me.Buff[Twincast].ID}) /return
-	
-	| twincast spell
-	/if (${Me.SpellReady[${TwincastSpell}]}) {
-		/if (${validate_cast[FALSE, spell, "${TwincastSpell}", ${Me.ID}]}) /call core_cast2 "${TwincastSpell}" 0 0 FALSE
-
-	| twincast AA
-	} else /if (${Me.AltAbility[Improved Twincast]}) {
-		/if (${validate_cast[FALSE, alt, "Improved Twincast", ${Me.ID}]}) /call core_cast2 "Improved Twincast" alt 0 FALSE
-		
-	| nuke twincast
-	} else {
-		/if (!${cast_condition[NukeTwincastCondition]}) /return
-		/if (${validate_cast[FALSE, spell, "${NukeTwincast${lineCurrent}}", ${Target2Kill}]}) /call core_cast2 "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
-	}
-	
-	**|
-	
-	
-	
 	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	/if (${is_target_dead[${Target2Kill}]}) /return
-	/return	AMIDEAD
+	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
 	/if (!${timer_force_twincast}) /call create_timer timer_force_twincast ${tForce_Twincast}
@@ -273,8 +245,6 @@ sub force_twincast_MAG()
 		/if (!${cast_condition[NukeTwincastCondition]}) /return
 		/if (${validate_cast[FALSE, spell, "${NukeTwincast${lineCurrent}}", ${Target2Kill}]}) /call core_cast2 "${NukeTwincast${lineCurrent}}" 0 ${Target2Kill} FALSE
 	}	
-	
-	
 /return
 
 

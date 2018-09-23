@@ -579,14 +579,11 @@ sub check_buffs_item()
 			AMIDEAD
 			CHECKTIE
 			CHECKINPUTS
-			| /if (${UseItem[${_count}]} && ${FindItem[${SelfItem[${_count}]}].ID} && ${Cast.Ready[${SelfItem[${_count}]}]} && !${Me.Buff[${SpellItem[${_count}]}].ID} && ${Spell[${SpellItem[${_count}]}].Stacks}) { 
 			/if (${UseItem[${_count}]}) { 
 				/if (${Select[${Me.Class.ShortName},BRD]}) {
 					/if (${Me.Casting.ID}) /call pulse_stop
 				}
 				/if (${validate_cast[FALSE, item, "${SelfItem[${_count}]}", ${Me.ID}]}) /call core_cast2 "${SelfItem[${_count}]}" item 0 FALSE
-				| /delay 5s !${Me.ItemReady[${SelfItem[${_count}]}]}
-				| /delay 10s !${Me.Casting.ID}
 	  	}
   	/next _count
   }
@@ -1258,7 +1255,6 @@ sub click_item()
 		/if (${Spawn[${Target.ID}].PctHPs} < 5*.${tmpHealOverride}) /break
 		/if (${is_target_dead[${Target2Kill}]}) /break
 		/if (!${Bool[${clickItem${_count}}]}) /continue
-		| /if (!${Me.ItemReady[${clickItem${_count}}]) /continue
 		AMIDEAD
 		CHECKTIE
 		CHECKINPUTS
@@ -3211,9 +3207,6 @@ sub odds_and_ends()
  *  NOTE: All reasons to not attack a target..
  ***|
 sub check_exit()
-	| zoning
-	/if (${Me.Zoning}) /return TRUE
-	
 	| invis 
 	/if (${Me.Invis}) /return TRUE
 	
@@ -3228,7 +3221,7 @@ sub check_exit()
 
 	| clear ToTD if it procs.
 	/if (${coreAuto} && ${Select[${Me.Class.ShortName},CLR,SHM,BER]}) {
-		/while (${Me.Song[Touch of the Divine].ID}) {
+		/if (${Me.Song[Touch of the Divine].ID}) {
 			/delay 3s
 			/docommand /removebuff Touch of the Divine
 			ECHOCHANNEL REMOVING .. Touch of the Divine
@@ -3236,18 +3229,21 @@ sub check_exit()
 		}
 	}
 	
+	| invulnerable debuff?
+	/if (${Debuff.Invulnerable}) /return TRUE	
+	
 	| SELF BUFFS/SONGS
 	/if (${Me.Song[Divine Aura].ID}) /return TRUE
 	/if (${Me.Song[Divine Barrier].ID}) /return TRUE
 	/if (${Me.Song[Sacred Barrier].ID}) /return TRUE
 	/if (${Me.Song[Touch of the Divine].ID}) /return TRUE
 	/if (${Me.Song[Bestowed Divine Aura Beza].ID} || ${Me.Song[Bestowed Divine Aura Azia].ID}) /return TRUE
-	/if (${Me.Buff[Death Overcomes].ID}) /return TRUE
-	/if (${Me.Buff[Fermata of Preservation].ID}) /return TRUE
-	/if (${Me.Buff[Kazumi's Note of Preservation].ID}) /return TRUE
+	| /if (${Me.Buff[Death Overcomes].ID}) /return TRUE
+	| /if (${Me.Buff[Fermata of Preservation].ID}) /return TRUE
+	| /if (${Me.Buff[Kazumi's Note of Preservation].ID}) /return TRUE
 
 	| bad self buffs
-	/if (${Me.Buff[Protection of Sul].ID}) /return TRUE
+	| /if (${Me.Buff[Protection of Sul].ID}) /return TRUE
 	/if (${Me.Buff[Bewilder].ID}) /return TRUE
 	/if (${Me.Buff[Chaotic Bewildering].ID}) /return TRUE
 	
@@ -6656,17 +6652,18 @@ sub watch_for_rezbox()
 				}
 				/delay 1s
 				/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
+				
 			}
 
-			:cleardeadmarkers
-				/delay 2s !${Me.State.Equal[HOVER]}
-				/delay 2s !${Me.Hovering}
-				/delay 2s !${Me.Dead}
-				/call set_stop NOECHO
-				/varset switchAmIDead FALSE
-				/varset validRezFound FALSE
-				/varset rezWindowPct 0
-				/return TRUE			
+			| Clear ALL THE MARKERS!
+			/delay 2s !${Me.State.Equal[HOVER]}
+			/delay 2s !${Me.Hovering}
+			/delay 2s !${Me.Dead}
+			/call set_stop NOECHO
+			/varset switchAmIDead FALSE
+			/varset validRezFound FALSE
+			/varset rezWindowPct 0
+			/return TRUE			
 		} else /if (!${validRezFound}) {
 			/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
 			/delay 5

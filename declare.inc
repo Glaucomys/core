@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180922.00
+	/call setDeclare coreBuild											string	outer 20180923.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -1555,6 +1555,7 @@ sub declare_WAR()
 	
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
+	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 
 	/call setINIVar DiscInsult 											string 	Discs "Insult"
 	/call setINIVar DiscCyclone			 								string	Discs "Cyclone Roar"
@@ -1976,6 +1977,7 @@ sub declare_SHM()
  *  NOTE: 
  ***|
 sub declare_BRD()
+	/call setTimer tValidate_Lists									string	Timer 15s timer_validate_lists
 	/call setDeclare BRDspire1											string	outer "Fundament: First Spire of the Minstrel"
 	/call setDeclare BRDspire2											string	outer "Fundament: Second Spire of the Minstrel"
 	/call setDeclare BRDspire3											string	outer "Fundament: Third Spire of the Minstrel"

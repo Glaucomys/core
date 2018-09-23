@@ -40,7 +40,6 @@ sub core_MNK()
 		}
 
 		/if (${coreAuto}) {	
-			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
 		} else /if (!${coreAuto}) {
@@ -230,34 +229,6 @@ sub synergy_MNK()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 |***
  *	DES: swap melee skills to train them
  *	USE: /mnk trainmelee | /call melee_train_MNK
@@ -321,7 +292,7 @@ sub Event_MNKfdcheck(string line, string _verbage)
 		}
 		/stand
 		/if (${Me.AbilityReady["Mend"]}) /doability Mend
-		/if (${validate_cast[FALSE, alt, "Refuse Death", ${Me.ID}]}) /call core_cast2 "Refuse Death" disc 0 FALSE
+		/if (${validate_cast[FALSE, disc, "Refuse Death", ${Me.ID}]}) /call core_cast2 "Refuse Death" disc 0 FALSE
 	}
 /return
 

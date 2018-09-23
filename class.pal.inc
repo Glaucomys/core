@@ -18,7 +18,7 @@ sub core_PAL()
 	CHECKINPUTS
 	CHECKTIE
 	
-  /if (${switchHealXtarget}) {
+  /if (${coreAuto} && ${switchHealXtarget}) {
   	/if (!${timer_set_xtarget}) {
 	    /call set_xtarget
 	    /call create_timer timer_set_xtarget ${tXHeal}
@@ -26,18 +26,18 @@ sub core_PAL()
 	}
 	
 	:killtarget
-	/if (${useShieldFlash}) /call cast_AA_shield_flash
+	/if (${coreAuto} && ${useShieldFlash}) /call cast_AA_shield_flash
 
 	| aa LoH
-	/if (${switchHealSelf}) {
+	/if (${coreAuto} && ${switchHealSelf}) {
 		/if (${useLoH}) {
-		  /if (${Me.PctHPs} <= ${useLoHPct}.${tmpHealOverride}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}*.${tmpHealOverride}) {
 				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
 			}
 		}	
 	}
 	
-	/if (${useMG}) {
+	/if (${coreAuto} && ${useMG}) {
 		/if (!${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 	}
 	CHECKREZ

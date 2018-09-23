@@ -20,6 +20,16 @@ sub core_BRD()
 		
 	:killtarget
 	CHECKREZ
+	
+	| validate/fix lists
+	/if (!${timer_validate_lists}) {
+		/if (!${SpawnCount[NPC radius ${MobAgro} playerstate 4]}) {
+			/if (${mobList.Count[|]}) /varset mobList
+			/if (${addList.Count[|]}) /varset addList
+		}
+		/call create_timer timer_validate_lists ${tValidate_Lists}
+	}	
+	
 	/call prep_combat
 	/if (${Macro.Return} && ${Bool[${combat}]}) {
 	
