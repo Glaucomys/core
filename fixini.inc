@@ -34,11 +34,11 @@ sub whitewash(string _echo)
 	| /varset _todelete[xx] |here|take|homeradius|homeleash
 		
 	| core aliases
-	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson|clean|checkvar
+	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson|clean|checkvar|bcsay
 	
 	/for _count 1 to ${_todelete.Size}
 		/for _index 1 to ${_todelete[${_count}].Count[|]}
-			/if (!${_echo.Equal[NOECHO]}) VOUT Deleting Alias ${_increment}: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
+			/if (!${_echo.Equal[NOECHO]}) VOUT Deleting Alias: ${cinfo}${_todelete[${_count}].Arg[${_index},|]}\ax
 			/squelch /alias /${_todelete[${_count}].Arg[${_index},|]} delete
 			/varcalc _increment ${_increment}+1
 		/next _index	

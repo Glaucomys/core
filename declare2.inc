@@ -2532,7 +2532,7 @@ sub Event_broadcast_command(string line, string _sender, string _cmd)
  *	USE: 
  *	INI: 
  *  NOTE: works off tells or broadcasts
- ***|
+
 #event BC_say "<#1#> bcsay #2#"
 #event BC_say "[#1#(msg)] bcsay #2#"
 sub Event_BC_say(string line, string _sender, string _verbage)
@@ -2549,7 +2549,7 @@ sub Event_BC_say(string line, string _sender, string _verbage)
 	/say ${_verbage}
 	/delay 1s		
 /return
-
+ ***|
 	
 #event camping "It will take you about 30 seconds to prepare your camp."
 sub Event_camping(string line)
@@ -5269,4 +5269,68 @@ sub imincharge()
 	/dgexecute All /tc name ${Me.DisplayName}
 
 /return
+
+
+
+
+
+
+#bind bcsay /bcsay
+sub Bind_bcsay (string _verbage, string _sender, int _tmpID)
+
+
+
+/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Spawn[pc ${_sender} radius 60].ID}) {
+	
+	
+	
+	
+} else {
+	/say ${_verbage}
+}
+
+
+
+
+
+
+/return
+
+
+
+${Spawn[pc ${_sender} radius 60].ID}
+
+
+
+
+|**
+
+#event BC_say "<#1#> bcsay #2#"
+#event BC_say "[#1#(msg)] bcsay #2#"
+sub Event_BC_say(string line, string _sender, string _verbage)
+ 	| have everyone say the same thing to the same target with a touch of random delay
+	/if (${_sender.NotEqual[${Me.DisplayName}]} && ${Bool[${Spawn[pc ${_sender} radius 60].ID}]}) {
+		/assist ${_sender}
+		/delay 5s ${Me.AssistComplete} 
+		/if (!${Target.ID}) /return
+	}
+	/if (${Me.Invis}) {
+		/makemevisible
+		/delay 1s !${Me.Invis}
+	}
+	/say ${_verbage}
+	/delay 1s		
+/return
+**|
+
+
+
+
+
+
+
+
+
+
+
 

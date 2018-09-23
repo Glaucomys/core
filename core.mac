@@ -96,8 +96,8 @@
 #define CHECKINPUTS "/multiline ; /doevents ; /varset bindtrigger TRUE"
 
 
-#include tc\declare2.inc
-#include tc\common2.inc
+#include tc\declare.inc
+#include tc\common.inc
 #include tc\MQ2Cast_Spell_Routines.inc
 #include tc\mode.inc
 #include tc\events.inc
@@ -105,9 +105,9 @@
 #include tc\class.ber.inc
 #include tc\class.brd.inc
 #include tc\class.bst.inc
-#include tc\class.clr2.inc
+#include tc\class.clr.inc
 #include tc\class.dru.inc
-#include tc\class.enc2.inc
+#include tc\class.enc.inc
 #include tc\class.mag.inc
 #include tc\class.mnk.inc
 #include tc\class.nec.inc

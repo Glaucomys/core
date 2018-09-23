@@ -7,36 +7,27 @@
  *
  ***|
 
--- migration from core_cast() to validate_cast() / core_cast2()
-  -- classes converted: 
-     Cleric, Ranger, Rogue, 
-     Paladin, Wizard, Magician, 
-     Necromancer, Monk, Beastlord, 
-     Enchanter, Shaman, Berserker
-     Druid, Shadowknight, Warrior
 
-MQ2DanNet.DLL download https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
+- MQ2DanNet.DLL download 
+  -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
 
+20180923.01
+- events.inc
+  -- converted to core_cast2() routines
+- core_cast() has been removed fro the code.
+- class.brd.inc
+  -- converted to core_cast2() routine
 
-20180922.01
 
-
-  
+20180923.00
 - MQ2DanNet Changes
   -- group broadcast commands defualt to the "All" group
-  
-  
-  
-  
 - check_exit()
   -- should watch for debuffs that make the toon invulnerable
   -- commented out several of the detremental invuln buffs
   -- ToTD catch is no longer a loop. it wil be a single time catch. this will result in more spam, but should prevent the healers from getting locked  
-  
-  
-
 - class.war.inc
   -- updated to core_cast2() routines
   -- /war [ae] (on/off) use AE skills or not (man not have gotten them all)
@@ -54,6 +45,7 @@ MQ2DanNet.DLL download https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQ
 - class.enc.inc / class.enc2.inc
   -- removed some of the debug echos
   -- removed stamina recover check
+  
 - class.mag.inc
   -- adjusted some logic in the twin cast function
   -- removed stamina recover check
@@ -63,8 +55,6 @@ MQ2DanNet.DLL download https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQ
   -- removed stamina recover check
 - class.brd.inc
   -- adopted enchanter list validation/checking
-  
-
   
 
 20180922.00
@@ -131,12 +121,7 @@ MQ2DanNet.DLL download https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQ
   -- removed the settings from the mac prep
 - class.bst.inc
   -- fixed a typo. would appear i cannot spell continue correctly
-  
-
-
-
-
-
+ 
 
 20180917.00
 - buffgem

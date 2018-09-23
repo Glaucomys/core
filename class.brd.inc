@@ -178,11 +178,11 @@ sub cast_servant_swarm(int _tmpID)
 
 		/if (${Me.AltAbilityReady[${ServantNukeAA1}]}) {
 			/if (${Me.Casting.ID}) /call pulse_stop
-			/call core_cast "${ServantNukeAA1}" alt ${_tmpID}
+			/call core_cast2 "${ServantNukeAA1}" alt ${_tmpID}
 			/return
 		} else /if (${Me.AltAbilityReady[${ServantNukeAA2}]}) {
 			/if (${Me.Casting.ID}) /call pulse_stop
-			/call core_cast "${ServantNukeAA2}" alt ${_tmpID}
+			/call core_cast2 "${ServantNukeAA2}" alt ${_tmpID}
 			/return
 		} else /if (${Me.SpellReady[${songServantNuke}]}) {
 			/if (${Me.Casting.ID}) /call pulse_stop
@@ -488,7 +488,7 @@ sub synergy_BRD()
 	/if (${Me.Casting.ID}) /call pulse_stop
 	
 	| epic 2.0
-	/if (${Me.ItemReady[${${Me.Class.ShortName}Epic2}]} && ${Spell[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].Stacks} && !${Me.Buff[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID} && !${Me.Song[${FindItem[${${Me.Class.ShortName}Epic2}].Spell}].ID}) /call core_cast "${${Me.Class.ShortName}Epic2}" item 0 FALSE
+	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]} && ${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	
  	/if (${validate_cast[FALSE, alt, "Bladed Song", ${Me.ID}]}) /call core_cast2 "Bladed Song" alt 0 FALSE
  	/if (${validate_cast[FALSE, alt, "Thousand Blades", ${Me.ID}]}) /call core_cast2 "Thousand Blades" disc 0 FALSE	
