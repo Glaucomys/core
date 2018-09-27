@@ -33,7 +33,7 @@ sub core_WIZ()
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
-			/if (${switchPcSwarm}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
+			/if (${switchPcSwarm} && !${Me.Pet.ID}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
 			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatNuke}) {

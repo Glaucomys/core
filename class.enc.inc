@@ -136,43 +136,71 @@ sub check_rune_ENC()
 
 
 |***
- *	DES: EQBC Buff RuneAuspice spell
+ *	DES: Buff RuneAuspice spell
  *	USE: have the spell memed and the toon identified in the INI.
  *	INI: 
  *  NOTE: 
  ***|
 sub check_rune_auspice()
 	/if (!${FindItemCount[Peridot]}) /return
+
 	AMIDEAD
-	CHECKEXIT
+	SIMPLEEXIT
 	CHECKINPUTS
 	CHECKTIE
-	/call check1offBuffs
 	
-	/declare _AuspiceToon string local FALSE
-	/declare _count int local 0
+	/declare _count int local
+	/declare _AuspiceToon string local
+	/declare _toon string local ${runeAuspiceToon}
+	/declare _DNqout string local
 
-	/for _count 1 to ${runeAuspiceToon.Count[|]}
-		/if (!${Me.SpellReady[${runeAuspice}]}) /break
-		/if (!${Spawn[${runeAuspiceToon.Arg[${_count},|]}].ID}) /continue
-		/if (${NetBots[${runeAuspiceToon.Arg[${_count},|]}].Buff.Find[${Spell[${runeAuspice}].ID}]}) /continue
-		CHECKEXIT
-		CHECKINPUTS
-		/if (${Bool[${Spawn[pc ${runeAuspiceToon.Arg[${_count},|]}]}]} && ${Spawn[pc ${runeAuspiceToon.Arg[${_count},|]}].Distance} < ${Spell[${runeAuspice}].MyRange}) {
-			/varset _AuspiceToon ${runeAuspiceToon.Arg[${_count},|]}
-			/break
+	/for _count 1 to ${_toon.Count[|]}
+		/varset _AuspiceToon ${_toon.Arg[${_count},|]}
+		
+		| ready?
+		/if (!${Me.SpellReady[${runeAuspice}]}) /return
+		
+		| me?
+		/if (${_AuspiceToon.Equal[${Me.DisplayName}]} && !${Me.Buff[${runeAuspice}].ID}) {
+			/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Me.ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Me.ID} FALSE
+			/continue
+		}		
+		
+		| if no network toons. were done here..		
+		/if (!${validate_plugin[FALSE, |MQ2DanNet]}) /return
+		
+		| ini set to FALSE?
+		/if (!${Bool[${_AuspiceToon}]}) /return
+		
+		| seriously dont buff corpses
+		/if (${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /continue
+		
+		| no one to cast on?
+		/if (!${Spawn[${_AuspiceToon}].ID}) /continue
+		
+
+		| spell stacks ?
+		/if (${setCommunication.Equal[eqbc]}) {
+			/if (${NetBots[${runeAuspiceToon.Arg[${_count},|]}].Buff.Find[${Spell[${runeAuspice}].ID}]}) /continue
+		} else /if (${setCommunication.Equal[dannet]}) {
+
+			/dquery ${_AuspiceToon} -q "Spell[${runeAuspice}].Stacks" -o _DNqout
+			/if (!${_DNqout}) /continue
+			
+			| has the rune?
+			/dquery ${_AuspiceToon} -q "Me.Buff[${runeAuspice}].ID" -o _DNqout
+			/if (${Bool[${_DNqout}]}) /continue
 		}
+
+
+		/if (${setCommunication.Equal[eqbc]}) {
+			/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${NetBots[${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
+		} else /if (${setCommunication.Equal[dannet]}) {
+			/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Spawn[pc ${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Spawn[pc ${_AuspiceToon}].ID} check_for_adds
+		}
+	
 	/next _count	
 
-	| more reasons to bail..
-	/if (!${Bool[${_AuspiceToon}]}) /return
-	/if (!${Bool[${Spawn[${_AuspiceToon}]}]}) /return
-	/if (${Spawn[${_AuspiceToon}].Type.Equal[corpse]}) /return
-	
-	UPDATEHUD "BUFF: BC Auspice"
-
-	/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${NetBots[${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
-	UPDATEHUD FALSE
 /return
 
 

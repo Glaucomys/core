@@ -11,10 +11,13 @@
 |***
  *	DES: Checks EQBCS connection and channel
  *	USE: /call check_one_mind
- *	INI: core.ini
+ *	INI: core.ini->[communications]
  *  NOTE: 
  ***| 
 sub check_one_mind()
+	| if were not using eqbc.. go away..
+	/if (!${setCommunications.Equal[eqbc]}) /return FALSE
+	
 	/call create_timer timer_check_EQBC ${tCheck_EQBC}
 	/if (!${validate_plugin[FALSE, |mq2eqbc]}) /return
 	/if (!${EQBC.Connected} && ${Bool[${EQBCServer}]}) {
@@ -46,7 +49,7 @@ sub check_plugin()
 
 
 |***
- *	DES: echos misc stuff to EQBC
+ *	DES: echos misc stuff to the MQ Window
  *	USE: /call echos [type] "desc text" [VARIABLE] [Target ID] ["text2"]
  *	INI: 
  *  NOTE: 
@@ -79,15 +82,10 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 		} else {
 			VOUT Creating Zone ${sep} ${cinfo}${Zone.Name}\ax
 		}
-		
 
 	| ending macro
 	} else /if (${_type.Equal[ending]}) {
 		VOUT ${owarning} ${sep} ${cbad}ENDING\ax Core Build ${sep} ${cinfo}${coreBuild}\ax
-
-	| BC echo for switchechoBC
-	} else /if (${_type.Equal[BC]}) {
-		/bc ${_verbage} - [+r+]${_tmpVariable}[+x+]  ${If[${Bool[${_tmpID}]},- [+y+]${Spawn[${_tmpID}].DisplayName}[+x+],]} 
 
 	| need target
 	} else /if (${_type.Equal[needtarget]}) {
@@ -109,10 +107,6 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 	} else /if (${_type.Equal[mode]}) {
 		VOUT Mode ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
 
-	| debug switches
-	| } else /if (${_type.Equal[debug]}) {
-	| 	VOUT DeBug ${sep} ${cinfo}${_verbage}\ax ${sep} ${If[${${_tmpVariable}},${oenabled},${odisabled}]}
-
 	| petfarm
 	} else /if (${_type.Equal[petfarm]}) {
 		VOUT Pet ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Spawn[${Target2Kill}].Distance}\ax,${cbad}${Spawn[${Target2Kill}].Distance}\ax]}
@@ -124,7 +118,7 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 	| you suck
 	} else /if (${_type.Equal[failboat]}) {
 		/if (${smartasserrors}) {
-			/call echo_bitch EQBC
+			/call echo_bitch MQWindow
 		} else {
 			VOUT ${cbad}Error\ax in command.
 		}
@@ -605,14 +599,11 @@ sub check_buffs_item()
 			AMIDEAD
 			CHECKTIE
 			CHECKINPUTS
-			| /if (${UseItem[${_count}]} && ${FindItem[${SelfItem[${_count}]}].ID} && ${Cast.Ready[${SelfItem[${_count}]}]} && !${Me.Buff[${SpellItem[${_count}]}].ID} && ${Spell[${SpellItem[${_count}]}].Stacks}) { 
 			/if (${UseItem[${_count}]}) { 
 				/if (${Select[${Me.Class.ShortName},BRD]}) {
 					/if (${Me.Casting.ID}) /call pulse_stop
 				}
 				/if (${validate_cast[FALSE, item, "${SelfItem[${_count}]}", ${Me.ID}]}) /call core_cast2 "${SelfItem[${_count}]}" item 0 FALSE
-				| /delay 5s !${Me.ItemReady[${SelfItem[${_count}]}]}
-				| /delay 10s !${Me.Casting.ID}
 	  	}
   	/next _count
   }
@@ -869,24 +860,48 @@ sub click_horn_of_unity()
 
 
 |***
- *	DES: EQBC Buff Routines
- *	USE: automatic for anyone sharing your EQBC
+ *	DES: Broadcasted Buff Routines
+ *	USE: automatic any peers
  *	INI: 
  *  NOTE: 
   ***|
 sub check_buffs_BC()
 	CHECKCOMBATCAST
 	/if (${coreAuto}) /call create_timer timer_check_buffs_BC ${tBC_Buff}
-	UPDATEHUD "BUFF BC"	
+	UPDATEHUD "BUFF Broadcast"	
 
 	/declare _toon int local 1
 	/declare _buff int local 1
+	/declare _toonName string local FALSE
+	/declare _spellID int local 
+	/declare _DNqout string local
+	/declare _DNarray string local ${DanNet.Peers[all]}
+	
+	| how the fuck are we gonna count the loops?
+	/if (${setCommunications.Equal[eqbc]}) {
+		/declare _loopCount int local ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}
+	} else /if (${setCommunications.Equal[dannet]}) {
+		/declare _loopCount int local ${Int[${Math.Calc[${_DNarray.Count[|]}]}]}
+	}
+	
 
 	| each toon
-	/while (${_toon} <= ${Int[${Math.Calc[${NetBots.Client.Count[ ]}+1]}]}) {
+	/for _toon 1 to ${_loopCount}) {
+		
+		| get the name to something usable
+		/if (${setCommunications.Equal[eqbc]}) {
+			/varset _toonName ${NetBots.Client[${_toon}]}
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/if (${DanNet.FullNames}) {
+				/varset _toonName ${_DNarray.Arg[${_toon},|].Right[-${Int[${Math.Calc[${MacroQuest.Server.Length}+1]}]}]}
+			} else {
+				/varset _toonName ${_DNarray.Arg[${_toon},|]}
+			}
+		}
+	
 		| healers ignore the rampage tank
 		/if (${validate_class[FALSE, |CLR|PAL|DRU|SHM]}) {
-			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${NetBots[${NetBots.Client[${_toon}]}]}]}) /continue
+			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${_toonName}]}) /continue
 		}
 
 
@@ -902,6 +917,9 @@ sub check_buffs_BC()
 
 			| no BC Buff
 			/if (!${Bool[${Buff${_buff}}]}) /continue
+			
+			| bcbuff someone else bitches...
+			/if (${_toonName.Equal[${Me.DisplayName}]}) /continue
 	
 			| no class to buff?
 			/if (!${Bool[${BCBuff${_buff}Class}]}) /continue
@@ -910,31 +928,40 @@ sub check_buffs_BC()
 			/if (${Raid.Members} && ${Buff${_buff}noBCinRaid}) /continue
 
 			| buffee is dead?			
-			/if (!${Bool[${Spawn[pc ${NetBots.Client[${_toon}]}].ID}]} || ${Spawn[pc ${NetBots.Client[${_toon}]}].Dead}) /continue
+			/if (!${Bool[${Spawn[pc ${_toonName}].ID}]} || ${Spawn[pc ${_toonName}].Dead}) /continue
 			
 			| targets class not listed
-			/if (!${BCBuff${_buff}Class.Find[${Spawn[pc ${NetBots.Client[${_toon}]}].Class.ShortName}]}) /continue
+			/if (!${BCBuff${_buff}Class.Find[${Spawn[pc ${_toonName}].Class.ShortName}]}) /continue
 
 			| bufeee out of range
-			/if (${Spawn[pc ${NetBots.Client[${_toon}]}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
+			/if (${Spawn[pc ${_toonName}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
 
 			| is the spell ready?
 			/if (!${Me.SpellReady[${Buff${_buff}}]} && ${Me.Gem[${Buff${_buff}}]}) /continue
 
-			| spell stacks ?
-			/if (!${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
+			| stacking?
+			/if (${setCommunications.Equal[eqbc]}) {
+				/if (!${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
+			} else /if (${setCommunications.Equal[dannet]}) {
+				
+				/dquery ${_toonName} -q "Spell[${Buff${_buff}}].Stacks" -o _DNqout
+				/if (!${_DNqout}) /continue
 
+				| has the buff?
+				/dquery ${_toonName} -q "Me.Buff[${Buff${_buff}chk}].Duration" -o _DNqout
+				/if (${Bool[${_DNqout}]}) /continue
+			}
+			
+			
 			/if (${Me.CurrentMana} > ${Spell[${Buff${_buff}}].Mana}) { 
 				| bards STFU
 				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-  		  | VSPELL BC Buff ${sep} ${csp}${Buff${_buff}}\ax ${sep} [${cpc}${NetBots.Client[${_toon}]}\ax]
-				| /call MQ2Cast "${Buff${_buff}}" ${buffGem} 10s -targetid|${NetBots[${NetBots.Client[${_toon}]}].ID} 
-				
-				/if (${validate_cast[FALSE, spell, "${Buff${_buff}}", ${NetBots[${NetBots.Client[${_toon}]}].ID}]})	/call core_cast2 "${Buff${_buff}}" ${buffGem} ${NetBots[${NetBots.Client[${_toon}]}].ID}
+
+				| can we cast the spell already				
+				/if (${validate_cast[FALSE, spell, "${Buff${_buff}}", ${Spawn[pc ${_toonName}].ID}]})	/call core_cast2 "${Buff${_buff}}" ${buffGem} ${Spawn[${_toonName}].ID} FALSE
 			}
 		/next _buff
-		/varcalc _toon ${_toon}+1
-	}
+	/next _toon
 
 	UPDATEHUD FALSE
 /return
@@ -979,7 +1006,7 @@ sub check_ammo()
 	/next _count
 /return
 
-${FindItemCount[=${RangeItemSummon.Arg[${_count},|]}]} > ${RangeItemCount}
+
 
 |***
  *	DES: Baby got back.
@@ -1141,16 +1168,16 @@ sub do_rest()
 			}			
 
 			/if (${Select[${Me.Class.ShortName},CLR]}) {
-				/if (${switchOverrideCombatheal}) {
+				/if (${switchOverrideCombat}) {
 					/if ((${switchHealGroup} || ${switchHealXtarget}) && ${SpawnCount[npc radius ${MobAgro} playerstate 4]}) {
 						/call check_heal_group_${Me.Class.ShortName}
 					}
 				}				
 				
 			} else /if (${Select[${Me.Class.ShortName},DRU]}) {
-				/if (${switchHealGroup} && ${switchOverrideCombatheal}) /call check_heal_group_${Me.Class.ShortName}
+				/if (${switchHealGroup} && ${switchOverrideCombat}) /call check_heal_group_${Me.Class.ShortName}
 			} else /if (${Select[${Me.Class.ShortName},SHM]}) {
-				/if (${switchHealGroup} && ${switchOverrideCombatheal}) /call check_heal_group_${Me.Class.ShortName}
+				/if (${switchHealGroup} && ${switchOverrideCombat}) /call check_heal_group_${Me.Class.ShortName}
 				/if (${Me.PctMana} < 60*.${tmpHealOverride} && !${flagCallNeedRez}) /call check_cani
 			} else /if (${Select[${Me.Class.ShortName},ENC]}) {
 			} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
@@ -1269,7 +1296,6 @@ sub click_item()
 		/if (${Spawn[${Target.ID}].PctHPs} < 5*.${tmpHealOverride}) /break
 		/if (${is_target_dead[${Target2Kill}]}) /break
 		/if (!${Bool[${clickItem${_count}}]}) /continue
-		| /if (!${Me.ItemReady[${clickItem${_count}}]) /continue
 		AMIDEAD
 		CHECKTIE
 		CHECKINPUTS
@@ -1366,7 +1392,7 @@ sub sort_cursor(bool _ignoreTimer)
 sub set_xtarget()
 	/if (!${validate_expansion[FALSE, |16]}) /return	
 	/if (!${Select[${Me.Class.ShortName},SHM,CLR,PAL,DRU]}) {
-		/call echo_bitch EQBC
+		/call echo_bitch MQWindow
 		/if (${Defined[switchHealXtarget]}) /call writeINI switchHealXtarget Heal FALSE 
 		/return
 	}
@@ -2086,7 +2112,7 @@ sub cast_AA_snare(int _tmpID)
 	| set AA for snaring
 	/declare _debuffSnare string local
 	/if (${validate_class[FALSE, |RNG|DRU]}) /varset _debuffSnare Entrap
-	/if (${validate_class[FALSE, |WAR]}) /varset _debuffSnare Knee Strike
+	/if (${validate_class[FALSE, |WAR]}) /varset _debuffSnare Call of Challenge
 	/if (${validate_class[FALSE, |ROG]}) /varset _debuffSnare Ligament Slice
 	/if (${validate_class[FALSE, |NEC|SHD]}) /varset _debuffSnare Encroaching Darkness
 	/if (${validate_class[FALSE, |WIZ]}) /varset _debuffSnare Atol's Shackles	
@@ -2299,7 +2325,7 @@ sub cast_break()
 
 |***
  *	DES: Cures/removes debuffs, we hope...
- *	USE: netbots are automatic.
+ *	USE: 
  *	INI: 
  *  NOTE: 
  ***|
@@ -2312,7 +2338,7 @@ sub cast_cure()
 	
 	UPDATEHUD "HEAL Cure"
 
-	| if i'm fine skip to netbots check
+	| if i'm fine skip to everyone else
 	/if (!${Debuff.Counters}) {
 		/if (!${Bool[${Group.Members}]} || ${switchPull} || ${switchAgro}) /return
 	} else /if (${Debuff.Counters}) {
@@ -2322,76 +2348,158 @@ sub cast_cure()
 			/if (${validate_cast[FALSE, alt, "Purify Body", ${Me.ID}]}) /call core_cast2 "Purify Body" alt 0 FALSE
 		| paladin, Cleric, Shaman, Druid
 		} else /if (${Select[${Me.Class.ShortName},PAL,CLR,SHM,DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
-			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased}) {
+			/if (${Debuff.Curses} || ${Debuff.Poisons} || ${Debuff.Diseases}) {
 				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 			}
 		| Necromancer
 		} else /if (${Select[${Me.Class.ShortName},NEC]} && ${Me.AltAbilityReady[Embrace the Decay]}) {
-			/if (${Debuff.Cursed} || ${Debuff.Poisoned} || ${Debuff.Diseased} || ${Debuff.Corruption}) {
+			/if (${Debuff.Curses} || ${Debuff.Poisons} || ${Debuff.Diseases} || ${Debuff.Corruptions}) {
 				/if (${validate_cast[FALSE, alt, "Embrace the Decay", ${Me.ID}]}) /call core_cast2 "Embrace the Decay" alt 0 FALSE
 			}
 		}
 		
-		/if (${Debuff.Cursed} && ${Me.ItemReady[${cureCurseItem}]}) {
+		/if (${Debuff.Curses} && ${Me.ItemReady[${cureCurseItem}]}) {
 			/if (${validate_cast[FALSE, item, "${cureCurseItem}", ${Me.ID}]}) /call core_cast2 "${cureCurseItem}" item ${Me.ID} FALSE
-		} else /if (${Debuff.Corrupted} && ${Me.ItemReady[${cureCorruptItem}]}) {
+		}
+		
+		/if (${Debuff.Corruptions} && ${Me.ItemReady[${cureCorruptItem}]}) {
 			/if (${validate_cast[FALSE, item, "${cureCorruptItem}", ${Me.ID}]}) /call core_cast2 "${cureCorruptItem}" item ${Me.ID} FALSE
-		} else /if (${Debuff.Poisoned} && ${Me.ItemReady[${curePoisonItem}]}) {
+		}
+		
+		/if (${Debuff.Poisons} && ${Me.ItemReady[${curePoisonItem}]}) {
 			/if (${validate_cast[FALSE, item, "${curePoisonItem}", ${Me.ID}]}) /call core_cast2 "${curePoisonItem}" item ${Me.ID} FALSE
-		} else /if (${Debuff.Diseased} && ${Me.ItemReady[${cureDiseaseItem}]}) {
+		}
+		
+		/if (${Debuff.Diseases} && ${Me.ItemReady[${cureDiseaseItem}]}) {
 			/if (${validate_cast[FALSE, item, "${cureDiseaseItem}", ${Me.ID}]}) /call core_cast2 "${cureDiseaseItem}" item ${Me.ID} FALSE
 		}
 	}
 
-	| /if (!${validate_plugin[FALSE, |mq2netbots]}) /return
 
 	/declare _count int local 0
-	/for _count 1 to ${Math.Calc[${NetBots.Client.Count[ ]}+1]}
-		AMIDEAD
-		CHECKINPUTS
 
-		| are they debuffed in the zone and alive?
-		/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count} <= 0 || !${Spawn[p${NetBots.Client[${_count}]}].ID} || ${Spawn[pc ${NetBots.Client[${_count}]}].Dead}) /continue
+	/if (${setCommunications.Equal[eqbc]}) {
+		/for _count 1 to ${Math.Calc[${NetBots.Client.Count[ ]}+1]}
+			AMIDEAD
+			CHECKINPUTS
 
-		| AA Radient Cure 
-		| 100' 1 min
-		/if (${validate_class[FALSE, |PAL|SHM|CLR|DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
-			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
+			| are they debuffed in the zone and alive?
+			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count} <= 0 || !${Spawn[p${NetBots.Client[${_count}]}].ID} || ${Spawn[pc ${NetBots.Client[${_count}]}].Dead}) /continue
+
+			| AA Radient Cure 
+			| 100' 1 min
+			/if (${validate_class[FALSE, |PAL|SHM|CLR|DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
+				/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
+					/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
+				}
+				/return
 			}
-			/return
-		}
 
-		| AA Purify Soul
-		| 200' 5 min
-		/if (${validate_class[FALSE, |PAL|CLR|DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
-			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${validate_cast[FALSE, alt, "Purify Soul", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			| AA Purify Soul
+			| 200' 5 min
+			/if (${validate_class[FALSE, |PAL|CLR|DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
+				/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
+					/if (${validate_cast[FALSE, alt, "Purify Soul", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+				}
+				/return
 			}
-			/return
-		}
+			
+			| AA Group Purify Soul . were in deep shit if we've gotten this far.
+			| 0/100' 15 min
+			/if (${validate_class[FALSE, |CLR|DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
+				/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
+					/if (${validate_cast[FALSE, alt, "Group Purify Soul", ${Me.ID}]} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast2 "Group Purify Soul" alt 0 FALSE
+				}
+				/return
+			}
+
+			| cure with spell
+			/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed}) {
+				/if (${validate_cast[FALSE, spell, "${cureCurse}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted}) {
+				/if (${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			} else /if (${Bool[${curePoison}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned}) {
+				/if (${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased}) {
+				/if (${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
+			}
+
+		/next _count	
+	} else /if (${setCommuniucations.Equal[dannet]}) {
+		/declare _toonName string local
+		/declare _DNqout string local
+		/declare _DNarray string local ${DanNet.Peers[all]}
 		
-		| AA Group Purify Soul . were in deep shit if we've gotten this far.
-		| 0/100' 15 min
-		/if (${validate_class[FALSE, |CLR|DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
-			/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
-				/if (${validate_cast[FALSE, alt, "Group Purify Soul", ${Me.ID} && ${Spawn[pc ${NetBots.Client[${_count}]}].Distance} <= 100) /call core_cast2 "Group Purify Soul" alt 0 FALSE
+
+		| each toon
+		/for _count 1 to ${Int[${Math.Calc[${_DNarray.Count[|]}]}]})
+			AMIDEAD
+			CHECKINPUTS
+			
+			| get the name to something usable
+			/if (${DanNet.FullNames}) {
+				/varset _toonName ${_DNarray.Arg[${_toon},|].Right[-${Int[${Math.Calc[${MacroQuest.Server.Length}+1]}]}]}
+			} else {
+				/varset _toonName ${_DNarray.Arg[${_toon},|]}
 			}
-			/return
-		}
+					
+			| toon here?
+			/if (!${Spawn[pc ${_toonName}].ID}) /continue
+				
+			| toon dead?
+			/if (${Spawn[pc ${_toonName}].Dead}) /continue
+		
+			| already checked me
+			/if (${_toonName.Equal[${Me.DisplayName}]}) /continue		
 
-		| cure with spell
-		/if (${Bool[${cureCurse}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Cursed}) {
-			/if (${validate_cast[FALSE, spell, "${cureCurse}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureCurse}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		} else /if (${Bool[${cureCorrupt}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Corrupted}) {
-			/if (${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		} else /if (${Bool[${curePoison}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Poisoned}) {
-			/if (${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		} else /if (${Bool[${cureDisease}]} && ${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Diseased}) {
-			/if (${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
-		}
+			| are they debuffed?
+			/dquery ${_toonName} -q "Debuff" -o _DNqout
+			/if (!${_DNqout}) /continue		
 
-	/next _count
+
+			| AA Radient Cure 
+			| 100' 1 min
+			/if (${validate_class[FALSE, |PAL|SHM|CLR|DRU]} && ${Me.AltAbilityReady[Radiant Cure]}) {
+				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
+				/continue
+			}
+
+			| AA Purify Soul
+			| 200' 5 min
+			/if (${validate_class[FALSE, |PAL|CLR|DRU]} && ${Me.AltAbilityReady[Purify Soul]}) {
+				/if (${validate_cast[FALSE, alt, "Purify Soul", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "Purify Soul" alt ${Spawn[pc ${_toonName}].ID} FALSE
+				/continue
+			}
+			
+			| AA Group Purify Soul . were in deep shit if we've gotten this far.
+			| 0/100' 15 min
+			/if (${validate_class[FALSE, |CLR|DRU]} && ${Me.AltAbilityReady[Group Purify Soul]}) {
+				/if (${validate_cast[FALSE, alt, "Group Purify Soul", ${Me.ID}]} && ${Spawn[pc ${_toonName}].Distance} <= 100) /call core_cast2 "Group Purify Soul" alt 0 FALSE
+				/continue
+			}
+
+			| cure with spell
+			
+			/if (${Bool[${cureCurse}]} && ${DanNet[${_toonName}].Observe["Debuff.Curses"]}) {
+				/if (${_DNqout} && ${validate_cast[FALSE, spell, "${cureCurse}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${cureCurse}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
+			}
+			
+			/if (${Bool[${cureCorrupt}]} && ${DanNet[${_toonName}].Observe["Debuff.Corruptions"]}) {
+				/if (${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${_toonName}]}]}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
+			}
+			
+			/if (${Bool[${curePoison}]} && ${DanNet[${_toonName}].Observe["Debuff.Poisons"]}) {
+				/if (${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
+			}
+			
+			/if (${Bool[${cureDisease}] && ${DanNet[${_toonName}].Observe["Debuff.Diseases"]}}) {
+				/if (${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
+			}
+
+		/next _count
+		
+	}
+	
 	UPDATEHUD FALSE
 /return
 
@@ -4012,7 +4120,8 @@ sub broadcast_status()
 	/declare _count int local
 	/declare _build string local 
 	/declare _INIstatusName string local
-
+	/declare _toonName string local FALSE
+	
 	| create your toon Core.INI entry
 	/declare _INIstatus string local ${Ini[${INICore},"transmit_status","${Me.DisplayName}"]}
 
@@ -4022,22 +4131,47 @@ sub broadcast_status()
 	}
 
 	| creat the hud display list relative to who has coreAuto OFF and is a group member
-	/for _count 1 to ${NetBots.Counts}
-		/varset _INIstatus ${Ini[${INICore},"transmit_status","${NetBots.Client[${_count}]}"]}
-		/if (${_INIstatus.Equal[DISABLED]}) /continue
-		
-		/varset _INIstatusName ${NetBots.Client[${_count}]}
-		
-		/if (!${Bool[${_INIstatus}]} && ${Group.Member[${_INIstatusName}].ID}) {
+	
+	| EQBC/NETBOTS
+	/if (${setCommunications.Equal[eqbc]}) {
+		/for _count 1 to ${NetBots.Counts}
+			/varset _INIstatus ${Ini[${INICore},"transmit_status","${NetBots.Client[${_count}]}"]}
+			/if (${_INIstatus.Equal[DISABLED]}) /continue
 			
-			| do we want to use CLS or toon name?
-			/if (!${switchUseCLSinHUD}) {
-				/varset _build ${_build} ${If[${_INIstatus},,${_INIstatusName.Left[3]}]}
-			} else /if (${switchUseCLSinHUD}) {
-				/varset _build ${_build} ${If[${_INIstatus},,${Spawn[pc ${_INIstatusName}].Class.ShortName}]}
+			/varset _INIstatusName ${NetBots.Client[${_count}]}
+			
+			/if (!${Bool[${_INIstatus}]} && ${Group.Member[${_INIstatusName}].ID}) {
+				
+				| do we want to use CLS or toon name?
+				/if (!${switchUseCLSinHUD}) {
+					/varset _build ${_build} ${If[${_INIstatus},,${_INIstatusName.Left[3]}]}
+				} else /if (${switchUseCLSinHUD}) {
+					/varset _build ${_build} ${If[${_INIstatus},,${Spawn[pc ${_INIstatusName}].Class.ShortName}]}
+				}
 			}
-		}
-	/next _count
+		/next _count
+		
+	| DanNet
+	} else /if (${setCommunications.Equal[dannet]}) {
+		/for _count 1 to ${DanNet.PeerCount}
+			/varset _toonName ${DanNet.Peers.Arg[${_count},|].Right[-${Int[${Math.Calc[${MacroQuest.Server.Length}+1]}]}]}
+
+			/varset _INIstatus ${Ini[${INICore},"transmit_status","${_toonName}"]}
+			/if (${_INIstatus.Equal[DISABLED]}) /continue
+			
+			/varset _INIstatusName ${_toonName}
+			
+			/if (!${Bool[${_INIstatus}]} && ${Group.Member[${_INIstatusName}].ID}) {
+				
+				| do we want to use CLS or toon name?
+				/if (!${switchUseCLSinHUD}) {
+					/varset _build ${_build} ${If[${_INIstatus},,${_INIstatusName.Left[3]}]}
+				} else /if (${switchUseCLSinHUD}) {
+					/varset _build ${_build} ${If[${_INIstatus},,${Spawn[pc ${_INIstatusName}].Class.ShortName}]}
+				}
+			}
+		/next _count
+	}
 
 	/varset hudBroadcast ${_build}
 	/call create_timer timer_check_status ${tCheck_status}
@@ -4806,6 +4940,7 @@ sub check_harmonious()
  *  NOTE:
  ***|
 sub prep_combat()
+	/if (${Me.Zoning}) /return FALSE
 	/declare _gokillstuff bool local FALSE
 	CLEARCURSOR
 	CHECKINPUTS
@@ -5211,7 +5346,7 @@ sub check_for_item(string _verbage)
 
 |***
  *	DES: one line echo bitch
- *	USE: /call echo_bitch [EQBC|ECHO]
+ *	USE: /call echo_bitch [MQWindow|ECHO]
  *	INI: 
  *  NOTE:
  ***| 	
@@ -5224,7 +5359,7 @@ sub echo_bitch(string _out)
 	/if (!${Range.Between[1,${bitchcount}:${_rnd}]}) /goto :loopgetrandom
 	/varset _bitch ${bitch${_rnd}}
 
-	/if (${_out.Find[EQBC]}) {
+	/if (${_out.Find[MQWindow]}) {
 		VOUT \a-g${_bitch}\ax
 	} else /if (${_out.Find[ECHO]}) {
 		ECHOCHANNEL ${_bitch}
@@ -6461,17 +6596,18 @@ sub watch_for_rezbox()
 				}
 				/delay 1s
 				/nomodkey /notify RespawnWnd RW_SelectButton leftmouseup
+				
 			}
 
-			:cleardeadmarkers
-				/delay 2s !${Me.State.Equal[HOVER]}
-				/delay 2s !${Me.Hovering}
-				/delay 2s !${Me.Dead}
-				/call set_stop NOECHO
-				/varset switchAmIDead FALSE
-				/varset validRezFound FALSE
-				/varset rezWindowPct 0
-				/return TRUE			
+			| Clear ALL THE MARKERS!
+			/delay 2s !${Me.State.Equal[HOVER]}
+			/delay 2s !${Me.Hovering}
+			/delay 2s !${Me.Dead}
+			/call set_stop NOECHO
+			/varset switchAmIDead FALSE
+			/varset validRezFound FALSE
+			/varset rezWindowPct 0
+			/return TRUE			
 		} else /if (!${validRezFound}) {
 			/nomodkey /notify ConfirmationDialogBox No_Button leftmouseup	
 			/delay 5

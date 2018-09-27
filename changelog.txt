@@ -13,10 +13,39 @@
 
 
 
+
+
+
+
+20180926
+NOTES: common2, declare2, clr2 and enc2 are removed. back to 1 file for each. read below
+- core.ini
+  -- removed the TGB setting/switch
+  -- NEW entry for communications core.ini->[comm]
+    -- [comm]->SetCommunications=[dannet|eqbc]
+       Set to which network communications you want to be using
+       If you set it to something else, the shit wont work
+- /comm [eqbc|dannet]
+  -- in macro command to swap communication types on the fly. this is a broadcasted command
+  -- /comm [eqbc] set Core to work off EQBC/NetBots
+  -- /comm [dannet] set Core to run off of MQ2DanNet for communications
+  -- if you dont have the plugin loaded prior to running the command, it will bitch at you and do nothing else
+- /bcsay converted to a #bind
+- /gtfo converted to a #bind
+- cast_AA_snare()
+  -- corrected the WAR stare to Call of Challenge
+- class.shm.inc
+  -- /shm [epic] forces clicking the epic
+- class.bst.inc
+  -- still cannot spell continue correctly. maybe i should give up
+- class.enc.inc
+  -- corrected a bool /if statemnt for auspice rune
+  
+
 20180923.01
 - events.inc
   -- converted to core_cast2() routines
-- core_cast() has been removed fro the code.
+- core_cast() has been removed from the code.
 - class.brd.inc
   -- converted to core_cast2() routine
 

@@ -713,7 +713,7 @@ sub Bind_setSHM(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |aggressive|cannihps|cannimanna|fade|groupheal|grouphot|healpoint|rampage|rod|spiregroup|spireraid|surge|talisman|xtradius|xttime
+  /declare _type string	local |aggressive|cannihps|cannimanna|epic|fade|groupheal|grouphot|healpoint|rampage|rod|spiregroup|spireraid|surge|talisman|xtradius|xttime
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -752,6 +752,12 @@ sub Bind_setSHM(string _classType, string _verbage)
 	| use Modulation Rods
 	} else /if (${Bool[${_classType.Equal[rod]}]}) {
 		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
+
+	| force epic click
+	} else /if (${Bool[${_classType.Equal[epic]}]}) {
+		/if (${Me.Casting.ID}) /stopcast
+		/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE	
+		/return
 
 	| use group Heals
 	} else /if (${Bool[${_classType.Equal[groupheal]}]}) {

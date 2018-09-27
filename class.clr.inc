@@ -17,6 +17,7 @@ sub core_CLR()
 	AMIDEAD
 	CHECKINPUTS
 	CHECKTIE
+
 	/if (${coreAuto} && ${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 
   /if (${coreAuto} && ${switchHealXtarget}) {
@@ -62,7 +63,7 @@ sub core_CLR()
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
 			/call click_DPS_${Me.Class.ShortName}
 		}
-		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
+		/if (${coreAuto} && ${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
 
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
@@ -364,11 +365,17 @@ sub check_heal_group_CLR()
 		/next _count 
 	}			
 
- 	| Broadcast single heal over time
+ 	| single heal over time
 	/if (${Bool[${healHoT}]}) {
 		/if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
-			/if (${NetBots[${Spawn[ID ${hurtID}].DisplayName}].Stacks[${healHoT}]} && !${Bool[${NetBots[${Spawn[ID ${hurtID}].DisplayName}].ShortBuff.Find[${Spell[${healHoT}].ID}]}]}) {
-				/if (${validate_cast[FALSE, spell, "${healHoT}", ${hurtID}]}) /call core_cast2 "${healHoT}" 0 ${hurtID} FALSE
+			/if (${setCommunications.Equal[dannet]}) {	
+				/if (${DanNet[${Spawn[ID ${hurtID}].DisplayName}].Observe["Spell[${healHoT}].Stacks"]} && !${DanNet[${Spawn[ID ${hurtID}].DisplayName}].Observe["Spell[${healHoT}].Duration"]}) {
+					/if (${validate_cast[FALSE, spell, "${healHoT}", ${hurtID}]}) /call core_cast2 "${healHoT}" 0 ${hurtID} FALSE
+				}
+			} else /if (${setCommunications.Equal[eqbc]}) {
+				/if (${NetBots[${Spawn[ID ${hurtID}].DisplayName}].Stacks[${healHoT}]} && !${Bool[${NetBots[${Spawn[ID ${hurtID}].DisplayName}].ShortBuff.Find[${Spell[${healHoT}].ID}]}]}) {
+					/if (${validate_cast[FALSE, spell, "${healHoT}", ${hurtID}]}) /call core_cast2 "${healHoT}" 0 ${hurtID} FALSE
+				}
 			}
 		}
 	}
@@ -630,13 +637,21 @@ sub cast_divine_arbitration()
 	AMIDEAD
 	SIMPLEEXIT
 	/if (${Bool[${Me.Buff[Divine Aura]}]} || ${Bool[${Me.Buff[Divine Barrier]}]} || ${Bool[${Me.Buff[Sacred Barrier]}]}) /return
+	
+	| Second epic shield
   /if (${Me.ItemReady[${CLREpic2}]}) {    
     /if (${validate_cast[FALSE, item, "${CLREpic2}", ${Me.ID}]}) /call core_cast2 "${CLREpic2}" item 0 FALSE
+    
+  | First epic shield  
   } else /if (${Me.ItemReady[${CLREpic15}]}) {
     /if (${validate_cast[FALSE, item, "${CLREpic15}", ${Me.ID}]}) /call core_cast2 "${CLREpic15}" item 0 FALSE
+    
+  | AA arb
   } else /if (${Me.AltAbilityReady[Divine Arbitration]}) {
     /if (${validate_cast[FALSE, alt, "Divine Arbitration", ${Me.ID}]}) /call core_cast2 "Divine Arbitration" alt 0 FALSE
   }
+  
+  | heal speed boost
   /if (${validate_cast[FALSE, alt, "Celestial Rapidity", ${Me.ID}]}) /call core_cast2 "Celestial Rapidity" alt 0 FALSE
 	
 	/if (${setDivinetoGroupHeal} && ${useGroupHeal} && ${Me.SpellReady[${healWholeGroup}]}) {
@@ -732,25 +747,62 @@ sub cast_temp_pet_CLR()
 sub check_heal_ward()
 	/if (!${Me.SpellReady[${healWard}]}) /return
 	/if (${coreAuto}) /call create_timer timer_heal_ward ${tHealWard}
+
+	AMIDEAD
+	SIMPLEEXIT
+	CHECKINPUTS
+	CHECKTIE
 	
-	/declare _healwardID int local ${Spell[${healWard}].ID}
 	/declare _wardToon string local
 	/declare _count int local
 	/declare _toon string local ${healWardToon}
+	/declare _DNqout string local
 
-	/for _count 1 to ${_toon.Count[|]}
-		AMIDEAD
-		SIMPLEEXIT
-		CHECKINPUTS
-		CHECKTIE
-		/varset _wardToon ${_toon.Arg[${_count},|]}
-		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${_wardToon}]}) /continue
 
+	/if (${setCommunications.Equal[dannet]}) {
+		/for _count 1 to ${_toon.Count[|]}
+			/varset _wardToon ${_toon.Arg[${_count},|]}
+			
+			| ready?
+			/if (!${Me.SpellReady[${healWard}]}) /return
+			
+			| me?
+			/if (${_wardToon.Equal[${Me.DisplayName}]} && !${Me.Song[${healWard}].ID}) {
+				/if (${validate_cast[FALSE, spell, "${healWard}", ${Me.ID}]}) /call core_cast2 "${healWard}" 0 ${Me.ID} FALSE
+				/continue
+			}
+			
+			| if no network toons. were done here..		
+			/if (!${validate_plugin[FALSE, |MQ2DanNet]}) /return
+			
+			| not here?
+			/if (!${Spawn[pc ${_wardToon}].ID}) /continue 
+	 
+	 		| rampage tank? fuck those guys!
+			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${_wardToon}]}) /continue
+
+			| dead?
+			/if (${Spawn[${_wardToon}].Type.Equal[corpse]}) /continue
+
+			| spell stacks ?
+			/dquery ${_wardToon} -q "Spell[${healWard}].Stacks" -o _DNqout
+			/if (!${_DNqout}) /continue
+			
+			| has the buff?
+			/dquery ${_wardToon} -q "Me.Song[${healWard}].ID" -o _DNqout
+			/if (${Bool[${_DNqout}]}) /continue
+			
+			/if (${validate_cast[FALSE, spell, "${healWard}", ${Spawn[pc ${_wardToon}].ID}]}) /call core_cast2 "${healWard}" 0 ${Spawn[pc ${_wardToon}].ID} FALSE
+
+		/next _count	
+
+	} else /if (${setCommunications.Equal[EQBC]}) {
 		/if (${Bool[${Spawn[${NetBots[${_wardToon}].ID}]}]} && ${Spawn[id ${NetBots[${_wardToon}].ID}].Distance} < ${Spell[${healWard}].MyRange} && ${Me.SpellReady[${healWard}]}) {
 			/if (${Bool[${NetBots[${_wardToon}].ShortBuff.Find[${_healwardID}]}]} || ${Spawn[${_wardToon}].Type.Equal[corpse]}) /continue
 			/if (${validate_cast[FALSE, spell, "${healWard}", ${Spawn[${_wardToon}].ID}]}) /call core_cast2 "${healWard}" 0 ${Spawn[${_wardToon}].ID} FALSE
-		}
-	/next _count	
+		}	
+	}
+	
 /return
 
 
@@ -786,6 +838,7 @@ sub auto_control_swap()
 	/if (${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 /return
  ***|
+
 
  
  |***

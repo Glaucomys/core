@@ -285,8 +285,13 @@ sub fix_ini_namedlist()
  ***|
 sub fix_ini_current()
 
-	| core.ini
+	| core.ini entries adjusted here EQBCPort
 	
+
+		| 20180926	
+		/ini "${INICore}" "General" "setTGB" NULL
+		/ini "${INICore}" "General" "EQBCServer" NULL
+		/ini "${INICore}" "General" "EQBCPort" NULL
 	
 		| 20180822
 		| /call DeclareCoreIniVar mqlog										string	General FALSE
@@ -317,8 +322,6 @@ sub fix_ini_current()
 
 
 		/ini "${INIClass}" "Common" "verbose" NULL	
-			| /call setINIVar switchOverrideCombatheal				string	Override FALSE
-
 		/ini "${INIClass}" "Override" "switchOverrideCombatheal" NULL	
 
 

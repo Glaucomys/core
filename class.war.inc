@@ -115,7 +115,7 @@ sub get_agro_WAR()
 	/if (${validate_cast[FALSE, disc, "$${DiscCyclone}", ${Target2Kill}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast2 "${DiscCyclone}" disc ${Target2Kill} FALSE
 
 
-	/if (${validate_cast[FALSE, disc, "${DiscShout}", ${Me.ID}]) /call core_cast2 "${DiscShout}" disc 0 FALSE
+	/if (${validate_cast[FALSE, disc, "${DiscShout}", ${Me.ID}]}) /call core_cast2 "${DiscShout}" disc 0 FALSE
 
 	/if (${validate_cast[FALSE, alt, "${AABlastofAnger}", ${Target2Kill}]} && ${Me.TargetOfTarget.Name.NotEqual[${Me.CleanName}]}) /call core_cast2 "${AABlastofAnger}" alt ${Target2Kill} FALSE
 

@@ -145,7 +145,7 @@ sub main(string _ini)
 		} 
 	  AMIDEAD
   
-		| /if (!${timer_check_EQBC}) /call check_one_mind
+		/if (${setCommunications.Equal[EQBC]} && !${timer_check_EQBC}) /call check_one_mind
 		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
 		
 		| what is this for??
@@ -351,14 +351,13 @@ sub initialize_core(string _ini)
  ***|
 sub base_preperation()
 
-	| reset some of the variables so the toons dont act all stupid.
-	| /if (!${Bool[${Raid.Members}]}) {
-	| 	/call Event_noRaid
-	| }
-	
-	| set communications group
+	| set peer communications options
 	/if (${validate_plugin[FALSE, |MQ2DanNet]}) {
 		/djoin ${broadcastGroup}
+		/squelch /dnet localecho ${switchDanLocalEcho}
+		/squelch /dnet commandecho ${switchDanCommandEcho}
+		/squelch /dnet frontdelim ON
+		/squelch /dnet fullnames ${switchDanFullNames}
 	}
 	
 	| fuck these plugins in particular
