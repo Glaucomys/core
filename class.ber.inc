@@ -16,20 +16,17 @@
 sub core_BER()
 	CHECKINPUTS
 	AMIDEAD
-
 	CHECKTIE
 	
-	:killtarget
-	CHECKREZ
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
-
+	/while (${prep_combat[]}) {
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
+		/if (${exit_class_loop[]}) /returnn
 
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
 			/if (${validate_cast[FALSE, disc, "${DiscSlapintheFace}", ${Target2Kill}]} && ${Me.PctAggro} <= 0 && !${Me.Combat}) /call core_cast2 "${DiscSlapintheFace}" disc ${Target2Kill}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
@@ -45,9 +42,6 @@ sub core_BER()
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/call cast_stamina_recovery
 			/call check_ammo
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
 	} 
 /return

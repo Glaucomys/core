@@ -31,17 +31,15 @@ sub core_MAG()
 		}
 	}
 
-	:killtarget
-	CHECKREZ
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		
+	/while (${prep_combat[]}) {
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
+		/if (${exit_class_loop[]}) /return
 
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchPcSwarm}) /call cast_nuke_servant
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
@@ -63,9 +61,6 @@ sub core_MAG()
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
 	}
 /return

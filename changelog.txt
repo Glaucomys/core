@@ -13,11 +13,33 @@
 
 
 
+20181002.00
+- Seriously... Read this..
+  In an attempt to write out the /goto in the main class loops I managed to create a constant crash in the mac caused by the burtn routines.
+  So, to fix this. I have rewritten the following routines:
+  if you find the code acting in a way it shouldnt, let me know.
+  -- prep_combat()
+  -- is_burn_time()
+     -- only sets a bool switch that lets the class loop execute burn routines. switch is reset after every kill. the normal burn controls and conditions still apply
+  -- is_valid_target() is now validate_target()
+     -- the new routine only returns a bool depending on the input mob ID. Where as it used to execute the burn routines as well as set several variable adjustments.
+  -- Burn routines are now executed after combat is set in the main class routine (second line except for zerkers). 
+- check_buffs_BC()
+  -- shouldnt.. hopefully, bcbuff pets anymore
+- class loop controls
+  -- I am removing the /goto loops fom the main class loop in their .INC files.
+- broadcast_status()
+  -- logic correction for dannet addition
+- cast_cure()
+  -- corrected a misspelling
+- class.clr.inc
+  - adjustments to check_heal_ward()
+  - removed cast_temp_pet_CLR(). now uses the common cast_temp_pet()
+  - moved the AA hammer pet to the disc routines
+  - rewrite of the single target HOT spell
+  
 
-
-
-
-20180926
+20180926.00
 NOTES: common2, declare2, clr2 and enc2 are removed. back to 1 file for each. read below
 - core.ini
   -- removed the TGB setting/switch

@@ -17,10 +17,8 @@ sub core_BRD()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
-		
-	:killtarget
-	CHECKREZ
-	
+
+
 	| validate/fix lists
 	/if (!${timer_validate_lists}) {
 		/if (!${SpawnCount[NPC radius ${MobAgro} playerstate 4]}) {
@@ -29,9 +27,10 @@ sub core_BRD()
 		}
 		/call create_timer timer_validate_lists ${tValidate_Lists}
 	}	
-	
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
+
+		
+	/while (${prep_combat[]}) {
+		/if (${exit_class_loop[]}) /return
 	
 		/if (${switchdeBuffMezz}) {
 			/call get_assist_target
@@ -55,6 +54,7 @@ sub core_BRD()
 		
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/if (${switchdeBuffMezz}) {
@@ -80,9 +80,7 @@ sub core_BRD()
 				/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 				/if (${switchModRod} && ${validate_class[FALSE, |BRD]}) /call use_mod_rod
 				/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-				/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-			} else /if (!${coreAuto}) {
-				/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
+			/if (${switchOverrideCombat} || ${is_target_dead[${Target2Kill}]}) /return
 			}
 		} 
 	}

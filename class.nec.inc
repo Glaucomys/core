@@ -17,7 +17,6 @@ sub core_NEC()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
-	CHECKREZ
 
 	/if (${coreAuto}) {
 		/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_bloom
@@ -27,17 +26,15 @@ sub core_NEC()
 		}
 	}
 	
-
-	:killtarget
-	CHECKREZ
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
+	/while (${prep_combat[]}) {
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 		| /if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
+		/if (${exit_class_loop[]}) /return
 	
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchPcSwarm}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
 			/if (!${timer_check_blood}) /call cast_blood ${Target2Kill}
@@ -57,9 +54,6 @@ sub core_NEC()
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}	
 	}	
 /return

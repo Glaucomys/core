@@ -14,20 +14,17 @@
  *  NOTE: 
  ***|
 sub core_CLR()
-	AMIDEAD
-	CHECKINPUTS
-	CHECKTIE
+	/if (${coreAuto}) {
+		/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 
-	/if (${coreAuto} && ${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
-
-  /if (${coreAuto} && ${switchHealXtarget}) {
-  	/if (!${timer_set_xtarget}) {
-	    /call set_xtarget
-	    /call create_timer timer_set_xtarget ${tXHeal}
-	  }	
+	  /if (${switchHealXtarget}) {
+	  	/if (!${timer_set_xtarget}) {
+		    /call set_xtarget
+		    /call create_timer timer_set_xtarget ${tXHeal}
+		  }	
+		}
 	}
 	
-	CHECKREZ
 	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
 		/if (!${check_exit[]} && !${SafeZone} && !${Me.Buff[Revival Sickness].ID} && ${switchVP}) {
@@ -37,10 +34,8 @@ sub core_CLR()
 		}
 	}	
 
-	:killtarget
-	CHECKREZ
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
+
+	/while (${prep_combat[]}) {
 
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
@@ -48,29 +43,28 @@ sub core_CLR()
 		/if (${switchHealCure}) /call cast_cure
 		/if (${doYaulp}) /call cast_yaulp
 
+		/if (${exit_class_loop[]}) /return
 		/if (${isValidTarget}) {
 			CHECKREZ
 			/call set_combat ${combat.Upper}
-			/if (${switchPcSwarm} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
-			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			| /if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
 			/call click_BP
 			/call click_item
+			/if (${switchPcSwarm} && !${Me.Pet.ID}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
 			/call click_DPS_${Me.Class.ShortName}
 		}
-		/if (${coreAuto} && ${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
-
+		
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+			/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
 	}
 
@@ -108,6 +102,11 @@ sub disc_CLR()
 			/if (${validate_cast[FALSE, alt, "Turn Undead", ${Target2Kill}]} && !${Raid.Members}) /call core_cast2 "Turn Undead" alt ${Target2Kill} FALSE
 		}
 	}
+	
+	| pet AA hammer	
+	/if (${burnForce} || (${burnAuto} && ${NameList.Find[${Target.DisplayName}]})) {
+		/if (${validate_cast[FALSE, alt, "Celestial Hammer", ${Target2Kill}]}) /call core_cast2 "Celestial Hammer" alt ${Target2Kill} FALSE
+	}	
 /return
 
 
@@ -207,15 +206,16 @@ sub check_heal_group_CLR()
 	}
 	
 	| if no one is hurt. back to the start
-	/if (!${hurtCount}) /return	
+	/if (!${hurtCount}) {
+		UPDATEHUD FALSE
+		/return	
+	}
 	
 	| Complete Heal
 	| requires group roll Main Tank set to function
-	/if (${switchCompleteHeal}) { 
-		/if (${Spawn[${Group.MainTank.ID}].ID}) { 
-			/if (${hurtID} == ${Group.MainTank.ID} && ${Spawn[${Group.MainTank.ID}].PctHPs} <= ${${Group.MainTank.Class.ShortName}Point}*.${CompleteHealpct}) {
-				/if (${validate_cast[FALSE, spell, "Complete Heal", ${Group.MainTank.ID}]}) /call core_cast2 "Complete Heal" 0 ${Group.MainTank.ID} check_HP_${Me.Class.ShortName}
-			}
+	/if (${switchCompleteHeal} && ${hurtID} == ${Group.MainTank.ID} ) { 
+		/if (${Spawn[${Group.MainTank.ID}].PctHPs} <= ${${Group.MainTank.Class.ShortName}Point}*.${CompleteHealpct} && ${Spawn[${Group.MainTank.ID}].ID}) {
+			/if (${validate_cast[FALSE, spell, "Complete Heal", ${Group.MainTank.ID}]}) /call core_cast2 "Complete Heal" 0 ${Group.MainTank.ID} check_HP_${Me.Class.ShortName}
 		}
 	}
 
@@ -280,7 +280,6 @@ sub check_heal_group_CLR()
   /if (${useGroupHeal}) {
 	  /if (${hurtCount} >= 2 && ${Me.SpellReady[${healWholeGroup}]}) {
 	    /if (${validate_cast[FALSE, spell, "${healWholeGroup}", ${Me.ID}]}) /call core_cast2 "${healWholeGroup}" 0 0 FALSE
-	    /return
 	  } 
 	}
 	
@@ -327,10 +326,11 @@ sub check_heal_group_CLR()
 	AMIDEAD
 	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
  	CHECKINPUTS
+ 	CHECKREZ
  	
  	| agressive healing sort
  	/if (${switchHealAggressive}) {
- 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
+ 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :CHGinterventionheals
  	} 
  	
  	
@@ -345,7 +345,7 @@ sub check_heal_group_CLR()
 	}	
 	
 	| Intervention Heals
-	:interventionheals
+	:CHGinterventionheals
   /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/for _count 1 to 4
 			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
@@ -368,8 +368,15 @@ sub check_heal_group_CLR()
  	| single heal over time
 	/if (${Bool[${healHoT}]}) {
 		/if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+			
 			/if (${setCommunications.Equal[dannet]}) {	
-				/if (${DanNet[${Spawn[ID ${hurtID}].DisplayName}].Observe["Spell[${healHoT}].Stacks"]} && !${DanNet[${Spawn[ID ${hurtID}].DisplayName}].Observe["Spell[${healHoT}].Duration"]}) {
+				/declare _stacks bool local FALSE
+				/declare _has bool local FALSE
+	
+				/dquery ${Spawn[${hurtID}].DisplayName} -q "Spell[${healHoT}].Stacks" -o _stacks
+				/dquery ${Spawn[${hurtID}].DisplayName} -q "Me.Song[${healHoT}].Duration" -o _has
+			
+				/if (${_stacks} && !${_has}) {
 					/if (${validate_cast[FALSE, spell, "${healHoT}", ${hurtID}]}) /call core_cast2 "${healHoT}" 0 ${hurtID} FALSE
 				}
 			} else /if (${setCommunications.Equal[eqbc]}) {
@@ -379,6 +386,8 @@ sub check_heal_group_CLR()
 			}
 		}
 	}
+	
+		
 
   | check for group debuffs
 	/if (${switchHealCure}) {
@@ -458,7 +467,7 @@ sub check_heal_XTarget_CLR()
 	}
 	
 	/if (${switchHealAggressive}) {
-		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
+		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :CHXTinterventionheals
 	} 
 	
 	| Remedy Heals 
@@ -472,7 +481,7 @@ sub check_heal_XTarget_CLR()
 	}	
 	
 	| Intervention Heals
-	:interventionheals
+	:CHXTinterventionheals
   /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/for _count 1 to 4
 			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
@@ -527,7 +536,7 @@ sub check_HP_CLR()
 		/next _count
 	}
 
-	/if (${hurtID}  == ${Me.ID}) /return
+	/if (${hurtID} == ${Me.ID}) /return
 
 	| panic heal
 	/if (${Me.SpellReady[${healPanic}]}) {
@@ -538,7 +547,7 @@ sub check_HP_CLR()
 	}
 		
  	/if (${switchHealAggressive}) {
- 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
+ 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :CHPinterventionheals
  	} 
  	
  	| Remedy Heals 
@@ -552,7 +561,7 @@ sub check_HP_CLR()
 	}	
 	
 	| Intervention Heals
-	:interventionheals
+	:CHPinterventionheals
   /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
 		/for _count 1 to 4
 			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
@@ -598,7 +607,7 @@ sub check_pet_heal_CLR()
  	UPDATEHUD "HEAL Pet"
 	
  	/if (${switchHealAggressive}) {
- 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :interventionheals
+ 		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :PETinterventionheals
  	} 
  	
  	| Remedy Heals 
@@ -612,7 +621,7 @@ sub check_pet_heal_CLR()
 	}	
 	
 	| Intervention Heals
-	:interventionheals
+	:PETinterventionheals
   /if (${Spawn[${hurtID}].PctHPs} <= ${PetPoint}) {
 		/for _count 1 to 4
 			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
@@ -716,36 +725,15 @@ sub cast_issuance_heal()
 
 /return	
 
-	
-
-|***
- *	DES: Will cast Temp pet
- *	USE: must have a MA set and /companion
- *	INI: 
- *  NOTE: 
- ***|
-sub cast_temp_pet_CLR()
-	AMIDEAD
-	CHECKEXIT
-	CHECKTIE
-	/if (${is_target_dead[${Target2Kill}]}) /return
-	/if (${burnForce} || (${burnAuto} && ${NameList.Find[${Target.DisplayName}]})) {
-		/if (${validate_cast[FALSE, alt, "Celestial Hammer", ${Target2Kill}]}) /call core_cast2 "Celestial Hammer" alt ${Target2Kill} FALSE
-	}
-	/if (${validate_cast[FALSE, spell, "${tempPet}", ${Target2Kill}]}) /call core_cast2 "${tempPet}" 0 ${Target2Kill} FALSE
-
-/return
-
 
 
 |***
- *	DES: EQBC Buff Heal Ward of Surety spell
+ *	DES: Buff Heal Ward of Surety spell
  *	USE: have the spell memed and the toon identified.
  *	INI: [Heal] -> HealWardToon
  *  NOTE: 
  ***|
 sub check_heal_ward()
-	/if (!${Me.SpellReady[${healWard}]}) /return
 	/if (${coreAuto}) /call create_timer timer_heal_ward ${tHealWard}
 
 	AMIDEAD
@@ -755,34 +743,31 @@ sub check_heal_ward()
 	
 	/declare _wardToon string local
 	/declare _count int local
-	/declare _toon string local ${healWardToon}
 	/declare _DNqout string local
 
 
-	/if (${setCommunications.Equal[dannet]}) {
-		/for _count 1 to ${_toon.Count[|]}
-			/varset _wardToon ${_toon.Arg[${_count},|]}
-			
-			| ready?
-			/if (!${Me.SpellReady[${healWard}]}) /return
-			
-			| me?
-			/if (${_wardToon.Equal[${Me.DisplayName}]} && !${Me.Song[${healWard}].ID}) {
-				/if (${validate_cast[FALSE, spell, "${healWard}", ${Me.ID}]}) /call core_cast2 "${healWard}" 0 ${Me.ID} FALSE
-				/continue
-			}
-			
-			| if no network toons. were done here..		
-			/if (!${validate_plugin[FALSE, |MQ2DanNet]}) /return
-			
-			| not here?
-			/if (!${Spawn[pc ${_wardToon}].ID}) /continue 
-	 
-	 		| rampage tank? fuck those guys!
-			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${_wardToon}]}) /continue
+	/for _count 1 to ${healWardToon.Count[|]}
+		/varset _wardToon ${healWardToon.Arg[${_count},|]}
 
-			| dead?
-			/if (${Spawn[${_wardToon}].Type.Equal[corpse]}) /continue
+		| ward ready?
+		/if (!${Me.SpellReady[${healWard}]}) /return
+
+		| me?
+		/if (${_wardToon.Equal[${Me.DisplayName}]} && !${Me.Song[${healWard}].ID}) {
+			/if (${validate_cast[FALSE, spell, "${healWard}", ${Me.ID}]}) /call core_cast2 "${healWard}" 0 ${Me.ID} FALSE
+			/return
+		}
+
+		| not here?
+		/if (!${Spawn[pc ${_wardToon}].ID}) /continue 
+		
+ 		| rampage tank? fuck those guys!
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${_wardToon}]}) /continue
+
+		| dead?
+		/if (${Spawn[${_wardToon}].Type.Equal[corpse]}) /continue
+
+		/if (${setCommunications.Equal[dannet]}) {
 
 			| spell stacks ?
 			/dquery ${_wardToon} -q "Spell[${healWard}].Stacks" -o _DNqout
@@ -794,14 +779,13 @@ sub check_heal_ward()
 			
 			/if (${validate_cast[FALSE, spell, "${healWard}", ${Spawn[pc ${_wardToon}].ID}]}) /call core_cast2 "${healWard}" 0 ${Spawn[pc ${_wardToon}].ID} FALSE
 
-		/next _count	
-
-	} else /if (${setCommunications.Equal[EQBC]}) {
-		/if (${Bool[${Spawn[${NetBots[${_wardToon}].ID}]}]} && ${Spawn[id ${NetBots[${_wardToon}].ID}].Distance} < ${Spell[${healWard}].MyRange} && ${Me.SpellReady[${healWard}]}) {
-			/if (${Bool[${NetBots[${_wardToon}].ShortBuff.Find[${_healwardID}]}]} || ${Spawn[${_wardToon}].Type.Equal[corpse]}) /continue
-			/if (${validate_cast[FALSE, spell, "${healWard}", ${Spawn[${_wardToon}].ID}]}) /call core_cast2 "${healWard}" 0 ${Spawn[${_wardToon}].ID} FALSE
-		}	
-	}
+		} else /if (${setCommunications.Equal[eqbc]}) {
+			/if (${Bool[${Spawn[${NetBots[${_wardToon}].ID}]}]} && ${Spawn[id ${NetBots[${_wardToon}].ID}].Distance} < ${Spell[${healWard}].MyRange} && ${Me.SpellReady[${healWard}]}) {
+				/if (${Bool[${NetBots[${_wardToon}].ShortBuff.Find[${_healwardID}]}]}) /continue
+				/if (${validate_cast[FALSE, spell, "${healWard}", ${Spawn[${_wardToon}].ID}]}) /call core_cast2 "${healWard}" 0 ${Spawn[${_wardToon}].ID} FALSE
+			}	
+		}
+	/next _count	
 	
 /return
 
@@ -845,11 +829,10 @@ sub auto_control_swap()
  *	DES: Cleric burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
- *	NOTE: you will find little of value here.
+ *	NOTE: all heal burns are located in the main heal routines
  ***| 
 sub synergy_CLR()
 	SIMPLEEXIT
-	| please note. All of the clerics, what would be considerd heal burns, are built into the cleric routine.
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn

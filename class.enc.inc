@@ -24,9 +24,6 @@ sub core_ENC()
 		/if (!${Bool[${Macro.Return}]} && ${switchPcPet} && !${switchCharmPet}) /call check_pet
 	}
 
-	:killtarget
-	CHECKREZ
-
 	| validate/fix lists
 	/if (!${timer_validate_lists}) {
 		/if (!${SpawnCount[NPC radius ${MobAgro} playerstate 4]}) {
@@ -36,8 +33,9 @@ sub core_ENC()
 		/call create_timer timer_validate_lists ${tValidate_Lists}
 	}
 	
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
+	/while (${prep_combat[]}) {
+		/if (${exit_class_loop[]}) /return
+		
 		/if (${switchdeBuffMezz}) {
 			/call get_target_ENC
 			/if (${switchOverrideCombat}) /goto :loop
@@ -62,6 +60,7 @@ sub core_ENC()
 		
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
@@ -91,11 +90,6 @@ sub core_ENC()
 			/if (${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			| /if (${switchCharmPet} && ${switchPcPet} && !${Me.Pet.ID}) /call find_mob_to_charm
 			/if (${switchBuffItem}) /call check_crystals
-			/if (!${is_target_dead[${Target2Kill}]}) {
-				/goto :killtarget
-			}
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
 	}
 /return

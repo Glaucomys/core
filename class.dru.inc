@@ -29,18 +29,17 @@ sub core_DRU()
 		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
 	}	
 
-	:killtarget
-	CHECKREZ
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
+	/while (${prep_combat[]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
+		/if (${exit_class_loop[]}) /return
 
 		/if (${isValidTarget}) {
 			CHECKREZ
 			/call set_combat ${combat.Upper}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
@@ -59,9 +58,6 @@ sub core_DRU()
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
 	}
 /return

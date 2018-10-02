@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20180926.00
+	/call setDeclare coreBuild											string	outer 20181002.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -43,10 +43,8 @@ sub set_declares()
 	
 	
 	| communications
-	/call setDeclare commType													string	outer "|eqbc|dannet"
-	/call DeclareCoreIniVar setCommunications					string	Comm "eqbc"	
-	
-	| EQBC Settings
+	/call setDeclare commType												string	outer "|eqbc|dannet"
+	/call DeclareCoreIniVar setCommunications				string	Comm "eqbc"	
 	/call DeclareCoreIniVar EQBCServer							string	Comm 127.0.0.1
 	/call DeclareCoreIniVar EQBCPort								string	Comm 2112
 	
@@ -345,6 +343,7 @@ sub set_declares()
 
 	| burns
 	/call setDeclare burnType												string	outer "|auto|count|engageat|force"
+	/call setDeclare setBurnControl									bool		outer FALSE
 	/call setDeclare burnForce											bool		outer FALSE
 	/call setINIVar burnAuto												bool		common FALSE
 	/call setINIVar burnEngageat										int			common 80
@@ -5347,14 +5346,14 @@ sub Bind_comm(string _commType)
 	
 	/if (${_commType.Equal[eqbc]}) {
 		/if (!${validate_plugin[FALSE, |MQ2EQBC|MQ2NetBots]}) {
-			OUT ${owarning} install plugin ${cinfo}MW2EQBC\ax and ${cinfo}MW2NeetBots\ax first.
+			OUT ${owarning} install plugin ${cinfo}MQ2EQBC\ax and ${cinfo}MQ2NetBots\ax first.
 			/return
 		}		
 		/call writeCoreINI setCommunications Comm eqbc
 		/bcaa //varset setCommunications eqbc
 	} else /if (${_commType.Equal[dannet]}) {
 		/if (!${validate_plugin[FALSE, |MQ2DanNet]}) {
-			OUT ${owarning} install plugin ${cinfo}MW2DanNet\ax first.
+			OUT ${owarning} install plugin ${cinfo}MQ2DanNet\ax first.
 			/return
 		}
 		/call writeCoreINI setCommunications Comm dannet

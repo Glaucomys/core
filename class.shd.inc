@@ -24,16 +24,15 @@ sub core_SHD()
 		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
 	}	
 	
-	:killtarget
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
-	CHECKREZ
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
-		
+
+	/while (${prep_combat[]}) {
 		/if (${switchHealCure}) /call cast_cure
+		/if (${exit_class_loop[]}) /return
 		
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
@@ -53,9 +52,6 @@ sub core_SHD()
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID} && ${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
 		}
 	}
 /return

@@ -14,44 +14,36 @@
  *  NOTE: 
  ***|
 sub core_PAL()
-	AMIDEAD
-	CHECKINPUTS
-	CHECKTIE
-	
-  /if (${coreAuto} && ${switchHealXtarget}) {
-  	/if (!${timer_set_xtarget}) {
-	    /call set_xtarget
-	    /call create_timer timer_set_xtarget ${tXHeal}
-	  }	
-	}
-	
-	:killtarget
-	/if (${coreAuto} && ${useShieldFlash}) /call cast_AA_shield_flash
 
-	| aa LoH
-	/if (${coreAuto} && ${switchHealSelf}) {
-		/if (${useLoH}) {
-		  /if (${Me.PctHPs} <= ${useLoHPct}*.${tmpHealOverride}) {
-				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+		/if (${coreAuto}) {
+		  /if (${switchHealXtarget} && !${timer_set_xtarget}) {
+		    /call set_xtarget
+		    /call create_timer timer_set_xtarget ${tXHeal}
+		  }	
+			/if (${useShieldFlash}) /call cast_AA_shield_flash
+			| aa LoH
+			/if (${switchHealSelf} && ${useLoH}) {
+			  /if (${Me.PctHPs} <= ${useLoHPct}*.${tmpHealOverride}) {
+					/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
+				}
+			}	
+	
+			/if (${useMG}) {
+				/if (!${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 			}
-		}	
-	}
-	
-	/if (${coreAuto} && ${useMG}) {
-		/if (!${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
-	}
-	CHECKREZ
-	/call prep_combat
-	/if (${Macro.Return} && ${Bool[${combat}]}) {
-
+		}
+		
+	/while (${prep_combat[]}) {
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
+		/if (${exit_class_loop[]}) /return
 
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
+			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/if (${switchAgro}) /call get_agro_${Me.Class.ShortName}
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
@@ -73,13 +65,6 @@ sub core_PAL()
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (!${is_target_dead[${Target2Kill}]}) /goto :killtarget
-		} else /if (!${coreAuto}) {
-			/if (${Target.ID}) {
-				/if (${Bool[${combat}]} && !${is_target_dead[${Target.ID}]}) /goto :killtarget
-			} else /if (!${Target.ID}) {
-				/if (${Bool[${combat}]}) /call set_stop
-			}
 		}
 	}
 

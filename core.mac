@@ -84,7 +84,7 @@
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
 #define HUDPATH ".\..\MQ2HUD.ini core"
 #define AMIDEAD "/if (${watch_for_death[]}) /call watch_for_rezbox"
-#define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Invis} || ${Select[${Me.State},DEAD,FEIGN,STUN,BIND]} || ${switchAmIDead} || ${flagCallNeedRez}) /return"
+#define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Invis} || ${Select[${Me.State},DEAD,FEIGN,STUN,BIND]} || ${switchAmIDead} || ${flagCallNeedRez} || ${Me.Zoning}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
 #define CHECKTIE "/if ((${SetTie} && !${Bool[${timer_check_Tie}]}) || (${SetTie} && ${SetTieLock})) /call set_tie"
 #define CHECKREZ "/if (${coreAuto} && !${switchPull} && !${Me.Invis} && ${switchRezGive}) /call check_for_corpse"
@@ -257,7 +257,9 @@ sub main(string _ini)
 			}
 		}
 		CHECKINPUTS
-		
+		CHECKREZ
+		AMIDEAD
+		CHECKTIE		
 		| time to take this bitch to church!
 		/call core_${Me.Class.ShortName}
 	/goto :loopmain

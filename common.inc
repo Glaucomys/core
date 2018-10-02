@@ -787,7 +787,7 @@ sub check_buffs_pet()
 	/if (${Bool[${Me.Pet.ID}]}) /call cast_shrink_pet
 	| pet epic click
 	/if (${Me.ItemReady[${EpicClick}]} && !${Me.Pet.Buff[Elemental Conjunction]} && !${Me.Pet.Buff[${EpicPetBuff}]} && !${Me.Pet.Buff[Blessing of Unity]} && ${Spell[${EpicPetBuff}].Stacks}) {
-		/if (${validate_cast[FALSE, epicitem, "${EpicClick}", ${Me.ID}]}) /call core_cast2 "${EpicClick}" item 0 FALSE
+		/if (${validate_cast[FALSE, item, "${EpicClick}", ${Me.ID}]}) /call core_cast2 "${EpicClick}" item 0 FALSE
 	}
 	
 	/if (${Target.ID}) /squelch /target clear
@@ -876,6 +876,7 @@ sub check_buffs_BC()
 	/declare _spellID int local 
 	/declare _DNqout string local
 	/declare _DNarray string local ${DanNet.Peers[all]}
+	/declare _loop int local 1
 	
 	| how the fuck are we gonna count the loops?
 	/if (${setCommunications.Equal[eqbc]}) {
@@ -886,7 +887,7 @@ sub check_buffs_BC()
 	
 
 	| each toon
-	/for _toon 1 to ${_loopCount}) {
+	/while (${_toon} <= ${_loopCount}) {
 		
 		| get the name to something usable
 		/if (${setCommunications.Equal[eqbc]}) {
@@ -935,6 +936,11 @@ sub check_buffs_BC()
 
 			| bufeee out of range
 			/if (${Spawn[pc ${_toonName}].Distance} > ${Spell[${Buff${_buff}}].MyRange}) /continue
+			
+			| buffee out of AE range
+			/if (${Spell[${Buff${_buff}}].TargetType.Equal[Group V2]}) {
+				/if (${Spawn[pc ${_toonName}].Distance} > ${Spell[${Buff${_buff}}].AERange}) /continue
+			}
 
 			| is the spell ready?
 			/if (!${Me.SpellReady[${Buff${_buff}}]} && ${Me.Gem[${Buff${_buff}}]}) /continue
@@ -942,8 +948,8 @@ sub check_buffs_BC()
 			| stacking?
 			/if (${setCommunications.Equal[eqbc]}) {
 				/if (!${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
+			
 			} else /if (${setCommunications.Equal[dannet]}) {
-				
 				/dquery ${_toonName} -q "Spell[${Buff${_buff}}].Stacks" -o _DNqout
 				/if (!${_DNqout}) /continue
 
@@ -958,10 +964,13 @@ sub check_buffs_BC()
 				/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 
 				| can we cast the spell already				
-				/if (${validate_cast[FALSE, spell, "${Buff${_buff}}", ${Spawn[pc ${_toonName}].ID}]})	/call core_cast2 "${Buff${_buff}}" ${buffGem} ${Spawn[${_toonName}].ID} FALSE
+				/if (${validate_cast[FALSE, spell, "${Buff${_buff}}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${Buff${_buff}}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
 			}
 		/next _buff
-	/next _toon
+		
+		| keep the line moving please...
+		/varcal _toon ${_toon}+1
+	}	
 
 	UPDATEHUD FALSE
 /return
@@ -1600,6 +1609,7 @@ sub get_assist_target()
 					/delay 1
 					/if (${Spawn[id ${Target2Kill}].Distance} <= ${MobAgro} && ${Target.ID} != ${Target2Kill}) {
 						/if (${switchCombatMelee} || ${switchCombatRange} || ${switchCombatNuke} || ${switchCombatDoT}) /target ID ${Target2Kill}
+						| /if (${switchOverrideCombat} && (${switchHealGroup} || ${switchHealXtarget})) /target ID ${Target2Kill}
 					}
 					/return
 				}
@@ -1692,59 +1702,10 @@ sub get_assist_target()
 
 
 
-|***
- *	DES: Make sure that what ever we are targeting is something we want to kill.
- *	USE: /call is_target_valid [target ID]
- *	INI: 
- *  NOTE: in manual mode. anything is a valid target.
- ***|
-sub is_target_valid(int _tmpID)
-	/if (!${coreAuto}) /return TRUE
-	AMIDEAD
-	CHECKINPUTS
-		
-	/if (!${Target.ID} || !${Bool[${Target2Kill}]} || (${SafeZone} && !${switchOverrideSafezone})) {
-		/varset isValidTarget FALSE
-		/return FALSE
-	}
-	
-	/varset isValidTarget TRUE
 
-	| check smart assists
-	/if (!${useForceAssist}) {
-		/if (${Target.ID}) {
-			/if ((${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
-				/call clear_combat
-			} else /if (${useSmartAssistG} && ${Group.MainAssist.ID} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${Target2Kill}].ID} != ${Me.XTarget[1].ID}) {
-				/call clear_combat
-			}
-		}
-		/if (!${switchOverrideEngageat} && !${switchPull}) {
-			/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG}) {
-				/delay 1
-				/varset isValidTarget FALSE
-				/return FALSE
-			} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}|| ${useSmartAssistG})) {
-				/delay 1
-				/varset isValidTarget FALSE
-				/return FALSE
-			}
-		}
-	}
-	
-	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /varset isValidTarget FALSE
-	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /varset isValidTarget FALSE
-	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro}) /varset isValidTarget FALSE
-	/if (${Spawn[${_tmpID}].Type.Equal[PC]}) /varset isValidTarget FALSE
-	| /if (${Target.Type.Equal[PC]}) /varset isValidTarget FALSE
-	/if (${_tmpID} == ${Me.ID} || ${_tmpID} == ${Me.Pet.ID}) /varset isValidTarget FALSE
 
-	/if (${Select[${Me.Class.ShortName},ROG]}) {
-		/if (${isValidTarget} && ${switchSos}) /makemevisible
-	}
-/return ${isValidTarget}
 
-${Target.Type.Equal[PC]}
+
 
 |***
  *	DES: Seriously, do you need to ask?
@@ -1806,6 +1767,7 @@ sub is_target_dead(int _tmpID)
  ***|
 sub clear_combat()
 	CHECKINPUTS
+
 	/if (${validate_class[FALSE, |BRD]}) {
 		/call pulse_stop
 		/if (${validate_plugin[FALSE, |mq2twist]}) /squelch /twist clear
@@ -1817,6 +1779,8 @@ sub clear_combat()
 		/call clear_timer ${Target2Kill}
 		/varset Target2Kill 0
 	}
+	
+	/if (${setBurnControl}) /varset setBurnControl FALSE
 	/if (${isValidTarget}) /varset isValidTarget FALSE
 	/if (${Stick.Active}) /squelch /stick off
 	/if (${coreAuto} && ${Target.ID}) /squelch /target clear
@@ -1851,6 +1815,9 @@ sub clear_timer(int _tmpID)
 	/if (${Defined[timer_ro_${_tmpID}]}) /deletevar timer_ro_${_tmpID}
 	| stick to mobs ass check
 	/if (${Defined[timer_snap_recheckID_${_tmpID}]}) /deletevar timer_snap_recheckID_${_tmpID}
+	
+	
+	
 /return
 
 
@@ -2260,8 +2227,7 @@ sub send_pet(int _tmpID)
 	
 	/if (!${Target2Kill}) {
 		/call get_assist_target
-		/call is_target_valid ${Target2Kill}
-		/if (!${isValidTarget}) /return
+		/if (!${validate_target[FALSE, ${Target2Kill}]}) /return
 	}
 
 	/target ID ${Target2Kill}
@@ -2305,6 +2271,8 @@ sub use_glyph()
 sub cast_break()
 	AMIDEAD
 	CHECKINPUTS
+	/if (${Me.Zoning}) /stopcast
+
 	/if (${Spell[${Me.Casting.ID}].Category.Equal[Transport]}) /return TRUE
 	/if (${Spell[${Me.Casting.ID}].Category.Equal[Heal]}) /return TRUE
 	
@@ -2312,6 +2280,7 @@ sub cast_break()
 	
 	/if (${switchAmIDead}) /stopcast
 	/if (${flagCallNeedRez}) /stopcast
+	
 		
 	/if (${Target.Mezzed.ID} || !${Spawn[${Target2Kill}].ID} || !${Bool[${Target2Kill}]}) {
 		/stopcast
@@ -2425,7 +2394,7 @@ sub cast_cure()
 			}
 
 		/next _count	
-	} else /if (${setCommuniucations.Equal[dannet]}) {
+	} else /if (${setCommunications.Equal[dannet]}) {
 		/declare _toonName string local
 		/declare _DNqout string local
 		/declare _DNarray string local ${DanNet.Peers[all]}
@@ -2438,9 +2407,9 @@ sub cast_cure()
 			
 			| get the name to something usable
 			/if (${DanNet.FullNames}) {
-				/varset _toonName ${_DNarray.Arg[${_toon},|].Right[-${Int[${Math.Calc[${MacroQuest.Server.Length}+1]}]}]}
+				/varset _toonName ${_DNarray.Arg[${_count},|].Right[-${Int[${Math.Calc[${MacroQuest.Server.Length}+1]}]}]}
 			} else {
-				/varset _toonName ${_DNarray.Arg[${_toon},|]}
+				/varset _toonName ${_DNarray.Arg[${_count},|]}
 			}
 					
 			| toon here?
@@ -2480,20 +2449,24 @@ sub cast_cure()
 
 			| cure with spell
 			
-			/if (${Bool[${cureCurse}]} && ${DanNet[${_toonName}].Observe["Debuff.Curses"]}) {
+			/if (${Bool[${cureCurse}]}) {
+				/dquery ${_toonName} -q "Debuff.Curses" -o _DNqout
 				/if (${_DNqout} && ${validate_cast[FALSE, spell, "${cureCurse}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${cureCurse}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
 			}
 			
-			/if (${Bool[${cureCorrupt}]} && ${DanNet[${_toonName}].Observe["Debuff.Corruptions"]}) {
-				/if (${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${_toonName}]}]}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
+			/if (${Bool[${cureCorrupt}]}) {
+				/dquery ${_toonName} -q "Debuff.Corruptions" -o _DNqout
+				/if (${_DNqout} && ${validate_cast[FALSE, spell, "${cureCorrupt}", ${Spawn[pc ${_toonName}]}]}) /call core_cast2 "${cureCorrupt}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
 			}
 			
-			/if (${Bool[${curePoison}]} && ${DanNet[${_toonName}].Observe["Debuff.Poisons"]}) {
-				/if (${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
+			/if (${Bool[${curePoison}]}) {
+				/dquery ${_toonName} -q "Debuff.Poisons" -o _DNqout
+				/if (${_DNqout} && ${validate_cast[FALSE, spell, "${curePoison}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${curePoison}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
 			}
 			
-			/if (${Bool[${cureDisease}] && ${DanNet[${_toonName}].Observe["Debuff.Diseases"]}}) {
-				/if (${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
+			/if (${Bool[${cureDisease}]}) {
+				/dquery ${_toonName} -q "Debuff.Diseases" -o _DNqout
+				/if (${_DNqout} && ${validate_cast[FALSE, spell, "${cureDisease}", ${Spawn[pc ${_toonName}].ID}]}) /call core_cast2 "${cureDisease}" ${buffGem} ${Spawn[pc ${_toonName}].ID} FALSE
 			}
 
 		/next _count
@@ -3131,6 +3104,9 @@ sub check_exit()
 	| invis 
 	/if (${Me.Invis}) /return TRUE
 	
+	| am i zoning?
+	/if (${Me.Zoning}) /return TRUE
+	
 	| am i dead on the floor?
 	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) /return TRUE
 	
@@ -3159,12 +3135,8 @@ sub check_exit()
 	/if (${Me.Song[Sacred Barrier].ID}) /return TRUE
 	/if (${Me.Song[Touch of the Divine].ID}) /return TRUE
 	/if (${Me.Song[Bestowed Divine Aura Beza].ID} || ${Me.Song[Bestowed Divine Aura Azia].ID}) /return TRUE
-	| /if (${Me.Buff[Death Overcomes].ID}) /return TRUE
-	| /if (${Me.Buff[Fermata of Preservation].ID}) /return TRUE
-	| /if (${Me.Buff[Kazumi's Note of Preservation].ID}) /return TRUE
 
 	| bad self buffs
-	| /if (${Me.Buff[Protection of Sul].ID}) /return TRUE
 	/if (${Me.Buff[Bewilder].ID}) /return TRUE
 	/if (${Me.Buff[Chaotic Bewildering].ID}) /return TRUE
 	
@@ -3175,8 +3147,10 @@ sub check_exit()
 	/if (${Me.Charmed.ID}) /return TRUE
 	
 	| check no cast list and mezz?
-	/if (${coreAuto} && ${Target.ID} && ${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) /return TRUE
-	/if (${coreAuto} && ${Target.ID} && ${Bool[${Target.Mezzed}]} && !${switchPull}) /return TRUE
+	/if (${coreAuto} && ${Target.ID}) {
+		/if (${Bool[${NoCastList.Find[${Target.DisplayName}]}]}) /return TRUE
+		/if (${Bool[${Target.Mezzed}]} && !${switchPull}) /return TRUE
+	}
 
 /return FALSE
 
@@ -3190,6 +3164,8 @@ sub check_exit()
  ***|
 sub update_HUD_notices(string _mode)
 	CHECKINPUTS
+	/if (${Me.Zoning}) /return
+	
 	/declare _count 					int 		local 0
 	/declare _index 					int 		local 0
 	/declare _sep 						bool 		local FALSE
@@ -4132,7 +4108,6 @@ sub broadcast_status()
 
 	| creat the hud display list relative to who has coreAuto OFF and is a group member
 	
-	| EQBC/NETBOTS
 	/if (${setCommunications.Equal[eqbc]}) {
 		/for _count 1 to ${NetBots.Counts}
 			/varset _INIstatus ${Ini[${INICore},"transmit_status","${NetBots.Client[${_count}]}"]}
@@ -4151,10 +4126,14 @@ sub broadcast_status()
 			}
 		/next _count
 		
-	| DanNet
 	} else /if (${setCommunications.Equal[dannet]}) {
 		/for _count 1 to ${DanNet.PeerCount}
-			/varset _toonName ${DanNet.Peers.Arg[${_count},|].Right[-${Int[${Math.Calc[${MacroQuest.Server.Length}+1]}]}]}
+			
+			/if (${DanNet.FullNames}) {
+				/varset _toonName ${DanNet.Peers[all].Arg[${_count},|].Right[-${Int[${Math.Calc[${MacroQuest.Server.Length}+1]}]}]}
+			} else {
+				/varset _toonName ${DanNet.Peers[all].Arg[${_count},|]}
+			}
 
 			/varset _INIstatus ${Ini[${INICore},"transmit_status","${_toonName}"]}
 			/if (${_INIstatus.Equal[DISABLED]}) /continue
@@ -4938,59 +4917,39 @@ sub check_harmonious()
  *	USE: /call prep_combat
  *	INI: NA
  *  NOTE:
- ***|
+**|
 sub prep_combat()
 	/if (${Me.Zoning}) /return FALSE
-	/declare _gokillstuff bool local FALSE
 	CLEARCURSOR
 	CHECKINPUTS
 	
-	
 	/if (${coreAuto} && ${switchOverrideCombat}) {
-		
-		| mez override check
-		/if (${Select[${Me.Class.ShortName},ENC,BRD,NEC]} && ${switchdeBuffMezz}) {
-			/if (${SpawnCount[npc radius ${MobAgro} playerstate 4]}) {
-				/varset combat COMBAT
-				/return TRUE
-			}
-		}		
 
 		| healer override check
 		/if (${switchHealGroup} || ${switchHealXtarget}) {
 			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
-			/call is_target_valid ${Target2Kill}
+			/if (${validate_target[FALSE, ${Target2Kill}]}) /varset isValidTarget TRUE
 			/varset combat COMBAT
-			/return TRUE
-		}
-	
-	}
-	
-	
-	|** healers get a pass... kind of
-	/if (${coreAuto} && ${switchOverrideCombatheal}) {
-		| /if ((${switchHealGroup} || ${switchHealXtarget}) && ${SpawnCount[npc radius ${MobAgro} playerstate 4]}) {
-		/if (${switchHealGroup} || ${switchHealXtarget}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
-			/varset combat COMBAT
+			/if (${is_burn_time[]}) /varset setBurnControl TRUE
 			/return TRUE
 		}
 	}
-	**|
+	
 	
 	| automatic mode
 	/if (${coreAuto}) {
 		/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
-
-			/call is_target_valid ${Target2Kill}
+			/if (${validate_target[FALSE, ${Target2Kill}]}) /varset isValidTarget TRUE
 			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
 				/call clear_combat
-				/varset _gokillstuff FALSE
+				/return FALSE
+
 			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				/call is_burn_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-				/varset _gokillstuff TRUE
+				/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
+				/varset combat COMBAT
+				/if (${is_burn_time[]}) /varset setBurnControl TRUE
+				/return TRUE
+				
 			}
 		}
 
@@ -4998,12 +4957,8 @@ sub prep_combat()
 	} else /if (!${coreAuto}) {
 		/if (${Target.ID} || ${Spawn[${Target2Kill}].ID}) {
 			/if (${Target.ID} == ${Me.ID}) /return FALSE
-			
 			/if (!${Spawn[${Target2Kill}].ID}) /varset Target2Kill ${Target.ID}
 			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
-			/if (${burnForce}) {
-				/if ((!${SafeZone} && ${Select[${Me.CombatState},COMBAT]}) || (${SafeZone} && ${Select[${Me.CombatState},ACTIVE]})) /call synergy_${Me.Class.ShortName}
-			} 
 			/return TRUE
 		} else /if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) {
 			/varset combat FALSE
@@ -5011,58 +4966,28 @@ sub prep_combat()
 		}
 	}
 	
-	| shits about to get real..
-	/if (${_gokillstuff}) {
-		/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
-		/varset combat COMBAT
-	}
-/return ${_gokillstuff}
+
+/return FALSE
 
 
 
-|*** ORIGINAL>> NO TOUCHING!!!
- *	DES: prep sub for all calsses to decide if they are going to be in combat and if its time to burn
- *	USE: /call prep_combat
- *	INI: NA
- *  NOTE:
-
-sub prep_combat()
-	/declare _gokillstuff		bool local TRUE
-	CHECKREZ
-	CLEARCURSOR
-	/if (${coreAuto} && !${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
-		/call check1offBuffs
-		/if (${Select[${combat},MELEE,RANGE,NUKE]}) {
-			/call is_target_valid ${Target2Kill}
-			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
-				/call clear_combat
-				/varset _gokillstuff FALSE
-			} else /if (${isValidTarget} && ${Spawn[${Target2Kill}].ID}) {
-				| /if (${is_burn_time[]}) /call synergy_${Me.Class.ShortName}
-				/call is_burn_time
-				/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-			}
-		} else /if (${Select[${combat},HEAL,DUAL]}) {
-			| /if (${is_burn_time[]}) /call synergy_${Me.Class.ShortName}
-			/call is_burn_time
-			/if (${Macro.Return}) /call synergy_${Me.Class.ShortName}
-		}
-	} else /if (!${coreAuto}) {
-		/if (${Target.ID} != ${Target2Kill}) /varset Target2Kill ${Target.ID}
-		/if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) /varset _gokillstuff FALSE
-		/if (!${SafeZone} && ${burnForce} && ${Select[${Me.CombatState},COMBAT]}) {
-			/call synergy_${Me.Class.ShortName}
-		} else /if (${SafeZone} && ${burnForce} && ${Select[${Me.CombatState},ACTIVE]}) {
-			/call synergy_${Me.Class.ShortName}
-		}			
-
-	}
-	/if (${_gokillstuff} && (!${SafeZone} && !${switchOverrideSafezone})) /call set_base_target_timers ${Target2Kill}
-/return ${_gokillstuff}
+|***
+ *	DES: do we want to exit the class while loop
+ *	USE: ${exit_class_loop[]}
+ *	INI: 
+ *  NOTE: assume no exit
  ***|
-
-
-
+sub exit_class_loop()
+		/if (${coreAuto}) {	
+			/if (${switchOverrideCombat}) /return TRUE
+			/if (!${Spawn[${Target2Kill}].ID}) /return TRUE
+			/if (${is_target_dead[${Target2Kill}]}) /return TRUE
+		} else /if (!${coreAuto}) {
+			/if (!${Target.ID}) /return TRUE
+			/if (!${Bool[${combat}]}) /return TRUE
+			/if (${is_target_dead[${Target.ID}]}) /return TRUE
+		}
+/return FALSE
 
 
 
@@ -5073,35 +4998,35 @@ sub prep_combat()
  *  NOTE: we work off establised assist target for non healers only.
  ***|
 sub is_burn_time()
-	AMIDEAD
-	CHECKINPUTS
 	/if (${SafeZone} && !${switchOverrideSafezone} && ${coreAuto}) /return FALSE
 	
 	| if always set to burn, always burn while in combat
 	/if (${burnForce} && ${Me.Combat}) /return TRUE
 	
 	| remainder requires automated modes
-	/if (!${coreAuto}) /return
+	/if (!${coreAuto}) /return FALSE
 	
 	| if the current target is a namer
-	/if (${burnAuto} && ${Bool[${Target2Kill}]} && ${Spawn[${Target2Kill}].PctHPs} <= ${burnEngageat} && (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName})) /return TRUE
+	/if (${burnAuto} && ${Target2Kill} && ${Spawn[${Target2Kill}].PctHPs} <= ${burnEngageat} && (${NameList.Find[${Target.DisplayName}]} && !${switchOverrideName})) /return TRUE
+	
 
 	| if number of mobs in the local area reaches the /burn count ## threashold
-	/if (${Bool[${burnCount}]} && ${SpawnCount[npc radius ${MobAgro} ${If[${switchOverrideLos},,los]} targetable playerstate 4]} >= ${burnCount}) /return TRUE
-
+	/if (${burnCount}) {
+		/if (${SpawnCount[npc radius ${MobAgro} targetable playerstate 4]} >= ${burnCount}) /return TRUE
+	}
+	
 	| healers mezers, and off combat routines simply check for a named in the local area to start a burn. no direct target of a named is required. just be in the area.
-	/declare _mobcount			int 		local 0
+	/if (${validate_class[FALSE, |CLR|DRU|SHM|ENC]}) /return FALSE
 	/declare _count					int 		local 0
 	/declare _mobID 				int 		local 0
 	
 	/if (${Bool[${combat}]}) {
-		/varset _mobcount ${SpawnCount[npc radius ${MobAgro} playerstate 4]}
-		/for _count 1 to ${_mobcount}
-			CHECKINPUTS
-			AMIDEAD
+		/for _count 1 to ${SpawnCount[npc radius ${MobAgro} playerstate 4]}
 			/varset _mobID ${NearestSpawn[${_count}, npc radius ${MobAgro}].ID}
 			/if (${burnAuto} && ${NameList.Find[${Spawn[id ${_mobID} radius ${MobAgro}].DisplayName}]} && !${switchOverrideName}) /return TRUE
-			/if (${Bool[${burnCount}]} && ${SpawnCount[npc radius ${MobAgro} ${If[${switchOverrideLos},,los]} targetable playerstate 4]} >= ${burnCount}) /return TRUE
+			/if (${burnCount}) {
+				/if (${SpawnCount[npc radius ${MobAgro} ${If[${switchOverrideLos},,los]} targetable playerstate 4]} >= ${burnCount}) /return TRUE
+			}
 		/next _count 	
 	}
 /return FALSE
@@ -5624,6 +5549,8 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 
 	CHECKINPUTS
 	
+	/if (${Me.Zoning}) /return FALSE
+	
 	| check spell
 	/if (${_type.Equal[spell]}) {
 		/if (!${Bool[${Me.Book[${_spell}]}]}) /return FALSE
@@ -5642,6 +5569,10 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (${Spell[${_spell}].Range}) {
 			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].MyRange}) /return FALSE
 		}
+		/if (${Spell[${_spell}].TargetType.Equal[Group V2]}) {
+			/if (${Spawn[${_tmpID}].Distance} > ${Spell[${_spell}].AERange}) /return FALSE
+		}
+	
 		/if (${Me.CurrentMana} < ${Spell[${_spell}].Mana}) /return FALSE
 
 		| restist types vs core.zone.inc
@@ -6949,3 +6880,53 @@ sub validate_safelist(string _sender)
 		/if (${Spawn[PC ${_sender}].Guild.Equal[${Me.Guild}]}) /return TRUE
 	}
 /return FALSE
+
+
+
+|***
+ *	DES: Make sure that what ever we are targeting is something we want to kill.
+ *	USE: /if (${validate_target[FALSE, target ID]}
+ *	INI: 
+ *  NOTE: in manual mode. anything is a valid target.
+**|
+sub validate_target(bool _error, int _tmpID)
+	/if (!${coreAuto}) /return TRUE
+	AMIDEAD
+	CHECKINPUTS
+		
+	/if (!${Target.ID} || !${Bool[${_tmpID}]} || (${SafeZone} && !${switchOverrideSafezone})) /return FALSE
+
+	| check smart assists
+	/if (!${useForceAssist}) {
+		
+		/if (${Target.ID}) {
+			/if ((${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) && ${Spawn[${_tmpID}].ID} != ${Me.XTarget[1].ID}) {
+				/call clear_combat
+				/return FALSE
+			} else /if (${useSmartAssistG} && ${Group.MainAssist.ID} && !${Bool[${Spawn[${Group.MainAssist}].Dead}]} && ${Spawn[${_tmpID}].ID} != ${Me.XTarget[1].ID}) {
+				/call clear_combat
+				/return FALSE
+			}
+		}
+		
+		/if (!${switchOverrideEngageat} && !${switchPull}) {
+			/if (${Spawn[${_tmpID}].PctHPs} > ${engageAt} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG}) {
+				/delay 1
+				/return FALSE
+			} else /if (${Spawn[${_tmpID}].PctHPs} > ${smartengageAt} && (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}|| ${useSmartAssistG})) {
+				/delay 1
+				/return FALSE
+			}
+		}
+	}
+	
+	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /return FALSE
+	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /return FALSE
+	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro}) /return FALSE
+	/if (${Spawn[${_tmpID}].Type.Equal[PC]}) /return FALSE
+	| /if (${Target.Type.Equal[PC]}) /varset isValidTarget FALSE
+	/if (${_tmpID} == ${Me.ID} || ${_tmpID} == ${Me.Pet.ID}) /return FALSE
+
+	| /if (${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
+
+/return TRUE
