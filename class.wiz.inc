@@ -24,9 +24,10 @@ sub core_WIZ()
 	}
 	
 	/while (${prep_combat[]}) {
+		/if (${exit_class_loop[]}) /return
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-		/if (${exit_class_loop[]}) /return
 	
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
@@ -416,8 +417,13 @@ sub Bind_setWIZ(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
 		/if (${_type.Arg[${_count},|].Equal[gather]}) /varset _listout ${_listout}(${cnum}${GatherPercent}\ax)
 		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[manaburn]}) /varset _listout ${_listout}(${If[${Bool[${switchManaBurn}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[forcetwincast]}) /varset _listout ${_listout}(${If[${Bool[${switchForceTwincast}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[line]}) /varset _listout ${_listout}(${cnum}${lineCurrent}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+

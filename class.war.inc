@@ -19,9 +19,10 @@ sub core_WAR()
 	CHECKTIE
 
 	/while (${prep_combat[]}) {
+		/if (${exit_class_loop[]}) /return
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-		/if (${exit_class_loop[]}) /return
 
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}

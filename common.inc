@@ -112,10 +112,14 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
 		VOUT Pet ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Spawn[${Target2Kill}].Distance}\ax,${cbad}${Spawn[${Target2Kill}].Distance}\ax]}
 
 	| pull
-	} else /if (${_type.Equal[pull]} && ${Target2Kill}) {
-		VOUT Pull ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target}].LineOfSight},${cgood}${Int[${Target.Distance}]}\ax,${cbad}${Int[${Target.Distance}]}\ax]}
+	| } else /if (${_type.Equal[pull]} && ${Target2Kill}) {
+	| 	VOUT Pull ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target}].LineOfSight},${cgood}${Int[${Target.Distance}]}\ax,${cbad}${Int[${Target.Distance}]}\ax]}
 
-	| you suck
+	| grab (offtanks)
+	| } else /if (${_type.Equal[grab]} && ${Target2Kill}) {
+	| 	VOUT Grab ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target}].LineOfSight},${cgood}${Int[${Target.Distance}]}\ax,${cbad}${Int[${Target.Distance}]}\ax]}
+ 
+ 	| you suck
 	} else /if (${_type.Equal[failboat]}) {
 		/if (${smartasserrors}) {
 			/call echo_bitch MQWindow
@@ -336,8 +340,6 @@ sub check_pet()
 		}
 	}	
 
-	AMIDEAD
-	CHECKEXIT
 	CHECKTIE
 	CHECKINPUTS
 	/if (${Me.Pet.ID} && ${useSummonWeps} && (!${Bool[${Me.Pet.Equipment[primary]}]} || ${Me.Pet.Equipment[primary]} == 10855) && (${Bool[${FindItem[${summonedWepClosedBag}]}]} || ${Bool[${FindItem[Pouch of Quellious]}]})) {
@@ -1101,9 +1103,8 @@ sub do_rest()
 	
 	/if (${Bool[${autoRest}]} && !${Me.Casting.ID} && !${Me.Moving} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]}) {
 			
-		| Hybrid: RNG,SHD,BST,PAL
+		| Hybrid: RNG,SHD,BST,PAL,BRD
 		/if ((${MeleeList.Find[${Me.Class.ShortName}]} && ${CastList.Find[${Me.Class.ShortName}]}) || ${Me.Class.ShortName.Equal[BRD]}) {
-
 
 			| rest to full requirement
 			/if (${switchAutoRestFull} && ${_resting}) {
@@ -1113,7 +1114,6 @@ sub do_rest()
 				/if (${Me.PctEndurance} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 				/if (${Me.PctMana} < ${autoRest}*.${tmpHealOverride}) /varset _needrest TRUE
 			}
-
 
 			| bards suck...
 			/if (${Me.Class.ShortName.Equal[BRD]}) {
@@ -1238,7 +1238,7 @@ sub set_home()
 
 |***
  *	DES: stops follow and re-establishes camp if needed. This stops everything.. seriously.. everything.
- *	USE: /stop or /alto or /squelch /bct ${Me} stop or /call set_stop [NOECHO]
+ *	USE: /stop or /alto or /squelch stop or /call set_stop [NOECHO]
  *	INI: 
  *  NOTE: just because you stop something, does not mean you will not start it right back up again.
  ****|
@@ -1342,24 +1342,24 @@ sub click_item_swarm(int _tmpID)
  ***|
 sub sort_cursor(bool _ignoreTimer)
 	/if (!${Bool[${_ignoreTimer}]} && ${timer_clear_cursor}) /return
+	/if (!${Cursor.ID}) /return
 	AMIDEAD
 	/declare _cursorChoice string local 
 
 	| we have faith in the all mighty AutoInventoryItem=
 	/if (${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /autoinventory 
-	/if (!${Bool[${Cursor.ID}]}) /return
 
 	/if (!${Bool[${_ignoreTimer}]} && ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) {
 		/if (${switchAutoCursor} && ${timer_clear_cursor}) /return
 		/if (!${switchAutoCursor} && !${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /return
-		/if (!${Bool[${Cursor.ID}]}) /return
+		/if (!${Cursor.ID}) /return
 	}
 	
 	| allow for absence of override for not in same zone as master looter
 	/if (!${switchAutoCursor} && !${switchOverrideLoot} && !${Bool[${_ignoreTimer}]}) /return
 	
 	
-	/while (${Cursor.ID}) {
+	/if (${Cursor.ID}) {
 		CHECKINPUTS
 
 		| corect the INI entry if not set for the new form
@@ -1629,7 +1629,6 @@ sub get_assist_target()
 			}
 		}
 
-
 		/return
 	} 
 
@@ -1702,11 +1701,6 @@ sub get_assist_target()
 
 
 
-
-
-
-
-
 |***
  *	DES: Seriously, do you need to ask?
  *	USE: mob dead = win!
@@ -1736,6 +1730,8 @@ sub is_target_dead(int _tmpID)
 
 	| targets dead? were done here
 	/if (${Target.Dead}) {
+		/varset _dead TRUE
+	} else /if (${Spawn[_tmpID].ID}) {
 		/varset _dead TRUE
 	} else /if (${Target.Type.Equal[Corpse]}) {
 		/varset _dead TRUE
@@ -1815,9 +1811,6 @@ sub clear_timer(int _tmpID)
 	/if (${Defined[timer_ro_${_tmpID}]}) /deletevar timer_ro_${_tmpID}
 	| stick to mobs ass check
 	/if (${Defined[timer_snap_recheckID_${_tmpID}]}) /deletevar timer_snap_recheckID_${_tmpID}
-	
-	
-	
 /return
 
 
@@ -1839,7 +1832,7 @@ sub cast_condition(str _condition)
 	} else /if (${${_condition}}) {
 		/return TRUE
 		
-	| when in doubt. dont cast it.	
+	| when in doubt, blame your little sister.	
 	} 
 
 /return FALSE
@@ -1877,11 +1870,9 @@ sub cast_nuke()
 			/delay 2.5s
 			/delay ${timer_Nuke_Delay}
 		}
-
 	/next _count
 /return
 
-/echo ${Nuke5Condition}
 
 
 |***
@@ -1916,7 +1907,6 @@ sub cast_nuke_line()
 			/delay 2.5s
 			/delay ${timer_Nuke_Delay}
 		}
-
 	/next _count
 /return
 
@@ -2976,40 +2966,32 @@ sub set_tie()
  *	DES: Will sort out your familiar.
  *	USE: auto
  *	INI: 
- *  NOTE: /if (${Me.Pet.Body.ID}==31) /pet get lost
+ *  NOTE: 
  ***|
 sub sort_familiar()
 	/call create_timer timer_Check_Familiar ${tCheck_Familiar}
 	CHECKINPUTS
 	/if (${check_exit[]}) /return
+	/declare _count int local 0
 	
-	| familiar 1
-	/if (${Bool[${sumFamiliar}]} && !${Bool[${Me.Buff[${sumFamiliarBuff}].Duration}]}) {
-		/if (${Me.Book[${sumFamiliar}]}) {
-			/if (${validate_cast[FALSE, spell, "${sumFamiliar}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar}" ${buffGem} ${Me.Pet.ID} FALSE
-		} else /if (${Me.AltAbilityReady[${sumFamiliar}]}) {	
-			/if (${validate_cast[FALSE, alt, "${sumFamiliar}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar}" alt 0 FALSE
-		} else /if (${Me.ItemReady[${sumFamiliar}]}) {
-			/if (${validate_cast[FALSE, item, "${sumFamiliar}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar}" item 0 FALSE		
+	/for _count 1 to 3
+		/if (${Bool[${Me.Buff[${sumFamiliar${_count}Buff}].Duration}]}) /continue
+		/if (!${Bool[${sumFamiliar${_count}}]}) /continue
+				
+		/if (${Me.Book[${sumFamiliar${_count}}]}) {
+			/if (${validate_cast[FALSE, spell, "${sumFamiliar${_count}}", ${Me.ID}]}) /call core_cast2 "${sumFamiliar${_count}}" ${buffGem} ${Me.Pet.ID} FALSE
+		} else /if (${Me.AltAbilityReady[${sumFamiliar${_count}}]}) {	
+			/if (${validate_cast[FALSE, alt, "${sumFamiliar${_count}}", ${Me.ID}]}) /call core_cast2 "${sumFamiliar${_count}}" alt 0 FALSE
+		} else /if (${Me.ItemReady[${sumFamiliar${_count}}]}) {
+			/if (${validate_cast[FALSE, item, "${sumFamiliar${_count}}", ${Me.ID}]}) /call core_cast2 "${sumFamiliar${_count}}" item 0 FALSE		
 		}	
 			
-		/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]} && ${Me.Pet.Body.ID} == 31) /pet get lost
-	}
+		/delay 5
+		/if (${sumFamiliar${_count}Leave}) /familiar get lost
+		/delay 5
+
+	/next _count
 	
-
-	| familiar 2	
-	/if (${Bool[${sumFamiliar2}]} && !${Bool[${Me.Buff[${sumFamiliar2Buff}].Duration}]}) {
-		/if (${Me.Book[${sumFamiliar2}]}) {
-			/if (${validate_cast[FALSE, spell, "${sumFamiliar2}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar2}" ${buffGem} ${Me.Pet.ID} FALSE
-		} else /if (${Me.AltAbilityReady[${sumFamiliar2}]}) {	
-			/if (${validate_cast[FALSE, alt, "${sumFamiliar2}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar2}" alt 0 FALSE
-		} else /if (${Me.ItemReady[${sumFamiliar2}]}) {
-			/if (${validate_cast[FALSE, item, "${sumFamiliar2}", ${Me.Pet.ID}]}) /call core_cast2 "${sumFamiliar2}" item 0 FALSE		
-		}		
-
-		/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]} && ${Me.Pet.Body.ID} == 31) /pet get lost
-	}
-
 /return
 
 
@@ -3541,8 +3523,9 @@ sub tell_resident_mage(string _request)
 
 		/if (${Spawn[pc ${ResidentMage.Arg[${_count},|]} zradius 150 radius 150].ID}) {
 
+
 			| ask for weapons
-			/if (${Me.Class.PetClass}) {
+			/if (${validate_class[FALSE, ${PetList}]}) {
 				/if (${_request.Equal[weapons]} && !${Bool[${timer_ask_for_weapons_${ResidentMage.Arg[${_count},|]}}]} && !${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
 					/t ${ResidentMage.Arg[${_count},|]} weapons
 					/call create_timer timer_ask_for_weapons_${ResidentMage.Arg[${_count},|]} ${tAsk_for_weapons}
@@ -4549,10 +4532,16 @@ sub get_target()
 	/declare _count int local
 	/declare _mobHP int local 100
 	/declare _priorityMob bool local FALSE
-
+	
+	/if (!${switchOffTank}) {
+		UPDATEHUD "Pull"		
+	} else /if (${switchOffTank})
+		UPDATEHUD "Grab"		
+	}
+	
 	| time to step the agro range out so we get mobs closer first	
 	/while (${_tmpRange} <= ${MobAgro} && !${Target2Kill}) {
-
+	
 		| search local ${MobAgro} range in steps of 10 for mob acquisition
 		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable]}) {
 			/for _count 1 to ${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable]}
@@ -4560,21 +4549,40 @@ sub get_target()
 				AMIDEAD
 				/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable].ID}
 		
-				/if (!${_priorityMob} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].PctHPs} <= ${_mobHP} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Mount]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1 || ${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-					/varset Target2Kill ${_tmpID}
-					/varset _mobHP ${Spawn[id ${_tmpID}].PctHPs}
-					/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-						/varset _priorityMob TRUE
-						/break
+				| normal tanks
+				/if (!${switchOffTank}) { 
+					/if (!${_priorityMob} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].PctHPs} <= ${_mobHP} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Mount]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1 || ${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
+						/varset Target2Kill ${_tmpID}
+						/varset _mobHP ${Spawn[id ${_tmpID}].PctHPs}
+						/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
+							/varset _priorityMob TRUE
+							/break
+						}
 					}
-				}
+					
+				| off tanks
+				} else /if (${switchOffTank}) {
+					/if (${Me.XTarget[1].ID} != ${_tmpID} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Mount]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1) {
+						/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
+							/varset Target2Kill ${_tmpID}
+							/varset _priorityMob TRUE
+							/break
+						}
+					}			
+				}	
+					
 			/next _count
 		}
 		
+		| offtank has nothing special to do? back to your damn job!
+		/if (${switchOffTank} && !${_priorityMob}) {
+			/call get_assist_target
+			/return
+		}
+		
 		/if (${_priorityMob}) /goto :looppull
-		| /varcalc _tmpRange ${_tmpRange}+10
 		/varcalc _tmpRange ${_tmpRange}+${CombatDistance}
-	}		
+	}
 		
 	| lastly, kill all the evil pets. if the owner is dead.
 	/if (${SpawnCount[pet ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${MobAgro} zradius ${zradius} targetable]} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${combatRadius} zradius ${zradius} targetable]}) {
@@ -4588,8 +4596,15 @@ sub get_target()
 		
 	/if (${Spawn[${Target2Kill}].Type.NotEqual[Aura]} && ${Target2Kill}) /target ID ${Target2Kill}
 
-	/call echos pull 0 0 0 0
-	UPDATEHUD "Pull"
+	/if (${Target2Kill}) {
+		/if (!${switchOffTank}) {
+			OUT Pull ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Int[${Target.Distance}]}\ax,${cbad}${Int[${Target.Distance}]}\ax]}
+			UPDATEHUD "Pull"		
+		} else /if (${switchOffTank})
+			OUT Grab ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Int[${Target.Distance}]}\ax,${cbad}${Int[${Target.Distance}]}\ax]}
+			UPDATEHUD "Grab"		
+		}
+	}
 
 	| Disable /camp for pull
 	/if (${switchPull} && ${HomeSet}) /squelch /makecamp pause
@@ -4598,12 +4613,10 @@ sub get_target()
 	CLEARCURSOR TRUE
 	/if (!${switchPull} || !${coreAuto}) /return
 	
-			/for _count 1 to ${RangeItem.Count[|]}
-				/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
-			/next _count
-	
-	
-	
+	/for _count 1 to ${RangeItem.Count[|]}
+		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
+	/next _count
+		
 	/if (${FindItemCount[${RangeItemSummon}]} < 5 && ${Bool[${RangeItemSummon}]}) /call check_ammo
 
 	| if mob is over arrow range, start checking options to get him close
@@ -4629,7 +4642,7 @@ sub get_target()
 					/call clear_combat
 					/return
 				}
-			}			
+			}
 			
 			CHECKINPUTS
 			/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} targetable]} && ${Me.State.NotEqual[STAND]}) /stand
@@ -4933,7 +4946,20 @@ sub prep_combat()
 			/if (${is_burn_time[]}) /varset setBurnControl TRUE
 			/return TRUE
 		}
+	} else /if (!${coreAuto} && ${switchOverrideCombat}) {
+		/varset combat COMBAT
+		/return FALSE
 	}
+
+	| offtank check for mobs
+	/if (${coreAuto} && ${switchOffTank}) {
+		/call get_target
+		/if (${Me.XTarget[1].ID} != ${Target2Kill}) {
+			/varset combat COMBAT
+			/return TRUE
+		}
+	}
+
 	
 	
 	| automatic mode
@@ -4952,15 +4978,18 @@ sub prep_combat()
 				
 			}
 		}
+	}
 
 	| manual mode
-	} else /if (!${coreAuto}) {
-		/if (${Target.ID} || ${Spawn[${Target2Kill}].ID}) {
+	/if (!${coreAuto}) {
+		/if (${Target.ID}) {
 			/if (${Target.ID} == ${Me.ID}) /return FALSE
 			/if (!${Spawn[${Target2Kill}].ID}) /varset Target2Kill ${Target.ID}
+			/if (${is_burn_time[]}) /varset setBurnControl TRUE
 			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
 			/return TRUE
 		} else /if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) {
+			/call clear_combat
 			/varset combat FALSE
 			/return FALSE
 		}
@@ -4975,7 +5004,7 @@ sub prep_combat()
  *	DES: do we want to exit the class while loop
  *	USE: ${exit_class_loop[]}
  *	INI: 
- *  NOTE: assume no exit
+ *  NOTE: assume no exit (FALSE)
  ***|
 sub exit_class_loop()
 		/if (${coreAuto}) {	
@@ -4985,7 +5014,7 @@ sub exit_class_loop()
 		} else /if (!${coreAuto}) {
 			/if (!${Target.ID}) /return TRUE
 			/if (!${Bool[${combat}]}) /return TRUE
-			/if (${is_target_dead[${Target.ID}]}) /return TRUE
+			/if (${is_target_dead[${Target2Kill}]}) /return TRUE
 		}
 /return FALSE
 
@@ -5929,6 +5958,9 @@ sub validate_plugin(bool _error, string _plugin)
 	} else /if (${_plugcount} != ${_plugin.Count[|]}) {
 		/return FALSE
 	}
+	
+	| .IsTLO[plugin]
+	
 /return FALSE
 
 
@@ -6894,7 +6926,9 @@ sub validate_target(bool _error, int _tmpID)
 	AMIDEAD
 	CHECKINPUTS
 		
-	/if (!${Target.ID} || !${Bool[${_tmpID}]} || (${SafeZone} && !${switchOverrideSafezone})) /return FALSE
+	/if (!${Target.ID}) /return FALSE
+	/if (!${Bool[${_tmpID}]}) /return FALSE
+	/if (${SafeZone} && !${switchOverrideSafezone}) /return FALSE
 
 	| check smart assists
 	/if (!${useForceAssist}) {
@@ -6920,6 +6954,8 @@ sub validate_target(bool _error, int _tmpID)
 		}
 	}
 	
+	| shit we really shouldnt't be attacking
+	/if (${Select[${Spawn[${_tmpID}].Type},AURA,BANNER,CAMPFIRE,CORPSE,CHEST,ITEM,TRIGGER,TRAP,TIMER,MOUNT,Mercenary]}) /return FALSE
 	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /return FALSE
 	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /return FALSE
 	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro}) /return FALSE
@@ -6930,3 +6966,6 @@ sub validate_target(bool _error, int _tmpID)
 	| /if (${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
 
 /return TRUE
+
+
+

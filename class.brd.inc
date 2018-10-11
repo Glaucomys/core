@@ -288,8 +288,11 @@ sub pulse_valid(_gem)
  *  NOTE: 
  ***|
 sub pulse_stop()
-	/delay 2
-	/if (${Me.Casting.ID}) /stopcast
+	/if (${Me.Casting.ID} || ${Me.BardSongPlaying}) {
+		/stopsong
+		/stopcast
+		/delay 5
+	}	
 /return
 
 
@@ -649,3 +652,12 @@ sub Bind_setBRD(string _classType, string _verbage)
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+
+
+
+
+	/if (${Me.BardSongPlaying}) {
+		/stopsong
+		/delay 10
+	}

@@ -36,14 +36,13 @@ sub core_CLR()
 
 
 	/while (${prep_combat[]}) {
-
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+		/if (${exit_class_loop[]}) /return
+
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-		/if (${doYaulp}) /call cast_yaulp
-
-		/if (${exit_class_loop[]}) /return
+		
 		/if (${isValidTarget}) {
 			CHECKREZ
 			/call set_combat ${combat.Upper}
@@ -65,6 +64,7 @@ sub core_CLR()
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+			/if (${doYaulp}) /call cast_yaulp
 		}
 	}
 

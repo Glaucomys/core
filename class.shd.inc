@@ -27,8 +27,9 @@ sub core_SHD()
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	/while (${prep_combat[]}) {
-		/if (${switchHealCure}) /call cast_cure
 		/if (${exit_class_loop[]}) /return
+
+		/if (${switchHealCure}) /call cast_cure
 		
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}

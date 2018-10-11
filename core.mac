@@ -12,8 +12,11 @@
 	
 	/invoke ${Macro.Undeclared}
 	/echo ${EverQuest.LastMouseOver.Name}
-	
-	Required Plugins:	MQ2Cast, MQ2EQBC, EQBCS, MQ2Exchange, MQ2MoveUtils, MQ2Netbots, MQ2Debuffs
+		
+	Plugins:
+	Required:	MQ2Cast, MQ2Exchange, MQ2MoveUtils, MQ2Debuffs
+	Communications: MQ2EQBC/MQ2Netbots or MQ2DanNet
+	Optional: MQ2Nav
 		
 	Files:
 	- core.mac									You are looking at it
@@ -22,7 +25,7 @@
 	- events.inc								Contains responses to EQ generated changes (environment/emotes).
 	- fixini.inc								holds all INI legacy removed entries.
 	- hud.inc										Sets the Heads Up Display
-	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias, binds'.
+	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias, binds.
 	- test.inc									empty. testing purposes.
 	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
 	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
@@ -82,7 +85,7 @@
 #define VALT "/if (${switchEchoAlt}) /echo ${c-}-\ax"
 #define VBC "/if (${switchEchoBC}) /call echos bc"
 #define ECHOCHANNEL "/if (${Bool[${echoChannel}]}) /${echoChannel} "
-#define HUDPATH ".\..\MQ2HUD.ini core"
+#define HUDPATH "/noparse /ini .\..\MQ2HUD.ini"
 #define AMIDEAD "/if (${watch_for_death[]}) /call watch_for_rezbox"
 #define SIMPLEEXIT "/if (${Me.Moving} || ${Me.Invis} || ${Select[${Me.State},DEAD,FEIGN,STUN,BIND]} || ${switchAmIDead} || ${flagCallNeedRez} || ${Me.Zoning}) /return"
 #define CHECKEXIT "/if (${check_exit[]}) /return"
@@ -227,9 +230,6 @@ sub main(string _ini)
 		| guns need ammo
 		/if (${switchCombatRange}) /call check_ammo
 		
-		| pet dragon pissed in my boots!
-		/if (${sumFamiliarLeave} && ${Me.Pet.Name.Find[familiar]}) /pet get lost
-		
 		CHECKTIE
 
 		| looter stuffs
@@ -249,9 +249,9 @@ sub main(string _ini)
 		| do we pull or assist	
 		/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {	
 			/if (${coreAuto} && (!${SafeZone} || ${switchOverrideSafezone})) {
-				/if (!${switchPull}) {
+				/if (!${switchPull} || ${switchOffTank}) {
 					/call get_assist_target	
-				} else /if (${switchPull} && !${Target2Kill}) {	
+				} else /if (${switchPull} && !${Target2Kill} && !${switchOffTank}) {	
 					/call get_target
 				}
 			}
@@ -264,7 +264,7 @@ sub main(string _ini)
 		/call core_${Me.Class.ShortName}
 	/goto :loopmain
 	
-	| this is MQ reserverd..
+	| this is MQ2 reserved..
 	| :OnExit	
 	
 /return

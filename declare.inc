@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181002.00
+	/call setDeclare coreBuild											string	outer 20181011.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -148,6 +148,7 @@ sub set_declares()
 	/call setDeclare onotice												string	outer "\ayNotice\ax"
  	/call setDeclare ocombat												string	outer "\amCombat\ax"	
 	/call setDeclare oremove												string	outer "${cbad}Removing\ax"
+	/call setDeclare obroadcasted										string outer "\amBroadcasted\ax"
 
 	| ? colors
 	/call setDeclare wikiswitch											string outer "[\a-wswitch\ax]"
@@ -411,7 +412,7 @@ sub set_declares()
 
 
 	| combat controls
-	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|engage|faderest|force|melee|meleedisc|range|nuke|dot|forceassist|nukedelay|pull|saferadius|smartengage|stopnuke|zradius"
+	/call setDeclare ccType													string	outer "|agro|alliance|bandolier|circle|combatdistance|engage|faderest|force|melee|meleedisc|range|nuke|dot|forceassist|nukedelay|offtank|pull|saferadius|smartengage|stopnuke|zradius"
 	/call setINIVar MA1			 												string 	Common FALSE
 	/call setINIVar MA2			 												string 	Common FALSE
 	/call setINIVar MobAgro													int 		Common 60
@@ -424,6 +425,9 @@ sub set_declares()
 	/call setINIVar	useForceAssist									bool		Common FALSE
 	/call setINIVar switchAgro											bool		Common FALSE 
 	/call setINIVar switchPull											bool		Common FALSE
+
+	/call setINIVar switchOffTank										bool		Common FALSE
+	
 	/call setINIVar CombatDistance									int			Movement 15
 	/call setINIVar combatRadius										string	Common 30
 	/call setINIVar zradius													int			Common 60	
@@ -743,11 +747,15 @@ sub set_declares()
 	/call setINIVar switchPcPet											bool 		Pet FALSE
 	/call setINIVar switchPcSwarm										bool 		Pet FALSE	
 	/call setINIVar PcSwarmengageat									int			Pet 99
-	/call setINIVar sumFamiliar											string	Pet FALSE
-	/call setINIVar sumFamiliarBuff									string	Pet FALSE
+	/call setINIVar sumFamiliar1										string	Pet FALSE
+	/call setINIVar sumFamiliar1Buff								string	Pet FALSE
+	/call setINIVar sumFamiliar1Leave								bool		Pet FALSE	
 	/call setINIVar sumFamiliar2										string	Pet FALSE
 	/call setINIVar sumFamiliar2Buff								string	Pet FALSE
-	/call setINIVar sumFamiliarLeave								bool		Pet TRUE	
+	/call setINIVar sumFamiliar2Leave								bool		Pet FALSE	
+	/call setINIVar sumFamiliar3										string	Pet FALSE
+	/call setINIVar sumFamiliar3Buff								string	Pet FALSE
+	/call setINIVar sumFamiliar3Leave								bool		Pet TRUE	
 
 	| onoff types
   /call setDeclare onoffType											string	outer "|horn|shrink"
@@ -2354,7 +2362,7 @@ sub declare_CLR()
  ***|
 sub set_alias()
   /if (!${Bool[${Alias[/sendpets]}]}) 						/squelch /alias /sendpets										VOUT SendPets: 
-  /if (!${Bool[${Alias[/stop]}]}) 								/squelch /alias /stop 											/bc stop
+  | /if (!${Bool[${Alias[/stop]}]}) 								/squelch /alias /stop 										/broadcast_off
 	/if (!${Bool[${Alias[/blurb]}]}) 								/squelch /alias /blurb 											VOUT Blurb: 
   /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
                                             			
@@ -2365,8 +2373,8 @@ sub set_alias()
   /if (!${Bool[${Alias[/buy]}]}) 									/squelch /alias /buy												/echo Buy:
   /if (!${Bool[${Alias[/sell]}]}) 								/squelch /alias /sell												/echo Sell:
                                             			
-	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/dgexecute All /core auto on
-	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /dgexecute All /core auto off
+	/if (!${Bool[${Alias[/on]}]}) 									/noparse /squelch /alias /on       		    	/broadcast_on
+	/if (!${Bool[${Alias[/off]}]}) 									/noparse /squelch /alias /off						    /broadcast_off
                                             			
 	/if (!${Bool[${Alias[/givecoin]}]}) 						/noparse /squelch /alias /givecoin			    VOUT Bribe Time:
                                             			
@@ -2454,19 +2462,6 @@ sub Event_broadcast_command(string line, string _sender, string _cmd)
   	/return
   }
 
-
-	|***
-	* DES: Tell toon to campfire clickie
-	* USE: /bc campfire
-	***|
-	/if (${_cmd.Equal[campfire]}) {
-		/if (${Me.Invis}) /makemevisible
-		/delay 1s !${Me.Invis}
-  	/call set_stop NOECHO
-		/delay 1s !${Me.Casting.ID}
-		/if (${validate_cast[FALSE, item, "Fellowship Registration Insignia", ${Me.ID}]}) /call core_cast2 "Fellowship Registration Insignia" item 0 FALSE
-		/return
-	}
 
 
 	|***
@@ -2970,6 +2965,7 @@ sub Bind_prisec_anchor()
 		/call Bind_click_secondary_anchor
 		/return			
 	}
+
 /return
 
 
@@ -4104,7 +4100,7 @@ sub Bind_info()
 	/declare _listout string local
 	/declare _sep bool local
 	/declare _count int local
-	/declare _controls string local |buff|burn|cc|core|cursor|debuff|echos|grab|hc|heal|lc|mode|movement|onoff|override|pc|rez|setassist|tc|tie|ts|${Me.Class.ShortName}
+	/declare _controls string local |buff|burn|campfire|cc|comm|core|cursor|debuff|echos|grab|hc|heal|lc|mode|movement|onoff|override|pc|rez|setassist|tc|tie|ts|${Me.Class.ShortName}
 	
 	/for _count 1 to ${_controls.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}/${_controls.Arg[${_count},|].Lower}\ax
@@ -4257,16 +4253,17 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 					/varset isValidTarget TRUE
 					/varset combat COMBAT
 					/varset Target2Kill ${Target.ID}
+					OUT /${_bind} force combat ${sep} [${ctar}${Target.DisplayName}\ax]
 
 				| force assist for other peer toons
 				} else /if (${Bool[${_verbage.Equal[assist]}]}) {
-					/if (!${validate_plugin[FALSE, |MQ2DanNet]}) {
-						VOUT ${owarning} ${sep} MQ2DanNet Error
-						/return
-					}		
-					/dgexecute All /varset Target2Kill ${Target.ID}
+					/if (${setCommunications.Equal[eqbc]}) {
+						/bca //varset Target2Kill ${Target.ID}						
+					} else /if (${setCommunications.Equal[dannet]}) {
+						/dgexecute /varset Target2Kill ${Target.ID}						
+					}
+					OUT /${_bind} force assist ${sep} [${ctar}${Target.DisplayName}\ax]
 				}
-				VOUT /${_bind} force ${cinfo}${_verbage.Upper}\ax ${sep} [${ctar}${Spawn[ID ${Target.ID}].DisplayName}\ax]
 			}
 			 
 			| echo options
@@ -4310,6 +4307,12 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/call writeINI switchPull Common ${If[${switchPull},FALSE,TRUE]}
 		VOUT /${_bind} pull ${sep} ${If[${switchPull},${oenabled},${odisabled}]}
 		/if (${switchPull}) /call validate_assist NOECHO x
+		/return
+		
+	| set Off Tank
+	} else /if (${Bool[${_ccType.Equal[offtank]}]}) {
+		/call writeINI switchOffTank Common ${If[${switchOffTank},FALSE,TRUE]}
+		VOUT /${_bind} offtank ${sep} ${If[${switchOffTank},${oenabled},${odisabled}]}
 		/return
 		
 	| delay in nuking	
@@ -4499,6 +4502,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[range]}) /varset _listout ${_listout}(${If[${switchCombatRange},${oon},${ooff}]})	
 		/if (${${_bind}Type.Arg[${_count},|].Equal[nuke]}) /varset _listout ${_listout}(${If[${switchCombatNuke},${oon},${ooff}]})	
 		/if (${${_bind}Type.Arg[${_count},|].Equal[dot]}) /varset _listout ${_listout}(${If[${switchCombatDoT},${oon},${ooff}]})	
+		/if (${${_bind}Type.Arg[${_count},|].Equal[offtank]}) /varset _listout ${_listout}(${If[${switchOffTank},${oon},${ooff}]})	
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
@@ -5022,10 +5026,13 @@ sub Bind_cast_AA_invis()
 #bind broadcast_door /enter
 sub Bind_broadcast_door()
 	/if (${broadcastDoor}) {
-		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
-			/dgexecute All /click_door
+		/if (${setCommunications.Equal[eqbc]}) {
+			/bca //click_door
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/dgexecute /click_door
 		}
 	}
+	OUT /enter ${sep} ${obroadcasted}
 	/call Bind_click_door
 /return
 
@@ -5095,7 +5102,14 @@ sub Bind_clear_corpse_sub()
  ***|
 #bind broadcast_here /here
 sub Bind_broadcast_here()
-	/if (${broadcastHere}) /dgexecute all /set_combat_here
+	/if (${broadcastHere}) {
+		/if (${setCommunications.Equal[eqbc]}) {
+			/bca //set_combat_here
+		}	else /if (${setCommunications.Equal[dannet]}) {
+			/dgexecute /set_combat_here
+		}
+	}
+	OUT /here ${sep} ${obroadcasted}
 /return
 
 |***
@@ -5209,12 +5223,13 @@ sub Bind_set_combat_here()
 sub Bind_killmob()
 	/call Bind_override engageat
 	/if (${broadcastKillmob}) {
-		/if (${Bool[${Plugin[MQ2Dannet]}]}) {
-			/dgexecute All /override engageat
+		/if (${setCommunications.Equal[eqbc]}) {
+			/bca //override engageat
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/dgexecute /override engageat
 		}
-	} 
-	/override engageat
-
+	} 	
+	OUT /killmob ${sep} ${obroadcasted}
 /return
 
 
@@ -5247,9 +5262,13 @@ sub Bind_imincharge()
 	/call writeINI SetTieToon Movement FALSE
 
 	| set everyone elses /tie defaults
-	/dgexecute /tc name ${Me.DisplayName}
-	
-	/return
+	/if (${setCommunications.Equal[eqbc]}) {
+		/bca //tc name ${Me.DisplayName}
+	} else /if (${setCommunications.Equal[dannet]}) {
+		/dgexecute /tc name ${Me.DisplayName}
+	}
+	OUT I'm the damn boss ${sep} ${obroadcasted}
+/return
 	
 	
 	
@@ -5274,8 +5293,12 @@ sub Bind_bcsay(string _verbage, string _sender, int _tmpID)
 		/say ${_verbage}
 		
 		| tell everyone else to speak up
-		/dgexecute /bcsay "${_verbage}" ${Me.DisplayName} ${Target.ID}
 		
+		/if (${setCommunications.Equal[eqbc]}) {
+			/bca //bcsay "${_verbage}" ${Me.DisplayName} ${Target.ID}
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/dgexecute /bcsay "${_verbage}" ${Me.DisplayName} ${Target.ID}
+		}
 		| no not come back here
 		/return
 	}
@@ -5305,7 +5328,13 @@ sub Bind_bcsay(string _verbage, string _sender, int _tmpID)
  ***|
 #bind gtfo /gtfo
 sub Bind_gtfo()
-	/dgexecute /get_the_fuck_out
+
+	/if (${setCommunications.Equal[eqbc]}) {
+		/bca //get_the_fuck_out
+	} else /if (${setCommunications.Equal[dannet]}) {
+		/dgexecute /get_the_fuck_out
+	}
+	OUT Get The Fuck Out ${sep} ${obroadcasted}
 	/call Bind_get_the_fuck_out
 /return
 
@@ -5324,9 +5353,6 @@ sub Bind_get_the_fuck_out()
 		/if (${validate_cast[FALSE, alt, "${GTFO}", ${Me.ID}]}) /call core_cast2 "${GTFO}" alt 0 FALSE
 	}
 /return
-
-
-
 
 
 
@@ -5369,3 +5395,113 @@ sub Bind_comm(string _commType)
 	VOUT /comm [${_listout}]
 
 /return
+
+
+
+|***
+ *	DES: turns everyone off
+ *	USE: /off  
+ *	INI: 
+ *  NOTE: this will show those whiney bastards
+ ***|
+#bind broadcast_off /broadcast_off
+sub Bind_broadcast_off()
+	/if (${setCommunications.Equal[eqbc]}) {
+		/bca //core auto off
+	}	else /if (${setCommunications.Equal[dannet]}) {
+		/dgexecute /core auto off
+	}
+	OUT /core auto off ${sep} ${obroadcasted}
+/return
+
+
+
+|***
+ *	DES: turns everyone on.. 
+ *	USE: /on  
+ *	INI: 
+ *  NOTE: never judge anothers kink.. never know what you may like??!
+ ***|
+#bind broadcast_on /broadcast_on
+sub Bind_broadcast_on()
+	/if (${setCommunications.Equal[eqbc]}) {
+		/bca //core auto on
+	}	else /if (${setCommunications.Equal[dannet]}) {
+		/dgexecute /core auto on
+	}
+	OUT /core auto on ${sep} ${obroadcasted}
+/return
+
+
+
+|***
+ *	DES: fellowship campfire controls
+ *	USE: /campfire  
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind campfire /campfire
+sub Bind_campfire(string _verbage)
+	/declare _count int local 0
+	/declare _bind string local campfire
+	/declare _listout string local
+	/declare _sep bool local FALSE
+	/declare campfireType string local |drop|port
+
+	|** get help
+	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
+		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
+		/return
+	}	else /if (${_${_bind}Type.Equal[info]}) {
+		/for _count 1 to ${${_bind}Type.Count[|]}
+			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
+		/next _count
+		/return
+	}
+	**|
+
+	| drop a campfire
+	/if (${_verbage.Equal[drop]}) {
+		
+		| need 3 people close
+		/if (${SpawnCount[fellowship radius 50]} < 3) /return
+		
+		/squelch /windowstate FellowshipWnd open
+		/delay 10 !${Window[FellowshipWnd].Open}
+		/nomodkey /notify FellowshipWnd FP_Subwindows tabselect 2
+		
+		| skip this if we dont have a fire
+		/if (${Me.Fellowship.Campfire}) {
+			/nomodkey /notify FellowshipWnd FP_DestroyCampsite leftmouseup
+			/delay 5s ${Window[ConfirmationDialogBox].Open}
+			/if (${Window[ConfirmationDialogBox].Open}) /nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
+			/delay 5s !${Me.Fellowship.Campfire}
+		}
+		/nomodkey /notify FellowshipWnd FP_RefreshList leftmouseup
+		/delay 8
+		/nomodkey /notify FellowshipWnd FP_CampsiteKitList listselect 1
+		/delay 8
+		/nomodkey /notify FellowshipWnd FP_CreateCampsite leftmouseup
+		/delay 5s ${Me.Fellowship.Campfire}
+		/if (${Window[FellowshipWnd].Open}) /squelch /windowstate FellowshipWnd close
+		
+	| click campfire insignia	
+	} else /if (${_verbage.Equal[port]}) {
+		/if (${Me.Invis}) /makemevisible
+		/delay 1s !${Me.Invis}
+  	/call set_stop NOECHO
+		/delay 1s !${Me.Casting.ID}
+		/if (${validate_cast[FALSE, item, "Fellowship Registration Insignia", ${Me.ID}]}) /call core_cast2 "Fellowship Registration Insignia" item 0 FALSE
+		/return
+	}
+	
+	/if (${switchMQclearonCLS}) /mqclear
+	/for _count 1 to ${${_bind}Type.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax		
+		/varset _sep TRUE
+	/next _count
+	VOUT /${_bind} [${_listout}]	
+	
+/return
+
+

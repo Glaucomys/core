@@ -13,9 +13,73 @@
 
 
 
+20181011.00
+HUDUPDATE
+  -- Off Tank notification added next to Agro and Pull
+  -- in agro range mob count added next to Combatradius number
+  -- fixed the [X] markers for 2 override engage settings (cosmetic)
+-- cosmetic updates to the Info switch
+- OffTank
+  -- /cc offtank (on/off) enable disable offtank mode
+  -- off tank will watch mobs in its area and tank those that are either in the nomezz list fo that zone or are named that the main assist has not picked up yet.
+  -- once the Main assits picks them up, the offtank will return to a DPS type
+  -- NOITCE --- THIS IS A WORK IN PROGRESS.. it will ned some attention.
+  -- really, i'm not even sure it will work right yet. so don't expect a lot.
+- re-wrote the following commands to obey the /comm decision
+  -- /killmob
+  -- /here
+  -- /on
+  -- /off
+  -- /setassist f 
+  -- /cc force assist
+  -- /enter
+  -- /bcsay
+  -- /gtfo
+- /campfire [drop|port]
+  -- /campfire [port] simply clicks your campfire isnignia
+  -- /campfire [drop] will place a camp fire at your feet if 3+ members are in a 50' range
+- sort_cursor()
+  -- adjusted from a /while loot to an /if
+  -- was causing some sort of crash. may be an issue with nested /while loops in MQ /shrug
+- prep_combat()
+  -- forgot to account for auto off && override combat .. /sigh
+  -- manual mode was maintaining the target ID even after an ESC was hit. we had a talk. it's not doing it anymore
+- class.EVERYONE.inc
+  -- adjusted the exit points for all class loops
+- class.ber.inc
+  -- typo fixed; cannot spell return properly
+- class.clr.inc
+  -- correct a loop error allowing curing to be affected by the overridecombat switch
+  -- adjusted yaulp location
+- class.pal.inc
+  -- correct a loop error allowing curing to be affected by the overridecombat switch
+  -- adjusted yaulp location
+- class.shm.inc
+  -- correct a loop error allowing curing to be affected by the overridecombat switch
+- class.dru.inc
+  -- correct a loop error allowing curing to be affected by the overridecombat switch
+- class.wiz.inc
+  -- cosmetic changes to the /wiz command. just a little more info displayed
+- Familiars
+  -- there is now support for 3 familiars.
+  -- it is still your responsibility to sort stacking slots
+  -- here is my ini sample:
+	  SumFamiliar1=Emperor Ganak Familiar
+		SumFamiliar1Buff=Familiar: Emperor Ganak
+		SumFamiliar1Leave=TRUE
+		SumFamiliar2=Razors Edge
+		SumFamiliar2Buff=Familiar: Razors Edge
+		SumFamiliar2Leave=TRUE
+		SumFamiliar3=Venomous Raptor Familiar
+		SumFamiliar3Buff=Venomous Raptor Familiar
+		SumFamiliar3Leave=FALSE
+  -- YOU WILL NEED TO FIX YOUR INI.
+  -- you DO NOT need to use the "Auto Leave" button on the familiar keyring
+
+	
 20181002.00
 - Seriously... Read this..
-  In an attempt to write out the /goto in the main class loops I managed to create a constant crash in the mac caused by the burtn routines.
+  In an attempt to write out the /goto in the main class loops I managed to create a constant crash in the mac caused by the burn routines.
   So, to fix this. I have rewritten the following routines:
   if you find the code acting in a way it shouldnt, let me know.
   -- prep_combat()

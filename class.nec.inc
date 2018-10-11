@@ -27,10 +27,11 @@ sub core_NEC()
 	}
 	
 	/while (${prep_combat[]}) {
+		/if (${exit_class_loop[]}) /return
+
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 		| /if (${switchHealPet} && ${Me.Pet.ID}) /call pet_heal_${Me.Class.ShortName}
-		/if (${exit_class_loop[]}) /return
 	
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}

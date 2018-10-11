@@ -288,8 +288,9 @@ sub mode_forage()
 	UPDATEHUD "Forage"
 	/if (!${switchAutoCursor}) /varset switchAutoCursor TRUE
 	/if (!${Me.Standing}) /stand
-	/doability forage
+	/if (${Me.AbilityReady[forage]}) /doability forage
 	/call sort_cursor TRUE
+	/autoinventory
 	UPDATEHUD
 /return
 
