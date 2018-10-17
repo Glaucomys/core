@@ -75,6 +75,8 @@
 ***|
 
 | #warning
+#turbo 100
+#define DEBUG "/varset currentdebugsub"
 #define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax(\a-t${Macro.RunTime}\ax)"
 #define OUT "/echo ${c-}-\ax"
 #define VOUT "/if (${verbose}) /echo ${c-}-\ax"
@@ -96,7 +98,7 @@
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
 #define CHECKCOMBATCAST "/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return TRUE"
-#define CHECKINPUTS "/multiline ; /doevents ; /varset bindtrigger TRUE"
+#define CHECKINPUTS "/multiline ; /doevents ; /varset bindTrigger ${If[${bindTrigger},FALSE,TRUE]}"
 
 
 #include tc\declare.inc
@@ -139,7 +141,9 @@ sub main(string _ini)
 	/declare _count int 0
 	  
 	:loopmain
+		DEBUG :loopmain main(${_ini})
 	  CHECKINPUTS
+	  UPDATEHUD FALSE
 
 		| locked in maintenance mode ?
 		/if (${maintenance.Find[${Me.DisplayName}]}) {
@@ -159,8 +163,9 @@ sub main(string _ini)
 		/if (!${timer_HUD_death_check}) /varset hudDeathCount ${Int[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}]}
 		
 		CHECKREZ	
-	  UPDATEHUD FALSE	
+	  | UPDATEHUD FALSE	
 		CLEARCURSOR
+	  CHECKINPUTS
 		
 		/if (${coreAuto} || ${switchAADiscnowManual}) {
 			| check constant AA buffs
@@ -181,7 +186,8 @@ sub main(string _ini)
 			
 			/call check1offBuffs
 			AMIDEAD
-			
+		  CHECKINPUTS
+		
 			| check to see if someone needs a doctor?
 			/if (${switchHealCure}) {
 				/call cast_cure
@@ -231,14 +237,13 @@ sub main(string _ini)
 		/if (${switchCombatRange}) /call check_ammo
 		
 		CHECKTIE
+	  CHECKINPUTS
 
 		| looter stuffs
 		/if (${switchUseADVL}) {
 			/if ((${coreAuto} || ${switchOverrideLoot}) && (!${SafeZone} || ${switchOverrideSafezone})) /call do_loot
 		}
 
-		CHECKINPUTS		
-		
 		| non normal modes of operation
 		/call do_mode
 	
@@ -247,8 +252,8 @@ sub main(string _ini)
 
 
 		| do we pull or assist	
-		/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {	
-			/if (${coreAuto} && (!${SafeZone} || ${switchOverrideSafezone})) {
+		/if (${coreAuto} && (!${SafeZone} || ${switchOverrideSafezone})) {
+			/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {	
 				/if (!${switchPull} || ${switchOffTank}) {
 					/call get_assist_target	
 				} else /if (${switchPull} && !${Target2Kill} && !${switchOffTank}) {	
@@ -258,10 +263,11 @@ sub main(string _ini)
 		}
 		CHECKINPUTS
 		CHECKREZ
-		AMIDEAD
 		CHECKTIE		
+
 		| time to take this bitch to church!
 		/call core_${Me.Class.ShortName}
+
 	/goto :loopmain
 	
 	| this is MQ2 reserved..
@@ -352,6 +358,7 @@ sub initialize_core(string _ini)
  *  NOTE: 
  ***|
 sub base_preperation()
+	/varset currentdebugsub base_preperation()
 
 	| set peer communications options
 	/if (${validate_plugin[FALSE, |MQ2DanNet]}) {

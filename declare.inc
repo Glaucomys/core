@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181011.00
+	/call setDeclare coreBuild											string	outer 20181017.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -100,9 +100,6 @@ sub set_declares()
 	/call DeclareCoreIniVar broadcastClean					bool	Broadcast FALSE
 	/call DeclareCoreIniVar broadcastAnchor					bool	Broadcast FALSE
 
-
-
-
 		|** Output Color Display 
 			Default			\ax							Black				\ab
 			Blue				\au							Brown				\a-o
@@ -148,7 +145,7 @@ sub set_declares()
 	/call setDeclare onotice												string	outer "\ayNotice\ax"
  	/call setDeclare ocombat												string	outer "\amCombat\ax"	
 	/call setDeclare oremove												string	outer "${cbad}Removing\ax"
-	/call setDeclare obroadcasted										string outer "\amBroadcasted\ax"
+	/call setDeclare obroadcasted										string 	outer "\amBroadcasted\ax"
 
 	| ? colors
 	/call setDeclare wikiswitch											string outer "[\a-wswitch\ax]"
@@ -183,7 +180,11 @@ sub set_declares()
 	/call setDeclare AAEradicateList								string 	outer "|RNG|DRU|NEC|WIZ|ENC|MAG"
 	
 	| this is a makeshift /doevents to force binds to be cycled.
-	/call setDeclare bindtrigger										bool		outer TRUE
+	/call setDeclare bindTrigger										bool		outer TRUE
+	
+	| holder for the current sub for debugging purposes
+	/call setDeclare currentdebugsub								string	outer FALSE
+	
 		
 	| core control
 	/call setDeclare coreType 											string 	outer "|auto|checkcash|control|events|expadjust|expmaintain|explevel|fireworks|fixini|takeraidinvite|takegroupinvite|giveraidinvite|killcode|reset|rest|whitewash|zonereset"
@@ -230,6 +231,11 @@ sub set_declares()
 	/call DeclareCoreIniVar ${MacroQuest.Server}Assist		string	Group FALSE
 	/call DeclareCoreIniVar ${MacroQuest.Server}Looter		string	Group FALSE
 	
+	/call DeclareCoreIniVar ResidentMage									string	Group "|FALSE|FALSE"
+	/call DeclareCoreIniVar ResidentDruid						 			string	Group "|FALSE|FALSE"
+	/call DeclareCoreIniVar ResidentWizard								string	Group "|FALSE|FALSE"
+	
+	
 
 	| /here settings
 	/call DeclareCoreIniVar makeVisible							bool		Here TRUE
@@ -241,7 +247,7 @@ sub set_declares()
 	
 	
 	| please take a number and have a seat.
-	/call setDeclare bitchcount											int			outer	30	
+	/call setDeclare bitchcount											int			outer	31
 	/call setDeclare bitch1													string	outer	"Seriously... Again..."
 	/call setDeclare bitch2													string	outer	"Did your parents ever ask you to run away from home?"
 	/call setDeclare bitch3													string	outer	"Aha, I see the Fuck-Up Fairy has visited us again!"
@@ -272,6 +278,7 @@ sub set_declares()
 	/call setDeclare bitch28												string 	outer "Your mother was a hamster and your father smelt of elderberries!"
 	/call setDeclare bitch29												string 	outer "Don't worry about it too much. I did the same thing when I was eleven."
 	/call setDeclare bitch30												string 	outer "As the sun rose, Dawn crept across the lawn.. Searching for her car keys."
+	/call setDeclare bitch31												string 	outer "Thank you for nothing... You useless reptile."
 
 
 	| expansions
@@ -299,6 +306,7 @@ sub set_declares()
 	/call setDeclare expansion22										string 	outer "The Broken Mirror"
 	/call setDeclare expansion23										string 	outer "Empires of Kunark"
 	/call setDeclare expansion24										string 	outer "Ring of Scale"
+	/call setDeclare expansion25										string 	outer ""
 
 
 	| hide switches for /hidecorpse command
@@ -376,7 +384,7 @@ sub set_declares()
 	/call setINIVar autoControl			 								bool		Common FALSE 
 	/call setINIVar noCastWith											string	Common "|Quick Defense|Protection of Bayle|Interrogation Intimidation|Energy Charge|Cloud of Terror|Faith"
 	/call setINIVar noMeleeWith											string	Common "|Itching Poison"
-	/call setDeclare canMelee												bool		outer TRUE
+	| /call setDeclare canMelee												bool		outer TRUE
 	
 	/call setINIVar shrinkItem 											string 	Common "Ring of the Ancients"
 	/call setINIVar IllusionItem										string	Common FALSE
@@ -393,9 +401,6 @@ sub set_declares()
 	/call setINIVar autoInventoryItem								string	Common "|Summoned: Giant Modulation Shard"
 	/call setINIVar stoponDS												bool		Common FALSE		
 	/call setINIVar useGlyph												string	Common "Glyph of the Cataclysm"
-	/call setINIVar ResidentMage										string	Common "|FALSE|FALSE"
-	/call setINIVar ResidentDruid						 				string	Common "|FALSE|FALSE"
-	/call setINIVar ResidentWizard									string	Common "|FALSE|FALSE"
 	/call setINIVar switchSos												bool	 	Common FALSE
 
 
@@ -404,6 +409,7 @@ sub set_declares()
 	/call setDeclare ${Me.Class.ShortName}spire0		int			Buffs 0
 	/call setINIVar spireRaid												int 		Buffs 0
 	/call setINIVar spireGroup											int 		Buffs 0
+
 
 	| unity buffs
 	/for _count 1 to 7
@@ -442,7 +448,6 @@ sub set_declares()
 	/call setINIVar switchCombatNuke								bool		Common FALSE
 	/call setINIVar switchCombatDoT									bool		Common FALSE
 	/call setINIVar	broadcastGroup									string	Common Core
-	
 	
 			
 	| rez	control
@@ -486,6 +491,7 @@ sub set_declares()
 	/call setDeclare tempHomeSet										bool		outer FALSE	
 	/call setDeclare tempsnapstuck									bool		outer	FALSE  
 
+
 	| tie control
   /call setDeclare tcType													string	outer "|distance|lock|mode|name|time"
 	/call setINIVar SetTieToon 											string 	Movement FALSE
@@ -493,7 +499,6 @@ sub set_declares()
 	/call setINIVar SetTieDistance 									int 		Movement 5
 	/call setINIVar SetTieLock	 										bool 		Movement FALSE
 	/call setINIVar SetTieMode	 										string	Movement Stick
-
 
 	
 	| debuff switches	
@@ -894,6 +899,8 @@ sub declare_MAG()
 	/call setDeclare MAGAAUnity											string	outer "Thaumaturge's Unity"
 	/call setDeclare MAGAAFade											string	outer "Drape of Shadows"
 
+	/call setINIVar MAGAAGroupCOH										string	outer "Call of the Heroes"
+
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
 	
@@ -912,6 +919,7 @@ sub declare_MAG()
 	/call setINIVar ModRodName 											string 	Rods "Summoned: Large Modulation Shard"
 	/call setINIVar ElementRodSpell 								string 	Rods "Summon Mutinous Minion"
 	/call setINIVar ElementRodName 									string 	Rods "Summoned: Exigent Minion XXI"
+	
 
 	/call setINIVar spellCripple 										string 	Spells FALSE
 	/call setINIVar GatherSpell											string 	Spells "Gather Magnitude"
@@ -1305,7 +1313,7 @@ sub declare_NEC()
 	/call setINIVar DoT10chk							 					string	Spells FALSE
 	/call setINIVar DoT10Condition 									string	Spells FALSE
 
-	/call setINIVar DoNuke							 						int			Spells 1
+	/call setINIVar DoNuke							 						int			Spells 0
 	/call setINIVar Nuke1					 									string	Spells FALSE	
 	/call setINIVar Nuke1Condition 									string	Spells FALSE
 	/call setINIVar Nuke2					 									string	Spells FALSE
@@ -1330,7 +1338,6 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
-
 	/call setTimer tcheck_vot												string Timer 1215s timer_check_vot
 
 	/call setDeclare SHDspire1											string	outer "Fundament: First Spire of the Reavers"
@@ -1462,9 +1469,9 @@ sub declare_PAL()
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar RampageTank											string	Heal FALSE
 	
-	/call setINIVar doYaulp 												string	Buffs TRUE
+	/call setINIVar doYaulp 												bool		Buffs TRUE
 	/call setINIVar spellYaulp 											string	Buffs FALSE
-	/call setINIVar useYaulpPct											string	Buffs 98
+	/call setINIVar useYaulpPct											int			Buffs 98
 	/call setINIVar DiscRest			 									string	Discs "Breather"
 	/call setINIVar DiscFastRune	 									string	Discs "Repel"
 		                                   	
@@ -2119,7 +2126,7 @@ sub declare_BST()
  *	DES: Monk base variables
  *	USE: 
  *	INI: 
- *  NOTE: 
+ *  NOTE: i need to go back on my drugs
  ***|
 sub declare_MNK()
 	/call setDeclare MNKspire1											string	outer "Fundament: First Spire of the Sensei"
@@ -2228,9 +2235,9 @@ sub declare_ROG()
 	/call setINIVar TwistedShank										string 	Discs "Twisted Shank"
 	/call setINIVar AbsorbingAgent									string 	Discs "Absorbing Agent"
 	                                           		
-	/call setINIVar clickPoisonBuff									string 	Poison |Bite of the Shissar Poison X|Tallon's Tactic Poison IV|Tallon's Tactic Poison V|Vallon's Tactic Poison IV|Vallon's Tactic Poison V|Mana Poison Coat|Hero's Toxin Poison I|Hero's Toxin Poison II
-	/call setINIVar clickPoisonItem									string 	Poison Consigned Bite of the Shissar XVIII
-	/call setINIVar clickPoisonDispenser						string 	Poison Selrach's Shadowscale Leggings
+	/call setINIVar clickPoisonBuff									string 	Poison "|Bite of the Shissar Poison X|Tallon's Tactic Poison IV|Tallon's Tactic Poison V|Vallon's Tactic Poison IV|Vallon's Tactic Poison V|Mana Poison Coat|Hero's Toxin Poison I|Hero's Toxin Poison II"
+	/call setINIVar clickPoisonItem									string 	Poison "Consigned Bite of the Shissar XVIII"
+	/call setINIVar clickPoisonDispenser						string 	Poison "Selrach's Shadowscale Leggings"
 	/call setINIVar clickPoisonCount								int		 	Poison 60
                                              		
 	/call setINIVar spellCripple 										string 	Spells FALSE
@@ -2271,9 +2278,9 @@ sub declare_CLR()
 	
 	/call setINIVar DivineRezCleric									bool 		Heal TRUE
 	/call setINIVar RandRezDelay										int 		Heal 5
-	/call setINIVar ProtectOutsideGroup							string	Heal |FALSE|FALSE
-	/call setINIVar ProtectInsideRaid								string	Heal |FALSE|FALSE
-	/call setINIVar ProtectNPCList									string	Heal |FALSE|FALSE
+	/call setINIVar ProtectOutsideGroup							string	Heal "|FALSE|FALSE"
+	/call setINIVar ProtectInsideRaid								string	Heal "|FALSE|FALSE"
+	/call setINIVar ProtectNPCList									string	Heal "|FALSE|FALSE"
 	/call setINIVar useGroupHeal 										bool		Heal TRUE
 	/call setINIVar useGroupHoT											bool		Heal TRUE
 	/call setINIVar tempPet						 							string	Pet "Ardent Hammer of Zeal"
@@ -2297,10 +2304,10 @@ sub declare_CLR()
   /call setINIVar healRenewal3	 									string  Heal "Fervent Renewal"
   /call setINIVar healPanic			 									string  Heal "Fifteenth Emblem"
   /call setINIVar healWard			 									string  Heal "Ward of Surety"
-  /call setINIVar healWardToon	 									string  Heal |FALSE|FALSE
+  /call setINIVar healWardToon	 									string  Heal "|FALSE|FALSE"
   /call setINIVar useCelestialRegen								bool	  Heal TRUE
   /call setINIVar healIssuance										string  Heal "Issuance of Spirit"
-	/call setINIVar CRTXT														string	Heal "Celestial Regeneration (+11100HP / tic)"
+	/call setINIVar CRTXT														string	Heal "Celestial Regeneration"
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar switchForceGroupHeal						bool		Heal FALSE
 	/call setINIVar RampageTank											string	Heal FALSE
@@ -2310,11 +2317,11 @@ sub declare_CLR()
 	/call setINIVar switchIssuance									bool		Heal FALSE
 	/call setINIVar issuanceMobCount								int			Heal 4
 	                                          		
-	/call setINIVar doYaulp 												string	Buffs TRUE
+	/call setINIVar doYaulp 												bool		Buffs TRUE
 	/call setINIVar spellYaulp 											string	Buffs FALSE
-	/call setINIVar useYaulpPct											string	Buffs 98
-	/call setINIVar sumWeaponSpell									string	Buffs "Hammer of	Reverence"
-	/call setINIVar sumWeaponItem										string	Buffs "Hammer of	Reverence III"
+	/call setINIVar useYaulpPct											INT			Buffs 98
+	/call setINIVar sumWeaponSpell									string	Buffs "Hammer of Reverence"
+	/call setINIVar sumWeaponItem										string	Buffs "Hammer of Reverence III"
 	/call setINIVar switchModRod										bool	 	Buffs TRUE
                                             		
 	/call setINIVar switchVP												bool		Buffs TRUE
@@ -2362,14 +2369,9 @@ sub declare_CLR()
  ***|
 sub set_alias()
   /if (!${Bool[${Alias[/sendpets]}]}) 						/squelch /alias /sendpets										VOUT SendPets: 
-  | /if (!${Bool[${Alias[/stop]}]}) 								/squelch /alias /stop 										/broadcast_off
 	/if (!${Bool[${Alias[/blurb]}]}) 								/squelch /alias /blurb 											VOUT Blurb: 
   /if (!${Bool[${Alias[/echoaugments]}]}) 				/squelch /alias /echoaugments								VOUT Echo Augment file!
                                             			
-	| quick cleric cure commands              			
-	| /if (!${Bool[${Alias[/rc]}]}) 									/squelch /alias /rc 												/bc rc
-	| /if (!${Bool[${Alias[/purify]}]}) 							/squelch /alias /purify 										/bc purify
-		                                        			
   /if (!${Bool[${Alias[/buy]}]}) 									/squelch /alias /buy												/echo Buy:
   /if (!${Bool[${Alias[/sell]}]}) 								/squelch /alias /sell												/echo Sell:
                                             			
@@ -2378,12 +2380,8 @@ sub set_alias()
                                             			
 	/if (!${Bool[${Alias[/givecoin]}]}) 						/noparse /squelch /alias /givecoin			    VOUT Bribe Time:
                                             			
-                                            			
-	| /if (!${Bool[${Alias[/gtfo]}]}) 								/noparse /squelch /alias /gtfo    			 		/bc gtfo
-	
-	| utility
+ 	| utility
   /if (!${Bool[${Alias[/autologin]}]}) 						/squelch /alias /autologin									/plugin mq2autologin unload
-
 	
 /return
 
@@ -2444,26 +2442,6 @@ sub Event_broadcast_command(string line, string _sender, string _cmd)
 
 	/if (${_cmd.Equal[stop]}) /call set_stop FALSE
  
-	| group bail stuff
-  /if (${_cmd.Equal[gtfo]}) {
-  	/if (${Bool[${GTFO}]}) {
-  		/call sort_cursor TRUE
-  		/call set_stop NOECHO
-  		/call clear_combat
-  		/docommand /makemevisible
-  		/if (${Me.ItemReady[${GTFO}]}) {
-  			/if (${validate_cast[FALSE, item, ${GTFO}, ${Me.ID}]}) /call core_cast2 "${GTFO}" item 0
-   		} else /if (${Me.SpellReady[${GTFO}]}) {
-  			/if (${validate_cast[FALSE, spell, ${GTFO}, ${Me.ID}]}) /call core_cast2 "${GTFO}" 0 0
-   		} else /if (${Me.AltAbility[${GTFO}].ID}) {
-  			/if (${validate_cast[FALSE, alt, ${GTFO}, ${Me.ID}]}) /call core_cast2 "${GTFO}" alt 0
-   		}
-  	}
-  	/return
-  }
-
-
-
 	|***
 	* DES: casts AA radient cure
 	* USE: /rc | /bc rc
@@ -2489,19 +2467,6 @@ sub Event_broadcast_command(string line, string _sender, string _cmd)
 		/delay 1s !${Me.Casting.ID}
 		/if (${validate_cast[FALSE, alt, "Purified Spirits", ${Spawn[pc ${_sender}].ID}]}) /call core_cast2 "Purified Spirits" alt ${Spawn[pc ${_sender}].ID} FALSE
 		ECHOCHANNEL Purified Spirits: ${Spawn[pc ${_sender}].Name}
-		/return
-	}
-	
-	|***
-	* DES: Magician AA Call of Heroe
-	* USE: /g coh
-	***|
-	/if (${_cmd.Equal[coh]} && ${Select[${Me.Class.ShortName},MAG]}) {
-		CHECKSAFELIST
-	  /delay 15s ${Me.AltAbilityReady[Call of the Hero]}
-	  /if (${Me.Invis}) /makemevisible
-	  ECHOCHANNEL Calling ... ${_sender}
-	 	/if (${validate_cast[FALSE, alt, "Call of the Hero", ${Spawn[pc ${_sender}].ID}]}) /call core_cast2 "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
 		/return
 	}
 	
@@ -2592,7 +2557,6 @@ sub Event_Blurb(string line, string exp, string event)
 ***|
 #event Song "[MQ2] - Song: #1#"
 sub Event_Song(string line, string _group)
-
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
 		/call mem_song_set ${_group}
 	}
@@ -2627,8 +2591,8 @@ sub Event_checkOneOff()
 
 
 |***
- *	DES: 
- *	USE: 
+ *	DES: khajiit has wares
+ *	USE: gives coins to a NPC..
  *	INI: 
  *  NOTE: 
  ***| 	
@@ -2687,30 +2651,9 @@ sub Event_bribetime(string line, int _amount, int _stacks, string _coin)
  *	INI: 
  *  NOTE:
  ***| 	
-| #event Talk "#1# tells you, '#2#'"
 #event Talk "#1# tells you,#*# '#2#'"
 
 sub Event_Talk(string line, string _sender, string _chatText)
-|**
-	/declare _ignoreRelay		 	string 	local |${relayTells}|bank|${Me.Pet.DisplayName}|${Me}
-	/declare _count 					int 		local
-	/declare _relay						bool		local TRUE
-	
-	/varset _relay ${If[${_ignoreRelay.Find[${_sender}]},TRUE,]}
-	/varset _relay ${If[${_ignoreRelay.Find[${_chatText}]},TRUE,]}
-
-	| relay tells
-
-	/echo ..
-	/echo R:${_relay}
-
-	/echo S: ${_sender}
-	/echo ${If[${_sender.Find[Banker]},TRUE,FALSE]}
-	/echo C: ${_chatText}
-	/echo ${If[${_ignoreRelay.Find[${_chatText}]},TRUE,FALSE]}
-	/echo ..
-	**|
-	
 	
 	/if (${Bool[${relayTells}]} && !${_sender.Find[Banker]} && !${_sender.Find[${Me}]} && !${_sender.Find[${relayTells}]} && !${_sender.Find[${Me.Pet.DisplayName}]} ) {
 		/tell ${relayTells} ${_sender} told me: ${_chatText}
@@ -2734,7 +2677,6 @@ sub Event_Talk(string line, string _sender, string _chatText)
   
   | take a tell to reform your group.
   /if (${_chatText.Equal[formgroup]}) /call set_crew main
-  | /if (${_chatText.Equal[disbandgroup]}) /bcaa //disband
   /if (${_chatText.Equal[makemeleader]}) /makeleader ${_sender}
   /if (${_chatText.Equal[makememasterlooter]}) /delegategmasterlooter ${_sender}
   
@@ -3454,7 +3396,6 @@ sub Bind_rez(string _rezType, string _verbage)
 	/next _count
 	VOUT /rez [${_listout}]	
 /return
-
 
 
 
@@ -5357,48 +5298,6 @@ sub Bind_get_the_fuck_out()
 
 
 |***
- *	DES: changes your communications settings from eqbc/dannet or back.
- *	USE: /comm [eqbc|dannet]
- *	INI: core.ini
- *  NOTE: this is a broadcasted update.
- ***|
-#bind comm /comm
-sub Bind_comm(string _commType)
-
-	/declare _count int local 0
-	/declare _sep bool local
-	/declare _listout string local
-
-	
-	/if (${_commType.Equal[eqbc]}) {
-		/if (!${validate_plugin[FALSE, |MQ2EQBC|MQ2NetBots]}) {
-			OUT ${owarning} install plugin ${cinfo}MQ2EQBC\ax and ${cinfo}MQ2NetBots\ax first.
-			/return
-		}		
-		/call writeCoreINI setCommunications Comm eqbc
-		/bcaa //varset setCommunications eqbc
-	} else /if (${_commType.Equal[dannet]}) {
-		/if (!${validate_plugin[FALSE, |MQ2DanNet]}) {
-			OUT ${owarning} install plugin ${cinfo}MQ2DanNet\ax first.
-			/return
-		}
-		/call writeCoreINI setCommunications Comm dannet
-		/dgaexecute /varset setCommunications dannet
-	}
-	/declare _Types string local |eqbc|dannet
-	/for _count 1 to ${_Types.Count[|]}
-		/varset _listout ${_listout} ${If[${_sep},${sep} ,]} 
-		/if (${_Types.Arg[${_count},|].Equal[eqbc]}) /varset _listout ${_listout}${If[${setCommunications.Equal[eqbc]},${cgood}eqbc\ax,${cinfo}eqbc\ax]}
-		/if (${_Types.Arg[${_count},|].Equal[dannet]}) /varset _listout ${_listout}${If[${setCommunications.Equal[dannet]},${cgood}dannet\ax,${cinfo}dannet\ax]}
-		/varset _sep TRUE
-	/next _count
-	VOUT /comm [${_listout}]
-
-/return
-
-
-
-|***
  *	DES: turns everyone off
  *	USE: /off  
  *	INI: 
@@ -5448,7 +5347,7 @@ sub Bind_campfire(string _verbage)
 	/declare _sep bool local FALSE
 	/declare campfireType string local |drop|port
 
-	|** get help
+	| get help
 	/if (${${_bind}Type.Find[${_${_bind}Type}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
 		/return
@@ -5458,7 +5357,6 @@ sub Bind_campfire(string _verbage)
 		/next _count
 		/return
 	}
-	**|
 
 	| drop a campfire
 	/if (${_verbage.Equal[drop]}) {
@@ -5502,6 +5400,82 @@ sub Bind_campfire(string _verbage)
 	/next _count
 	VOUT /${_bind} [${_listout}]	
 	
+/return
+
+
+
+|***
+ *	DES: changes your communications settings from eqbc/dannet or back.
+ *	USE: /comm [eqbc|dannet]
+ *	INI: core.ini
+ *  NOTE: this is a broadcasted update.
+ ***|
+#bind comm /comm
+sub Bind_comm(string _commType)
+
+	/declare _count int local 0
+	/declare _sep bool local
+	/declare _listout string local
+
+	
+	/if (${_commType.Equal[eqbc]}) {
+		/if (!${validate_plugin[FALSE, |MQ2EQBC|MQ2NetBots]}) {
+			OUT ${owarning} install plugin ${cinfo}MQ2EQBC\ax and ${cinfo}MQ2NetBots\ax first.
+			/return
+		}		
+		/call writeCoreINI setCommunications Comm eqbc
+		/bcaa //varset setCommunications eqbc
+	} else /if (${_commType.Equal[dannet]}) {
+		/if (!${validate_plugin[FALSE, |MQ2DanNet]}) {
+			OUT ${owarning} install plugin ${cinfo}MQ2DanNet\ax first.
+			/return
+		}
+		/call writeCoreINI setCommunications Comm dannet
+		/dgaexecute /varset setCommunications dannet
+	}
+	/declare _Types string local |eqbc|dannet
+	/for _count 1 to ${_Types.Count[|]}
+		/varset _listout ${_listout} ${If[${_sep},${sep} ,]} 
+		/if (${_Types.Arg[${_count},|].Equal[eqbc]}) /varset _listout ${_listout}${If[${setCommunications.Equal[eqbc]},${cgood}eqbc\ax,${cinfo}eqbc\ax]}
+		/if (${_Types.Arg[${_count},|].Equal[dannet]}) /varset _listout ${_listout}${If[${setCommunications.Equal[dannet]},${cgood}dannet\ax,${cinfo}dannet\ax]}
+		/varset _sep TRUE
+	/next _count
+	VOUT /comm [${_listout}]
+
+/return
+
+
+
+|***
+ *	DES: Request Call of the Hero [aa|group]
+ *	USE: /coh [group]
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind request_coh /coh
+sub Bind_request_coh(string _verbage)
+	
+	/declare _mage string local
+	/declare _sep bool local
+	/declare _count int local 0
+	
+	/if (${setCommunications.Equal[eqbc]}) {
+		/if (${_verbage.Equal[group]}) {
+			/bct ${_mage} /call_of_the_hero "${Me.DisplayName}" "${_verbage}"
+		} else {
+			/bct ${_mage} /call_of_the_hero "${Me.DisplayName}"
+		}
+		
+	}	else /if (${setCommunications.Equal[dannet]}) {
+		
+		/if (${_verbage.Equal[group]}) {
+			/dex ${get_resident[mage, 99999]} /call_of_the_hero "${Me.DisplayName}" "${_verbage}"
+			/return
+		} else {
+			/dex ${get_resident[mage, 99999]} /call_of_the_hero "${Me.DisplayName}"
+			/return
+		}
+	}	
 /return
 
 

@@ -241,7 +241,7 @@ sub HUDUpdate(string _verbage)
 		HUDPATH "Core" "agro4" "19,318,14,255,255,255,${MobAgro}"
 		HUDPATH "Core" "zrad" "19,345,14,255,255,255,${zradius}"
 		HUDPATH "Core" "cr1" "19,370,14,255,255,255,${combatRadius}"
-		HUDPATH "Core" "spcount1" "19,389,14,255,255,255,${SpawnCount[npc agro ${MobAgro} targetable playerstate4]}"
+		HUDPATH "Core" "spcount1" "19,389,14,255,255,255,${SpawnCount[npc radius ${MobAgro} targetable playerstate 4]}"
 		
 
 		| ass..isting and stuff
@@ -353,26 +353,56 @@ sub HUDUpdate(string _verbage)
 	}	else /if (${_verbage.Equal[debug]}) {
 
 		| current line
-		HUDPATH "Debug" "debug.cl1" "19,5,150,255,255,255,CL"
+		HUDPATH "Debug" "debug.cl1" "3,5,150,255,255,255,CL"
 		HUDPATH "Debug" "debug.cl2" "19,30,150,100,149,237,${Macro.CurLine}"
 		
 		| runtime
-		HUDPATH "Debug" "debug.rt1" "19,5,160,255,255,255,RT"
-		HUDPATH "Debug" "debug.tr2" "19,30,160,100,149,237,${Macro.RunTime}"
+		HUDPATH "Debug" "debug.rt1" "3,5,160,255,255,255,RT"
+		HUDPATH "Debug" "debug.rt2" "19,30,160,100,149,237,${Macro.RunTime}"
 	
 		| target2kill
-		HUDPATH "Debug" "debug.T2K1" "19,5,170,255,255,255,T2K"
+		HUDPATH "Debug" "debug.T2K1" "3,5,170,255,255,255,T2K"
 		HUDPATH "Debug" "debug.T2K2" "19,30,170,100,149,237,${Target2Kill}"
 		
-		| zone
-		HUDPATH "Debug" "debug.z" "19,330,150,100,149,237,${Zone.ShortName}"
+		| _tmpID
+		HUDPATH "Debug" "debug.tid1" "3,5,180,255,255,255,tID"
+		HUDPATH "Debug" "debug.tid2" "19,30,180,100,149,237,${_tmpID}"
 		
+		| --- row 1
+
+		| bindtrigger
+		HUDPATH "Debug" "debug.bt1" "3,80,150,255,255,255,BT"
+		HUDPATH "Debug" "debug.bt2" "19,105,150,100,149,237,${If[${bindTrigger},T,F]}"
+
+		| isValidTarget 
+		HUDPATH "Debug" "debug.ivt1" "3,80,160,255,255,255,IVT"
+		HUDPATH "Debug" "debug.ivt2" "19,105,160,100,149,237,${If[${isValidTarget},T,F]}"
 
 
+		| combat
+		HUDPATH "Debug" "debug.combat1" "19,80,170,255,0,0,${If[${Bool[${combat}]},${combat},]}"
+		HUDPATH "Debug" "debug.combat2" "19,80,170,255,255,255,${If[${Bool[${combat}]},,${combat}]}"
 
+
+		| --- bottom line
+
+		| curent sub
+		HUDPATH "Debug" "debug.sub1" "19,5,197,100,149,237,${currentdebugsub}"
+
+		| zone
+		HUDPATH "Debug" "debug.zone" "19,310,197,100,149,237,${Zone.ShortName}"
+
+		| communications?		
+		HUDPATH "Debug" "debug.comm" "19,365,150,100,149,237,${setCommunications}"
 
 
 	}
 	
 	
 /return
+
+
+currentdebugsub
+
+
+${If[${Bool[${combat}]},${combat},]}

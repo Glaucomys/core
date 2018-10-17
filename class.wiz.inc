@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_WIZ()
+	DEBUG core_WIZ()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -64,6 +65,7 @@ sub core_WIZ()
  *  NOTE: 
  ***|
 sub disc_WIZ()
+	DEBUG disc_WIZ()
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -108,6 +110,7 @@ sub disc_WIZ()
  *  NOTE: 
  ***|
 sub click_DPS_WIZ()
+	DEBUG click_DPS_WIZ()
 	CHECKINPUTS
 	AMIDEAD
 	/call click_horn_of_unity 	
@@ -122,6 +125,7 @@ sub click_DPS_WIZ()
  *  NOTE: 
  ***|
 sub check_harvest()
+	DEBUG check_harvest()
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -151,7 +155,7 @@ sub check_harvest()
  *	USE: /g gtfo
  *	INI: 
  *  NOTE: 
- ***|
+
 #event gtfo "#1# tells the group, 'gtfo'"
 sub Event_gtfo(string line, string _sender)
 	/if (${Select[${Me.Class.ShortName},WIZ]}) {
@@ -162,7 +166,7 @@ sub Event_gtfo(string line, string _sender)
 	 	/if (${validate_cast[FALSE, alt, "Exodus", ${Me.ID}]}) /call core_cast2 "Exodus" alt 0 FALSE
 	}
 /return
-
+ ***|
 
 |***
  *	DES: emergency healing
@@ -171,6 +175,7 @@ sub Event_gtfo(string line, string _sender)
  *  NOTE: 
  ***|
 sub patch_heal_WIZ()
+	DEBUG patch_heal_WIZ()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -186,6 +191,7 @@ sub patch_heal_WIZ()
  *  NOTE: 
  ***|
 sub check_rune_WIZ()
+	DEBUG check_rune_WIZ()
 	AMIDEAD
 	CHECKEXIT
 	UPDATEHUD "BUFF: Runes"
@@ -206,6 +212,7 @@ sub check_rune_WIZ()
  *	NOTE: 
  ***| 
 sub synergy_WIZ()
+	DEBUG synergy_WIZ()
 	CHECKEXIT
 	CHECKINPUTS
 	
@@ -263,6 +270,7 @@ sub synergy_WIZ()
  *  NOTE: Twincast lets get it.
  ***|
 sub force_twincast_WIZ()
+	DEBUG force_twincast_WIZ()
 	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -287,6 +295,7 @@ sub force_twincast_WIZ()
  *  NOTE:
  ***|
 sub sort_mancy_lineAA()
+	DEBUG sort_mancy_lineAA()
 	/if (${lineCurrent.Equal[Fire]} && ${Me.Buff[${lineAAFire}].ID}) /return TRUE
 	/if (${lineCurrent.Equal[Ice]} && ${Me.Buff[${lineAAIce}].ID}) /return TRUE
 	/if (${lineCurrent.Equal[Magic]} && ${Me.Buff[${lineAAMagic}].ID}) /return TRUE

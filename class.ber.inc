@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_BER()
+	DEBUG core_BER()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -56,6 +57,7 @@ sub core_BER()
  *  NOTE: 
  ***|
 sub disc_BER()
+	DEBUG disc_BER()
 	AMIDEAD
 
 	CHECKINPUTS
@@ -151,6 +153,7 @@ sub get_agro_BER()
  *  NOTE: 
  ***|
 sub patch_heal_BER()
+	DEBUG patch_heal_BER()
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	
@@ -168,6 +171,7 @@ sub patch_heal_BER()
  *  NOTE: 
  ***|
 sub click_DPS_BER()
+	DEBUG click_DPS_BER()
 	CHECKEXIT
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -185,6 +189,7 @@ sub click_DPS_BER()
  *	NOTE: 
  ***| 
 sub synergy_BER()
+	DEBUG synergy_BER()
 	CHECKEXIT
 	CHECKINPUTS
 	

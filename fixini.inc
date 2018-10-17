@@ -89,7 +89,6 @@ sub writeCoreINI(string _varName, string _section, string _value)
  *  NOTE: 
  ***|
 sub setINIVar(string _name, string _type, string _section, string _value)
-	| /echo \atDeclareIniVar\ax(_name:\a-w${_name}\ax, _type:\a-w${_type}\ax, _section:\a-w${_section}\ax, _value:\a-w${_value}\ax)
 	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]}) {
 		VOUT ${owarning} ${sep} INVALID INI SETTING/STRING [_name:${_name}/_type:${_type}/_section:${_section}] --\ax
 		/return
@@ -248,7 +247,6 @@ sub check_zone_INI(string _sender)
  *	NOTE: may look a little strange, but I leave the old variables here for history. Just in case.
  ***|
 sub fix_INI_declares(string _verbage)
-
 	/if (!${Bool[${_verbage}]}) {
 		/call fix_ini_current
 		VOUT INI Housekeeping ${sep} ${cgood}DONE\ax
@@ -271,6 +269,7 @@ sub fix_INI_declares(string _verbage)
  *  NOTE: 
  ***| 
 sub fix_ini_namedlist()
+	/varset currentdebugsub fix_ini_namedlist()
 	/ini "${INIZone}" "${Zone.ShortName}" "NameList" "${Ini[tc\namelistdata.ini,${Zone},NameList]}"
 	/varset NameList "${Ini[${INIZone},${Zone.ShortName},NameList]}"
 /return 
@@ -319,11 +318,14 @@ sub fix_ini_current()
 		
 	
 	| toon INI non specific class --------------------------------------------------------------------------------------
-
+	
+		| remove the resident classes	
+		/ini "${INIClass}" "Common" "ResidentMage" NULL	
+		/ini "${INIClass}" "Common" "ResidentDruid" NULL	
+		/ini "${INIClass}" "Common" "ResidentWizard" NULL	
 
 		/ini "${INIClass}" "Common" "verbose" NULL	
 		/ini "${INIClass}" "Override" "switchOverrideCombatheal" NULL	
-
 
 		| 20180831.00
 		/ini "${INIClass}" "debug" NULL NULL

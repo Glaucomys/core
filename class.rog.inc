@@ -15,6 +15,7 @@
  *  NOTE: 
  ***|
 sub core_ROG()
+	DEBUG core_ROG()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -61,6 +62,7 @@ sub core_ROG()
  *  NOTE: 
  ***|
 sub sneak_attack()
+	DEBUG sneak_attack(
 	/if (${Bool[${DiscSneakAttack}]} && !${Me.CombatAbilityReady[${DiscSneakAttack}]}) /return
 	CHECKEXIT
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -80,6 +82,7 @@ sub sneak_attack()
  *  NOTE: 
  ***|
 sub disc_ROG()
+	DEBUG disc_ROG()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -121,6 +124,7 @@ sub disc_ROG()
  *  NOTE: 
  ***|
 sub click_DPS_ROG()
+	DEBUG click_DPS_ROG()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -137,6 +141,7 @@ sub click_DPS_ROG()
  *  NOTE: 
  ***|
 sub patch_heal_ROG()
+	DEBUG patch_heal_ROG()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -152,6 +157,7 @@ sub patch_heal_ROG()
  *  NOTE: Work in progress
  ***|
 sub automaticSoS()
+	DEBUG automaticSoS()
 	/if (!${switchSos}) /return
 	AMIDEAD
 	CHECKTIE
@@ -189,6 +195,7 @@ sub automaticSoS()
  *  NOTE: 
  ***|
 sub click_poison()
+	DEBUG click_poison()
 	CHECKEXIT
 	CHECKTIE
 	/declare _count int local 0
@@ -221,6 +228,7 @@ sub click_poison()
  *	NOTE: 
  ***| 
 sub synergy_ROG()
+	DEBUG synergy_ROG()
 	CHECKEXIT
 	CHECKINPUTS
 

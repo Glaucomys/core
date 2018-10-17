@@ -12,16 +12,35 @@
   -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
+20181017.00
+- /port [wizard|druid] [location]
+  -- /port with no switches will issues available switches as normal
+  -- /port wizard or druid will issue the avialable ports for that class
+- in mac Wiki - some updates
+- /coh [group]
+  -- /coh no paramaters will coh the command issuer with AA
+  -- /coh [group] well, if you haven't figured out the pattern by now
+- Xtarget heal list population
+  -- shouldnt put pets on there anymore. i hope.. fuck pets anyway
+- some small adjustments prep_combat() and exit_class_loop() for manual mode. trying to get it to only execute when forced
+- residentmage, druid and wizard settings from the individual classes have been moved to core.ini->[group]. FIX YOUR INIs
+  -- if you have to ask. i was seriously tired of editing the same setting over and over
+- class.pal/clr.inc
+	-- corrected the variable types for yaulp and the yaulp%. they should not have been strings
+- class.clr/dru/shm.inc
+  -- adjusted the exits on the class loop so xtarget healing and curing will cooperate with /override combat
+  
+
 
 20181011.00
 HUDUPDATE
   -- Off Tank notification added next to Agro and Pull
   -- in agro range mob count added next to Combatradius number
   -- fixed the [X] markers for 2 override engage settings (cosmetic)
--- cosmetic updates to the Info switch
+-- cosmetic updates to the Info switch1
 - OffTank
   -- /cc offtank (on/off) enable disable offtank mode
-  -- off tank will watch mobs in its area and tank those that are either in the nomezz list fo that zone or are named that the main assist has not picked up yet.
+  -- off tank will watch mobs in its area and tank those that are either in the nomezz list for that zone or are named that the main assist has not picked up yet.
   -- once the Main assits picks them up, the offtank will return to a DPS type
   -- NOITCE --- THIS IS A WORK IN PROGRESS.. it will ned some attention.
   -- really, i'm not even sure it will work right yet. so don't expect a lot.

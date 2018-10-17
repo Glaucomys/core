@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_BST()
+	DEBUG core_BST()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -66,6 +67,7 @@ sub core_BST()
  *  NOTE: 
  ***|
 sub disc_BST()
+	DEBUG disc_BST()
 	/if (${Me.PctEndurance} < 3) /return
 	AMIDEAD
 	CHECKEXIT
@@ -108,6 +110,7 @@ sub disc_BST()
  *  NOTE: 
  ***|
 sub check_mana_BST()
+	DEBUG check_mana_BST()
 	AMIDEAD
 	SIMPLEEXIT
 	
@@ -174,6 +177,7 @@ sub check_mana_BST()
  *  NOTE: 
  ***|
 sub patch_heal_BST()
+	DEBUG patch_heal_BST()
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -197,6 +201,7 @@ sub patch_heal_BST()
  *  NOTE: 
  ***|
 sub pet_heal_BST()
+	DEBUG pet_heal_BST()
 	/if (!${Me.Pet.ID}) /return
 	AMIDEAD
 	SIMPLEEXIT
@@ -226,6 +231,7 @@ sub Bind_cast_AA_paragon()
 /return
 
 sub cast_AA_paragon()
+	DEBUG cast_AA_paragon()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -248,6 +254,7 @@ sub cast_AA_paragon()
  *  NOTE: 
  ***|
 sub click_DPS_BST()
+	DEBUG click_DPS_BST()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -264,6 +271,7 @@ sub click_DPS_BST()
  *	NOTE: 
  ***| 
 sub synergy_BST()
+	DEBUG synergy_BST()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS

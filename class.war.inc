@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_WAR()
+	DEBUG core_WAR()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -54,6 +55,7 @@ sub core_WAR()
  *  NOTE: 
  ***|
 sub disc_WAR()
+	DEBUG disc_WAR()
 	AMIDEAD
 
 	CHECKINPUTS
@@ -88,6 +90,7 @@ sub disc_WAR()
  *  NOTE: 
  ***|
 sub get_agro_WAR()
+	DEBUG get_agro_WAR()
 	AMIDEAD
 
 	CHECKINPUTS
@@ -129,6 +132,7 @@ sub get_agro_WAR()
  *  NOTE: 
  ***|
 sub patch_heal_WAR()
+	DEBUG patch_heal_WAR()
 	AMIDEAD
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -151,6 +155,7 @@ sub patch_heal_WAR()
  *  NOTE: 
  ***|
 sub click_DPS_WAR()
+	DEBUG click_DPS_WAR()
 	AMIDEAD
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -165,6 +170,7 @@ sub click_DPS_WAR()
  *	NOTE: 
  ***| 
 sub synergy_WAR()
+	DEBUG synergy_WAR()
 	AMIDEAD
 
 	CHECKINPUTS
@@ -290,7 +296,6 @@ sub Bind_setWAR(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
-
 
 		/varset _sep TRUE
 	/next _count

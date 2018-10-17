@@ -18,7 +18,6 @@ sub core_BRD()
 	AMIDEAD
 	CHECKTIE
 
-
 	| validate/fix lists
 	/if (!${timer_validate_lists}) {
 		/if (!${SpawnCount[NPC radius ${MobAgro} playerstate 4]}) {
@@ -27,7 +26,6 @@ sub core_BRD()
 		}
 		/call create_timer timer_validate_lists ${tValidate_Lists}
 	}	
-
 		
 	/while (${prep_combat[]}) {
 		/if (${exit_class_loop[]}) /return

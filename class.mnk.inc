@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_MNK()
+	DEBUG core_MNK()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -57,6 +58,7 @@ sub core_MNK()
  *  NOTE: 
  ***|
 sub disc_MNK()
+	DEBUG disc_MNK()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -90,6 +92,7 @@ sub disc_MNK()
  *  NOTE: 
  ***|
 sub patch_heal_MNK()
+	DEBUG patch_heal_MNK()
 	CHECKEXIT
 	AMIDEAD
 	
@@ -123,6 +126,7 @@ sub patch_heal_MNK()
  *  NOTE: 
  ***|
 sub click_DPS_MNK()
+	DEBUG click_DPS_MNK()
 	CHECKEXIT
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -137,16 +141,7 @@ sub click_DPS_MNK()
  *  NOTE: manual/Named/raid. all sorts...
  ***|
 sub get_agro_MNK()
-	CHECKEXIT
-/return
-
-
-
- *	USE: /call get_agro_${Me.Class.ShortName}
- *	INI: 
- *  NOTE: manual/Named/raid. all sorts...
- ***|
-sub get_agro_MNK()
+	DEBUG get_agro_MNK()
 	CHECKEXIT
 /return
 
@@ -159,6 +154,7 @@ sub get_agro_MNK()
  *	NOTE: 
  ***| 
 sub synergy_MNK()
+	DEBUG synergy_MNK()
 	CHECKEXIT
 	CHECKINPUTS
 	
@@ -218,6 +214,7 @@ sub synergy_MNK()
  *  NOTE:
  ***|
 sub melee_train_MNK()
+	DEBUG melee_train_MNK()
 	
 | This code catches the call in the skillup sub and returns out using most efficient skills if not training melee
 	/if (!${switchMNKTrainMelee}) {
@@ -286,6 +283,7 @@ sub Event_MNKfdcheck(string line, string _verbage)
  *  NOTE: 
  ***|   
 sub check_fd()
+	DEBUG check_fd()
 	AMIDEAD
 	/if (${Me.Combat} && ${Me.PctHPs} <= ${setFDPct}) {
 		/if (!${Me.State.Equal[FEIGN]} && !${switchAmIDead}) {

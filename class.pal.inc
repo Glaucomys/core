@@ -14,31 +14,33 @@
  *  NOTE: 
  ***|
 sub core_PAL()
-
-		/if (${coreAuto}) {
-		  /if (${switchHealXtarget} && !${timer_set_xtarget}) {
-		    /call set_xtarget
-		    /call create_timer timer_set_xtarget ${tXHeal}
-		  }	
-			/if (${useShieldFlash}) /call cast_AA_shield_flash
-			| aa LoH
-			/if (${switchHealSelf} && ${useLoH}) {
-			  /if (${Me.PctHPs} <= ${useLoHPct}*.${tmpHealOverride}) {
-					/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
-				}
-			}	
+	DEBUG core_PAL()
+  CHECKINPUTS
 	
-			/if (${useMG}) {
-				/if (!${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
+	/if (${coreAuto}) {
+	  /if (${switchHealXtarget} && !${timer_set_xtarget}) {
+	    /call set_xtarget
+	    /call create_timer timer_set_xtarget ${tXHeal}
+	  }	
+		/if (${useShieldFlash}) /call cast_AA_shield_flash
+		| aa LoH
+		/if (${switchHealSelf} && ${useLoH}) {
+		  /if (${Me.PctHPs} <= ${useLoHPct}*.${tmpHealOverride}) {
+				/if (${validate_cast[FALSE, alt, "Lay on Hands", ${Me.ID}]}) /call core_cast2 "Lay on Hands" alt ${Me.ID} FALSE
 			}
+		}	
+
+		/if (${useMG}) {
+			/if (!${flagCallNeedRez} && !${timer_check_MG}) /call cast_AA_marrs_gift
 		}
+	}
 		
 	/while (${prep_combat[]}) {
-		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+	  CHECKINPUTS
 		/if (${exit_class_loop[]}) /return
-
-		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
+		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 
@@ -81,6 +83,7 @@ sub core_PAL()
  *  NOTE: 
  ***|
 sub disc_PAL()
+	DEBUG disc_PAL()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -140,8 +143,11 @@ sub disc_PAL()
  *  NOTE: 
  ***|
 sub patch_heal_PAL()
+	DEBUG patch_heal_PAL()
 	AMIDEAD
 	CHECKEXIT
+  CHECKINPUTS
+
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
@@ -193,8 +199,11 @@ sub patch_heal_PAL()
  *  NOTE: 
  ***|
 sub get_agro_PAL()
+	DEBUG get_agro_PAL()
 	AMIDEAD
-	CHECKEXIT
+	CHECKEXIT	  
+	CHECKINPUTS
+
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${switchPull}) /call set_combat ${combat.Upper}
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
@@ -261,6 +270,7 @@ sub get_agro_PAL()
  *  NOTE: 
  ***|
 sub click_DPS_PAL()
+	DEBUG click_DPS_PAL()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -290,6 +300,7 @@ sub click_DPS_PAL()
  *  NOTE: 
  ***|
 sub check_heal_group_PAL()
+	DEBUG check_heal_group_PAL()
 	AMIDEAD
 	CHECKEXIT
  	CHECKINPUTS	
@@ -391,6 +402,7 @@ sub check_heal_group_PAL()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_PAL()
+	DEBUG check_heal_XTarget_PAL()
 	/if (!${validate_expansion[FALSE, |16]}) /return
 	CHECKREZ
 	AMIDEAD
@@ -456,6 +468,7 @@ sub check_heal_XTarget_PAL()
  *  NOTE: 
  ***|
 sub check_pet_heal_PAL()
+	DEBUG check_pet_heal_PAL()
  	AMIDEAD
 	SIMPLEEXIT
 	CHECKINPUTS
@@ -504,7 +517,10 @@ sub check_pet_heal_PAL()
  *  NOTE: 
  ***|
 sub check_HP_PAL()
+	DEBUG check_HP_PAL()
 	AMIDEAD
+  CHECKINPUTS
+
 	/if (!${Me.Casting.ID}) /return
 	/declare _count int local 0
 
@@ -553,8 +569,11 @@ sub check_HP_PAL()
  *  NOTE: 
  ***|
 sub cast_AA_marrs_gift()
+	DEBUG cast_AA_marrs_gift()
 	AMIDEAD
 	SIMPLEEXIT
+  CHECKINPUTS
+
 	/call create_timer timer_check_MG ${tcheck_MG}
 	/if (!${validate_cast[FALSE, alt, "Marr's Gift", ${Me.ID}]}) /return
 	/if (${timer_zone_pause} || ${SafeZone} && !${switchOverrideSafezone}  || ${Me.Sitting}) /return
@@ -575,9 +594,11 @@ sub cast_AA_marrs_gift()
  *  NOTE: 
  ***|
 sub check_steel()
+	DEBUG check_steel()
 	/if (${SafeZone} && !${switchOverrideSafezone}) /return
 	AMIDEAD
 	SIMPLEEXIT
+  CHECKINPUTS
 
 	/if (${validate_cast[FALSE, spell, "${Steel}", ${Me.ID}]}) {
 		/call core_cast2 "${Steel}" 0 0 FALSE
@@ -594,9 +615,11 @@ sub check_steel()
  *	NOTE: 
  ***| 
 sub synergy_PAL()
+	DEBUG synergy_PAL()
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
+  CHECKINPUTS
 
 	| defensive	
 	/declare _count int local 0

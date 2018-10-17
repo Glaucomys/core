@@ -15,6 +15,7 @@
  *  NOTE: 
  ***|
 sub core_RNG()
+	DEBUG core_RNG()
 
 	/while (${prep_combat[]}) {
 		/if (${exit_class_loop[]}) /return
@@ -57,6 +58,7 @@ sub core_RNG()
  *  NOTE: 
  ***|
 sub disc_RNG()
+	DEBUG disc_RNG()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -112,6 +114,7 @@ sub disc_RNG()
  *  NOTE: Will not cast spice if the buff is present or if your name is Norbert.
  ***|
 sub cast_AA_auspice()
+	DEBUG cast_AA_auspice()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -134,6 +137,7 @@ sub cast_AA_auspice()
  *  NOTE: 
  ***|
 sub patch_heal_RNG()
+	DEBUG patch_heal_RNG()
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -167,11 +171,14 @@ sub patch_heal_RNG()
  *  NOTE: 
  ***|
 sub click_DPS_RNG()
+	DEBUG click_DPS_RNG()
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
 	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
+
 	
 	/if (!${Bool[${Me.ActiveDisc}]} && !${Bool[${Me.Song[Empowered Blades]}]} && !${Bool[${Me.Buff[${useGlyph}]}]}) {
 		| epic 2.0
@@ -189,6 +196,8 @@ sub click_DPS_RNG()
  *  NOTE: When burn is engaged, the timer for this is ignored.
  ***|
 sub cast_nuke_summer(int _tmpID)
+	DEBUG cast_nuke_summer(${_tmpID})
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/if (${timer_cast_nuke_summer}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -206,6 +215,8 @@ sub cast_nuke_summer(int _tmpID)
  *	NOTE: 
  ***| 
 sub synergy_RNG()
+	DEBUG synergy_RNG()
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS

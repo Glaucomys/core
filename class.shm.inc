@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_SHM()
+	DEBUG core_SHM()
 	CHECKINPUTS
 	AMIDEAD
 
@@ -35,11 +36,11 @@ sub core_SHM()
 
 	/while (${prep_combat[]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
 		/if (${exit_class_loop[]}) /return
 
-		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
-		/if (${switchHealCure}) /call cast_cure
 
 		/if (${isValidTarget}) {
 			/call set_combat ${combat.Upper}
@@ -49,7 +50,7 @@ sub core_SHM()
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
-			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			| /if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/call click_BP
 			/call click_item
@@ -76,6 +77,7 @@ sub core_SHM()
  *  NOTE: 
  ***|
 sub disc_SHM()
+	DEBUG disc_SHM()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${switchTalisman}) /call cast_talisman
@@ -91,6 +93,7 @@ sub disc_SHM()
  *  NOTE: 
  ***|
 sub click_DPS_SHM()
+	DEBUG click_DPS_SHM()
 	CHECKEXIT
 	CHECKINPUTS
 	/call click_horn_of_unity 	
@@ -105,6 +108,7 @@ sub click_DPS_SHM()
  *  NOTE: 
  ***|
 sub check_heal_group_SHM()
+	DEBUG check_heal_group_SHM()
 	AMIDEAD
 	CHECKEXIT
 	CHECKTIE
@@ -245,6 +249,7 @@ sub check_heal_group_SHM()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_SHM()
+	DEBUG check_heal_XTarget_SHM()
 	/if (!${validate_expansion[FALSE, |16]}) /return
 	CHECKREZ
 	AMIDEAD
@@ -330,6 +335,7 @@ sub check_heal_XTarget_SHM()
  *  NOTE: 
  ***|
 sub check_pet_heal_SHM()
+	DEBUG check_pet_heal_SHM()
 	AMIDEAD
 	SIMPLEEXIT
 	CHECKINPUTS
@@ -391,6 +397,7 @@ sub check_pet_heal_SHM()
  *  NOTE: this will try and get a twinheal proc first.
  ***|
 sub cast_surge_heal()
+	DEBUG cast_surge_heal()
 	/if (!${Bool[${TC1}]} && !${Bool[${TC1}]}) /return
 	
 	CHECKEXIT
@@ -445,6 +452,7 @@ sub cast_surge_heal()
  *  NOTE: 
  ***|
 sub check_HP_SHM()
+	DEBUG check_HP_SHM()
 	AMIDEAD
 	/if (!${Me.Casting.ID}) /return
 	/declare _count int local 0
@@ -505,10 +513,11 @@ sub check_HP_SHM()
  *  NOTE: Will not cast Aid if the buff is present.
  ***|
 sub doAid()
+	DEBUG doAid()
 	AMIDEAD
-
 	CHECKINPUTS
 	CHECKEXIT
+	
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Ancestral Aid]} && !${Bool[${Me.Song[Ancestral Aid]}]}) {
 		/if (${validate_cast[FALSE, alt, "Mass Group Buff", ${_tmpID}]}) /call core_cast2 "Mass Group Buff" alt 0
 		/if (${validate_cast[FALSE, alt, "Ancestral Aid", ${_tmpID}]}) /call core_cast2 "Ancestral Aid" alt 0
@@ -527,6 +536,7 @@ sub doAid()
  *	NOTE: 
  ***| 
 sub synergy_SHM()
+	DEBUG synergy_SHM()
 	CHECKEXIT
 	CHECKINPUTS
 
@@ -549,6 +559,7 @@ sub synergy_SHM()
  *  NOTE: keeps talisman buff line up
  ***|
 sub cast_talisman()
+	DEBUG cast_talisman()
 	/if (${Me.Buff[${spellTalisman}].ID}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -566,6 +577,7 @@ sub cast_talisman()
  *  NOTE: 
  ***|
 sub check_cani()
+	DEBUG check_cani()
 	CHECKEXIT
 	CHECKINPUTS
 	AMIDEAD
@@ -629,69 +641,41 @@ sub check_cani()
  *	INI: 
  *  NOTE: 
  ***|
- sub shm_alliance
+ sub alliance_SHM()
+ 	DEBUG alliance_SHM()
 	CHECKEXIT
 	CHECKINPUTS
 	
-	/if (!${Me.Gem[Ancient Alliance]}) /return
+	/if (!${Me.Gem[${SHMAlliance}]}) /return FALSE
+	/if (!${Me.SpellReady[${SHMAlliance}]}) /return FALSE
 	
 	/if (${useSmartAssistG}) {
 		/target pc ${Group.MainAssist}
 		/delay 5 ${Target.BuffsPopulated}==TRUE
-		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
-			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${Group.MainAssist}]}) /call core_cast2 "Ancient Alliance" 0 ${Group.MainAssist} FALSE
+		/if (${Target.BuffsPopulated}==TRUE && !${Target.Buff[${SHMAlliance}].ID}) {
+			/if (${validate_cast[FALSE, spell, "${SHMAlliance}", ${Group.MainAssist}]}) /call core_cast2 "${SHMAlliance}" 0 ${Group.MainAssist} FALSE
 		}
 	} else /if (${useSmartAssist1}) {
 		/target pc ${Raid.MainAssist}
 		/delay 5 ${Target.BuffsPopulated}==TRUE
-		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
-			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${Raid.MainAssist}]}) /call core_cast2 "Ancient Alliance" 0 ${Raid.MainAssist} FALSE
+		/if (${Target.BuffsPopulated}==TRUE && !${Target.Buff[${SHMAlliance}].ID}) {
+			/if (${validate_cast[FALSE, spell, "${SHMAlliance}", ${Raid.MainAssist}]}) /call core_cast2 "${SHMAlliance}" 0 ${Raid.MainAssist} FALSE
 		}
 	}
 	/if (${Bool[${MA1}]} && ${Bool[${Spawn[pc ${MA1}].ID}]}) {
 		/target pc {MA1}
 		/delay 5 ${Target.BuffsPopulated}==TRUE
-		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
-			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${MA1}]}) /call core_cast2 "Ancient Alliance" 0 ${MA1} FALSE
+		/if (${Target.BuffsPopulated}==TRUE && !${Target.Buff[${SHMAlliance}].ID}) {
+			/if (${validate_cast[FALSE, spell, "${SHMAlliance}", ${MA1}]}) /call core_cast2 "${SHMAlliance}" 0 ${MA1} FALSE
 		}
 	} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[pc ${MA2}].ID}]}) {
 		/target pc ${MA2}
 		/delay 5 ${Target.BuffsPopulated}==TRUE
-		/if (${Target.BuffsPopulated}==TRUE && ${Me.SpellReady[Ancient Alliance]} && !${Target.Buff[Ancient Alliance].ID}) {
-			/if (${validate_cast[FALSE, spell, "Ancient Alliance", ${MA2}]}) /call core_cast2 "Ancient Alliance" 0 ${MA2} FALSE
+		/if (${Target.BuffsPopulated}==TRUE && !${Target.Buff[${SHMAlliance}].ID}) {
+			/if (${validate_cast[FALSE, spell, "${SHMAlliance}", ${MA2}]}) /call core_cast2 "${SHMAlliance}" 0 ${MA2} FALSE
 		}
 	} 
 /return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

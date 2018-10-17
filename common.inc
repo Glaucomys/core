@@ -15,6 +15,7 @@
  *  NOTE: 
  ***| 
 sub check_one_mind()
+	DEBUG check_one_mind()
 	| if were not using eqbc.. go away..
 	/if (!${setCommunications.Equal[eqbc]}) /return FALSE
 	
@@ -35,6 +36,7 @@ sub check_one_mind()
  *  NOTE: 
  ***|
 sub check_plugin()
+	DEBUG check_plugin()
 	/declare _count int local 0
 	/declare _plug string local ${Ini[${INICore},plugin,plist]}
 
@@ -55,6 +57,7 @@ sub check_plugin()
  *  NOTE: 
  ***|
 sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string _verbage2)
+	DEBUG echos(${_type}, ${_verbage}, ${_tmpVariable}, ${_tmpID}, ${_verbage2})
 	AMIDEAD
 	CHECKINPUTS
 
@@ -174,6 +177,7 @@ sub echos(string _type, string _verbage, string _tmpVariable, int _tmpID, string
  *  NOTE: 
  ***|
 sub check_engaged()
+	DEBUG check_engaged()
 	CHECKINPUTS
 	| rogue SOS .. 
 	/if (${Select[${Me.Class.ShortName},ROG]}) {
@@ -220,6 +224,7 @@ sub check_engaged()
  *  NOTE: 
  ***|
 sub give_to_pet()
+	DEBUG give_to_pet()
 	AMIDEAD
 	/if (${Target.ID} != ${Me.Pet.ID}) {
 		/target ID ${Me.Pet.ID}
@@ -249,6 +254,7 @@ sub give_to_pet()
  *  NOTE: 
  ***|
 sub cast_summon_pet()
+	DEBUG cast_summon_pet()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -304,6 +310,7 @@ sub cast_summon_pet()
  *  NOTE: 
  ***|
 sub cast_shrink_pet()
+	DEBUG cast_shrink_pet()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -328,6 +335,7 @@ sub cast_shrink_pet()
  *  NOTE: chanter pets sword ID=10855
  ***|
 sub check_pet()
+	DEBUG check_pet()
 	AMIDEAD
 	CHECKEXIT
 	/if (!${Me.Pet.ID}) /call cast_summon_pet
@@ -358,6 +366,7 @@ sub check_pet()
  *  NOTE: MAG,ENG,BST,NEC
  ***|
 sub cast_summon_weapons()
+	DEBUG cast_summon_weapons()
 	AMIDEAD
 	CHECKINPUTS
 	/declare _count int local 0
@@ -436,6 +445,7 @@ sub cast_summon_weapons()
  *  NOTE: 
  ***|
 sub auto_adjust_EXP()
+	DEBUG auto_adjust_EXP()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -464,6 +474,7 @@ sub auto_adjust_EXP()
  *  NOTE: 
  ***|
 sub check_aura()
+	DEBUG check_aura()
 	/call create_timer timer_check_aura ${tCheck_Aura}
 	CHECKCOMBATCAST
 	AMIDEAD
@@ -539,6 +550,7 @@ sub check_aura()
  *  NOTE: 
  ***|
 sub intialize_item_buffs()
+	DEBUG intialize_item_buffs()
 	AMIDEAD
 	CHECKINPUTS
 	/declare _tmpSlot         														     						int			local 0
@@ -588,6 +600,7 @@ sub intialize_item_buffs()
  *  NOTE: 
  ***|
 sub check_buffs_item()
+	DEBUG check_buffs_item()
 	AMIDEAD
 	CHECKEXIT
 	UPDATEHUD "BUFF Item"
@@ -636,6 +649,7 @@ sub check_buffs_item()
  *  NOTE: 
 ***|
 sub remove_unwanted_buffs()
+	DEBUG remove_unwanted_buffs()
 	CHECKINPUTS
 	/declare _count int local 0
 	/declare _remove string local ${BuffRemove}
@@ -657,6 +671,7 @@ sub remove_unwanted_buffs()
  *  NOTE: 
  ***|
 sub check_buffs_self()
+	DEBUG check_buffs_self()
 	/if (${coreAuto}) {
 		/if (!${timer_check_buffs_self}) /call create_timer timer_check_buffs_self ${tSelf_Buff}
 		/if (${watch_for_death[]}) /return 
@@ -753,6 +768,7 @@ sub check_buffs_self()
  *  NOTE: this will do AA or Spell
  ***|
 sub check_buffs_pet()
+	DEBUG check_buffs_pet()
 	/if (!${Me.Pet.ID}) /return
 	CHECKINPUTS
 	CHECKCOMBATCAST
@@ -805,6 +821,7 @@ sub check_buffs_pet()
  *  NOTE: this is by toon.
  ***|
 sub check_no_cast_buffs()
+	DEBUG check_no_cast_buffs()
 	AMIDEAD
 	/declare _count int local 0
 	/for _count 1 to ${noCastWith.Count[|]}
@@ -825,6 +842,7 @@ sub check_no_cast_buffs()
  *  NOTE: we assume return FALSE, as in no buffs found. if we find a buff, return TRUE
  ***|
 sub check_no_do_a_thing_buff(string _type)
+	DEBUG check_no_do_a_thing_buff(${_type})
 	/if (!${Bool[${no${_type.Left[1].Upper}${_type.Right[-1].Lower}With}]}) /return FALSE
 	/if (!${Bool[${_type}]}) /return FALSE
 	/declare _count int local 0
@@ -851,6 +869,7 @@ sub check_no_do_a_thing_buff(string _type)
  *  NOTE: 
  ***|
 sub click_horn_of_unity()
+	DEBUG click_horn_of_unity()
 	CHECKINPUTS
 	/if (!${Bool[${switchHorn}]} || ${SafeZone} && !${switchOverrideSafezone} || ${Bool[${timer_zone_pause}]}) /return
 	/if (!${Bool[${Me.Song[Blessing of Unity]}]} && (${Me.PctHPs} < 95*.${tmpHealOverride} || ${Me.PctMana} < 95*.${tmpHealOverride})) {
@@ -868,6 +887,7 @@ sub click_horn_of_unity()
  *  NOTE: 
   ***|
 sub check_buffs_BC()
+	DEBUG check_buffs_BC()
 	CHECKCOMBATCAST
 	/if (${coreAuto}) /call create_timer timer_check_buffs_BC ${tBC_Buff}
 	UPDATEHUD "BUFF Broadcast"	
@@ -986,6 +1006,7 @@ sub check_buffs_BC()
  *  NOTE:
  ***|
 sub check_ammo()
+	DEBUG check_ammo()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -1026,6 +1047,7 @@ sub check_ammo()
  *  NOTE: no, i don't know why the mage will not shrink.
  ***|
 sub check_shrink()
+	DEBUG check_shrink()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -1047,6 +1069,7 @@ sub check_shrink()
  *  NOTE: this will define and populate if the variable does not exist. if it exists, it will adjust the time acordingly
  ***|
 sub create_timer(string _my_timer, string _my_duration)
+	DEBUG create_timer(${_my_timer}, ${_my_duration})
 	/if (${verbose} && !${Bool[${_my_timer}]}) VOUT ${ocaution} ${sep} BAD TIMER CREATION. ${cinfo}[\ax${cbad}no name\ax${cinfo}]\ax
 	/if (${verbose} && !${Bool[${_my_duration}]}) VOUT ${ocaution} ${sep} BAD TIMER CREATION.  ${sep} ${_my_timer}${sep} ${cinfo}[\ax${cbad}no duration\ax${cinfo}]\ax
 	/if (!${Defined[${_my_timer}]}) /declare ${_my_timer} timer outer
@@ -1061,6 +1084,7 @@ sub create_timer(string _my_timer, string _my_duration)
  *  NOTE: 
  ***|
 sub do_rest()
+	DEBUG do_rest()
 	/if (!${coreAuto} || ${switchAmIDead}) /return
 	/if (${SetTieLock} && ${SetTie}) /return
 	
@@ -1222,6 +1246,7 @@ sub do_rest()
  *  NOTE: 
  ***|
 sub set_home()
+	DEBUG set_home()
 	/if (${HomeSet}) {
 		/varset SetTie FALSE
 		VOUT ${cgood}Camp\ax R(${cnum}${HomeRadius}\ax) L(${cnum}${HomeLeash}\ax) ${sep} Y(${cnum}${Me.Y}\ax) X(${cnum}${Me.X}\ax)
@@ -1243,6 +1268,7 @@ sub set_home()
  *  NOTE: just because you stop something, does not mean you will not start it right back up again.
  ****|
 sub set_stop(string _echo)
+	DEBUG set_stop(${_echo})
 	UPDATEHUD "Stop"
 	/varset combat FALSE
 	/if (!${_echo.Equal[NOECHO]}) VOUT I was told to ${cbad}STOP\ax !! 
@@ -1300,6 +1326,7 @@ sub set_stop(string _echo)
  *  NOTE: 
  ***|
 sub click_item()
+	DEBUG click_item()
 	/declare _count int local 0
 	/for _count 1 to 6
 		/if (${Spawn[${Target.ID}].PctHPs} < 5*.${tmpHealOverride}) /break
@@ -1321,6 +1348,7 @@ sub click_item()
  *  NOTE: 
  ***|
 sub click_item_swarm(int _tmpID)
+	DEBUG click_item_swarm(${_tmpID})
 	/declare _count int local 0
 	/for _count 1 to 4
 		/if (${Spawn[${Target.ID}].PctHPs} < 5*.${tmpHealOverride}) /break
@@ -1341,6 +1369,7 @@ sub click_item_swarm(int _tmpID)
  *  NOTE: 
  ***|
 sub sort_cursor(bool _ignoreTimer)
+	DEBUG sort_cursor(${_ignoreTimer})
 	/if (!${Bool[${_ignoreTimer}]} && ${timer_clear_cursor}) /return
 	/if (!${Cursor.ID}) /return
 	AMIDEAD
@@ -1399,6 +1428,7 @@ sub sort_cursor(bool _ignoreTimer)
  *  NOTE: for healers its /heal xtarget
  ***|
 sub set_xtarget()
+	DEBUG set_xtarget()
 	/if (!${validate_expansion[FALSE, |16]}) /return	
 	/if (!${Select[${Me.Class.ShortName},SHM,CLR,PAL,DRU]}) {
 		/call echo_bitch MQWindow
@@ -1410,6 +1440,7 @@ sub set_xtarget()
 	/declare _x 				int 		local
 	/declare _b 				int 		local
 	/declare _count 		int			local 0
+	/declare _name			string	local
 
 	| reset extended target slots	
 	/for _count 1 to 13
@@ -1425,12 +1456,14 @@ sub set_xtarget()
 	| set protection for NPCs
 	/if (${Bool[${ProtectNPCList}]}) {
 		/for _count 1 to ${ProtectNPCList.Count[|]}
-			/if (${_b} > 13 || !${Bool[${Spawn[${ProtectNPCList.Arg[${_count},|]}]}]}) {
-			} else /if (${Bool[${Me.XTarget[${ProtectNPCList.Arg[${_count},|]}]}]}) {
+			/varset _name ${Spawn[pc ${ProtectNPCList.Arg[${_x},|]}].DisplayName}
+
+			/if (${_b} > 13 || !${Bool[${Spawn[${_name}]}]}) {
+			} else /if (${Bool[${Me.XTarget[${_name}]}]}) {
 				/varcalc _b ${_b}+1
-			} else /if (${Bool[${Spawn[${ProtectNPCList.Arg[${_count},|]}]}]}) {
+			} else /if (${Bool[${Spawn[${_name}]}]}) {
 				/varcalc _b ${_b}+1
-				/xtarget set ${_b} ${Spawn[${ProtectNPCList.Arg[${_count},|]}].Name}
+				/xtarget set ${_b} ${Spawn[${_name}].Name}
 			}
 		/next _count
 	}	
@@ -1438,15 +1471,16 @@ sub set_xtarget()
 	| protect PCs when outside group
 	/if (!${Raid.Members} && ${Bool[${ProtectOutsideGroup}]}) {
 		/for _x 1 to ${ProtectOutsideGroup.Count[|]}
-			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /continue
-			/if (${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Distance} > ${XTHealRadius}) /continue
-			/if (${Bool[${Group.Member[${ProtectOutsideGroup.Arg[${_x},|]}]}]}) /continue
-			/if (${_b} > 13 || !${Bool[${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}]}]} || ${Group.Member[${ProtectOutsideGroup.Arg[${_x},|]}].ID}) /continue
-			/if (${Bool[${Me.XTarget[${ProtectOutsideGroup.Arg[${_x},|]}]}]}) {
+			/varset _name ${Spawn[pc ${ProtectOutsideGroup.Arg[${_x},|]}].DisplayName}
+			/if (${_name.Equal[=${toonControl}]}) /continue
+			/if (${Spawn[pc ${_name}].Distance} > ${XTHealRadius}) /continue
+			/if (${Group.Member[${_name}].ID}) /continue
+			/if (${_b} > 13 || !${Bool[${Spawn[pc ${_name}]}]}) /continue
+			/if (${Bool[${Me.XTarget[${_name}]}]}) {
 				/varcalc _b ${_b}+1
-			} else /if (${Bool[${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}]}]}) {
+			} else /if (${Bool[${Spawn[pc ${_name}]}]}) {
 				/varcalc _b ${_b}+1
-				/xtarget set ${_b} ${Spawn[${ProtectOutsideGroup.Arg[${_x},|]}].Name}
+				/xtarget set ${_b} ${Spawn[pc ${_name}].Name}
 			}
 		/next _x
 	}				
@@ -1455,15 +1489,17 @@ sub set_xtarget()
 	/if (${Raid.Members}) {
 		/if (${Bool[${ProtectInsideRaid}]}) {
 			/for _x 1 to ${ProtectInsideRaid.Count[|]}
-				/if (${Spawn[${ProtectInsideRaid.Arg[${_x},|]}].Name.Equal[${toonControl}]}) /continue
-				/if (${Spawn[${ProtectInsideRaid.Arg[${_x},|]}].Distance} > ${XTHealRadius}) /continue
-				/if (${Bool[${Group.Member[${ProtectInsideRaid.Arg[${_x},|]}]}]}) /continue
-				/if (${_b} > 13 || !${Bool[${Spawn[${ProtectInsideRaid.Arg[${_x},|]}]}]}) {
-				} else /if (${Bool[${Me.XTarget[${ProtectInsideRaid.Arg[${_x},|]}]}]}) {
+			/varset _name ${Spawn[pc ${ProtectInsideRaid.Arg[${_x},|]}].DisplayName}
+
+				/if (${Spawn[pc ${_name}].Name.Equal[${toonControl}]}) /continue
+				/if (${Spawn[pc ${_name}].Distance} > ${XTHealRadius}) /continue
+				/if (${Bool[${Group.Member[${_name}]}]}) /continue
+				/if (${_b} > 13 || !${Bool[${Spawn[pc ${_name}]}]}) {
+				} else /if (${Bool[${Me.XTarget[${_name}]}]}) {
 					/varcalc _b ${_b}+1
-				} else /if (${Bool[${Spawn[${ProtectInsideRaid.Arg[${_x},|]}]}]}) {
+				} else /if (${Bool[${Spawn[pc ${_name}]}]}) {
 					/varcalc _b ${_b}+1
-					/xtarget set ${_b} ${Spawn[${ProtectInsideRaid.Arg[${_x},|]}].Name}
+					/xtarget set ${_b} ${Spawn[pc ${_name}].Name}
 				}
 			/next _x
 		}
@@ -1494,6 +1530,7 @@ sub set_xtarget()
  *  NOTE: for the love of whatever you find important, don't touch this ever again...
  ***|
 sub stick_to_target()
+	DEBUG stick_to_target()
 	/if (!${switchCombatMelee}) || !${coreAuto}) /return
 	/if (!${validate_plugin[TRUE, |mq2moveutils]}) /return
 	AMIDEAD	
@@ -1556,6 +1593,7 @@ sub stick_to_target()
  *  NOTE: 
  ***|
 sub get_assist_target()
+	DEBUG get_assist_target()
 	AMIDEAD
 	CHECKINPUTS
 	/if (!${coreAuto}) /return
@@ -1708,12 +1746,15 @@ sub get_assist_target()
  *  NOTE: ass.U.ME the mob is alive until, it is not.
  ***|
 sub is_target_dead(int _tmpID)
+	DEBUG is_target_dead(${_tmpID})
 	AMIDEAD
 	/declare _dead bool local FALSE
 	
-	/if (${coreAuto}) {
-		/if (!${Bool[${_tmpID}]}) /varset _tmpID ${Target2Kill}
-	} else /if (!${coreAuto}) {
+	| /if (${coreAuto}) {
+	| 	/if (!${Bool[${_tmpID}]}) /varset _tmpID ${Target2Kill}
+	| } else 
+	
+	/if (!${coreAuto}) {
 		/if (!${Bool[${_tmpID}]} && ${Target.ID}) /varset _tmpID ${Target.ID}
 		/if (!${Bool[${_tmpID}]}) {
 			/call clear_combat
@@ -1731,14 +1772,10 @@ sub is_target_dead(int _tmpID)
 	| targets dead? were done here
 	/if (${Target.Dead}) {
 		/varset _dead TRUE
-	} else /if (${Spawn[_tmpID].ID}) {
+	| } else /if (${Spawn[_tmpID].ID}) {
+	| 	/varset _dead TRUE
+	} else /if (${Target.Type.Equal[Corpse]} || ${Spawn[${Target.ID}].Type.Equal[CORPSE]}) {
 		/varset _dead TRUE
-	} else /if (${Target.Type.Equal[Corpse]}) {
-		/varset _dead TRUE
-	| } else /if (${Bool[${Spawn[${_tmpID}].Type.Equal[CORPSE]}]} || ${Spawn[${Target.ID}].Type.Equal[CORPSE]}) {
-	} else /if (${Spawn[${Target.ID}].Type.Equal[CORPSE]}) {
-		/varset _dead TRUE
-	| } else /if (${Bool[${Spawn[${_tmpID}]].Dead}} || ${Spawn[${Target.ID}].Dead}) {
 	} else /if (${Spawn[${_tmpID}]].Dead} || ${Spawn[${Target.ID}].Dead}) {
 		/varset _dead TRUE
 	| } else /if (!${Spawn[${_tmpID}].ID} || !${Bool[${Spawn[ID ${_tmpID}]}]}) {
@@ -1762,6 +1799,7 @@ sub is_target_dead(int _tmpID)
  *  NOTE: 
  ***|
 sub clear_combat()
+	DEBUG clear_combat()
 	CHECKINPUTS
 
 	/if (${validate_class[FALSE, |BRD]}) {
@@ -1792,6 +1830,7 @@ sub clear_combat()
  *  NOTE: timers that need clearing when the target is deaded
  ***|
 sub clear_timer(int _tmpID)
+DEBUG clear_timer(${_tmpID})
 	CHECKINPUTS
 	/if (!${_tmpID}) /return
 
@@ -1822,6 +1861,7 @@ sub clear_timer(int _tmpID)
  *  NOTE: DO NOT PASS VARIABLE CONTAINER. JUST PASS ITS' INI DECLARE NAME
  ***|
 sub cast_condition(str _condition)
+	DEBUG cast_condition(${_condition})
 	CHECKINPUTS	
 	
 	| is the base variable string set to FALSE in the INI? if so. we do not need to check and consider valid
@@ -1846,6 +1886,7 @@ sub cast_condition(str _condition)
  *  NOTE: "I say we take off and nuke the entire site from orbit." --Ripley
  ***|
 sub cast_nuke()
+	DEBUG cast_nuke()
 	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
 	/declare _count int local 0
@@ -1882,6 +1923,7 @@ sub cast_nuke()
  *  NOTE: "The only good bug is a dead bug" -- Would you like to know more?
  ***|
 sub cast_nuke_line()
+	DEBUG cast_nuke_line()
 	/if (${lineCurrent.Equal[off]}) /return
 	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
@@ -1919,6 +1961,7 @@ sub cast_nuke_line()
  *  NOTE:
  ***|
 sub mem_nuke_line(string _line)
+	DEBUG mem_nuke_line(${_line})
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -1947,6 +1990,7 @@ sub mem_nuke_line(string _line)
  *  NOTE: 
  ***|
 sub cast_DOT()
+	DEBUG cast_DOT()
 	/call get_assist_target
 	/declare _count int local 0
 	/for _count 1 to ${DoDoT}
@@ -1974,6 +2018,7 @@ sub cast_DOT()
  *  NOTE: I'd suggest not using this. though it is kind of fun to watch
  ***|
 sub cast_nuke_rain()
+	DEBUG cast_nuke_rain()
 	/if (${timer_Nuke_Delay}) /return	
 	/call get_assist_target
 	/declare _count int local 0
@@ -1999,6 +2044,7 @@ sub cast_nuke_rain()
  *  NOTE: sometimes people need focus.
 ***|
 sub get_target_2kill()
+	DEBUG get_target_2kill()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -2019,6 +2065,7 @@ sub get_target_2kill()
  *  NOTE: 
  ***|
 sub cast_AA_eradicate_magic(int _tmpID)
+	DEBUG cast_AA_eradicate_magic(${_tmpID})
 	/if (${timer_eradicate_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -2049,6 +2096,7 @@ sub cast_AA_eradicate_magic(int _tmpID)
  *  NOTE: did I mention this is for classes with AA snares..
  ***|
 sub cast_AA_snare(int _tmpID)
+	DEBUG cast_AA_snare(${_tmpID})
 	/if (${timer_snare_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -2115,6 +2163,7 @@ sub cast_AA_snare(int _tmpID)
  *  NOTE: 
  ***|
 sub click_BP()
+	DEBUG click_BP()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -2147,6 +2196,7 @@ sub click_BP()
  *  NOTE: listed all i could think of. dont want to keep up with this in an INI.
  ***|
 sub use_mod_rod()
+	DEBUG use_mod_rod()
 	/if (${Select[${Me.Class.ShortName},ROG,BER,WAR,MNK]}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -2208,6 +2258,7 @@ sub use_mod_rod()
  *  NOTE: 
  ***| 
 sub send_pet(int _tmpID)
+	DEBUG send_pet(${_tmpID})
 	/if (!${coreAuto}) /return
 	/if (!${switchPcPet}) /return
 	AMIDEAD
@@ -2242,6 +2293,7 @@ sub send_pet(int _tmpID)
  *  NOTE: 
  ***|
 sub use_glyph()
+	DEBUG use_glyph()
 	AMIDEAD
 	CHECKINPUTS
 	/if (!${Bool[${useGlyph}]} || !${Raid.Members} && !${switchGlyphOutsideRaid}) /return
@@ -2259,6 +2311,7 @@ sub use_glyph()
  *  NOTE: this is checked on most spell casts. prevents doing stupid shit.
  ***|
 sub cast_break()
+	DEBUG cast_break()
 	AMIDEAD
 	CHECKINPUTS
 	/if (${Me.Zoning}) /stopcast
@@ -2289,6 +2342,7 @@ sub cast_break()
  *  NOTE: 
  ***|
 sub cast_cure()
+	DEBUG cast_cure()
 	/call create_timer timer_check_cast_cure ${tCast_Cure}
 	AMIDEAD
 	CHECKINPUTS
@@ -2475,6 +2529,7 @@ sub cast_cure()
  *  NOTE: i could never get this to work right...
  ***|
 sub cast_free_target(string _tmpSpell, int _tmpID)
+	DEBUG cast_free_target(${_tmpSpell}, ${_tmpID})
 	/if (${validate_cast[FALSE, spell, "${_tmpSpell}", ${_tmpID}) /call core_cast2 "${_tmpSpell}" 0 ${_tmpID} FALSE
 	/squelch /face ID ${_tmpID} ${If[${SetFaceFast},fast,]}
 	/delay 5
@@ -2491,6 +2546,7 @@ sub cast_free_target(string _tmpSpell, int _tmpID)
  *  NOTE: 
  ***|
 sub use_skill_melee(int _tmpID)
+	DEBUG use_skill_melee(${_tmpID})
  	/if (!${switchCombatMelee}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -2615,6 +2671,7 @@ sub use_skill_melee(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_nuke_servant()
+	DEBUG cast_nuke_servant()
 	/if (!${switchPcSwarm}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -2632,6 +2689,7 @@ sub cast_nuke_servant()
  *  NOTE: 
  ***|
 sub set_combat(str _mode)
+	DEBUG set_combat(${_mode})
 	AMIDEAD
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return	
@@ -2701,6 +2759,7 @@ sub set_combat(str _mode)
  *  NOTE: 
  ***|
 sub cast_nuke_GoM(int _tmpID)
+	DEBUG cast_nuke_GoM(${_tmpID})
 
 	| clerics have their own GOM routine in group heals
 	/if (${Select[${Me.Class.ShortName},CLR]}) /return
@@ -2737,6 +2796,7 @@ sub cast_nuke_GoM(int _tmpID)
  *  NOTE: 
  ***|
 sub check_buffs_manual(string _type)
+	DEBUG check_buffs_manual(${_type})
 	/if (!${coreAuto}) /return
 	CHECKCOMBATCAST
 	/if (${watch_for_death[]}) /return 
@@ -2839,6 +2899,7 @@ sub check_buffs_manual(string _type)
  *  NOTE:
  ***|
 sub cast_buffs_queue(string _sender, string _verbage)
+	DEBUG cast_buffs_queue(${_sender}, ${_verbage})
 	CHECKINPUTS
 
 	/declare _a int local 0
@@ -2863,6 +2924,7 @@ sub cast_buffs_queue(string _sender, string _verbage)
  *  NOTE: 
  **|
 sub set_tie()
+	DEBUG set_tie()
 
 	| FORCE EMULATE FOLLOW.. HATE DOING THIS
 	/if (${SetTieLock}) {
@@ -2969,6 +3031,7 @@ sub set_tie()
  *  NOTE: 
  ***|
 sub sort_familiar()
+	DEBUG sort_familiar()
 	/call create_timer timer_Check_Familiar ${tCheck_Familiar}
 	CHECKINPUTS
 	/if (${check_exit[]}) /return
@@ -3003,6 +3066,7 @@ sub sort_familiar()
  *  NOTE: 
  ***|
 sub protect_always_xt()
+	DEBUG protect_always_xt()
 	/if (!${validate_expansion[FALSE, |16]}) /return
 	CHECKINPUTS
 	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect} && ${Bool[${Spawn[pc ${toonControl}].ID}]} && !${Bool[${Spawn[${toonControl}].Dead}]}) {
@@ -3026,6 +3090,7 @@ sub protect_always_xt()
 *  NOTE: 
 ***|
 sub check_free_ingame_cash()
+	DEBUG check_free_ingame_cash()
 	
 	| if nothing to claim. no reason to stick around.. like a bad house guest... go away..
 	/if (${Window[MKPW_ClaimWindow].Child[MKPW_ClaimClickHereBtn].Text.EqualCS[Claimed]}) /return
@@ -3061,6 +3126,7 @@ sub check_free_ingame_cash()
 *  NOTE: good for poisons, whatevers.
 ***|
 sub odds_and_ends()
+	DEBUG odds_and_ends()
 	CHECKEXIT
 	/call create_timer timer_check_odds_and_ends ${tOdds_and_Ends}
 	/declare _count int local
@@ -3083,6 +3149,8 @@ sub odds_and_ends()
  *  NOTE: All reasons to not attack a target..
  ***|
 sub check_exit()
+	DEBUG check_exit()
+	
 	| invis 
 	/if (${Me.Invis}) /return TRUE
 	
@@ -3145,6 +3213,7 @@ sub check_exit()
  *  NOTE: 
  ***|
 sub update_HUD_notices(string _mode)
+	DEBUG update_HUD_notices(${_mode})
 	CHECKINPUTS
 	/if (${Me.Zoning}) /return
 	
@@ -3215,6 +3284,7 @@ sub update_HUD_notices(string _mode)
 		
 	
 	|**  HUD bottom notices.. safe zone, modes, stuff like that **|
+  CHECKINPUTS
 	
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
 		/varset _tmphudNotice ${_tmphudNotice} ${lineCurrent}
@@ -3277,7 +3347,6 @@ sub update_HUD_notices(string _mode)
 		/varset hudNoticeLength ${_tmphudNotice.Length}
 		/varset hudNotice ${_tmphudNotice}
 	} 	
-
 		
 	| ** target debuffs notices
 	/varset _sep FALSE
@@ -3356,6 +3425,7 @@ sub cast_AA_slow(int _tmpID, string _tmpSpell)
  *  NOTE: 
  ***|
 sub cast_temp_pet(int _tmpID, string _tmpSpell)
+	DEBUG cast_temp_pet(${_tmpID}, ${_tmpSpell})
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -3373,6 +3443,7 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
  *	NOTE: Pallys keep that shit up ALL the time
  ***|
 sub cast_yaulp()
+	DEBUG cast_yaulp()
 	/if (${Me.Sitting}) /return
 	/if (${Me.Buff[Lesser Yaulp].ID} || ${Me.Buff[Yaulp].ID}) /return
 	/if (${Me.PctMana} > ${useYaulpPct}*.${tmpHealOverride}) /return
@@ -3409,6 +3480,7 @@ sub cast_yaulp()
  *  NOTE: 
  ***|
 sub cast_stamina_recovery()
+	DEBUG cast_stamina_recovery()
  	/if (${Defined[DiscRest]}) {
 		/if (!${Bool[${DiscRest}]}) /return
 	 	/if (!${Me.CombatAbilityReady[${DiscRest}]}) /return
@@ -3455,6 +3527,7 @@ sub cast_stamina_recovery()
  *  NOTE:
  ***|
 sub fix_gem_id(string _spellGem)
+	DEBUG fix_gem_id(${_spellGem})
 	/declare _gem int local 0
 	/if (${_spellGem.Length} == 1 || ${_spellGem.Length} == 4) {
 		/varset _gem ${_spellGem.Right[1]}
@@ -3472,6 +3545,7 @@ sub fix_gem_id(string _spellGem)
  *  NOTE: 
  ***|
 sub mem_spell(bool _echo, string _spellname, string _spellgem, bool _wait)
+	DEBUG mem_spell(${_echo}, ${_spellname}, ${_spellgem}, ${_wait})
  	/if (${Me.Gem[${_spellname}]}) /return TRUE
 	AMIDEAD
 	CHECKINPUTS
@@ -3510,36 +3584,33 @@ sub mem_spell(bool _echo, string _spellname, string _spellgem, bool _wait)
  *  NOTE: This will send the same tell to all mages in the list. welcome to ignore
  ***|
 sub tell_resident_mage(string _request)
-	/if (${Select[${Me.Class.ShortName},MAG]}) /return
+	DEBUG tell_resident_mage(${_request})
+	/if (${Select[${Me.Class.ShortName},MAG]}) /return FALSE
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
-	/declare _count int local 0
 	
-	| cycle through the mages
-	/for _count 1 to ${ResidentMage.Count[|]}
-		| skip if FALSE
-		/if (!${Bool[${ResidentMage.Arg[${_count},|]}]}) /continue
+	/declare _toon string local FALSE
+	/if (${Bool[${get_resident[mage, 150]}]}) {
+		/varset _toon ${Bool[${get_resident[mage, 150]}]}
+	} else {
+		/return FALSE
+	}
 
-		/if (${Spawn[pc ${ResidentMage.Arg[${_count},|]} zradius 150 radius 150].ID}) {
-
-
-			| ask for weapons
-			/if (${validate_class[FALSE, ${PetList}]}) {
-				/if (${_request.Equal[weapons]} && !${Bool[${timer_ask_for_weapons_${ResidentMage.Arg[${_count},|]}}]} && !${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
-					/t ${ResidentMage.Arg[${_count},|]} weapons
-					/call create_timer timer_ask_for_weapons_${ResidentMage.Arg[${_count},|]} ${tAsk_for_weapons}
-				}
-			}
-			
-			| ask for ModRod - shard
-			/if (${_request.Equal[shard]} && !${Bool[${timer_ask_for_rod_${ResidentMage.Arg[${_count},|]}}]} && !${Bool[${FindItem[Modulation Shard]}]}) {
-				/t ${ResidentMage.Arg[${_count},|]} shard
-				/call create_timer timer_ask_for_rod_${ResidentMage.Arg[${_count},|]} ${tAsk_for_rod}
-			}
+	| ask for weapons
+	/if (${validate_class[FALSE, ${PetList}]}) {
+		/if (${_request.Equal[weapons]} && !${timer_ask_for_weapons_${_toon} && !${FindItem[${summonedWepClosedBag}].ID}) {
+			/t ${_toon} weapons
+			/call create_timer timer_ask_for_weapons_${_toon} ${tAsk_for_weapons}
 		}
-	/next _count	
-/return
+	}
+	
+	| ask for ModRod - shard
+	/if (${_request.Equal[shard]} && !${timer_ask_for_rod_${_toon} && !${FindItem[Modulation Shard].ID}) {
+		/t ${_toon} shard
+		/call create_timer timer_ask_for_rod_${_toon} ${tAsk_for_rod}
+	}
+/return TRUE
 
 
 
@@ -3550,6 +3621,7 @@ sub tell_resident_mage(string _request)
  *  NOTE: looks for corpses.. rez them
  ***|
 sub check_for_corpse()
+	DEBUG check_for_corpse()
 	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) /return FALSE
 	
 	| fuck your corpse
@@ -3740,6 +3812,7 @@ sub check_for_corpse()
  *  NOTE: 
  ***|
 sub cast_rez(int _tmpID, string _rezAA)
+	DEBUG cast_rez(${_tmpID}, ${_rezAA})
 	/if (${Me.Dead}) /return
 	/if (${timer_corpse_${_tmpID}}) /return
 	AMIDEAD
@@ -3818,6 +3891,7 @@ sub cast_rez(int _tmpID, string _rezAA)
  *  NOTE: 
  ***|
 sub list_add(string _listName, string _tmpID)
+	DEBUG list_add(${_listName}, ${_tmpID})
 	/declare _exit int local 0
 	/if (!${Bool[${${_listName}.Find[${_tmpID}]}]}) {
 		/varset ${_listName} ${${_listName}}|${_tmpID}
@@ -3834,6 +3908,7 @@ sub list_add(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_delete(string _listName, string _tmpID)
+	DEBUG list_delete(${_listName}, ${_tmpID})
 	/if (${Bool[${${_listName}.Equal[NULL]}]}) /return
 	/if (!${Bool[${_tmpID}]}) /return
 	/declare _count int local 0
@@ -3870,6 +3945,7 @@ sub list_delete(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub list_update(string _listName, string _tmpID)
+	DEBUG list_update(${_listName}, ${_tmpID})
 	/declare _remove bool local FALSE 
 
 	/if (${${_listName}.Find[${_tmpID}]}) {
@@ -3891,8 +3967,6 @@ sub list_update(string _listName, string _tmpID)
 		/if (${_remove}) {
 			/call list_delete ${_listName} ${_tmpID}
 		}
-		
-		
 	}
 /return
 
@@ -3905,6 +3979,7 @@ sub list_update(string _listName, string _tmpID)
  *  NOTE: 
  ***|
 sub check_for_adds()
+	DEBUG check_for_adds()
 	/declare _tmpID				string	local
 	/declare _numMobs			int			local 1
 
@@ -3949,6 +4024,7 @@ sub check_for_adds()
  *  NOTE: 
  ***|
 sub queue_buff_add(int _buffee, int _buffnumber)
+	DEBUG queue_buff_add(${_buffee}, ${_buffnumber})
   /declare _count				int local
   /declare _compare			int local
 	AMIDEAD
@@ -3982,6 +4058,7 @@ sub queue_buff_add(int _buffee, int _buffnumber)
  *  NOTE: 
  ***|
 sub queue_buff_delete(int _buffee, int _buffnumber)
+	DEBUG queue_buff_delete(${_buffee}, ${_buffnumber})
 	/declare _count 			int local
 	/for _count 1 to ${queueCountMax}
 		/if (((${Spawn[${queueList[${_count},1]}].State.Equal["DEAD"]} || !${Spawn[${queueList[${_count},1]}].ID}) || ((${queueList[${_count},1]}==${_buffee} || (!${_buffee} && (${Group.Member[${Spawn[${queueList[${_count},1]}].DisplayName}].ID} || ${Group.Member[${Spawn[${queueList[${_count},1]}].Master.DisplayName}].ID}))) && (${queueBuffID[${queueList[${_count},2]}]}==${_buffnumber} || ${queueList[${_count},2]}==${_buffnumber}))) && ${queueList[${_count},1]}) {
@@ -4000,6 +4077,7 @@ sub queue_buff_delete(int _buffee, int _buffnumber)
  *  NOTE: queue counts start at 1, but they are empty.
  ***|
 sub check_buffs_tell()
+	DEBUG check_buffs_tell()
 	CHECKINPUTS
 	UPDATEHUD "BUFF tell"
 	/declare _count					int local
@@ -4076,6 +4154,7 @@ sub check_buffs_tell()
  *  NOTE: this only works for your group and on the same computer. it shares the settings in core.ini
  ***|
 sub broadcast_status()
+	DEBUG broadcast_status()
 	/declare _count int local
 	/declare _build string local 
 	/declare _INIstatusName string local
@@ -4159,6 +4238,7 @@ sub Event_forcedloreleave(string line, string _itemName)
 /return
 
 sub do_loot()
+	DEBUG do_loot()
 	AMIDEAD
 	CHECKINPUTS
 	/if (!${switchUseADVL}) /return
@@ -4316,6 +4396,7 @@ sub do_loot()
  *  NOTE: you have to open the merchants window. this works on the loyalty vendor in PoK as well.
  ***|
 sub vendor_buy(string _itemtoBuy, int _buyAmount)
+	DEBUG vendor_buy(${_itemtoBuy}, ${_buyAmount})
 	/if (!${Select[${Target.Type},npc,pet]} || !${Target.ID} || ${Target.Type.Equal[pet]} && !${Target.DisplayName.Find[familiar]}) /return
 	/declare _count int local 0
 	/declare _qty int local 0
@@ -4395,6 +4476,7 @@ sub vendor_buy(string _itemtoBuy, int _buyAmount)
  *  NOTE: 
  ***|
 sub vendor_sell(string _itemtoSell)
+	DEBUG vendor_sell(${_itemtoSell})
 	/declare _pack 					int local
 	/declare _slot 					int local
 	/declare _lootItem 			string local
@@ -4442,6 +4524,7 @@ sub vendor_sell(string _itemtoSell)
  *  NOTE: 
  ***|
 sub vendor_sell_item(string _itemtoSell)
+	DEBUG vendor_sell_item(${_itemtoSell})
   /if (!${Window[MerchantWnd].Open}) {
   	VOUT Go and open a merchant window.
   	/return
@@ -4472,6 +4555,7 @@ sub vendor_sell_item(string _itemtoSell)
  *  NOTE: This is hardcoded for only 2 skills. suck it up.
  ***|
 sub check_AA_now()
+	DEBUG check_AA_now()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -4494,6 +4578,7 @@ sub check_AA_now()
  *  NOTE: This is hardcoded for only 2 skills.
  ***|
 sub check_disc_now()
+	DEBUG check_disc_now()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -4524,6 +4609,7 @@ sub check_disc_now()
  *	SERIOUS: this will find a valid target to kill within the pullers defined agro range. bring it to the group and start teaching the gospel.
  ***|
 sub get_target()
+	DEBUG get_target()
 	/if (!${switchPull} || !${coreAuto}) /return
 	AMIDEAD
 	CHECKINPUTS
@@ -4728,6 +4814,7 @@ sub get_target()
  *  NOTE: THIS HAS NOT BEEN TESTED!! you could be handing in your soul and not even know it.
  ***|
 sub hand_in(string _sender, string _verbage)
+	DEBUG hand_in(${_sender}, ${_verbage})
 	/if (${Spawn[pc ${_sender}].ID}) /assist ${_sender}
 	/delay 1s ${Me.AssistComplete}
 	/if (Target.Distance} > 100) /return
@@ -4784,6 +4871,7 @@ sub hand_in(string _sender, string _verbage)
  *  NOTE: recursive of augments in items in bags.
  ***|
 sub echo_augments()
+	DEBUG echo_augments()
 	/declare _slot 			int local
 	/declare _augslot 	int local
 	/declare _bagslot 	int local
@@ -4839,6 +4927,7 @@ sub echo_augments()
  *  NOTE: resets on start
  ***|
 sub check_watch_spawn()
+	DEBUG check_watch_spawn()
 	
 	/declare _correctWatchCount int local ${SpawnCount[npc ${watchSpawn}]}
 	/varset hudwatchspawn ${_correctWatchCount}
@@ -4861,6 +4950,7 @@ sub check_watch_spawn()
  *  NOTE: It's not dumb if it works.
  ***|
 sub give_coin(int _ammount, int _stacks, string _coin)
+	DEBUG give_coin(${_ammount}, ${_stacks}, ${_coin})
 	/declare _count 			int local 
 	/declare _countloop 	int local 1
 	/declare _coinID			int local 99
@@ -4914,6 +5004,7 @@ sub give_coin(int _ammount, int _stacks, string _coin)
  *  NOTE: 103 spell EoK
  ***|
 sub check_harmonious()
+	DEBUG check_harmonious()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -4932,11 +5023,33 @@ sub check_harmonious()
  *  NOTE:
 **|
 sub prep_combat()
+	DEBUG prep_combat()
 	/if (${Me.Zoning}) /return FALSE
 	CLEARCURSOR
 	CHECKINPUTS
 	
-	/if (${coreAuto} && ${switchOverrideCombat}) {
+	
+	| manual mode
+	/if (!${coreAuto}) {
+		/if (${Target.ID}) {
+			/if (${Target.ID} == ${Me.ID}) /return FALSE
+			| /if (!${Spawn[${Target2Kill}].ID}) /varset Target2Kill ${Target.ID}
+			| /if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
+			| /varset combat COMBAT
+			/if (${Bool[${combat}]}) {
+				/if (${is_burn_time[]}) /varset setBurnControl TRUE
+			}
+			/return TRUE
+		| } else /if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) {
+		} else /if (!${Target.ID}) {
+			/if (${Bool[${combat}]} || ${isValidTarget}) /call clear_combat
+			| /varset combat FALSE
+			/return FALSE
+		}
+	
+	
+	
+	} else /if (${coreAuto} && ${switchOverrideCombat}) {
 
 		| healer override check
 		/if (${switchHealGroup} || ${switchHealXtarget}) {
@@ -4949,21 +5062,17 @@ sub prep_combat()
 	} else /if (!${coreAuto} && ${switchOverrideCombat}) {
 		/varset combat COMBAT
 		/return FALSE
-	}
 
 	| offtank check for mobs
-	/if (${coreAuto} && ${switchOffTank}) {
+	} else /if (${coreAuto} && ${switchOffTank}) {
 		/call get_target
 		/if (${Me.XTarget[1].ID} != ${Target2Kill}) {
 			/varset combat COMBAT
 			/return TRUE
 		}
-	}
-
-	
 	
 	| automatic mode
-	/if (${coreAuto}) {
+	} else /if (${coreAuto}) {
 		/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
 			/if (${validate_target[FALSE, ${Target2Kill}]}) /varset isValidTarget TRUE
 			/if (!${isValidTarget} || !${Spawn[${Target2Kill}].ID}) {
@@ -4980,21 +5089,6 @@ sub prep_combat()
 		}
 	}
 
-	| manual mode
-	/if (!${coreAuto}) {
-		/if (${Target.ID}) {
-			/if (${Target.ID} == ${Me.ID}) /return FALSE
-			/if (!${Spawn[${Target2Kill}].ID}) /varset Target2Kill ${Target.ID}
-			/if (${is_burn_time[]}) /varset setBurnControl TRUE
-			/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
-			/return TRUE
-		} else /if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) {
-			/call clear_combat
-			/varset combat FALSE
-			/return FALSE
-		}
-	}
-	
 
 /return FALSE
 
@@ -5007,14 +5101,16 @@ sub prep_combat()
  *  NOTE: assume no exit (FALSE)
  ***|
 sub exit_class_loop()
+	DEBUG exit_class_loop()
 		/if (${coreAuto}) {	
 			/if (${switchOverrideCombat}) /return TRUE
 			/if (!${Spawn[${Target2Kill}].ID}) /return TRUE
 			/if (${is_target_dead[${Target2Kill}]}) /return TRUE
 		} else /if (!${coreAuto}) {
 			/if (!${Target.ID}) /return TRUE
-			/if (!${Bool[${combat}]}) /return TRUE
-			/if (${is_target_dead[${Target2Kill}]}) /return TRUE
+			/if (${Bool[${combat}]}) {
+				/if (${is_target_dead[${Target2Kill}]}) /return TRUE
+			}
 		}
 /return FALSE
 
@@ -5027,6 +5123,7 @@ sub exit_class_loop()
  *  NOTE: we work off establised assist target for non healers only.
  ***|
 sub is_burn_time()
+	DEBUG is_burn_time()
 	/if (${SafeZone} && !${switchOverrideSafezone} && ${coreAuto}) /return FALSE
 	
 	| if always set to burn, always burn while in combat
@@ -5069,6 +5166,7 @@ sub is_burn_time()
  *  NOTE: THIS NEEDS TO BE WORKED OUT OF THE CODE.. MOVE TO check_exit...
  ***|
 sub check1offBuffs()
+	DEBUG check1offBuffs()
 	AMIDEAD
 	/if (${Me.Buff[Holistic Health].ID}) /call cure_Anashti_DT
 	| /if (${Me.Buff[Pyroignition].ID}) /call CurePyroignitionDot
@@ -5084,6 +5182,7 @@ sub check1offBuffs()
  *  NOTE: 
  ***|
 sub click_summon_food()
+	DEBUG click_summon_food()
 	/call create_timer timer_click_food ${tClick_FoodDrink}
 	AMIDEAD
 	CHECKTIE
@@ -5105,6 +5204,7 @@ sub click_summon_food()
  *  NOTE: 
  ***|
 sub click_summon_drink()
+	DEBUG click_summon_drink()
 	CHECKTIE
 	AMIDEAD
 	CHECKEXIT
@@ -5126,6 +5226,7 @@ sub click_summon_drink()
  *  NOTE: 
  ***|
 sub check_buff_routines(bool _force)
+	DEBUG check_buff_routines(${_force})
 	/if (!${coreAuto} && !${_force}) /return
 	AMIDEAD
 	CHECKINPUTS
@@ -5135,7 +5236,6 @@ sub check_buff_routines(bool _force)
 		/if (${Bool[${Me.Gem[${fix_gem_id[${buffGem}]}]}]})  {
 			/varset _tmpSpell ${Me.Gem[${fix_gem_id[${buffGem}]}]}
 		}		
-
 		
 		| check tell request for buffs
 	  /if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
@@ -5198,6 +5298,7 @@ sub check_buff_routines(bool _force)
  *  NOTE: 
  ***|
 sub check_for_item(string _verbage)
+	DEBUG check_for_item(${_verbage})
 	/declare _slot 			int local
 	/declare _augslot 	int local
 	/declare _bagslot 	int local
@@ -5305,6 +5406,7 @@ sub check_for_item(string _verbage)
  *  NOTE:
  ***| 	
 sub echo_bitch(string _out)
+	DEBUG echo_bitch(${_out})
 	/declare _bitch					string local 
 	/declare _rnd						int local
 	
@@ -5329,6 +5431,7 @@ sub echo_bitch(string _out)
  *  NOTE:
  ***|
 sub cast_AA_fade()
+	DEBUG cast_AA_fade()
 	CHECKEXIT
 	
 	| does the class even have a fade?
@@ -5350,6 +5453,7 @@ sub cast_AA_fade()
  *  NOTE: 
  ***|
 sub check_stance()
+	DEBUG check_stance()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -5366,6 +5470,7 @@ sub check_stance()
  *	NOTE: these are all on the same timer. so u just get one
  ***|  
 sub synergy_click_Circle()
+	DEBUG synergy_click_Circle()
 	/if (!${Bool[${useCircle}]}) /return FALSE
 	AMIDEAD
 	CHECKEXIT	
@@ -5403,13 +5508,13 @@ sub synergy_click_Circle()
  *  NOTE: 
  ***|
 sub click_item_burn()
+	DEBUG click_item_burn()
 	/declare _count int local 0
 	/for _count 1 to 6
 		/if (!${Bool[${clickItemBurn${_count}}]}) /continue
-		AMIDEAD
-		CHECKTIE
-		CHECKINPUTS
 		/if (${is_target_dead[${Target2Kill}]}) /break
+		AMIDEAD
+		CHECKINPUTS
 		/if (${validate_cast[FALSE, item, "${clickItemBurn${_count}}", ${Me.ID}]}) /call core_cast2 "${clickItemBurn${_count}}" item 0 FALSE
 	/next _count
 /return  
@@ -5423,6 +5528,7 @@ sub click_item_burn()
  *  NOTE: 
  ***|
 sub cast_AA_spire()
+	DEBUG cast_AA_spire()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -5446,6 +5552,7 @@ sub cast_AA_spire()
  *  NOTE:
  ***|
 sub mem_spell_line(string _line)
+	DEBUG mem_spell_line(${_line})
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -5473,6 +5580,7 @@ sub mem_spell_line(string _line)
  *  NOTE:
  ***|
 sub check_AA_agro()
+	DEBUG check_AA_agro()
 	AMIDEAD
 	CHECKINPUTS
 	
@@ -5538,6 +5646,7 @@ sub check_AA_agro()
  *  NOTE:
  ***|
 sub cast_challenge(int _tmpID)
+	DEBUG cast_challenge(${_tmpID})
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -5555,6 +5664,7 @@ sub cast_challenge(int _tmpID)
  *  This is designed tomake sure whatever we are attempting to cast, is castable. be it a disc, item, spell, booger flick.. whatever.. IS IT READY TO BE USED?
  ***|
 sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
+	DEBUG validate_cast(${_error}, ${_type}, ${_spell}, ${_tmpID})
 	
 	| Error outputs
 	/if (${_error}) {
@@ -5708,6 +5818,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
  *  NOTE: MQ2Cast ["spell name"|"item name"|"AA name"|"AA#"] [[item|slotname]|alt|gem#] [give up time][s|m] [custom subroutine name] [-targetid|###] [-maxtries|#] [-recast|#] [-setin|setname] [-bandolier|setname]
  ***|
 sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
+	DEBUG core_cast2(${_spell}, ${_type}, ${_tmpID}, ${_sub})
 	AMIDEAD
 	CHECKINPUTS
 	
@@ -5797,6 +5908,7 @@ sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
  *	NOTE:
  ***|
 sub spell_remove_rank(string _spell)
+	DEBUG spell_remove_rank(${_spell})
 	/if (${Spell[${_spell}].Rank} == 3) {
 		/varset _spell ${_spell.Left[-8]}	
 	} else /if (${Spell[${_spell}].Rank} == 2) 
@@ -5817,6 +5929,7 @@ sub spell_remove_rank(string _spell)
  *	NOTE: 
  ***|
 sub set_base_install()
+	DEBUG set_base_install()
 	VOUT Setting base environment for first time use.
 
 	| basics
@@ -5913,6 +6026,7 @@ sub set_base_install()
  
  ***|
 sub validate_class(bool _error, string _class)
+	DEBUG validate_class(${_error}, ${_class})
 	/if (${switchOverrideClasscheck}) /return TRUE
 	/declare _pass bool local FALSE
 	/declare _count int local 0
@@ -5940,6 +6054,7 @@ sub validate_class(bool _error, string _class)
  *	NOTE: cycle all plugins. return FALSE if any passed are not loaded
  ***|
 sub validate_plugin(bool _error, string _plugin)
+	DEBUG validate_plugin(${_error}, ${_plugin})
 	/if (!${Bool[${_plugin}]}) VOUT ${owarning} ${sep} validate_plugin failure.
 	/declare _plugcount int local 0	
 	/declare _count int local 0
@@ -5972,6 +6087,7 @@ sub validate_plugin(bool _error, string _plugin)
  *  NOTE: 
  ***|
 sub cast_slow(int _tmpID)
+	DEBUG cast_slow(${_tmpID})
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -6029,6 +6145,7 @@ sub cast_slow(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_malo(int _tmpID)
+	DEBUG cast_malo(${_tmpID})
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -6086,6 +6203,7 @@ sub cast_malo(int _tmpID)
  *  NOTE: not for wizards.
  ***|
 sub cast_cripple(int _tmpID)
+	DEBUG cast_cripple(${_tmpID})
 	/if (${timer_cripple_${_tmpID}}) /return
 	/if (${Spawn[${_tmpID}].Type.Equal[corpse]} || !${Spawn[${_tmpID}].ID}) /return
 
@@ -6146,6 +6264,7 @@ sub cast_cripple(int _tmpID)
  *  NOTE: we use this to prevent undeclared variables since targets change .. a lot.
  ***|
 sub set_base_target_timers(int _tmpID)
+DEBUG set_base_target_timers(${_tmpID})
 	CHECKINPUTS
 	
 	| movement stick behind
@@ -6191,6 +6310,7 @@ sub set_base_target_timers(int _tmpID)
  *  NOTE: 
  ***|
 sub check_deBuffs(int _tmpID)
+	DEBUG check_deBuffs(${_tmpID})
 	AMIDEAD
 	CHECKEXIT
 	CHECKTIE
@@ -6310,6 +6430,7 @@ sub verify_build()
  *  NOTE: 
  ***|
 sub bandolier_swap(string _band)
+	DEBUG bandolier_swap(${_band})
 	/if (${bandolierSwap.Equal[${bandolier${_band}}]}) /return TRUE
 	/if (!${switchBandolier}) /return FALSE
 	/if (!${Bool[${bandolierNormal}]}) /return FALSE
@@ -6342,6 +6463,7 @@ sub bandolier_swap(string _band)
  *   
  ***|
 sub validate_expansion(bool _error, string _exp)
+	DEBUG validate_expansion(${_error}, ${_exp})
 	/declare _pass bool local TRUE
 	/declare _count int local 0
 
@@ -6365,6 +6487,7 @@ sub validate_expansion(bool _error, string _exp)
  *  NOTE: 
  ***|
 sub validate_debuff(bool _error, string _deBuffType)
+	DEBUG validate_debuff(${_error}, ${_deBuffType})
 	| check mezz switch
 	/if (${Bool[${_deBuffType.Equal[mezz]}]} || ${switchdeBuffMezz}) {
 		/if (!${validate_class[${_error}, |ENC|BRD|MAG|NEC]}) {
@@ -6431,20 +6554,24 @@ sub validate_debuff(bool _error, string _deBuffType)
  *  NOTE: returns switchAmIDead TRUE if you died
  ***|
 sub watch_for_death()
+	DEBUG watch_for_death()
 	CHECKINPUTS
 
 	| check for current flags. watch for rez box if I have them
-	/if (${switchAmIDead}) /return TRUE
-	/if (${flagCallNeedRez}) /return TRUE
+	/if (${switchAmIDead}) {
+		/return TRUE
+	} else /if (${flagCallNeedRez}) {
+		/return TRUE
 
 	| check death states
-	/if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) {
+	} else /if (${Me.State.Equal[HOVER]} || ${Me.Hovering} || ${Me.Dead}) {
 		/if (${Me.Casting.ID}) /stopcast
 		/varset switchAmIDead TRUE
-	}
 	
 	| did I just die and get sent to bind ?
-	/if (${Me.Buff[Resurrection Sickness].ID} && ${Zone.ID} == ${Me.ZoneBound.ID}) /varset switchAmIDead TRUE
+	} else /if (${Me.Buff[Resurrection Sickness].ID} && ${Zone.ID} == ${Me.ZoneBound.ID}) {
+		/varset switchAmIDead TRUE
+	}
 
 	| if we died, shut shit down
 	/if (${switchAmIDead}) {
@@ -6471,6 +6598,7 @@ sub watch_for_death()
  *  NOTE: 
  ***|
 sub watch_for_rezbox()
+	DEBUG watch_for_rezbox(${minRezPct})
 	CHECKINPUTS
 	
 	| dont rezz me
@@ -6588,6 +6716,7 @@ sub watch_for_rezbox()
  *  NOTE: 
  ***|
 sub cast_AA_fireworks()
+	DEBUG cast_AA_fireworks()
 	/if (!${switchAAFireworks} || ${Raid.Members}) /return
 	/call create_timer timer_Waste_Fireworks ${tWaste_Fireworks}
 	/if (${Me.AAPoints} < 20) /return
@@ -6612,6 +6741,7 @@ sub cast_AA_fireworks()
  *  NOTE: 
  ***|
 sub click_item_heal()
+	DEBUG click_item_heal()
 	CHECKEXIT
 	AMIDEAD
 	/declare _count int local 0
@@ -6634,6 +6764,7 @@ sub click_item_heal()
  *  NOTE: 
  ***|
 sub validate_zone(bool _error, bool _force)
+	DEBUG validate_zone(${_error}, ${_force})
 	/if (${timer_validate_zone} && !${_force}) /return
 	/call create_timer timer_validate_zone ${tValidate_Zone}
 	/declare _zoned bool local FALSE
@@ -6676,7 +6807,8 @@ sub validate_zone(bool _error, bool _force)
  *	INI: 
  *  NOTE: 
  ***|
-sub buy_AA(String _name)
+sub buy_AA(string _name)
+	DEBUG buy_AA(${_name})
 	/if (!${Bool[${_name}]}) /return
 
 	/if (${AltAbility[${_name}].CanTrain}) {
@@ -6697,6 +6829,7 @@ sub buy_AA(String _name)
  *  NOTE: 
  ***|
 sub validate_assist(string _echo, string _assist, string _name)
+	DEBUG validate_assist(${_echo}, ${_assist}, ${_name})
 
 	/declare _assistMode string local |x|g|1|2|3|ma1|ma2|f
 	/declare _assM string local
@@ -6809,6 +6942,7 @@ sub validate_assist(string _echo, string _assist, string _name)
  *  NOTE:
  ***|
 sub trigger_alliance(int _tmpID)
+	DEBUG trigger_alliance(${_tmpID})
 	| we need raid peoples
 	/if (!${Raid.Members}) /return
 		
@@ -6886,6 +7020,7 @@ sub setTimer(string _name, string _type, string _section, string _value, string 
  *  NOTE: 
  ***|
 sub cast_AA_shield_flash()
+	DEBUG cast_AA_shield_flash()
 	SIMPLEEXIT
 	/if (!${coreAuto}) /return
 	/if (${Me.PctHPs}*.${tmpHealOverride} > ${useShieldFlashPct}) /return
@@ -6901,6 +7036,7 @@ sub cast_AA_shield_flash()
  *  NOTE: we assume no one is trustable
  ***|
 sub validate_safelist(string _sender)
+	DEBUG validate_safelist(${_sender})
 	| override and accept everyone
 	/if (${switchOverrideSafelist}) /return TRUE
 
@@ -6922,6 +7058,7 @@ sub validate_safelist(string _sender)
  *  NOTE: in manual mode. anything is a valid target.
 **|
 sub validate_target(bool _error, int _tmpID)
+	SDEBUG validate_target(${_error}, ${_tmpID})
 	/if (!${coreAuto}) /return TRUE
 	AMIDEAD
 	CHECKINPUTS
@@ -6969,3 +7106,152 @@ sub validate_target(bool _error, int _tmpID)
 
 
 
+|***
+ *	DES: displays the port and builds the command to the porting class
+ *	USE: /port 
+ *	INI: 
+ *  NOTE: expect sarcasim if you cannot spell
+ ***| 
+#bind port_list /port
+sub Bind_port_list(string _class, string _location)
+	DEBUG Bind_port_list(${_class}, ${_location})
+	/declare _listout 				string 	local
+	/declare _listouttype			string 	local
+	/declare _sep 						bool 		local FALSE
+	/declare _country 				int 		local 0
+	/declare _count 					int 		local 0
+	/declare _state 					int 		local 0
+	/declare _portclass 			string 	local |druid|wizard
+	| /declare _porttype	 			string 	local |tl|group
+	/declare _continent 			string 	local |alaris|antonica|discord|faydwer|kunark|luclin|odus|serpentsspine|taelosia|planes|other
+	/declare _tell						bool		local FALSE
+
+	| druid port list
+	/declare _portDruidAlaris 											string local |beast|pillars|shardslanding
+	/declare _portDruidAntonica  										string local |commonlands|feerrott|karana|lavastorm|misty|ro|surefall|undershore|westkarna
+	/declare _portDruidDiscord 											string local |bloodfields|wallofslaughter
+	/declare _portDruidFaydwer 											string local |butcherblock|looping|steamfront
+	/declare _portDruidKunark 											string local |dreadlands|lceanium
+	/declare _portDruidLuclin 											string local |dawnshroud|grimling|nexus|twilight
+	/declare _portDruidOdus 												string local |buriedsea|stonebrunt|tempesttemple|tox
+	/declare _portDruidSerpentsspine							 	string local |blightfire|direwind|steppes
+	/declare _portDruidTaelosia 										string local |barindu|natimbi
+	/declare _portDruidPlanes 											string local |grounds|potime|brells|arcstone|knowledge
+	/declare _portDruidVelious 											string local |cobaltscar|wakening|greatdivide|iceclad
+	/declare _portDruidOther 												string local |primarypush|secondarypush|primary|secondary
+
+	| wizard port list
+	/declare _portWizardAlaris 											string local |pillars|sarith 
+	/declare _portWizardAntonica 										string local |northkarana|commonlands|nektulos|qeyenos|northro|cazic|undershore|westkarana
+	/declare _portWizardDiscord 										string local |wallofslaughter|bloodfields
+	/declare _portWizardFaydwer 										string local |fay|dragonscale
+	/declare _portWizardKunark 											string local |lceanium|dreadlands|skyfire
+	/declare _portWizardLuclin 											string local |dawnshroud|twilight|grimling
+	/declare _portWizardOdus 												string local |tempesttemple|katta
+	/declare _portWizardSerpentsspine							 	string local |tox|stonebrunt|icefall|sunderock|blightfire
+	/declare _portWizardTaelosia 										string local |barindu|natimbi
+	/declare _portWizardPlanes 											string local |grounds|potime|brells|arcstone|pok
+	/declare _portWizardVelious 										string local |cobaltscar|wakening|greatdivide|iceclad
+	/declare _portWizardOther 											string local |bind|nexus|primary|secondary|primarypush|secondarypush
+			
+	| sort the class
+	/if (${Bool[${_class.Find[druid]}]}) {
+		/varset _class Druid
+	} else /if (${Bool[${_class.Find[wizard]}]}) {
+		/varset _class Wizard
+	} else {
+		| build class types
+		/for _count 1 to ${_portclass.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_portclass.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		/varset _sep FALSE
+		
+		|** build port types
+		/for _count 1 to ${_porttype.Count[|]}
+			/varset _listouttype ${_listouttype} ${If[${_sep},${sep},]} ${cinfo}${_porttype.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		**|
+
+		| VOUT /port [${_listout}] [${cinfo}location\ax] [${_listouttype}]
+		VOUT /port [${_listout}] [${cinfo}location\ax]
+		/return
+	}
+	
+  | echo locations if class correct
+	/if (${Bool[${_class}]} && !${Bool[${_location}]}) {
+		/for _country 1 to ${_continent.Count[|]}
+			/for _state 1 to ${_port${_class}${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower}.Count[|]}
+				/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_port${_class}${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower}.Arg[${_state},|]}\ax
+				/varset _sep TRUE
+			/next _state
+			VOUT ${_continent.Arg[${_country},|].Left[1].Upper}${_continent.Arg[${_country},|].Right[-1].Lower} [${_listout}] 
+			/varset _listout
+			/varset _sep
+		/next _country
+
+	| request port when class and location are present
+	} else /if (${Bool[${_class}]} && ${Bool[${_location}]}) {
+		/if (${setCommunications.Equal[eqbc]}) {
+			/bct ${get_resident[${_class}, 100]} /taxi_service "${Me.DisplayName}" "${_location}"
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/dex ${get_resident[${_class}, 100]} /taxi_service "${Me.DisplayName}" "${_location}"
+		}
+	}
+
+/return
+
+
+
+|***
+ *	DES: zephyr/TL requesting toon
+ *	USE: this is built by the /port bind request
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind taxi_service /taxi_service
+sub Bind_taxi_service(string _sender, string _location)
+
+	| pick a reason to not do something.. whatever you like
+	/if (!${Select[${Me.Class.ShortName},DRU,WIZ]}) /return
+	/if (!${Defined[${_location}]}) {
+		/t ${_sender} ${_location} is not a place. Please quit bothering me.
+		/return
+	}
+	CHECKSAFELIST
+	/if (${Spawn[pc ${_sender}].Distance} > 100) /return
+	
+	| send 'em on their way with a valid location request
+	/call mem_spell TRUE "${${_location}}" ${buffGem} TRUE
+	/t ${_sender} Please enjoy your flight. ${${_location}} on its way.
+	/if (${validate_cast[FALSE, spell, "${${_location}}", ${Spawn[pc ${_sender}].ID}]}) /call core_cast2 "${${_location}}" ${buffGem} ${Spawn[pc ${_sender}].ID}]} FALSE
+
+/return
+
+
+
+|***
+ *	DES: returns a valid resident if there is one
+ *	USE: 
+ *	INI: core.ini->[general]->residentmage, residentdruid, residentwizard
+ *  NOTE: 
+ ***|
+sub get_resident(string _class, int _distance)
+	DEBUG get_resident(${_class}, ${_distance})
+	
+	/varset _class ${_class.Left[1].Upper}${_class.Right[-1].Lower}
+	/declare _name string local FALSE
+	/declare _count int local 0
+	
+	/for _count 1 to ${Resident${_class}.Count[|]}
+		/if (!${Bool[${Resident${_class}.Arg[${_count},|]}]}) /continue
+		/if (${Spawn[${Resident${_class}.Arg[${_count},|]}].Dead}) /continue
+		/if (${Spawn[${Resident${_class}.Arg[${_count},|]}].Distance} > ${_distance}) /continue
+		/if (!${Spawn[${Resident${_class}.Arg[${_count},|]}].InZone}) /continue
+		
+		/varset _name ${Resident${_class}.Arg[${_count},|].Left[1].Upper}${Resident${_class}.Arg[${_count},|].Right[-1].Lower}
+		/if (${Bool[${_name}]}) /break
+	/next _count	
+
+/return ${_name}

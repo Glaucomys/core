@@ -15,6 +15,7 @@
  *  NOTE: 
  ***|
 sub core_SHD()
+	DEBUG core_SHD()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -66,6 +67,7 @@ sub core_SHD()
  *  NOTE: 
  ***|
 sub disc_SHD()
+	DEBUG disc_SHD()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -129,6 +131,7 @@ sub disc_SHD()
  *  NOTE: 
  ***|
 sub get_agro_SHD()
+	DEBUG get_agro_SHD()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -204,6 +207,7 @@ sub get_agro_SHD()
  *  NOTE: 
  ***|
 sub click_DPS_SHD()
+	DEBUG click_DPS_SHD()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -220,6 +224,7 @@ sub click_DPS_SHD()
  *  NOTE: 
  ***|
 sub check_skin()
+	DEBUG check_skin()
 	AMIDEAD
 	SIMPLEEXIT
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
@@ -240,6 +245,7 @@ sub check_skin()
  *	NOTE: 
  ***| 
 sub synergy_SHD()
+	DEBUG synergy_SHD()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS

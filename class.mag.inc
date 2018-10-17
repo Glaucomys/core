@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_MAG()
+	DEBUG core_MAG()
 	CHECKINPUTS
 	AMIDEAD
 
@@ -75,6 +76,7 @@ sub core_MAG()
  *  NOTE: 
  ***|
 sub disc_MAG()
+	DEBUG disc_MAG()
 	CHECKEXIT
 	CHECKTIE
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -90,6 +92,7 @@ sub disc_MAG()
  *  NOTE: 
  ***|
 sub use_cauldron()
+	DEBUG use_cauldron()
 	CHECKEXIT
 	CHECKTIE
 	/call create_timer timer_caldron_use ${tCauldron_use}
@@ -109,6 +112,7 @@ sub use_cauldron()
  *  NOTE: this is filler DPS; compensate for global cooldown
  ***|
 sub click_DPS_MAG()
+	DBUG click_DPS_MAG()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -133,6 +137,7 @@ sub click_DPS_MAG()
  *  NOTE: 
  ***|
 sub cast_nuke_salvo()
+	DEBUG cast_nuke_salvo()
 	CHECKEXIT
 	CHECKTIE
 	/if (${SpawnCount[pet radius ${MobAgro}]} < 3) /return
@@ -149,6 +154,7 @@ sub cast_nuke_salvo()
  *  NOTE: 
  ***|
 sub pet_heal_MAG()
+	DEBUG pet_heal_MAG()
 	CHECKEXIT
 	CHECKTIE
 	/if (${validate_cast[FALSE, alt, "${PetAAHeal}", ${Me.Pet.ID}]} && ${Pet.PctHPs} < 40) /call core_cast2 "${PetAAHeal}" alt ${Me.Pet.ID} FALSE
@@ -165,6 +171,7 @@ sub pet_heal_MAG()
  *  NOTE: 
  ***|
 sub patch_heal_MAG()
+	DEBUG patch_heal_MAG()
 	CHECKEXIT
 	CHECKTIE
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
@@ -180,6 +187,7 @@ sub patch_heal_MAG()
  *	NOTE: 
  ***| 
 sub synergy_MAG()
+	DEBUG synergy_MAG()
 	CHECKEXIT
 	CHECKTIE
 	/if (${validate_cast[FALSE, alt, "Elemental Ward", ${Me.ID}]}) /call core_cast2 "Elemental Ward" alt 0 FALSE
@@ -228,6 +236,7 @@ sub synergy_MAG()
  *  NOTE: Twincast lets get it.
  ***|
 sub force_twincast_MAG()
+	DEBUG force_twincast_MAG()
 	/if (!${switchForceTwincast} || ${timer_force_twincast}) /return
 	/if (${is_target_dead[${Target2Kill}]}) /return
 	AMIDEAD
@@ -252,6 +261,7 @@ sub force_twincast_MAG()
  *  NOTE: 
  ***|
 sub check_gather()
+	DEBUG check_gather()
 	CHECKEXIT
 	CHECKINPUTS
 	CHECKTIE
@@ -284,6 +294,30 @@ sub check_gather()
 		/if (${validate_cast[FALSE, spell, "${GatherSpell}", ${Me.ID}]}) /call core_cast2 "${GatherSpell}" 0 0 FALSE
 	}
 
+/return
+
+
+
+|***
+ *	DES: call of the hero command
+ *	USE:/coh [group]
+ *	INI: 
+ *  NOTE:
+ ***|
+#bind call_of_the_hero /call_of_the_hero
+sub Bind_call_of_the_hero(string _sender, string _verbage)
+	DEBUG Bind_call_of_the_hero(${_sender}, ${_verbage})
+  /if (${_verbage.Equal[group]}) {
+  	/call mem_spell TRUE "${MAGAAGroupCOH}" ${buffGem} TRUE
+	  /if (${Me.Invis}) /makemevisible
+	  ECHOCHANNEL Calling ... Group
+ 		/if (${validate_cast[FALSE, spell, "${MAGAAGroupCOH}", ${Me.ID}]}) /call core_cast2 "${MAGAAGroupCOH}" ${buffGem} 0 FALSE
+  } else {
+		/delay 15s ${Me.AltAbilityReady[Call of the Hero]}
+	  /if (${Me.Invis}) /makemevisible
+	  ECHOCHANNEL Calling ... ${_sender}
+ 		/if (${validate_cast[FALSE, alt, "Call of the Hero", ${Spawn[pc ${_sender}].ID}]}) /call core_cast2 "Call of the Hero" alt ${Spawn[pc ${_sender}].ID} FALSE
+  }
 /return
 
 

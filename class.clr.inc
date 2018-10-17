@@ -14,6 +14,9 @@
  *  NOTE: 
  ***|
 sub core_CLR()
+	DEBUG core_CLR()
+	
+	| correct any and all XTarget healing spots
 	/if (${coreAuto}) {
 		/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 
@@ -25,6 +28,7 @@ sub core_CLR()
 		}
 	}
 	
+	| sort the summoned cleric primary and any mana regen from VP if needed
 	/if (${coreAuto} && !${Me.Invis}) {
 		/if (${Bool[${sumWeaponItem}]} && (${InvSlot[mainhand].Item.Name.NotEqual[${sumWeaponItem}]} || !${Bool[${Me.Primary}]})) /call cast_sum_weapon
 		/if (!${check_exit[]} && !${SafeZone} && !${Me.Buff[Revival Sickness].ID} && ${switchVP}) {
@@ -34,14 +38,13 @@ sub core_CLR()
 		}
 	}	
 
-
 	/while (${prep_combat[]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
+		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
 		/if (${exit_class_loop[]}) /return
 
-		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
-		/if (${switchHealCure}) /call cast_cure
 		
 		/if (${isValidTarget}) {
 			CHECKREZ
@@ -79,6 +82,7 @@ sub core_CLR()
  *  NOTE: 
  ***|
 sub click_DPS_CLR()
+	DEBUG click_DPS_CLR()
 	AMIDEAD
 	CHECKEXIT
 	/call click_horn_of_unity 	
@@ -93,6 +97,7 @@ sub click_DPS_CLR()
  *  NOTE: 
  ***|
 sub disc_CLR()
+	DEBUG disc_CLR()
 	AMIDEAD
 	CHECKEXIT
 	/if (${doYaulp}) /call cast_yaulp
@@ -118,6 +123,7 @@ sub disc_CLR()
  *  NOTE: 
  ***|
 sub cast_sum_weapon()
+	DEBUG cast_sum_weapon()
 	/if (${Me.Primary}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -141,16 +147,18 @@ sub cast_sum_weapon()
  *  NOTE: bread and butter baby...
  ***|
 sub check_heal_group_CLR()
+	DEBUG check_heal_group_CLR()
 	AMIDEAD
 	CHECKEXIT
 	CHECKTIE
+
+	UPDATEHUD "HEAL"
 
 	/declare _count 					int local 0
 	/varset hurtID 						${Me.ID}
 	/varset hurtPctHP 				${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
 	/varset hurtCLS 					${Me.Class.ShortName}
 	/varset hurtCount					0
-
 
 	| Does the control toon need healing?
 	/if (${toonControlProtect} && ${Bool[${toonControl}]} && ${Bool[${Spawn[${toonControl}]}]}) {
@@ -192,7 +200,6 @@ sub check_heal_group_CLR()
 	CHECKEXIT
 	CHECKREZ
 	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
-	UPDATEHUD "HEAL"
 	
 	| Regen Heals 
  	/if (${useGroupHoT} && !${hurtCount}) {
@@ -406,11 +413,14 @@ sub check_heal_group_CLR()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_CLR()
+	DEBUG check_heal_XTarget_CLR()
 	/if (!${validate_expansion[FALSE, |16]}) /return
 	CHECKREZ
 	AMIDEAD
 	SIMPLEEXIT
 	CHECKINPUTS
+
+	UPDATEHUD "HEAL XTarget"
 	
 	/declare _count int local 0
 	/varset hurtID 					${Me.ID}
@@ -448,8 +458,10 @@ sub check_heal_XTarget_CLR()
 		} 
   /next _count
   	
-	UPDATEHUD "HEAL XTarget"
-	/if (!${hurtCount}) /return	
+	/if (!${hurtCount}) {
+		UPDATEHUD "HEAL XTarget"
+		/return	
+	}
 
 	/call check_no_cast_buffs
 
@@ -513,6 +525,7 @@ sub check_heal_XTarget_CLR()
  *  NOTE: 
  ***|
 sub check_HP_CLR()
+	DEBUG check_HP_CLR()
 	AMIDEAD
 	/if (!${Me.Casting.ID}) /return
 	/declare _count int local 0
@@ -582,6 +595,7 @@ sub check_HP_CLR()
  *  NOTE: 
  ***|
 sub check_pet_heal_CLR()
+	DEBUG check_pet_heal_CLR()
 	AMIDEAD
 	SIMPLEEXIT
 	CHECKINPUTS
@@ -643,6 +657,7 @@ sub check_pet_heal_CLR()
  *  NOTE: Setting [Heal] -> setDivinetoGroupHeal to TRUE in the clerics INI will force a group heal after the health arbitration.
  ***|
 sub cast_divine_arbitration()
+	DEBUG cast_divine_arbitration()
 	AMIDEAD
 	SIMPLEEXIT
 	/if (${Bool[${Me.Buff[Divine Aura]}]} || ${Bool[${Me.Buff[Divine Barrier]}]} || ${Bool[${Me.Buff[Sacred Barrier]}]}) /return
@@ -678,6 +693,7 @@ sub cast_divine_arbitration()
  *	Will not cast cr if the buff is present or if your name is Norbert.
  ***|
 Sub cast_AA_celest_regen()
+	DEBUG cast_AA_celest_regen()
 	AMIDEAD
 	SIMPLEEXIT
 	CHECKINPUTS
@@ -700,6 +716,7 @@ Sub cast_AA_celest_regen()
  *  NOTE: 
  ***|
 sub cast_issuance_heal()
+	DEBUG cast_issuance_heal()
 	/if (!${Me.SpellReady[${healIssuance}]}) /return
 	AMIDEAD
 	SIMPLEEXIT
@@ -734,6 +751,7 @@ sub cast_issuance_heal()
  *  NOTE: 
  ***|
 sub check_heal_ward()
+	DEBUG check_heal_ward()
 	/if (${coreAuto}) /call create_timer timer_heal_ward ${tHealWard}
 
 	AMIDEAD
@@ -832,6 +850,7 @@ sub auto_control_swap()
  *	NOTE: all heal burns are located in the main heal routines
  ***| 
 sub synergy_CLR()
+	DEBUG synergy_CLR()
 	SIMPLEEXIT
 	/call use_glyph
 	/call synergy_click_Circle

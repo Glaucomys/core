@@ -15,6 +15,7 @@
  *  NOTE: 
  ***|
 sub core_ENC()
+	DEBUG core_ENC()
 	AMIDEAD
 	CHECKINPUTS
 	CHECKTIE
@@ -105,6 +106,7 @@ sub core_ENC()
  *  NOTE: 
  ***|
 sub check_rune_ENC()
+	DEBUG check_rune_ENC()
 	/call create_timer timer_check_runes ${tCheck_Runes}
 	AMIDEAD
 	CHECKEXIT
@@ -136,6 +138,7 @@ sub check_rune_ENC()
  *  NOTE: 
  ***|
 sub check_rune_auspice()
+	DEBUG check_rune_auspice()
 	/if (!${FindItemCount[Peridot]}) /return
 
 	AMIDEAD
@@ -206,6 +209,7 @@ sub check_rune_auspice()
  *  NOTE: 
  ***|
 sub disc_ENC()
+	DEBUG disc_ENC()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -227,6 +231,7 @@ sub disc_ENC()
  *  NOTE: 
  ***|
 sub check_crystals()
+	DEBUG check_crystals()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -245,7 +250,6 @@ sub check_crystals()
 			/call sort_cursor TRUE
 		}
 	}
-
 
 	/if (${switchGather}) { 
 		
@@ -273,6 +277,7 @@ sub check_crystals()
  *  NOTE: 
  ***|
 sub click_DPS_ENC()
+	DEBUG click_DPS_ENC()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
@@ -289,6 +294,7 @@ sub click_DPS_ENC()
  *  NOTE: 
  ***|
 sub patch_heal_ENC()
+	DEBUG patch_heal_ENC()
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	/declare _count int local
 	/declare _tmpID int local
@@ -329,6 +335,7 @@ sub patch_heal_ENC()
  *  NOTE: 
  ***|
 sub mez_adds()
+	DEBUG mez_adds()
 	AMIDEAD
 	CHECKINPUTS
 	/declare _tmpID string local
@@ -395,6 +402,7 @@ sub mez_adds()
  *  NOTE: 
  ***|
 sub cast_mez(int _tmpID)
+	DEBUG cast_mez(${_tmpID})
 	/if (${timer_mez_${_tmpID}}) /return
 	/declare _resistCount int local 0
 
@@ -453,6 +461,7 @@ sub cast_mez(int _tmpID)
  *  NOTE: 
  ***|
 sub cast_tash(int _tmpID)
+	DEBUG cast_tash(${_tmpID})
 	/if (${timer_tash_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
@@ -491,6 +500,7 @@ sub cast_tash(int _tmpID)
  *  NOTE: 
  ***|
 sub is_attacking(int _tmpID)
+	DEBUG is_attacking(${_tmpID})
 	/declare _ani int local
 	/declare _isAttacking FALSE
 	/varset _ani ${Spawn[${_tmpID}].Animation}
@@ -533,6 +543,7 @@ sub is_attacking(int _tmpID)
  *	----Need to work this out of the system. use get_assist_target instead..
  ***|
 sub get_target_ENC()
+	DEBUG get_target_ENC()
 	/if (${Me.Moving}) /return
 	/call get_assist_target
 	/if (!${ExcludeList.Find[${Target.DisplayName}]}) {
@@ -556,6 +567,7 @@ sub get_target_ENC()
  *	NOTE: 
  ***| 
 sub synergy_ENC()
+	DEBUG synergy_ENC()
 	CHECKEXIT
 	CHECKINPUTS
 	
@@ -583,6 +595,7 @@ sub synergy_ENC()
  *	NOTE: 
  ***|   
 sub find_mob_to_charm()
+	DEBUG find_mob_to_charm()
 
 	/declare _count int local 0
 	/declare _spawns int local 0

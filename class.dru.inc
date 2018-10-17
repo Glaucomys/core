@@ -14,6 +14,7 @@
  *  NOTE: 
  ***|
 sub core_DRU()
+	DEBUG core_DRU()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
@@ -31,11 +32,11 @@ sub core_DRU()
 
 	/while (${prep_combat[]}) {
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
-		/if (${switchHealCure}) /call cast_cure
-
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
-		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
+		/if (${switchHealCure}) /call cast_cure
 		/if (${exit_class_loop[]}) /return
+
+		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 
 		/if (${isValidTarget}) {
 			CHECKREZ
@@ -72,6 +73,7 @@ sub core_DRU()
  *  NOTE: 
  ***|
 sub disc_DRU()
+	DEBUG disc_DRU()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -89,6 +91,7 @@ sub disc_DRU()
  *  NOTE: 
  ***|
 sub click_DPS_DRU()
+	DEBUG click_DPS_DRU()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${Target2Kill}]}) /return
@@ -109,6 +112,7 @@ sub click_DPS_DRU()
  *  NOTE: 
  ***|
 sub cast_AA_ro(int _tmpID)
+	DEBUG cast_AA_ro(${_tmpID})
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${timer_ro_${_tmpID}} || ${Target.Buff[Grasp of Ro].ID}) /return
@@ -131,6 +135,7 @@ sub cast_AA_ro(int _tmpID)
  *  NOTE: 
  ***|
 sub check_heal_group_DRU()
+	DEBUG check_heal_group_DRU()
 	AMIDEAD
 	CHECKEXIT
 	/declare _count int local 0
@@ -226,7 +231,7 @@ sub check_heal_group_DRU()
 	  }	
 	
 	}
-	
+
 	
 	| single target heals
   	/if (${Me.SpellReady[${healRejuvilation}]}) {
@@ -249,6 +254,7 @@ sub check_heal_group_DRU()
  *  NOTE: 
  ***|
 sub check_HP_DRU()
+	DEBUG check_HP_DRU()
 	AMIDEAD
 	/if (!${Me.Casting.ID}) /return
 	/declare _count int local 0
@@ -303,6 +309,7 @@ sub check_HP_DRU()
  *  NOTE: 
  ***|
 sub check_heal_XTarget_DRU()
+	DEBUG check_heal_XTarget_DRU()
 	/if (!${validate_expansion[FALSE, |16]}) /return
 	CHECKREZ
 	AMIDEAD
@@ -382,6 +389,7 @@ sub check_heal_XTarget_DRU()
  *  NOTE: 
  ***|
 sub check_pet_heal_DRU()
+	DEBUG check_pet_heal_DRU()
 	AMIDEAD
 	SIMPLEEXIT
 	CHECKINPUTS
@@ -424,6 +432,7 @@ sub check_pet_heal_DRU()
  *  NOTE: Will not cast wood if the buff is present.
  ***|
 sub cast_AA_spirit_wood()
+	DEBUG cast_AA_spirit_wood()
 	AMIDEAD
 	CHECKINPUTS
 	/if (${Me.AltAbilityReady[Mass Group Buff]} && ${Me.AltAbilityReady[Spirit of the Wood]} && !${Bool[${Me.Song[Spirit of the Wood]}]}) {
@@ -443,6 +452,7 @@ sub cast_AA_spirit_wood()
  *	NOTE: 
  ***| 
 sub synergy_DRU()
+	DEBUG synergy_DRU()
 	CHECKEXIT
 	CHECKINPUTS
 	
