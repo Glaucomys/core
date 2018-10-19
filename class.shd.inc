@@ -16,19 +16,16 @@
  ***|
 sub core_SHD()
 	DEBUG core_SHD()
-	CHECKINPUTS
-	AMIDEAD
-	CHECKTIE
-	
+
 	/if (${coreAuto}) {
-		/call check_engaged
-		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
+		/if (!${check_engaged[]} && ${switchPcPet}) /call check_pet
 	}	
 	
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	/while (${prep_combat[]}) {
-		/if (${exit_class_loop[]}) /return
+		CHECKINPUTS
+		/if (${exit_class_loop[]}) /return FALSE
 
 		/if (${switchHealCure}) /call cast_cure
 		
@@ -56,7 +53,7 @@ sub core_SHD()
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 		}
 	}
-/return
+/return TRUE
 
 
 

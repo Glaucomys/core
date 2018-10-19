@@ -15,13 +15,13 @@
  ***|
 sub core_MNK()
 	DEBUG core_MNK()
-	CHECKINPUTS
-	AMIDEAD
-	CHECKTIE
 
-	/if (${coreAuto}) /call check_fd
+	/if (${coreAuto}) {
+		/call check_fd
+	}
 
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${exit_class_loop[]}) /return
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
@@ -42,7 +42,6 @@ sub core_MNK()
 		}
 
 		/if (${coreAuto}) {	
-			/call check_fd
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 		}
 	}
@@ -395,168 +394,7 @@ sub Bind_setMNK(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
-		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[|***
- *	DES: Monk burn routines
- *	USE: establish all comp/trigger skills
- *	INI: 
- *	NOTE: 
- ***| 
-sub synergy_MNK()
-	CHECKEXIT
-	CHECKINPUTS
-	
-	/if (${validate_cast[FALSE, disc, "${DiscDicho}", ${Me.ID}]}) /call core_cast2 "${DiscDicho}" disc 0 FALSE
-	/if (${validate_cast[FALSE, disc, "${MNKAlliance}", ${Target2Kill}]}) /call core_cast2 "${MNKAlliance}" disc ${Target2Kill} FALSE 
-	/call cast_AA_spire
-	/if (${validate_cast[FALSE, disc, "${DiscBalance}", ${Me.ID}]}) /call core_cast2 "${DiscBalance}" disc 0 FALSE
-	/if (${validate_cast[FALSE, alt, "${AAThunder}", ${Me.ID}]}) /call core_cast2 "${AAThunder}" alt 0 FALSE
-	/if (${validate_cast[FALSE, alt, "${AAFocus}", ${Target2Kill}]}) /call core_cast2 "${AAFocus}" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, disc, "${DiscMonkey}", ${Me.ID}]}) /call core_cast2 "${DiscMonkey}" disc 0 FALSE
-	/if (${validate_cast[FALSE, alt, "${AASilent}", ${Me.ID}]}) /call core_cast2 "${AASilent}" alt 0 FALSE
-	
-| 	Check if we're using a disc, if not use Heel, if another, cancel it and use Heel
-
-	/if (!${Bool[${Me.ActiveDisc.Name}]}) {
-		/if (${validate_cast[FALSE, disc, "${DiscHeel}", ${Target2Kill}]}) {
-		/if (!${flyingkick} || !${eaglestrike}) {
-			/varset kick FALSE
-			/varset flyingkick TRUE
-			/varset roundkick FALSE
-			/varset dragonpunch FALSE
-			/varset eaglestrike TRUE
-			/varset tigerclaw FALSE
-		}
-		/call core_cast2 "${DiscHeel}" disc ${Target2Kill} FALSE
-		}
-	} else /if (${Bool[${Me.ActiveDisc.Name}]} && !${Bool[${Me.ActiveDisc.Name.Find[Heel]}]}) {
-		/if (${validate_cast[FALSE, disc, "${DiscHeel}", ${Target2Kill}]}) {
-			/stopdisc
-			/if (!${flyingkick} || !${eaglestrike}) {
-				/varset kick FALSE
-				/varset flyingkick TRUE
-				/varset roundkick FALSE
-				/varset dragonpunch FALSE
-				/varset eaglestrike TRUE
-				/varset tigerclaw FALSE
-			}
-			/call core_cast2 "${DiscHeel}" disc ${Target2Kill} FALSE
-		}
-	}
-	/if (${validate_cast[FALSE, disc, "${DiscAshenhand}", ${Me.ID}]}) /call core_cast2 "${DiscAshenhand}" disc 0 FALSE
-	/if (${validate_cast[FALSE, disc, "${DiscCrane}", ${Target2Kill}]}) /call core_cast2 "${DiscCrane}" disc ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, alt, "${AATwinStrike}", ${Target2Kill}]}) /call core_cast2 "${AATwinStrike}" alt ${Target2Kill} FALSE
-	/if (${validate_cast[FALSE, alt, "${AAChant}", ${Me.ID}]}) /call core_cast2 "${AAChant}" alt 0 FALSE    
-
-  /call use_glyph
-  /call synergy_click_Circle
-  /call click_item_burn
-/return
-
-
-
-|***
- *	DES: swap melee skills to train them
- *	USE: /mnk trainmelee | /call melee_train_MNK
- *	INI: 
- *  NOTE:
- ***|
-sub melee_train_MNK()
-	
-| This code catches the call in the skillup sub and returns out using most efficient skills if not training melee
-	/if (!${switchMNKTrainMelee}) {
-		/varset kick FALSE
-		/varset flyingkick TRUE
-		/varset roundkick FALSE
-		/varset dragonpunch FALSE
-		/varset eaglestrike TRUE
-		/varset tigerclaw FALSE
-		/return
-	}
-
-	| kick skills
-	/if (${Me.Skill[Flying Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Flying Kick]} <= ${Me.Skill[Round Kick]}) {
-|		SDEBUG setting: Flying Kick
-		/varset kick FALSE
-		/varset flyingkick TRUE
-		/varset roundkick FALSE
-	} else /if (${Me.Skill[Kick]} <= ${Me.Skill[Flying Kick]} && ${Me.Skill[Kick]} <= ${Me.Skill[Round Kick]}) {
-|		SDEBUG setting: Kick
-		/varset kick TRUE
-		/varset flyingkick FALSE
-		/varset roundkick FALSE
-	} else /if (${Me.Skill[Round Kick]} <= ${Me.Skill[Kick]} && ${Me.Skill[Round Kick]} <= ${Me.Skill[Flying Kick]}) {
-|		SDEBUG setting: Round Kick
-		/varset kick FALSE
-		/varset flyingkick FALSE
-		/varset roundkick TRUE
-	}
-
-	| punch skills
-	/if (${Me.Skill[Eagle Strike]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Eagle Strike]} <= ${Me.Skill[Tiger Claw]}) {
-|		SDEBUG setting: Eagle Strike
-		/varset dragonpunch FALSE
-		/varset eaglestrike TRUE
-		/varset tigerclaw FALSE
-	} else /if (${Me.Skill[Tiger Claw]} <= ${Me.Skill[Dragon Punch]} && ${Me.Skill[Tiger Claw]} <= ${Me.Skill[Eagle Strike]}) {
-|		SDEBUG setting: Tiger Claw
-		/varset dragonpunch FALSE
-		/varset eaglestrike FALSE
-		/varset tigerclaw TRUE
-	} else /if (${Me.Skill[Dragon Punch]} <= ${Me.Skill[Eagle Strike]} && ${Me.Skill[Dragon Punch]} <= ${Me.Skill[Tiger Claw]}) {
-|		SDEBUG setting: Dragon Punch
-		/varset dragonpunch TRUE
-		/varset eaglestrike FALSE
-		/varset tigerclaw FALSE
-	}
-/return
-
-
-
-#event MNKfdcheck "You have fallen to the ground"
-sub Event_MNKfdcheck(string line, string _verbage)
-	/if (!${validate_class[FALSE, |MNK]}) /return
-	/if (${Me.State.Equal[FEIGN]} && !${switchAmIDead}) {
-		/if (${Me.AltAbilityReady["${MNKAAFade}"]}) {
-			/if (${validate_cast[FALSE, alt, "${MNKAAFade}", ${Me.ID}]}) /call core_cast2 "${MNKAAFade}" alt 0 FALSE
-			/return
-		}
-		/stand
-		/if (${Me.AbilityReady["Mend"]}) /doability Mend
-		/if (${validate_cast[FALSE, disc, "${DiscDelayDeath}", ${Me.ID}]}) /call core_cast2 "${DiscDelayDeath}" disc 0 FALSE
-	}
-/return
-
-
-
-|***
- *  DES: To FD when hitpoints get low, cancel combat if driving, or stand up if healthy
- *  USE: 
- *  INI: 
- *  NOTE: 
- ***|   
-sub check_fd()
-	AMIDEAD
-	/if (${Me.Combat} && ${Me.PctHPs} <= ${setFDPct}) {
-		/if (!${Me.State.Equal[FEIGN]} && !${switchAmIDead}) {
-			/if (${Me.AbilityReady[Feign Death]}) {
-				/attack off
-				/doability "Feign Death"
-				/delay 5
-			}
-			/doevents MNKfdcheck
-			/if (!${coreAuto}) {
-				/call set_stop
-				/call clear_combat
-				/return
-			}
-		}
-	}
-
-	/if (${Me.State.Equal[FEIGN]}) {
-		/if (${Me.PctHPs} > ${setFDPct} && ${coreAuto} && ${Me.PctAggro} <= ${setAgroPct}) /stand
-	}
-/return 
-,${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[,${oon},${ooff}]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

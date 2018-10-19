@@ -15,10 +15,11 @@
  *  NOTE: 
  ***|
 sub core_RNG()
-	DEBUG core_RNG()
+	DEBUG core_RNG
 
 	/while (${prep_combat[]}) {
-		/if (${exit_class_loop[]}) /return
+		CHECKINPUTS
+		/if (${exit_class_loop[]}) /return FALSE
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -46,7 +47,7 @@ sub core_RNG()
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 		}
 	}
-/return
+/return TRUE
 
 
 
@@ -103,7 +104,7 @@ sub disc_RNG()
 	/if (${validate_cast[FALSE, disc, "${BladeStorm}", ${Target2Kill}]}) /call core_cast2 "${BladeStorm}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscSqual}", ${Target2Kill}]}) /call core_cast2 "${DiscSqual}" disc ${Target2Kill} FALSE
 	
-/return
+/return TRUE
 
 
 
@@ -126,7 +127,7 @@ sub cast_AA_auspice()
 	} else /if (${Bool[${Me.Song[${RNGauspice}]}]}) {
 		VOUT ${cbad}QUIT\ax trying to cast ${csp}Auspice of the Hunter\ax while its running.	
 	}		
-/return
+/return TRUE
 
 
 
@@ -160,7 +161,7 @@ sub patch_heal_RNG()
 	
 	/call click_item_heal
 
-/return
+/return TRUE
 
 
 
@@ -185,7 +186,7 @@ sub click_DPS_RNG()
 		/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]} && ${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
 	}
 	
-/return
+/return TRUE
 
 
 
@@ -204,7 +205,7 @@ sub cast_nuke_summer(int _tmpID)
 	CHECKINPUTS
 	/call create_timer timer_cast_nuke_summer ${tNuke_Summer}
 	/if (${validate_cast[FALSE, spell, "${NukeSummer}", ${_tmpID}]} && ${cast_condition[NukeSummerCondition]}) /call core_cast2 "${NukeSummer}" 0 ${_tmpID} cast_break
-/return
+/return TRUE
 
 
 
@@ -274,7 +275,7 @@ sub synergy_RNG()
 			
 	/call synergy_click_Circle
 	/call click_item_burn
- /return
+ /return TRUE
  	
 
 
@@ -371,6 +372,6 @@ sub Bind_setRNG(string _classType, string _verbage)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
-/return
+/return TRUE
 
 

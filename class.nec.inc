@@ -15,19 +15,15 @@
  ***|
 sub core_NEC()
 	DEBUG core_NEC()
-	CHECKINPUTS
-	AMIDEAD
-	CHECKTIE
+
 
 	/if (${coreAuto}) {
 		/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_bloom
-		/call check_engaged
-		/if (!${Macro.Return}) {
-			/if (${switchPcPet}) /call check_pet
-		}
+		/if (!${check_engaged[]} && ${switchPcPet}) /call check_pet
 	}
 	
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${exit_class_loop[]}) /return
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
@@ -55,7 +51,6 @@ sub core_NEC()
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
-			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 		}	
 	}	
 /return

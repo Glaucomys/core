@@ -26,7 +26,8 @@ sub core_ROG()
 	}
 	
 	/while (${prep_combat[]}) {
-		/if (${exit_class_loop[]}) /return
+		CHECKINPUTS
+		/if (${exit_class_loop[]}) /return FALSE
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -51,7 +52,7 @@ sub core_ROG()
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 		}
 	}
-/return
+/return TRUE
 
 
 

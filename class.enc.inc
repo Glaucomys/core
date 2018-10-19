@@ -16,13 +16,9 @@
  ***|
 sub core_ENC()
 	DEBUG core_ENC()
-	AMIDEAD
-	CHECKINPUTS
-	CHECKTIE
 			
 	/if (${coreAuto} && !${Me.Invis}) {
-		/call check_engaged
-		/if (!${Bool[${Macro.Return}]} && ${switchPcPet} && !${switchCharmPet}) /call check_pet
+		/if (!${check_engaged[]} && ${switchPcPet} && !${switchCharmPet}) /call check_pet
 	}
 
 	| validate/fix lists
@@ -35,9 +31,10 @@ sub core_ENC()
 	}
 	
 	/while (${prep_combat[]}) {
-		/if (${exit_class_loop[]}) /return
+		CHECKINPUTS
+		/if (${exit_class_loop[]}) /return FALSE
 		
-		/if (${switchdeBuffMezz}) {
+		/if (${coreAuto} && ${switchdeBuffMezz}) {
 			/call get_target_ENC
 			/if (${switchOverrideCombat}) /goto :loop
 			/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
@@ -93,7 +90,7 @@ sub core_ENC()
 			/if (${switchBuffItem}) /call check_crystals
 		}
 	}
-/return
+/return TRUE
 
 
 

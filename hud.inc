@@ -343,6 +343,7 @@ sub HUDUpdate(string _verbage)
 
 		HUDPATH "Core" "time1" "19,360,132,146,149,180,${If[${HUDTime} || !${coreBuild},${Time.Time24},${GameTime}]}"
 		
+		
 	| elements HUD	
 	} else /if (${_verbage.Equal[elements]}) {
 
@@ -350,48 +351,100 @@ sub HUDUpdate(string _verbage)
 		HUDPATH "Elements" "e.tar" "21,5,26,255,255,255,${Target.DisplayName}"
 
 
+	| debug HUD
 	}	else /if (${_verbage.Equal[debug]}) {
+
+		| --- row 1
 
 		| current line
 		HUDPATH "Debug" "debug.cl1" "3,5,150,255,255,255,CL"
 		HUDPATH "Debug" "debug.cl2" "19,30,150,100,149,237,${Macro.CurLine}"
-		
 		| runtime
 		HUDPATH "Debug" "debug.rt1" "3,5,160,255,255,255,RT"
 		HUDPATH "Debug" "debug.rt2" "19,30,160,100,149,237,${Macro.RunTime}"
-	
 		| target2kill
 		HUDPATH "Debug" "debug.T2K1" "3,5,170,255,255,255,T2K"
 		HUDPATH "Debug" "debug.T2K2" "19,30,170,100,149,237,${Target2Kill}"
-		
 		| _tmpID
 		HUDPATH "Debug" "debug.tid1" "3,5,180,255,255,255,tID"
 		HUDPATH "Debug" "debug.tid2" "19,30,180,100,149,237,${_tmpID}"
+
 		
-		| --- row 1
+		| --- row 2
 
 		| bindtrigger
-		HUDPATH "Debug" "debug.bt1" "3,80,150,255,255,255,BT"
-		HUDPATH "Debug" "debug.bt2" "19,105,150,100,149,237,${If[${bindTrigger},T,F]}"
-
+		HUDPATH "Debug" "debug.bt1" "3,70,150,255,255,255,BT"
+		HUDPATH "Debug" "debug.bt2" "19,95,150,100,149,237,${If[${bindTrigger},T,F]}"
 		| isValidTarget 
-		HUDPATH "Debug" "debug.ivt1" "3,80,160,255,255,255,IVT"
-		HUDPATH "Debug" "debug.ivt2" "19,105,160,100,149,237,${If[${isValidTarget},T,F]}"
-
-
+		HUDPATH "Debug" "debug.ivt1" "3,70,160,255,255,255,iVT"
+		HUDPATH "Debug" "debug.ivt2" "19,95,160,100,149,237,${If[${isValidTarget},T,F]}"
 		| combat
-		HUDPATH "Debug" "debug.combat1" "19,80,170,255,0,0,${If[${Bool[${combat}]},${combat},]}"
-		HUDPATH "Debug" "debug.combat2" "19,80,170,255,255,255,${If[${Bool[${combat}]},,${combat}]}"
+		HUDPATH "Debug" "debug.combat1" "19,70,170,255,0,0,${If[${Bool[${combat}]},${combat},]}"
+		HUDPATH "Debug" "debug.combat2" "19,70,170,255,255,255,${If[${Bool[${combat}]},,${combat}]}"
 
 
-		| --- bottom line
+		| --- row 3
+
+		| mob lists
+		| HUDPATH "Debug" "debug.mL1" "3,120,150,255,255,255,mL"
+		| HUDPATH "Debug" "debug.mL2" "19,140,150,100,149,237,${If[${Bool[${mobList}]},${mobList},--]}"
+		| add lists
+		| HUDPATH "Debug" "debug.aL1" "3,120,160,255,255,255,aL"
+		| HUDPATH "Debug" "debug.aL2" "19,140,160,100,149,237,${If[${Bool[${addList}]},${addList},--]}"
+		| queue count
+		| HUDPATH "Debug" "debug.qC1" "3,120,170,255,255,255,qC"
+		| HUDPATH "Debug" "debug.qC2" "19,140,170,100,149,237,${queueCount}"
+		
+		| timer - validate zone
+		HUDPATH "Debug" "debug.tVZ1" "3,120,150,255,255,255,tVZ"
+		HUDPATH "Debug" "debug.tVZ2" "19,145,150,100,149,237,${timer_validate_zone}"
+		| timer -  check tie
+		HUDPATH "Debug" "debug.tCT1" "3,120,160,255,255,255,tCT"
+		HUDPATH "Debug" "debug.tCT2" "19,145,160,100,149,237,${timer_check_Tie}"
+		| timer - Clear Cursor
+		HUDPATH "Debug" "debug.tCC1" "3,120,170,255,255,255,tCC"
+		HUDPATH "Debug" "debug.tCC2" "19,145,170,100,149,237,${timer_clear_cursor}"
+		| timer - broadcast status
+		HUDPATH "Debug" "debug.tBS1" "3,120,180,255,255,255,tBS"
+		HUDPATH "Debug" "debug.tBS2" "19,145,180,100,149,237,${timer_check_status}"
+		
+			
+		| --- row 4
+		| timer - self buff
+		HUDPATH "Debug" "debug.tSB1" "3,170,150,255,255,255,tBS"
+		HUDPATH "Debug" "debug.tSB2" "19,195,150,100,149,237,${timer_check_buffs_self}"
+		| timer - buff item
+		HUDPATH "Debug" "debug.tBI1" "3,170,160,255,255,255,tBI"
+		HUDPATH "Debug" "debug.tBI2" "19,195,160,100,149,237,${timer_check_buffs_item}"
+		| timer - buff broadcast
+		HUDPATH "Debug" "debug.tBB1" "3,170,170,255,255,255,tBB"
+		HUDPATH "Debug" "debug.tBB2" "19,195,170,100,149,237,${timer_check_buffs_BC}"
+		| timer - buff broadcast
+		HUDPATH "Debug" "debug.tBR1" "3,170,180,255,255,255,tBR"
+		HUDPATH "Debug" "debug.tBR2" "19,195,180,100,149,237,${timer_check_buffs_raid}"
+		
+		
+		| --- row 5
+		| timer - buff tell
+		HUDPATH "Debug" "debug.tBT1" "3,220,150,255,255,255,tBT"
+		HUDPATH "Debug" "debug.tBT2" "19,245,150,100,149,237,${timer_check_buffs_tell}"
+		| timer - buff pet
+		HUDPATH "Debug" "debug.tBP1" "3,220,160,255,255,255,tBP"
+		HUDPATH "Debug" "debug.tBP2" "19,245,160,100,149,237,${timer_check_buffs_pet}"
+		| timer - buff merc
+		HUDPATH "Debug" "debug.tBM1" "3,220,170,255,255,255,tBM"
+		HUDPATH "Debug" "debug.tBM2" "19,245,170,100,149,237,${timer_check_buffs_merc}"
+		| timer - buff group
+		HUDPATH "Debug" "debug.tBG1" "3,220,180,255,255,255,tBG"
+		HUDPATH "Debug" "debug.tBG2" "19,245,180,100,149,237,${timer_check_buffs_group}"
+		
+
+		| --- bottom row
 
 		| curent sub
 		HUDPATH "Debug" "debug.sub1" "19,5,197,100,149,237,${currentdebugsub}"
-
 		| zone
-		HUDPATH "Debug" "debug.zone" "19,310,197,100,149,237,${Zone.ShortName}"
-
+		HUDPATH "Debug" "debug.zone" "7,310,197,100,149,237,${Zone.ShortName}"
 		| communications?		
 		HUDPATH "Debug" "debug.comm" "19,365,150,100,149,237,${setCommunications}"
 
@@ -400,9 +453,3 @@ sub HUDUpdate(string _verbage)
 	
 	
 /return
-
-
-currentdebugsub
-
-
-${If[${Bool[${combat}]},${combat},]}

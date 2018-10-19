@@ -18,22 +18,26 @@ sub core_DRU()
 	CHECKINPUTS
 	AMIDEAD
 	CHECKTIE
-	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
-  /if (!${Bool[${timer_set_xtarget}]} && ${switchHealXtarget}) {
-    /call set_xtarget
-    /call create_timer timer_set_xtarget ${tXHeal}
-  }	
 	
 	/if (${coreAuto}) {
-		CHECKINPUTS
-		/call check_engaged
-		/if (!${Macro.Return} && ${switchPcPet}) /call check_pet
+		/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
+
+	  /if (${switchHealXtarget}) {
+	  	/if (!${timer_set_xtarget}) {
+		    /call set_xtarget
+		    /call create_timer timer_set_xtarget ${tXHeal}
+		  }	
+		}
+		
+		/if (!${check_engaged[]} && ${switchPcPet}) /call check_pet
 	}	
 
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
+		
 		/if (${exit_class_loop[]}) /return
 
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}

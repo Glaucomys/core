@@ -75,7 +75,7 @@
 ***|
 
 | #warning
-#turbo 100
+#turbo 120
 #define DEBUG "/varset currentdebugsub"
 #define SDEBUG "/echo \ar[\ax\aw${Time.Second}\ax : \aw${Macro.CurLine}\ax\ar]\ax(\a-t${Macro.RunTime}\ax)"
 #define OUT "/echo ${c-}-\ax"
@@ -98,7 +98,7 @@
 #define CLEARCURSOR "/if ((${switchAutoCursor} && ${Cursor.ID} && !${timer_auto_cursor_pause}) || ${Bool[${autoInventoryItem.Find[${Cursor.Name}]}]}) /call sort_cursor"
 #define TESTFUNCTION "/call test_function"
 #define CHECKCOMBATCAST "/if (${coreAuto} && !${switchBuffCombat} && ${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]}) /return TRUE"
-#define CHECKINPUTS "/multiline ; /doevents ; /varset bindTrigger ${If[${bindTrigger},FALSE,TRUE]}"
+#define CHECKINPUTS "/call check_inputs"
 
 
 #include tc\declare.inc
@@ -128,8 +128,6 @@
 #include tc\custom.inc
 
 
-
-
 |***
  *	DES: Main .. duhh..
  *	USE: 
@@ -151,10 +149,12 @@ sub main(string _ini)
 			/goto :loopmain
 		} 
 	  AMIDEAD
-  
+  	
+  	| if using eqbc, make sure you are still connected
 		/if (${setCommunications.Equal[EQBC]} && !${timer_check_EQBC}) /call check_one_mind
-		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
 		
+		| make sure we're in the right zone
+		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
 		| what is this for??
 		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}
 		| sort /heal override ##
@@ -163,7 +163,6 @@ sub main(string _ini)
 		/if (!${timer_HUD_death_check}) /varset hudDeathCount ${Int[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}]}
 		
 		CHECKREZ	
-	  | UPDATEHUD FALSE	
 		CLEARCURSOR
 	  CHECKINPUTS
 		
@@ -173,7 +172,6 @@ sub main(string _ini)
 			| check constant Disc buffs
 			/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 		}
-		
 
 		| non class specific automated thingies.
 		/if (${coreAuto}) {
@@ -195,7 +193,7 @@ sub main(string _ini)
 			
 			| smoke 'em if 'yah got 'em
 			/if (${autoRest}) {
-				/if (!${switchPull} || (${switchPull} && !${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]})) /call do_rest
+				/if (!${switchPull} || (${switchPull} && !${SpawnCount[npc radius ${MobAgro} playerstate 4]})) /call do_rest
 			}			
 			
 			| buff a thing
@@ -220,7 +218,7 @@ sub main(string _ini)
 		}
 		
 		/if (${Me.PctEndurance} < 32) {
-			/if (${validate_class[FALSE, |WAR|PAL|SHD|ROG|BER|RNG|MNK|BST]}) /call cast_stamina_recovery
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 		}
 
 		| use those AA.. hoarding bastard
@@ -250,7 +248,6 @@ sub main(string _ini)
 		| use the one off clickies in the Toons INI
 		/if (!${timer_check_odds_and_ends}) /call odds_and_ends
 
-
 		| do we pull or assist	
 		/if (${coreAuto} && (!${SafeZone} || ${switchOverrideSafezone})) {
 			/if (!${Me.Invis} || (${coreAuto} && ${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {	
@@ -261,9 +258,12 @@ sub main(string _ini)
 				}
 			}
 		}
+
+		| check all the basics before we hit the class
+		AMIDEAD
 		CHECKINPUTS
 		CHECKREZ
-		CHECKTIE		
+		CHECKTIE
 
 		| time to take this bitch to church!
 		/call core_${Me.Class.ShortName}

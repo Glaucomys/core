@@ -20,6 +20,7 @@ sub core_WAR()
 	CHECKTIE
 
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${exit_class_loop[]}) /return
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}

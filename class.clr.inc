@@ -39,9 +39,11 @@ sub core_CLR()
 	}	
 
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
+		
 		/if (${exit_class_loop[]}) /return
 
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}

@@ -12,6 +12,42 @@
   -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
+20181019.00
+- HUDs
+	the /hc update and delete commands now take an option eg. /hc update debug or /hc delete core
+	I have added in a HUD for debugging, it is simpler to deal with then the 5 billion lines scrolled in the MQ window
+	if you want to use it, feel free, can get it working by doing the following commands:
+	/loadhud debug
+	/hc update debug
+	it apears just below the normal HUD
+	if you want to get rid of it, do a:
+	/hc delete debug
+	it will pass a lot of information the normal HUD does not, lines, IDS, timers, current sub, so on
+	more will be added to it as i need
+	if you have no desire to use it, feel free to just ignore everything you just read
+	on a side note, this will let you design a HUD all your own if you like. just follow the patterns	
+- #turbo
+	so, i threw in a #turbo 120 at the start of core.mac
+	i'm gonna play around with this for a while and see if it does not screw up any of the timings
+	if it is cooperative, i see no reason it cannot stay in there to speed the mac up a bit
+	if anyone sees the mac cycling something odd or too fast, try lowering the turbo on your side to see if that helps
+	last i read on the forums, the default is 80 when turbo is undefined. so this is a fairly big boost
+- CHECKINPUTS
+  -- the /multiline simnply wasnt doing it. so i turned it into a sub. works a lot better now
+- class.mnk.inc
+  -- dont ask what i did, i'm not really sure. but its fixxed..  man that was ugly...
+- class.mag.inc
+  -- corrected a misspelling of DEBUG. going to add this to the cannot spell continue list
+- Healers
+  -- /override combat was adjusted to at least let them heal group and xtargets 
+- class.ALL.inc
+  -- adjusted the patterns for manual inputs/interjections for all classes
+  -- eg. manual mode and hitting a force combat or a stop or any other bind command
+     given the class loop changes this should help them respond a bit faster
+- fixed some other things. but forgot what they were, /shrug
+  
+
+
 20181017.00
 - /port [wizard|druid] [location]
   -- /port with no switches will issues available switches as normal

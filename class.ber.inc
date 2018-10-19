@@ -15,11 +15,9 @@
  ***|
 sub core_BER()
 	DEBUG core_BER()
-	CHECKINPUTS
-	AMIDEAD
-	CHECKTIE
 	
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${exit_class_loop[]}) /return
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
@@ -42,7 +40,7 @@ sub core_BER()
 
 		/if (${coreAuto}) {	
 			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
-			/call cast_stamina_recovery
+			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
 			/call check_ammo
 		}
 	} 

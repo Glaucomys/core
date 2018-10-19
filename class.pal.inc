@@ -7,6 +7,7 @@
  
 
 
+
 |***
  *	DES: Main Paladin Routine
  *	USE: primarly for making unicorn jokes at. also useful for throwing at raid mobs as speed bumps.
@@ -15,14 +16,15 @@
  ***|
 sub core_PAL()
 	DEBUG core_PAL()
-  CHECKINPUTS
 	
 	/if (${coreAuto}) {
 	  /if (${switchHealXtarget} && !${timer_set_xtarget}) {
 	    /call set_xtarget
 	    /call create_timer timer_set_xtarget ${tXHeal}
 	  }	
+
 		/if (${useShieldFlash}) /call cast_AA_shield_flash
+
 		| aa LoH
 		/if (${switchHealSelf} && ${useLoH}) {
 		  /if (${Me.PctHPs} <= ${useLoHPct}*.${tmpHealOverride}) {
@@ -36,8 +38,9 @@ sub core_PAL()
 	}
 		
 	/while (${prep_combat[]}) {
-	  CHECKINPUTS
+		CHECKINPUTS
 		/if (${exit_class_loop[]}) /return
+		
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}

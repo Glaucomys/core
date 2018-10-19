@@ -15,9 +15,7 @@
  ***|
 sub core_WIZ()
 	DEBUG core_WIZ()
-	CHECKINPUTS
-	AMIDEAD
-	CHECKTIE
+
 	
 	/if (${coreAuto}) {
 		/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_harvest
@@ -25,7 +23,8 @@ sub core_WIZ()
 	}
 	
 	/while (${prep_combat[]}) {
-		/if (${exit_class_loop[]}) /return
+		CHECKINPUTS
+		/if (${exit_class_loop[]}) /return FALSE
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
@@ -54,7 +53,7 @@ sub core_WIZ()
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 		}	
 	}	
-/return
+/return TRUE
 
 
 

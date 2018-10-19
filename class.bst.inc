@@ -15,9 +15,6 @@
  ***|
 sub core_BST()
 	DEBUG core_BST()
-	CHECKINPUTS
-	AMIDEAD
-	CHECKTIE
 
 	/if (${coreAuto}) {
 		/call check_mana_${Me.Class.ShortName}
@@ -25,6 +22,7 @@ sub core_BST()
 	}
 
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${exit_class_loop[]}) /return		
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}

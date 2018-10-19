@@ -17,24 +17,27 @@ sub core_SHM()
 	DEBUG core_SHM()
 	CHECKINPUTS
 	AMIDEAD
-
-	/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 	CHECKTIE
+	
+	| correct any and all XTarget healing spots
+	/if (${coreAuto}) {
+		/if (${Bool[${toonControl}]} && ${Bool[${toonControlXTslot}]} && ${toonControlProtect}) /call protect_always_xt
 
-  /if (!${Bool[${timer_set_xtarget}]} && ${switchHealXtarget}) {
-    /call set_xtarget
-    /call create_timer timer_set_xtarget ${tXHeal}
-  }	
-
-	/if (${coreAuto} && !${Me.Invis}) {
-		/call check_cani
-		/call check_engaged
-		/if (!${Bool[${Macro.Return}]}) {
-			/if (${switchPcPet}) /call check_pet
+	  /if (${switchHealXtarget}) {
+	  	/if (!${timer_set_xtarget}) {
+		    /call set_xtarget
+		    /call create_timer timer_set_xtarget ${tXHeal}
+		  }	
+		}
+		
+		/if (!${Me.Invis}) {
+			/call check_cani
+			/if (!${check_engaged[]} && ${switchPcPet}) /call check_pet
 		}
 	}	
 
 	/while (${prep_combat[]}) {
+		CHECKINPUTS
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure

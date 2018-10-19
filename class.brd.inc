@@ -14,9 +14,7 @@
  *  NOTE: 
  ***|
 sub core_BRD()
-	CHECKINPUTS
-	AMIDEAD
-	CHECKTIE
+	DEBUG core_BRD
 
 	| validate/fix lists
 	/if (!${timer_validate_lists}) {
@@ -28,9 +26,10 @@ sub core_BRD()
 	}	
 		
 	/while (${prep_combat[]}) {
-		/if (${exit_class_loop[]}) /return
+		CHECKINPUTS
+		/if (${exit_class_loop[]}) /return FALSE
 	
-		/if (${switchdeBuffMezz}) {
+		/if (${coreAuto} && ${switchdeBuffMezz}) {
 			/call get_assist_target
 			/if (${isValidTarget} && ${Target.ID} && ${Target.LineOfSight} && ${Target.Distance} <= ${MobAgro} && (${Target.PctHPs} <= ${smartengageAt} || ${Spawn[PC ID ${Me.TargetOfTarget.ID} Radius 60].ID})) /goto :loop
 			/if (${Defined[timer_mez_${Target2Kill}]}) /deletevar timer_mez_${Target2Kill}
@@ -78,11 +77,11 @@ sub core_BRD()
 				/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 				/if (${switchModRod} && ${validate_class[FALSE, |BRD]}) /call use_mod_rod
 				/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-			/if (${switchOverrideCombat} || ${is_target_dead[${Target2Kill}]}) /return
+				| /if (${switchOverrideCombat} || ${is_target_dead[${Target2Kill}]}) /return
 			}
 		} 
 	}
-/return
+/return TRUE
 
 
 
@@ -121,7 +120,7 @@ sub disc_BRD()
 		}
 	}
 	
-/return
+/return TRUE
 
 
 
@@ -136,7 +135,7 @@ sub patch_heal_BRD()
 	CHECKEXIT
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	/call click_item_heal
-/return
+/return TRUE
 
 
 
@@ -152,7 +151,7 @@ sub click_DPS_BRD()
 	CHECKINPUTS
 	/call stick_to_target
 	/call click_horn_of_unity 	
-/return
+/return TRUE
 
 
 
@@ -186,7 +185,7 @@ sub cast_servant_swarm(int _tmpID)
 			/return
 		}
 	}
-/return
+/return TRUE
 
 
 
@@ -213,7 +212,7 @@ sub mem_song_line(string _line)
 		/next _index	
 	/next _count	
 	VOUT Line ${sep} ${cinfo}${lineCurrent}\ax memorization completed.
-/return
+/return TRUE
 
 
 
@@ -258,7 +257,7 @@ sub pulse()
 	/next _count	
 
 	UPDATEHUD FALSE
-/return
+/return TRUE
 
 
 
@@ -275,7 +274,7 @@ sub pulse_valid(_gem)
 	/if (${Me.Song[${Me.Gem[${_gem}].Name}].Duration.Seconds} > 6) /varset _pulseSong FALSE
 	/if (!${Me.SpellReady[${Me.Gem[${_gem}].Name}]}) /varset _pulseSong FALSE
 	/if (!${Spell[${Me.Gem[${_gem}].Name}].Stacks}) /varset _pulseSong FALSE
-/return ${Bool[${_pulseSong}]}
+/return ${_pulseSong}
 
 
 
@@ -291,7 +290,7 @@ sub pulse_stop()
 		/stopcast
 		/delay 5
 	}	
-/return
+/return TRUE
 
 
 |***
@@ -316,7 +315,7 @@ sub core_sing(_spellgem)
 	/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
 	/delay 2
 	/call pulse_stop
-/return
+/return TRUE
 
 
 
@@ -339,7 +338,7 @@ sub bard_nuke()
 			/call core_sing ${Me.Gem[${Nuke${_count}}]}
 		}
 	/next _count
-/return
+/return TRUE
 
 
 
@@ -364,7 +363,7 @@ sub bard_dot()
 			/call core_sing ${Me.Gem[${DoT${_count}}]}
 		}
 	/next _count
-/return
+/return TRUE
 
 
 
@@ -406,7 +405,7 @@ sub mez_adds_BRD()
 		VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
 		/goto :loopmezzadds
 	}
-/return
+/return TRUE
 
 
 
@@ -447,7 +446,7 @@ sub cast_mez_BRD(int _tmpID)
 		/if (${Target.Mezzed.Duration.TotalSeconds}) /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
 		/goto :loopmez
 	}
-/return
+/return TRUE
 
 
 
@@ -469,7 +468,7 @@ sub cast_AA_Rallying()
  	/if (((${Me.PctEndurance} < ${_endurancePoint}) || (${Me.PctMana} < ${_manaPoint})) && ${Select[${Me.CombatState},RESTING]}) {
 		/if (${validate_cast[FALSE, alt, "Rallying Solo", ${Me.ID}]}) /call core_cast2 "Rallying Solo" alt ${Me.ID}
 	}
-/return
+/return TRUE
 
 
 
@@ -499,7 +498,7 @@ sub synergy_BRD()
 	/call use_glyph
 	/call synergy_click_Circle
 	/call click_item_burn	
-/return
+/return TRUE
 
 
 
@@ -525,7 +524,7 @@ sub pulse_slow(int _tmpID)
 	/if (${Spawn[${_tmpID}].Type.NotEqual[PC]} && ${Spawn[${_tmpID}].Distance} <= ${Spell[${spellSlow}].MyRange} && !${timer_slow_${_tmpID}}) {
 		/call core_sing ${Me.Gem[${spellSlow}]}
 	}
-/return
+/return TRUE
 
 
 
@@ -649,13 +648,14 @@ sub Bind_setBRD(string _classType, string _verbage)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
-/return
+/return TRUE
 
 
 
 
-
+|**
 	/if (${Me.BardSongPlaying}) {
 		/stopsong
 		/delay 10
 	}
+**|

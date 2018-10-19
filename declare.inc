@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181017.00
+	/call setDeclare coreBuild											string	outer 20181019.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -154,6 +154,10 @@ sub set_declares()
 	/call setDeclare wikispire											string outer "[\ar0\ax\a-w|1|2|3\ax]"
 	/call setDeclare wikipct												string outer "[\a-w1,99\ax]"
 
+
+	| base lists for mob mez control
+	/call setDeclare mobList												string	outer
+	/call setDeclare addList 												string 	outer	
 
 	| echo switches
 	/call setDeclare echoType 											string 	outer "|alt|bc|channel|disc|item|melee|spell|relay|verbose"
@@ -474,7 +478,7 @@ sub set_declares()
 	| watchspawn stuff
 	/call setDeclare hudwatchspawn									string	outer FALSE
 	/call setDeclare watchSpawnCount								int			outer	FALSE
-	/call setINIVar watchSpawn											string	Common FALSE 
+	/call setINIVar watchSpawn											string	Common FALSE
 
 		
  	| Movement control
@@ -488,8 +492,8 @@ sub set_declares()
 	/call setINIVar SetFaceFast											bool		Movement FALSE
 	/call setINIVar SetFaceArc											int			Movement 30
 	/call setINIVar mount														string	Common "Desert Kangon Saddle"
-	/call setDeclare tempHomeSet										bool		outer FALSE	
-	/call setDeclare tempsnapstuck									bool		outer	FALSE  
+	/call setDeclare tempHomeSet										bool		outer FALSE
+	/call setDeclare tempsnapstuck									bool		outer	FALSE
 
 
 	| tie control
@@ -515,51 +519,51 @@ sub set_declares()
 	
 	
 	| clickie things
-	/call setINIVar clickItem1											string	Items FALSE 
-	/call setINIVar clickItem2											string	Items FALSE 
-	/call setINIVar clickItem3											string	Items FALSE 
-	/call setINIVar clickItem4											string	Items FALSE 
-	/call setINIVar clickItem5											string	Items FALSE 
-	/call setINIVar clickItem6											string	Items FALSE 
+	/call setINIVar clickItem1											string	Items FALSE
+	/call setINIVar clickItem2											string	Items FALSE
+	/call setINIVar clickItem3											string	Items FALSE
+	/call setINIVar clickItem4											string	Items FALSE
+	/call setINIVar clickItem5											string	Items FALSE
+	/call setINIVar clickItem6											string	Items FALSE
 		
-	/call setINIVar clickItemBurn1									string	Items FALSE 
-	/call setINIVar clickItemBurn2									string	Items FALSE 
-	/call setINIVar clickItemBurn3									string	Items FALSE 
-	/call setINIVar clickItemBurn4									string	Items FALSE 	
-	/call setINIVar clickItemBurn5									string	Items FALSE 	
-	/call setINIVar clickItemBurn6									string	Items FALSE 	
+	/call setINIVar clickItemBurn1									string	Items FALSE
+	/call setINIVar clickItemBurn2									string	Items FALSE
+	/call setINIVar clickItemBurn3									string	Items FALSE
+	/call setINIVar clickItemBurn4									string	Items FALSE
+	/call setINIVar clickItemBurn5									string	Items FALSE
+	/call setINIVar clickItemBurn6									string	Items FALSE
 	
-	/call setINIVar Breastplate1		 								string	Items FALSE	
-	/call setINIVar Breastplate1Condition						string	Items FALSE	
+	/call setINIVar Breastplate1		 								string	Items FALSE
+	/call setINIVar Breastplate1Condition						string	Items FALSE
 	/call setINIVar Breastplate1effect							string	Items FALSE
 	/call setINIVar Breastplate2		 								string	Items FALSE
-	/call setINIVar Breastplate2Condition						string	Items FALSE	
-	/call setINIVar Breastplate2effect							string	Items FALSE	
+	/call setINIVar Breastplate2Condition						string	Items FALSE
+	/call setINIVar Breastplate2effect							string	Items FALSE
 	
-	/call setINIVar useCircle												string	Items FALSE		
-	/call setINIVar CircleofPower										string	Items FALSE	
-	/call setINIVar CircleofLife										string	Items FALSE	
-	/call setINIVar CircleofMana										string	Items FALSE	
+	/call setINIVar useCircle												string	Items FALSE
+	/call setINIVar CircleofPower										string	Items FALSE
+	/call setINIVar CircleofLife										string	Items FALSE
+	/call setINIVar CircleofMana										string	Items FALSE
 
-	/call setINIVar clickItemSwarm1									string	Items FALSE 
-	/call setINIVar clickItemSwarm2									string	Items FALSE 
-	/call setINIVar clickItemSwarm3									string	Items FALSE 
-	/call setINIVar clickItemSwarm4									string	Items FALSE 	
+	/call setINIVar clickItemSwarm1									string	Items FALSE
+	/call setINIVar clickItemSwarm2									string	Items FALSE
+	/call setINIVar clickItemSwarm3									string	Items FALSE
+	/call setINIVar clickItemSwarm4									string	Items FALSE
 
-	/call setINIVar clickOddItem1										string	Odds FALSE 
-	/call setINIVar clickOddItem2										string	Odds FALSE 
-	/call setINIVar clickOddItem3										string	Odds FALSE 
-	/call setINIVar clickOddItem4										string	Odds FALSE 	
+	/call setINIVar clickOddItem1										string	Odds FALSE
+	/call setINIVar clickOddItem2										string	Odds FALSE
+	/call setINIVar clickOddItem3										string	Odds FALSE
+	/call setINIVar clickOddItem4										string	Odds FALSE
 	
 	
 	| AAs that you want to always keep going
-	/call setINIVar AANow1													string	AANow FALSE 
-	/call setINIVar AANow2													string	AANow FALSE 
+	/call setINIVar AANow1													string	AANow FALSE
+	/call setINIVar AANow2													string	AANow FALSE
 
 
 	| discs that you want to always keep going
-	/call setINIVar DiscNow1												string	DiscNow FALSE 
-	/call setINIVar DiscNow2												string	DiscNow FALSE 
+	/call setINIVar DiscNow1												string	DiscNow FALSE
+	/call setINIVar DiscNow2												string	DiscNow FALSE
 
 
 	| overrides
@@ -652,13 +656,13 @@ sub set_declares()
 		/next _count
 	}	
 	
-	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,NEC,WIZ,SHM,DRU]}) { 
+	/if (${Select[${Me.Class.ShortName},MAG,ENC,CLR,NEC,WIZ,SHM,DRU]}) {
 		/call setINIVar TwincastSpell 								string 	Spells FALSE
 		/call setINIVar GatherSpell 									string 	Spells FALSE
 		/call setINIVar SilentCast	 									string	Spells FALSE
 	}
 	
-	/if (!${Select[${Me.Class.ShortName},MNK,BER,WAR]}) { 
+	/if (!${Select[${Me.Class.ShortName},MNK,BER,WAR]}) {
 		/call setINIVar switchNukeDelay								bool		Spells FALSE
 	}	
 	
@@ -668,10 +672,10 @@ sub set_declares()
   /call setDeclare buffType												string	outer "|stop|self|item|combat|bc|raid|tell|pet|merc|group"
 	/call setDeclare switchBuff											bool		outer FALSE
 	/call setDeclare switchBuffStop									bool		outer FALSE
-	/call setINIVar switchBuffItem	 								bool		Buffs FALSE 
-	/call setINIVar switchBuffCombat 								bool		Buffs FALSE 
-	/call setINIVar switchBuffPet 									bool 		Pet FALSE 
-	/call setINIVar switchBuffSelf	 								bool		Buffs FALSE 
+	/call setINIVar switchBuffItem	 								bool		Buffs FALSE
+	/call setINIVar switchBuffCombat 								bool		Buffs FALSE
+	/call setINIVar switchBuffPet 									bool 		Pet FALSE
+	/call setINIVar switchBuffSelf	 								bool		Buffs FALSE
 	/call setINIVar switchBuffBc										bool		Buffs FALSE
 	/call setINIVar switchBuffRaid									bool		Buffs FALSE
 	/call setINIVar switchBuffTell									bool		Buffs FALSE
@@ -682,7 +686,7 @@ sub set_declares()
 	/if (${Me.Class.CanCast} || ${Select[${Me.Class.ShortName},ROG]}) {
 		/call setINIVar buffGem 											string 	Spells "gem8"
 		/call fix_gem_id "${buffGem}"
-		/call setDeclare buffNum											 int 		local ${Macro.Return}		
+		/call setDeclare buffNum											 int 		local ${Macro.Return}
 		
 		| /call setDeclare buffNum											
 		/call setINIVar GoMLevel											int			Spells 105
@@ -713,7 +717,7 @@ sub set_declares()
 	
 	/if (${Select[${Me.Class.ShortName},CLR,DRU,SHM,PAL]}) {
 		/call setDeclare callID												int 		outer 0
-		/call setINIVar PetPoint 											int			Heal 80	
+		/call setINIVar PetPoint 											int			Heal 80
 		/call setINIVar CLRPoint		 									int 		Heal 80
 		/call setINIVar DRUPoint 											int 		Heal 70
 		/call setINIVar SHMPoint 											int 		Heal 60
@@ -1166,8 +1170,6 @@ sub declare_WIZ()
  ***|
 sub declare_ENC()
 	/call setTimer tValidate_Lists									string	Timer 15s timer_validate_lists
-	/call setDeclare mobList												string	outer
-	/call setDeclare addList 												string 	outer
 
 	/call setDeclare ENCspire1											string	outer "Fundament: First Spire of Enchantment"
 	/call setDeclare ENCspire2											string	outer "Fundament: Second Spire of Enchantment"
@@ -1997,9 +1999,6 @@ sub declare_BRD()
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
 
-	/call setDeclare mobList												string 	outer
-	/call setDeclare addList 												string 	outer
-		
 	/call setINIVar ServantNukeAA1 									string 	Pet "Lyrical Prankster"
 	/call setINIVar ServantNukeAA2 									string 	Pet "Song of Stone"
 	/call setINIVar songServantNuke									string 	Pet "Plague of the Piper"
@@ -5223,7 +5222,7 @@ sub Bind_imincharge()
 sub Bind_bcsay(string _verbage, string _sender, int _tmpID)
 	| SDEBUG bcsay v:"${_verbage}" s:${_sender} id:${_tmpID}
 	
-	/if (${Me.Invis}) /makemivisible
+	/if (${Me.Invis}) /makemevisible
 	
 	| sender
 	/if (!${Bool[${_sender}]}) {

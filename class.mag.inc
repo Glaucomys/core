@@ -17,23 +17,19 @@ sub core_MAG()
 	DEBUG core_MAG()
 	CHECKINPUTS
 	AMIDEAD
-
 	CHECKTIE
 
 	/if (${coreAuto}) {
 		/if (${switchGather}) {
 			/if (${Me.PctMana} <= ${GatherPercent}*.${tmpHealOverride}) /call check_gather
 		}
-		/call check_engaged
-		/if (!${Bool[${Macro.Return}]}) {
-			/if (${switchPcPet}) /call check_pet
-			CHECKEXIT
-			/if (!${timer_caldron_use}) /call use_cauldron
-		}
+		/if (!${check_engaged[]} && ${switchPcPet}) /call check_pet
+		/if (!${timer_caldron_use}) /call use_cauldron
 	}
 
 	/while (${prep_combat[]}) {
-		/if (${exit_class_loop[]}) /return
+		CHECKINPUTS
+		/if (${exit_class_loop[]}) /return FALSE
 
 		/if (${switchHealSelf}) /call patch_heal_${Me.Class.ShortName}
 		/if (${switchHealPet}) /call pet_heal_${Me.Class.ShortName}
@@ -65,7 +61,7 @@ sub core_MAG()
 			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
 		}
 	}
-/return
+/return TRUE
 
 
 
@@ -112,7 +108,7 @@ sub use_cauldron()
  *  NOTE: this is filler DPS; compensate for global cooldown
  ***|
 sub click_DPS_MAG()
-	DBUG click_DPS_MAG()
+	DEBUG click_DPS_MAG()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS

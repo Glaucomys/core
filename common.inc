@@ -5025,10 +5025,9 @@ sub check_harmonious()
 sub prep_combat()
 	DEBUG prep_combat()
 	/if (${Me.Zoning}) /return FALSE
+  CHECKINPUTS
 	CLEARCURSOR
-	CHECKINPUTS
-	
-	
+		
 	| manual mode
 	/if (!${coreAuto}) {
 		/if (${Target.ID}) {
@@ -5047,8 +5046,7 @@ sub prep_combat()
 			/return FALSE
 		}
 	
-	
-	
+	| healers.. mostly
 	} else /if (${coreAuto} && ${switchOverrideCombat}) {
 
 		| healer override check
@@ -5059,6 +5057,8 @@ sub prep_combat()
 			/if (${is_burn_time[]}) /varset setBurnControl TRUE
 			/return TRUE
 		}
+		
+	| healers.. mostly.. in manual
 	} else /if (!${coreAuto} && ${switchOverrideCombat}) {
 		/varset combat COMBAT
 		/return FALSE
@@ -5088,8 +5088,6 @@ sub prep_combat()
 			}
 		}
 	}
-
-
 /return FALSE
 
 
@@ -5102,16 +5100,18 @@ sub prep_combat()
  ***|
 sub exit_class_loop()
 	DEBUG exit_class_loop()
-		/if (${coreAuto}) {	
-			/if (${switchOverrideCombat}) /return TRUE
-			/if (!${Spawn[${Target2Kill}].ID}) /return TRUE
+
+	/if (${coreAuto}) {	
+		/if (${switchOverrideCombat}) /return TRUE
+		/if (!${Spawn[${Target2Kill}].ID}) /return TRUE
+		/if (${is_target_dead[${Target2Kill}]}) /return TRUE
+	} else /if (!${coreAuto}) {
+		/if (!${Target.ID}) /return TRUE
+		| /if (${Target.ID} && !${Bool[${combat}]}) /return TRUE
+		/if (${Bool[${combat}]}) {
 			/if (${is_target_dead[${Target2Kill}]}) /return TRUE
-		} else /if (!${coreAuto}) {
-			/if (!${Target.ID}) /return TRUE
-			/if (${Bool[${combat}]}) {
-				/if (${is_target_dead[${Target2Kill}]}) /return TRUE
-			}
 		}
+	}
 /return FALSE
 
 
@@ -7058,7 +7058,7 @@ sub validate_safelist(string _sender)
  *  NOTE: in manual mode. anything is a valid target.
 **|
 sub validate_target(bool _error, int _tmpID)
-	SDEBUG validate_target(${_error}, ${_tmpID})
+	DEBUG validate_target(${_error}, ${_tmpID})
 	/if (!${coreAuto}) /return TRUE
 	AMIDEAD
 	CHECKINPUTS
@@ -7255,3 +7255,21 @@ sub get_resident(string _class, int _distance)
 	/next _count	
 
 /return ${_name}
+
+
+
+|***
+ *	DES: Checks external inputs: #events and forces bind checks
+ *	USE: CHECKINPUTS
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_inputs()
+	DEBUG check_inputs()
+	| set a non-use variable to force bind checks. better this then an echo
+	/varset bindTrigger ${If[${bindTrigger},FALSE,TRUE]}
+	
+	| check the event queue
+	/doevents
+	
+/return TRUE
