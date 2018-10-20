@@ -12,6 +12,14 @@
   -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
+
+20181020.00
+- corrected a stacking check issue for broadcast buffs when using dannet
+- zerkers share should trigger
+- class.brd.inc
+  -- updated some old code that was causing it to clear combat in the middle of a fight
+
+
 20181019.00
 - HUDs
 	the /hc update and delete commands now take an option eg. /hc update debug or /hc delete core
@@ -47,7 +55,6 @@
 - fixed some other things. but forgot what they were, /shrug
   
 
-
 20181017.00
 - /port [wizard|druid] [location]
   -- /port with no switches will issues available switches as normal
@@ -66,7 +73,6 @@
 - class.clr/dru/shm.inc
   -- adjusted the exits on the class loop so xtarget healing and curing will cooperate with /override combat
   
-
 
 20181011.00
 HUDUPDATE
@@ -215,8 +221,7 @@ NOTES: common2, declare2, clr2 and enc2 are removed. back to 1 file for each. re
 - class.enc.inc / class.enc2.inc
   -- removed some of the debug echos
   -- removed stamina recover check
-  
-- class.mag.inc
+ - class.mag.inc
   -- adjusted some logic in the twin cast function
   -- removed stamina recover check
 - class.rog.inc
@@ -235,7 +240,6 @@ NOTES: common2, declare2, clr2 and enc2 are removed. back to 1 file for each. re
       - #include tc\common2.inc
       - #include tc\class.clr2.inc
       - #include tc\class.enc2.inc
-
   -- This is a manual change. Expect bugs for a bit. It's a rather drastic change to how Core works.
 - toon.ini
   -- Default broad cast group for MQ2DanNet. change if you like. Common->broadcastGroup=Core
@@ -481,7 +485,6 @@ NOTES: common2, declare2, clr2 and enc2 are removed. back to 1 file for each. re
   -- core heal logic rewritten to match the cleric
 - class.brd.inc
   -- added in mod rod usage
-  
 
 
 - taunting
@@ -530,6 +533,7 @@ NOTES: common2, declare2, clr2 and enc2 are removed. back to 1 file for each. re
 20180719.01
  - class.rog.inc
    -- because fuck commas..
+
 
 20180719.00
 - check_for_corpse() -- this is the resurrection routine..
@@ -762,7 +766,6 @@ HUDUPDATE
   -- minor correction to a couple heal lines
 - class.rog.inc
   -- put the sneak attack back in. not sure why it ran off.
-
 
 
 20180531.00

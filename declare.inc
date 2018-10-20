@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181019.00
+	/call setDeclare coreBuild											string	outer 20181020.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -180,7 +180,7 @@ sub set_declares()
 	/call setDeclare PetList												string 	outer "|ENC|DRU|SHM|SHD|WIZ|BRD|BST|MAG|NEC"
 	/call setDeclare HealerList											string 	outer "|CLR|DRU|SHM|PAL"
 	/call setDeclare RezerList											string 	outer "|CLR|DRU|SHM|PAL|NEC"
-	/call setDeclare AASnareList										string 	outer "|RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL"
+	/call setDeclare AASnareList										string 	outer "|RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL|BER"
 	/call setDeclare AAEradicateList								string 	outer "|RNG|DRU|NEC|WIZ|ENC|MAG"
 	
 	| this is a makeshift /doevents to force binds to be cycled.

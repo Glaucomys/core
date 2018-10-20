@@ -972,7 +972,7 @@ sub check_buffs_BC()
 				/if (!${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
 			
 			} else /if (${setCommunications.Equal[dannet]}) {
-				/dquery ${_toonName} -q "Spell[${Buff${_buff}}].Stacks" -o _DNqout
+				/dquery ${_toonName} -q "Spell[${Buff${_buff}chk}].Stacks" -o _DNqout
 				/if (!${_DNqout}) /continue
 
 				| has the buff?

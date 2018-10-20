@@ -77,7 +77,6 @@ sub core_BRD()
 				/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 				/if (${switchModRod} && ${validate_class[FALSE, |BRD]}) /call use_mod_rod
 				/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
-				| /if (${switchOverrideCombat} || ${is_target_dead[${Target2Kill}]}) /return
 			}
 		} 
 	}
@@ -149,7 +148,7 @@ sub click_DPS_BRD()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
-	/call stick_to_target
+	/if (${switchCombatMelee}) /call stick_to_target
 	/call click_horn_of_unity 	
 /return TRUE
 
@@ -231,25 +230,19 @@ sub pulse()
 	UPDATEHUD "PULSE: Song"
 	
 	/for _count 1 to ${_list.Size}
-		AMIDEAD
-		CHECKEXIT
-		CHECKINPUTS
-		/call is_target_dead
-		/if (${Macro.Return}) {
+		/if (${is_target_dead[${Target2Kill}]}) {
 			/call pulse_stop
 			/return
 		}
 		/for _index 1 to ${_list[${_count}].Count[|]}
 			AMIDEAD
-			| CHECKEXIT
 			CHECKINPUTS
-			/call is_target_dead
-			/if (${Macro.Return}) {
+			/if (${is_target_dead[${Target2Kill}]}) {
 				/call pulse_stop
 				/return
 			}
-			/call pulse_valid ${_index}
-			/if (${Macro.Return}) {
+			
+			/if (${pulse_valid[${_index}]}) {
 				/call pulse_stop
 				/call core_sing ${_index}
 			}
@@ -307,11 +300,10 @@ sub core_sing(_spellgem)
 	/call fix_gem_id "${_spellgem}"
 	/declare _gem int local ${Macro.Return}
 	/if (${Me.CurrentMana} < ${Spell[${Me.Gem[${_gem}]}].Mana}) /return	
-	/call stick_to_target
+	/if (${switchCombatMelee}) /call stick_to_target
 	/if (${Me.Casting.ID}) /call pulse_stop
 	VOUT Pulse ${sep} ${csp}${Me.Gem[${_gem}]}\ax
 	/melody ${_gem}
-	| /delay 25
 	/delay ${Spell[${Me.Gem[${_gem}].Name}].CastTime.Seconds}s !${Me.Casting.ID}
 	/delay 2
 	/call pulse_stop
@@ -334,7 +326,7 @@ sub bard_nuke()
 		CHECKINPUTS
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${Nuke${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${Nuke${_count}}].MyRange} && ${Me.CurrentMana} >= ${Spell[${Nuke${_count}}].Mana}) {
-			/call stick_to_target
+			/if (${switchCombatMelee}) /call stick_to_target
 			/call core_sing ${Me.Gem[${Nuke${_count}}]}
 		}
 	/next _count
@@ -359,7 +351,7 @@ sub bard_dot()
 		/if (${is_target_dead[${Target2Kill}]}) /return
 		/if (${Target.BuffDuration[${DoT${_count}}]} >= 2) /return
 		/if (${Spawn[${Target2Kill}].LineOfSight} && ${Me.SpellReady[${DoT${_count}}]} && ${Spawn[${Target2Kill}].Distance} <= ${Spell[${DoT${_count}}].MyRange} && ${Me.CurrentMana} >= ${DoT[${DoT${_count}}].Mana}) {
-			/call stick_to_target
+			/if (${switchCombatMelee}) /call stick_to_target
 			/call core_sing ${Me.Gem[${DoT${_count}}]}
 		}
 	/next _count
@@ -463,7 +455,7 @@ sub cast_AA_Rallying()
 	AMIDEAD
 	CHECKINPUTS
  	/declare _endurancePoint		int local 30
- 	/declare _manaPoint		int local 30
+ 	/declare _manaPoint					int local 30
 
  	/if (((${Me.PctEndurance} < ${_endurancePoint}) || (${Me.PctMana} < ${_manaPoint})) && ${Select[${Me.CombatState},RESTING]}) {
 		/if (${validate_cast[FALSE, alt, "Rallying Solo", ${Me.ID}]}) /call core_cast2 "Rallying Solo" alt ${Me.ID}
@@ -651,11 +643,3 @@ sub Bind_setBRD(string _classType, string _verbage)
 /return TRUE
 
 
-
-
-|**
-	/if (${Me.BardSongPlaying}) {
-		/stopsong
-		/delay 10
-	}
-**|
