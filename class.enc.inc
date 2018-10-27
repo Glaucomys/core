@@ -414,7 +414,7 @@ sub cast_mez(int _tmpID)
 	| check for mez immune list mobs
 	/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
 	  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
-	  VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
+	  | VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
 	  /call list_delete addList ${_tmpID}	
 		/return
 	}

@@ -250,7 +250,6 @@ AMIDEAD
     }
 
     /for i 1 to 8
-AMIDEAD
         /if (${MQ2Feature${i}.Find[-bandolier|]} || ${MQ2Feature${i}.Find[-setin|]}) {
             /varset bandSet ${MQ2Feature${i}.Arg[2,|]}
         }

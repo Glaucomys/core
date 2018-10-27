@@ -43,7 +43,12 @@ sub core_CLR()
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
-		
+
+		/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
+		/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
+		/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
+		/if (${doYaulp}) /call cast_yaulp
+
 		/if (${exit_class_loop[]}) /return
 
 		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
@@ -57,19 +62,12 @@ sub core_CLR()
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
-			| /if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchAlliance}) /call cast_alliance_${Me.Class.ShortName}
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm} && !${Me.Pet.ID}) /call cast_temp_pet ${Target2Kill} "${tempPet}"
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
 			/call click_DPS_${Me.Class.ShortName}
-		}
-		
-		/if (${coreAuto}) {	
-			/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
-			/if (${Me.SpellReady[${healWard}]} && !${timer_heal_ward}) /call check_heal_ward
-			/if (${switchModRod} && ${validate_class[FALSE, ${CastList}]}) /call use_mod_rod
-			/if (${doYaulp}) /call cast_yaulp
 		}
 	}
 
@@ -102,7 +100,6 @@ sub disc_CLR()
 	DEBUG disc_CLR()
 	AMIDEAD
 	CHECKEXIT
-	/if (${doYaulp}) /call cast_yaulp
 
 	/if (${is_target_valid[${Target2Kill}]}) {
 		/if (${Spawn[${Target2Kill}].Body.Name.Equal[Undead]}) {
@@ -662,7 +659,7 @@ sub cast_divine_arbitration()
 	DEBUG cast_divine_arbitration()
 	AMIDEAD
 	SIMPLEEXIT
-	/if (${Bool[${Me.Buff[Divine Aura]}]} || ${Bool[${Me.Buff[Divine Barrier]}]} || ${Bool[${Me.Buff[Sacred Barrier]}]}) /return
+	| /if (${Bool[${Me.Buff[Divine Aura]}]} || ${Bool[${Me.Buff[Divine Barrier]}]} || ${Bool[${Me.Buff[Sacred Barrier]}]}) /return
 	
 	| Second epic shield
   /if (${Me.ItemReady[${CLREpic2}]}) {    
@@ -858,6 +855,17 @@ sub synergy_CLR()
 	/call synergy_click_Circle
 	/call click_item_burn
 /return
+
+
+
+
+
+sub cast_alliance_CLR()
+
+
+
+/return
+
 
 
 

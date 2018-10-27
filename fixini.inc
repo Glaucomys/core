@@ -286,7 +286,6 @@ sub fix_ini_current()
 
 	| core.ini entries adjusted here EQBCPort
 	
-
 		| 20180926	
 		/ini "${INICore}" "General" "setTGB" NULL
 		/ini "${INICore}" "General" "EQBCServer" NULL
@@ -318,6 +317,10 @@ sub fix_ini_current()
 		
 	
 	| toon INI non specific class --------------------------------------------------------------------------------------
+	
+		| 202180921
+		/ini "${INIClass}" "Override" "switchOverrideRangecombat" NULL	
+		/ini "${INIClass}" "Override" "switchOverrideMeleecombat" NULL	
 	
 		| remove the resident classes	
 		/ini "${INIClass}" "Common" "ResidentMage" NULL	

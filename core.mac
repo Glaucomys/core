@@ -400,9 +400,11 @@ sub base_preperation()
 	| /squelch /tgb ${setTGB}
 	
 	| disable the melee plugin and reset combat so you just stand there.
-	/if (${validate_plugin[FALSE, |mq2melee]}) {
-		/melee off
-		/squelch /melee reset
+	/if (${switchDisableMQ2Melee}) {
+		/if (${validate_plugin[FALSE, |mq2melee]}) {
+			/melee off
+			/squelch /melee reset
+		}
 	}
 
 	| bard stuffs

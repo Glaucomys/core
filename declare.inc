@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181020.00
+	/call setDeclare coreBuild											string	outer 20181027.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -84,7 +84,9 @@ sub set_declares()
 	/call DeclareCoreIniVar switchGuildinSafelist		string	General FALSE
 	/call DeclareCoreIniVar switchCheckGameCash			string	General FALSE
 	/call DeclareCoreIniVar switchPersistentModes		string	General FALSE 			
-	/call DeclareCoreIniVar switchNoTieonCombat			string	General FALSE 			
+	/call DeclareCoreIniVar switchNoTieonCombat			string	General FALSE 		
+	/call DeclareCoreIniVar switchDisableMQ2Melee		string	General TRUE 		
+		
 
 	| broadcast switches
 	| default on
@@ -443,7 +445,7 @@ sub set_declares()
 	/call setINIVar zradius													int			Common 60	
 	/call setINIVar switchBandolier									bool		meleedisc FALSE
 	/call setINIVar stopnukeAt 											int 		Spells 0
-	/call setINIVar switchAlliance									bool		Spells FALSE
+	/call setINIVar switchAlliance									string	Spells FALSE
 	/call setINIVar spellAllianceTrigger						string	Spells |FALSE|FALSE
 	/call setINIVar switchForceFadeRest							bool		Common FALSE
 	
@@ -567,8 +569,7 @@ sub set_declares()
 
 
 	| overrides
-  | /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combatheal|loot|los|melee|name|range|safelist|safezone|trainspell"
-  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combat|loot|los|name|safelist|safezone|trainspell"
+  /call setDeclare overrideType										string	outer "|stop|engageat|exclude|combat|loot|los|melee|name|range|safelist|safezone|trainspell"
 	/call setDeclare switchOverride									bool		outer FALSE
 	/call setDeclare switchOverrideStop							bool		outer FALSE
   /call setINIVar switchOverrideLos								bool		Override FALSE
@@ -576,8 +577,8 @@ sub set_declares()
   /call setINIVar switchOverrideExclude						bool		Override FALSE
   /call setINIVar switchOverrideName							bool		Override FALSE
   /call setINIVar switchOverrideEngageat					bool		Override FALSE
-  | /call setINIVar switchOverrideRangecombat				bool		Override FALSE
-  | /call setINIVar switchOverrideMeleecombat				bool		Override FALSE
+  /call setINIVar switchOverrideRange							bool		Override FALSE
+  /call setINIVar switchOverrideMelee							bool		Override FALSE
   /call setINIVar switchOverrideLoot							bool		Override FALSE
   /call setINIVar switchOverrideSafelist					bool		Override FALSE
   /call setDeclare switchOverrideClasscheck				bool		outer FALSE
@@ -703,7 +704,8 @@ sub set_declares()
 		/call setINIVar Buff${_count}									string 	Buffs FALSE
 		/call setINIVar Buff${_count}chk							string 	Buffs FALSE
 		/call setINIVar Buff${_count}self							string 	Buffs FALSE
-		/call setINIVar Buff${_count}Alias						string 	Buffs "|FALSE|FALSE" 
+		/call setINIVar Buff${_count}selfCondition		string 	Buffs FALSE
+		/call setINIVar Buff${_count}Alias						string 	Buffs "|FALSE" 
 		/call setINIVar BCBuff${_count}Class					string 	Buffs "|WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM"
 		/call setINIVar RaidBuff${_count}Class				string 	Buffs "|WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM"
 		/call setINIVar ManualBuff${_count}Class			string 	Buffs "|WAR|PAL|SHD|BRD|RNG|BST|BER|MNK|ROG|WIZ|MAG|ENC|NEC|CLR|DRU|SHM"
@@ -899,7 +901,7 @@ sub declare_MAG()
 	/call setDeclare MAGEpic1												string	outer "Orb of Mastery"
 	/call setDeclare MAGEpic15											string	outer "Staff of Elemental Essence"
 	/call setDeclare MAGEpic2												string	outer "Focus of Primal Elements"
-	/call setDeclare MAGAlliance										string	outer "Firebound Alliance"
+	/call setINIVar MAGAlliance											string	Spells "Firebound Alliance"
 	/call setDeclare MAGAAUnity											string	outer "Thaumaturge's Unity"
 	/call setDeclare MAGAAFade											string	outer "Drape of Shadows"
 
@@ -987,7 +989,7 @@ sub declare_WIZ()
 	/call setDeclare WIZEpic1												string	outer "Staff of the Four"
 	/call setDeclare WIZEpic15											string	outer "Staff of Prismatic Power"
 	/call setDeclare WIZEpic2												string	outer "Staff of Phenomenal Power"
-	/call setDeclare WIZAlliance										string	outer "Frostbound Alliance"
+	/call setINIVar WIZAlliance											string	Spells "Frostbound Alliance"
 	/call setDeclare WIZAAUnity											string	outer "Etherealist's Unity"
 	/call setDeclare WIZAAFade											string	outer "A Hole in Space"
 
@@ -1180,7 +1182,7 @@ sub declare_ENC()
 	/call setDeclare ENCEpic1												string	outer "Staff of the Serpent"
 	/call setDeclare ENCEpic15											string	outer "Oculus of Persuasion"
 	/call setDeclare ENCEpic2												string	outer "Staff of Eternal Eloquence"
-	/call setDeclare ENCAlliance										string	outer "Chromatic Alliance"
+	/call setINIVar ENCAlliance											string	Spells "Chromatic Alliance"
 	/call setDeclare ENCAAUnity											string	outer "Orator's Unity"
 	/call setDeclare ENCAAFade											string	outer "Self Stasis"
 
@@ -1267,7 +1269,7 @@ sub declare_NEC()
 	/call setDeclare NECEpic1												string	outer "Scythe of the Shadowed Soul"
 	/call setDeclare NECEpic15											string	outer "Soulwhisper"
 	/call setDeclare NECEpic2												string	outer "Deathwhisper"
-	/call setDeclare NECAlliance										string	outer "Malevolent Alliance"
+	/call setINIVar NECAlliance											string	Spells "Malevolent Alliance"
 	/call setDeclare NECAAUnity											string	outer "Mortifier's Unity"
 	/call setDeclare NECAAFade											string	outer FALSE
 
@@ -1349,7 +1351,7 @@ sub declare_SHD()
 	/call setDeclare SHDEpic1												string	outer "Innoruuk's Curse"
 	/call setDeclare SHDEpic15											string	outer "Innoruuk's Voice"
 	/call setDeclare SHDEpic2												string	outer "Innoruuk's Dark Blessing"
-	/call setDeclare SHDAlliance										string	outer "Bloodletting Alliance"
+	/call setINIVar SHDAlliance											string	Spells "Bloodletting Alliance"
 	/call setDeclare SHDAAUnity											string	outer "Dark Lord's Unity (Beza)"
 	/call setDeclare SHDAAFade											string	outer "Death Peace"
 	
@@ -1444,7 +1446,7 @@ sub declare_PAL()
 	/call setDeclare PALEpic1												string	outer "Fiery Defender"
 	/call setDeclare PALEpic15											string	outer "Heartwood Blade"
 	/call setDeclare PALEpic2												string	outer "Nightbane, Sword of the Valiant"
-	/call setDeclare PALAlliance										string	outer "Holy Alliance"
+	/call setINIVar PALAlliance											string	Spells "Holy Alliance"
 	/call setDeclare PALAAUnity											string	outer "Divine Protector's Unity"
 	/call setDeclare PALAAFade											string	outer "Balefire Burst"
 	
@@ -1464,6 +1466,7 @@ sub declare_PAL()
 	
   /call setINIVar splashGroup											string 	Heal "Wave of Expiation"
   /call setINIVar splashPanic											string 	Heal "Aurora of Morninglight"
+  /call setINIVar splashCure											string 	Heal "Splash of Depuration"
   /call setINIVar healPanic1											string 	Heal "Expiation"
   /call setINIVar healPanic2											string 	Heal "Grief"
   /call setINIVar healTouch												string 	Heal "Merciful Touch"
@@ -1573,7 +1576,7 @@ sub declare_WAR()
 	/call setDeclare WAREpic1												string	outer "Jagged Blade of War"
 	/call setDeclare WAREpic15											string	outer "Champion's Sword of Eternal Power"
 	/call setDeclare WAREpic2												string	outer "Kreljnok's Sword of Eternal Power"
-	/call setDeclare WARAlliance										string	outer FALSE
+	/call setINIVar WARAlliance											string	Discs FALSE
 	/call setDeclare WARAAUnity											string	outer FALSE
 	/call setDeclare WARAAFade											string	outer FALSE
 	
@@ -1633,7 +1636,7 @@ sub declare_BER()
 	/call setDeclare BEREpic1												string	outer "Kerasian Axe of Ire"
 	/call setDeclare BEREpic15											string	outer "Raging Taelosian Alloy Axe"
 	/call setDeclare BEREpic2												string	outer "Vengeful Taelosian Blood Axe"
-	/call setDeclare BERAlliance										string	outer "Demolisher's Alliance"
+	/call setINIVar BERAlliance											string	Discs "Demolisher's Alliance"
 	/call setDeclare BERAAUnity											string	outer FALSE
 	/call setDeclare BERAAFade											string	outer FALSE
 	
@@ -1697,7 +1700,7 @@ sub declare_RNG()
 	/call setDeclare RNGEpic1												string	outer "Earthcaller"
 	/call setDeclare RNGEpic15											string	outer "Heartwood Blade"
 	/call setDeclare RNGEpic2												string	outer "Aurora, the Heartwood Blade"
-	/call setDeclare RNGAlliance										string	outer "Bosquestalker's Alliance"
+	/call setINIVar RNGAlliance											string	Spells "Bosquestalker's Alliance"
 	/call setDeclare RNGAAUnity											string	outer "Wildstalker's Unity (Azia)"
 	/call setDeclare RNGAAFade											string	outer "Cover Tracks"
 	
@@ -1779,7 +1782,7 @@ sub declare_DRU()
 	/call setDeclare DRUEpic1												string	outer "Nature Walker's Scimitar"
 	/call setDeclare DRUEpic15											string	outer "Staff of Living Brambles"
 	/call setDeclare DRUEpic2												string	outer "Staff of Everliving Brambles"
-	/call setDeclare DRUAlliance										string	outer "Bosquetender's Alliance"
+	/call setINIVar DRUAlliance											string	Spells "Bosquetender's Alliance"
 	/call setDeclare DRUAAUnity											string	outer "Wildtender's Unity"
 	/call setDeclare DRUAAFade											string	outer "Veil of the Underbrush"
 
@@ -1901,7 +1904,7 @@ sub declare_SHM()
 	/call setDeclare SHMEpic1												string	outer "Spear of Fate"
 	/call setDeclare SHMEpic15											string	outer "Crafted Talisman of Fates"
 	/call setDeclare SHMEpic2												string	outer "Blessed Spiritstaff of the Heyokah"
-	/call setDeclare SHMAlliance										string	outer "Ancient Alliance"
+	/call setINIVar SHMAlliance											string	Spells "Ancient Alliance"
 	/call setDeclare SHMAAUnity											string	outer "Visionary's Unity"
 	/call setDeclare SHMAAFade											string	outer FALSE
 	
@@ -1992,7 +1995,7 @@ sub declare_BRD()
 	/call setDeclare BRDEpic1												string	outer "Singing Short Sword"
 	/call setDeclare BRDEpic15											string	outer "Prismatic Dragon Blade"
 	/call setDeclare BRDEpic2												string	outer "Prismatic Dragon Blade"
-	/call setDeclare BRDAlliance										string	outer "Alliance of Sticks and Stones"
+	/call setINIVar BRDAlliance											string	Song "Alliance of Sticks and Stones"
 	/call setDeclare BRDAAUnity											string	outer FALSE
 	/call setDeclare BRDAAFade											string	outer "Fading Memories"
 
@@ -2050,7 +2053,7 @@ sub declare_BST()
 	/call setDeclare BSTEpic1												string	outer "Claw of the Savage Spirit"
 	/call setDeclare BSTEpic15											string	outer "Savage Lord's Totem"
 	/call setDeclare BSTEpic2												string	outer "Spiritcaller Totem of the Feral"
-	/call setDeclare BSTAlliance										string	outer "Venomous Alliance"
+	/call setINIVar BSTAlliance											string	Spells "Venomous Alliance"
 	/call setDeclare BSTAAUnity											string	outer "Feralist's Unity"
 	/call setDeclare BSTAAFade											string	outer FALSE
 	
@@ -2135,7 +2138,7 @@ sub declare_MNK()
 	/call setDeclare MNKEpic1												string	outer "Celestial Fists"
 	/call setDeclare MNKEpic15											string	outer "Fistwraps of Celestial Discipline"
 	/call setDeclare MNKEpic2												string	outer "Transcended Fistwraps of Immortality"
-	/call setDeclare MNKAlliance										string	outer "Doomwalker's Alliance"
+	/call setINIVar MNKAlliance											string	Melee "Doomwalker's Alliance"
 	/call setDeclare MNKAAUnity											string	outer FALSE
 	/call setDeclare MNKAAFade											string	outer "Imitate Death"
 	
@@ -2194,7 +2197,7 @@ sub declare_ROG()
 	/call setDeclare ROGEpic1												string	outer "Ragebringer"
 	/call setDeclare ROGEpic15											string	outer "Fatestealer"
 	/call setDeclare ROGEpic2												string	outer "Nightshade, Blade of Entropy"
-	/call setDeclare ROGAlliance										string	outer "Poisonous Alliance"
+	/call setINIVar ROGAlliance											string	Discs "Poisonous Alliance"
 	/call setDeclare ROGAAUnity											string	outer FALSE
 	/call setDeclare ROGAAFade											string	outer "Escape"
 	
@@ -2260,7 +2263,7 @@ sub declare_CLR()
 	/call setDeclare CLREpic1												string	outer "Water Sprinkler of Nem Ankh"
 	/call setDeclare CLREpic15											string	outer "Harmony of the Soul"
 	/call setDeclare CLREpic2												string	outer "Aegis of Superior Divinity"
-	/call setDeclare CLRAlliance										string	outer "Divine Alliance"
+	/call setINIVar CLRAlliance											string	Spells "Divine Alliance"
 	/call setDeclare CLRAAUnity											string	outer "Saint's Unity"
 	/call setDeclare CLRAAFade											string	outer "Divine Peace"
 	
@@ -4349,8 +4352,28 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		}	
 		
 	| alliance on or off... yada yada		
+	
+	
 	} else /if (${Bool[${_ccType.Equal[alliance]}]}) {
-		/call writeINI switchAlliance Spells ${If[${switchAlliance},FALSE,TRUE]}
+		/declare _alliancetype string local |off|group|raid
+		
+		/if (${_alliancetype.Find[${_verbage}]}) { 
+			
+			/if (${_verbage.Equal[off]}) {
+				/call writeINI switchAlliance Spells FALSE
+			} else {
+				/call writeINI switchAlliance Spells ${_verbage.Lower}
+				
+			}
+		}
+
+		/for _count 1 to ${_alliancetype.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${switchAlliance.Equal[${_alliancetype.Arg[${_count},|]}]},${cgood},${cinfo}]}${_alliancetype.Arg[${_count},|]}\ax   
+			/varset _sep TRUE
+		/next _count
+		VOUT /${_bind} alliance [${_listout}]	
+		/return
+
 
 	| enable combat: melee, range, nuke, dot
 	} else /if (${Select[${_ccType},melee,range,nuke,dot]}) {
@@ -4433,7 +4456,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[saferadius]}) /varset _listout ${_listout}(${cnum}${combatRadius}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[stopnuke]}) /varset _listout ${_listout}(${cnum}${stopnukeAt}\ax)
 		/if (${${_bind}Type.Arg[${_count},|].Equal[circle]}) /varset _listout ${_listout}(${cnum}${useCircle}\ax)
-		/if (${${_bind}Type.Arg[${_count},|].Equal[alliance]}) /varset _listout ${_listout}(${If[${switchAlliance},${oon},${ooff}]})
+		/if (${${_bind}Type.Arg[${_count},|].Equal[alliance]}) /varset _listout ${_listout}(${If[${Bool[${switchAlliance}]},${cnum}${switchAlliance}\ax,${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[pull]}) /varset _listout ${_listout}(${If[${switchPull},${oon},${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[MA1]}) /varset _listout ${_listout}(${If[${Bool[${MA1}]},${cnum}${MA1}\ax,${ooff}]})
 		/if (${${_bind}Type.Arg[${_count},|].Equal[MA2]}) /varset _listout ${_listout}(${If[${Bool[${MA2}]},${cnum}${MA2}\ax,${ooff}]})
@@ -4546,7 +4569,7 @@ sub Bind_setMovementControls(string _movementType, string _verbage)
 			/if (${_clist.Arg[${_count},|].Equal[${Me.DisplayName}]}) /continue
 			/if (${Bool[${Spawn[pc ${_clist.Arg[${_count},|]}]}]}) {
 				VOUT Gathering ${sep} ${cinfo}${_clist.Arg[${_count},|]}\ax
-				/dexecute ${_clist.Arg[${_count},|]} /nav spawn pc ${Me.DisplayName}
+				/dexecute ${_clist.Arg[${_count},|]} /nav spawn PC ${Me.DisplayName}
 				
 			}
 

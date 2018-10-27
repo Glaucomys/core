@@ -12,10 +12,48 @@
   -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
+20181027.00
+- Range Combat
+  -- if you disable /cc melee and leave /cc range active, your toon will now try and stay a minimum of ~34 paces from the target so you can throw or bow the mob. 
+  -- if you enable Melee, this will not happen and as soon as the mob is within 31 paces you will engage melee
+  -- if this backs you off a cliff, please take pics for posterities sake. we can add it to the wiki as an example of what not to do
+  -- also, the distance is not exact, keep in mind there is inertia and lag in the game. it should still be enough to range properly
+-- added a FIND option to validate_cast() and core_cast2()
+  -- eg: /if (${validate_cast[FALSE, FIND, "${Buff1}", ${Me.ID}]}) /call core_cast2 "${Buff1}" FIND ${Me.ID} FALSE
+  -- will check to see if the buff is (in this order) spell,alt,disc,item and then cast it
+- MQ2Melee
+  -- core.ini->[general]->switchDisableMQ2Melee=[TRUE|FALSE]
+  -- force disableing of mq2melle or not. DISABLED (TRUE) by default
+- self buffs
+  -- there is now a condition you can use for self buffs
+- curing
+  -- added pally splash to curing if you have it turned on
+- alliance controls
+  -- /cc alliance [off|group|raid]
+- class.clr.inc
+  -- change the clerics order of execution for the main class loop. not everything was firing as it should due to the combat override
+- class.brd.inc
+  -- /travel will trigger the AA's Selo's and Clouding.
+  -- if you want to issue from another toon. do like you would any other command
+- class.pal.inc
+  -- will no longer trigger Gift of Life in raids. you are on your own. will work just fine in group content
+  -- alliance rules
+    - must be in a raid or group. depending on /cc alliance settings
+    - must be 3+ palladins in your agro range
+    - will only cast if the spell is not on the target
+    - spell must be memed and ready
+  -- /splash
+    - in manual mode, forces the pally to mem splash in its buffslot if it is not memed. HOWEVER, due to the recast, you will need to reissue the command if the script had to mem the spell
+    - in auto mode you will need to mem the spell yourself.
+    - if splash is memed it will drop splash at its feet.
+    - if you have /heal cure enabled on the pally, it will use this automagically
+- class.wiz.inc
+  -- if a target has mana burn on it, the wizzard will not cast it.
+
 
 20181020.00
 - corrected a stacking check issue for broadcast buffs when using dannet
-- zerkers share should trigger
+- zerkers snare should trigger
 - class.brd.inc
   -- updated some old code that was causing it to clear combat in the middle of a fight
 

@@ -57,7 +57,7 @@ sub core_PAL()
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
-			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchAlliance}) /call cast_alliance_${Me.Class.ShortName} ${Target2Kill}
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
@@ -155,12 +155,12 @@ sub patch_heal_PAL()
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
 	| Hand of Piety AA Group heal	
-	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} >= ${defCount} ) {
+	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.50*.${tmpHealOverride} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius} targetable]} >= ${defCount}) {
 		/if (${validate_cast[FALSE, alt, "${AAHandofPiety}", ${Me.ID}]}) /call core_cast2 "${AAHandofPiety}" alt 0 FALSE
 	}
 	
-	| AA Gift of Life
-	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.30*.${tmpHealOverride}) {
+	| AA Gift of Life -- not in raids
+	/if (${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.30*.${tmpHealOverride} && !${Raid.Members}) {
 		/if (${validate_cast[FALSE, alt, "Gift of Life", ${Me.ID}]}) /call core_cast2 "Gift of Life" alt 0 FALSE
 	}	
 
@@ -667,6 +667,67 @@ sub synergy_PAL()
 
 
 |***
+ *	DES: Alliance (Holly Alliance|spell)
+ *	USE: 
+ *	INI: 
+ *  NOTE: 6 casts to fulm.
+ ***|
+sub cast_alliance_PAL(int _tmpID)
+	DEBUG cast_alliance_${Me.Class.ShortName()
+
+  | check alliance group/raid
+  /if (!${Bool[${switchAlliance}]}) /return FALSE
+	/if (${switchAlliance.Equal[raid]} && !${Raid.Members}) /return FALSE  
+	/if (${switchAlliance.Equal[group]} && (!${Bool[${Group.Members]} || ${Raid.Members})) /return FALSE  
+	| enough paladins to make it worth casting?
+	/if (${SpawnCount[paladin radius ${MobAgro} zradius ${zradius}]} < 3) /return FALSE
+	| have the alliance on it already?
+	/if (${Target.Buff[${${Me.Class.ShortName}Alliance}].ID}) /return FALSE
+	| spell ready?
+	/if (!${Me.SpellReady[${${Me.Class.ShortName}Alliance}]}) /return FALSE
+	| no target
+	/if (${is_target_dead[${_tmpID}]}) /return
+
+	AMIDEAD
+	CHECKEXIT
+  CHECKINPUTS
+
+	/if (${validate_cast[FALSE, spell, "${${Me.Class.ShortName}Alliance}", ${_tmpID}]}) /call core_cast2 "${${Me.Class.ShortName}Alliance}" alt ${_tmpID} FALSE
+
+/return TRUE
+
+
+
+|***
+ *	DES: make the pally spto it shit and splash at its feet
+ *	USE: /dex PALNAME /splash | /splash
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind pal_splash /splash
+sub Bind_pal_splash()
+	/if (!${validate_class[TRUE, |PAL]}) /return FALSE
+
+	| mem spell if we do not have it	
+	/if (!${Bool[${Me.Gem[${splashCure}]}]} && !${coreAuto}) /call mem_spell TRUE "${splashCure}" ${buffGem} FALSE
+	| echo time remaining on splash
+	/if (!${Me.SpellReady[${splashCure}]}) {
+		VOUT ${cinfo}${splashCure}\ax ${sep} time left (${cnum}${Me.GemTimer[${splashCure}].Seconds}\ax)
+		/return FALSE
+	}
+	
+	AMIDEAD
+	CHECKEXIT
+  CHECKINPUTS	
+
+	| splash
+	/if (${validate_cast[FALSE, spell, "${splashCure}", ${Me.ID}]}) /cast "${splashCure}" loc ${Me.X} ${Me.Y} ${Me.Z}
+	
+/return TRUE
+
+
+
+|***
  *	DES: Class controls
  *	USE: /pal [] [##]
  *	INI: 
@@ -906,28 +967,27 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${_type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[harmonious]}) /varset _listout ${_listout}(${If[${Bool[${switchHarmonious}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
+		/if (${_type.Arg[${_count},|].Equal[loh]}) /varset _listout ${_listout}(${If[${useLoH},${cnum}${useLoHPct}\ax,${cbad}${useLoHPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[mg]}) /varset _listout ${_listout}(${If[${useMG},${cnum}${useMGPct}\ax,${cbad}${useMGPct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
-		/if (${_type.Arg[${_count},|].Equal[mg]}) /varset _listout ${_listout}(${If[${useMG},${cnum}${useMGPct}\ax,${cbad}${useMGPct}\ax]})
-		/if (${_type.Arg[${_count},|].Equal[xtclass]}) /varset _listout ${_listout}(${cnum}->\ax)
-		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
-		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
-		/if (${_type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})
-		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[stance]}) /varset _listout ${_listout}(${If[${Bool[${switchStance}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[steel]}) /varset _listout ${_listout}(${If[${Bool[${switchSteel}]},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[harmonious]}) /varset _listout ${_listout}(${If[${Bool[${switchHarmonious}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[stun]}) /varset _listout ${_listout}(${If[${Bool[${chainStun}]},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
-		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[shieldflash]}) /varset _listout ${_listout}(${If[${useShieldFlash},${cnum}${useShieldFlashPct}\ax,${cbad}${useShieldFlashPct}\ax]})
-		/if (${_type.Arg[${_count},|].Equal[loh]}) /varset _listout ${_listout}(${If[${useLoH},${cnum}${useLoHPct}\ax,${cbad}${useLoHPct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[taunt]}) /varset _listout ${_listout}(${If[${Bool[${taunt}]},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
-		
+		/if (${_type.Arg[${_count},|].Equal[xtclass]}) /varset _listout ${_listout}(${cnum}->\ax)
+		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
+		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
+		/if (${_type.Arg[${_count},|].Equal[yaulp]}) /varset _listout ${_listout}(${If[${doYaulp},${cnum}${useYaulpPct}\ax,${cbad}${useYaulpPct}\ax]})
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]

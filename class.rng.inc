@@ -51,7 +51,6 @@ sub core_RNG()
 
 
 
-
 |***
  *	DES: Combat skills, Disciplines and Alternate abilities.
  *	USE: /call disc_${Me.Class.ShortName}

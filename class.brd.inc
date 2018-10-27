@@ -539,6 +539,24 @@ sub validate_pulse(string _type, string _spell)
 
 
 |***
+ *	DES: issues the bard commands for running around
+ *	USE: /dex BARDNAME /travel
+ *	INI: 
+ *  NOTE: 
+ ***|
+#bind brd_travel /travel
+sub Bind_brd_travel()
+	/if (!${validate_class[TRUE, |BRD]}) /return
+	
+	/if (${validate_cast[FALSE, alt, "Selo's Sonata", ${Me.ID}]}) /call core_cast2 "Selo's Sonata" alt 0 FALSE
+	/delay 1
+	/if (${validate_cast[FALSE, alt, "Shauri's Sonorous Clouding", ${Me.ID}]}) /call core_cast2 "Shauri's Sonorous Clouding" alt 0 FALSE
+	
+/return
+
+
+
+|***
  *	DES: Class controls
  *	USE: /brd []
  *	INI: 

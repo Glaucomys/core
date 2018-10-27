@@ -681,25 +681,21 @@ sub check_buffs_self()
 	| check Unity AA buffs
 	/if (${Bool[${${Me.Class.ShortName}AAUnity}]}) {
 		/for _count 1 to 7
-			CHECKCOMBATCAST
-			AMIDEAD
-			CHECKEXIT
-			CHECKTIE
-			CHECKINPUTS
 			UPDATEHUD "BUFF AA Unity"
 
+			/if (!${Bool[${BuffAAUnity${_count}}]}) /continue
 			/if (!${Me.AltAbilityReady[${${Me.Class.ShortName}AAUnity}]}) /break
 			/if (${Me.CurrentMana} < ${Spell[${${Me.Class.ShortName}AAUnity}].Mana}) /break
 			/if (!${Bool[${BuffAAUnity${_count}}]}) /continue
 			/if (!${Spell[${BuffAAUnity${_count}}].Stacks}) /continue
-			/if (${Bool[${BuffAAUnity${_count}}]} && !${Bool[${Me.Buff[${BuffAAUnity${_count}}].Duration}]}) {
+			/if (!${Bool[${Me.Buff[${BuffAAUnity${_count}}].Duration}]}) {
 				/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}AAUnity}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}AAUnity}" alt 0 FALSE
 				/break
 			}
 		/next _count
 	}
 		
-	| check buffs
+	| check self buffs
 	/for _count 1 to ${BuffCount}
 		CHECKCOMBATCAST
 		UPDATEHUD "BUFF Self"
@@ -707,19 +703,37 @@ sub check_buffs_self()
 		CHECKEXIT
 		CHECKTIE
 		CHECKINPUTS
-				
-		/if (!${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]} && ${Spell[${Buff${_count}}].Stacks} && ${Bool[${Buff${_count}self}]} && ${Bool[${Buff${_count}}]}) {
-			/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
-			/if (!${Me.SpellReady[${Buff${_count}}]} && ${Cursor.ID}) CLEARCURSOR TRUE
+		
+		| is theere a buff there?
+		/if (!${Bool[${Buff${_count}}]}) /continue		
+		| self buff ?
+		/if (!${Bool[${Buff${_count}self}]}) /continue		
+		| stacks?
+		/if (!${Spell[${Buff${_count}}].Stacks}) /continue		
+		| already there?
+		/if (${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]}) /continue		
+		| fail the condition?
+		/if (!${cast_condition[Buff${_count}selfCondition]}) /return		
+		| spell ready?				
+		/if (!${Me.SpellReady[${Buff${_count}}]}) /continue
+		/if (${Cursor.ID}) CLEARCURSOR TRUE
 			
-			/if (${Me.Book[${Buff${_count}}]}) {
-				/if (${validate_cast[FALSE, spell, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" ${buffGem} ${Me.ID} FALSE
-			} else /if (${Me.AltAbilityReady[${Buff${_count}}]}) {	
-				/if (${validate_cast[FALSE, alt, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" alt 0 FALSE
-			} else /if (${Me.ItemReady[${Buff${_count}}]}) {
-				/if (${validate_cast[FALSE, item, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" item 0 FALSE
-			}
+
+		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
+
+		/if (${validate_cast[FALSE, FIND, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" FIND ${Me.ID} FALSE
+
+
+|**
+		/if (${Me.Book[${Buff${_count}}]}) {
+			/if (${validate_cast[FALSE, spell, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" ${buffGem} ${Me.ID} FALSE
+		} else /if (${Me.AltAbilityReady[${Buff${_count}}]}) {	
+			/if (${validate_cast[FALSE, alt, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" alt 0 FALSE
+		} else /if (${Me.ItemReady[${Buff${_count}}]}) {
+			/if (${validate_cast[FALSE, item, "${Buff${_count}}", ${Me.ID}]}) /call core_cast2 "${Buff${_count}}" item 0 FALSE
 		}
+**|
+
 	/next _count
 
 	| check AA
@@ -2364,11 +2378,19 @@ sub cast_cure()
 			/if (${Debuff.Curses} || ${Debuff.Poisons} || ${Debuff.Diseases}) {
 				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 			}
+			| paladin splash
+			/if (${Select[${Me.Class.ShortName},PAL]}{
+				/call Bind_pal_splash
+			}
+			
 		| Necromancer
 		} else /if (${Select[${Me.Class.ShortName},NEC]} && ${Me.AltAbilityReady[Embrace the Decay]}) {
 			/if (${Debuff.Curses} || ${Debuff.Poisons} || ${Debuff.Diseases} || ${Debuff.Corruptions}) {
 				/if (${validate_cast[FALSE, alt, "Embrace the Decay", ${Me.ID}]}) /call core_cast2 "Embrace the Decay" alt 0 FALSE
 			}
+			
+			
+			
 		}
 		
 		/if (${Debuff.Curses} && ${Me.ItemReady[${cureCurseItem}]}) {
@@ -2414,6 +2436,11 @@ sub cast_cure()
 				/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count}) {
 					/if (${validate_cast[FALSE, alt, "Purify Soul", ${Spawn[pc ${NetBots.Client[${_count}]}].ID}]}) /call core_cast2 "Purify Soul" alt ${Spawn[pc ${NetBots.Client[${_count}]}].ID} FALSE
 				}
+				
+				| paladin splash
+				/if (${Debuff[${NetBots[${NetBots.Client[${_count}]}].Buff}].Count} && ${Select[${Me.Class.ShortName},PAL]}{
+					/call Bind_pal_splash
+				}				
 				/return
 			}
 			
@@ -2490,7 +2517,12 @@ sub cast_cure()
 				/if (${validate_cast[FALSE, alt, "Group Purify Soul", ${Me.ID}]} && ${Spawn[pc ${_toonName}].Distance} <= 100) /call core_cast2 "Group Purify Soul" alt 0 FALSE
 				/continue
 			}
-
+			
+			| paladin splash 50' range
+			/if (${Select[${Me.Class.ShortName},PAL]}{
+				/call Bind_pal_splash
+			}
+			
 			| cure with spell
 			
 			/if (${Bool[${cureCurse}]}) {
@@ -2729,14 +2761,23 @@ sub set_combat(str _mode)
 			}
 			**|
 
-			| /if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind} && !${switchOverrideRangecombat}) {
+			| range all the things
 			/if (${Target.Distance} > 31 && ${switchCombatRange} && !${SetStickBehind}) {
+				
+				| no need to move were are at a good distance
+				/if (${Stick.Active}) /squelch /stick off		
+				
 				/if (${RangeList.Find[${Target.DisplayName}]}) {
 					/if (${Me.AutoFire}) /squelch /autofire
 				} else {
 					/if (${Spawn[${Target2Kill}].LineOfSight} && !${Me.AutoFire}) /squelch /autofire
 				}
-			| } else /if ((${Target.Distance} <= 31 && ${switchCombatMelee} && !${switchOverrideMeleecombat}) || (${SetStickBehind} && ${Target.Distance} <= ${MobAgro} && ${switchCombatMelee} && !${switchOverrideMeleecombat})) {
+				
+			| adjust range id melee is diabled to keep close to target.
+			} else /if (${Target.Distance} < 31 && ${switchCombatRange} && !${SetStickBehind} && !${switchCombatMelee}) {
+				/if (${coreAuto} && !${Stick.Active} && ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) /stick moveback 38
+				
+			| melee shit?
 			} else /if ((${Target.Distance} <= 31 && ${switchCombatMelee}) || (${SetStickBehind} && ${Target.Distance} <= ${MobAgro} && ${switchCombatMelee})) {
 				/if (${NoMeleeList.Find[${Target.DisplayName}]}) {
 					/squelch /attack off
@@ -3226,9 +3267,6 @@ sub update_HUD_notices(string _mode)
 	/declare _tmphudNotice		string	local  
 	/declare _tmptarNotice		string	local  
 	
-	| /varset _tmphudNotice
-	| /varset _tmphudWarning
-	| /varset _tmptarNotice
 	/if (!${timer_check_status}) /call broadcast_status
 	
 	| current mode display
@@ -3247,14 +3285,15 @@ sub update_HUD_notices(string _mode)
 			
 	/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Perfected Invisibility
 	/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Gather Umbra|Invisibility Cloak
-	/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility|
-	/varset _IV[4] |Shauri's Sonorous Clouding|Shauri's Sonorous Clouding I|Shauri's Sonorous Clouding II|Shauri's Sonorous Clouding III
+	/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility
+	/varset _IV[4] |Shauri's Sonorous Clouding|Shauri's Sonorous Clouding I|Shauri's Sonorous Clouding II|Shauri's Sonorous Clouding III|Selo's Song of Travel
 
 	/for _count 1 to ${_IV.Size}
 		/for _index 1 to ${_IV[${_count}].Count[|]}
 			/if (${Me.Buff[${_IV[${_count}].Arg[${_index},|]}].Name.Equal["${_IV[${_count}].Arg[${_index},|]}"]}) {
-			/varset _tmphudWarning ${_tmphudWarning} IV
-		}
+				/varset _tmphudWarning ${_tmphudWarning} IV
+				/break
+			}
 		/next _index	
 	/next _count
 
@@ -3283,7 +3322,7 @@ sub update_HUD_notices(string _mode)
 	} 		
 		
 	
-	|**  HUD bottom notices.. safe zone, modes, stuff like that **|
+	|**  HUD bottom notices.. safe zone, modes, stuff like that  **|
   CHECKINPUTS
 	
 	/if (${Select[${Me.Class.ShortName},BRD]}) {
@@ -3377,8 +3416,7 @@ sub update_HUD_notices(string _mode)
 	/if (${_tmptarNotice.Length} != ${hudTargetLength}) {
 		/varset hudTargetLength ${_tmptarNotice.Length}
 		/varset hudTarNotice ${_tmptarNotice}
-	} 	
-
+	} 
 /return
 
 
@@ -3446,11 +3484,10 @@ sub cast_yaulp()
 	DEBUG cast_yaulp()
 	/if (${Me.Sitting}) /return
 	/if (${Me.Buff[Lesser Yaulp].ID} || ${Me.Buff[Yaulp].ID}) /return
-	/if (${Me.PctMana} > ${useYaulpPct}*.${tmpHealOverride}) /return
+	| /if (${Me.PctMana} > ${useYaulpPct}*.${tmpHealOverride}) /return
 	/if (!${Select[${Me.CombatState},COMBAT]}) /return
 	AMIDEAD
 	SIMPLEEXIT
-	CHECKINPUTS
 	
 	| use spell Yaulp
 	/if (${Bool[${spellYaulp}]}) {
@@ -5027,9 +5064,67 @@ sub prep_combat()
 	/if (${Me.Zoning}) /return FALSE
   CHECKINPUTS
 	CLEARCURSOR
+	
+	
+	|**
+	
+	/if (${switchOverrideCombat}) {
+		
+		| healers.. mostly
+		/if (${coreAuto}) {
+
+			| healer override check
+			/if (${switchHealGroup} || ${switchHealXtarget}) {
+				/if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
+				/if (${validate_target[FALSE, ${Target2Kill}]}) /varset isValidTarget TRUE
+				/varset combat COMBAT
+				/if (${is_burn_time[]}) /varset setBurnControl TRUE
+				/return TRUE
+			}
+			
+		| healers.. mostly.. in manual
+		 } else /if (!${coreAuto}) {
+		 	/varset combat FALSE
+		 	/return FALSE		
+		}
+			
+		
+		
+		
+		
+	} else /if (!${switchOverrideCombat}) {
+		
+
+		/if (!${coreAuto}) {
+			/if (${Target.ID}) {
+				/if (${Target.ID} == ${Me.ID}) /return FALSE
+				| /if (!${Spawn[${Target2Kill}].ID}) /varset Target2Kill ${Target.ID}
+				| /if (!${SafeZone} && !${switchOverrideSafezone}) /call set_base_target_timers ${Target2Kill}
+				| /varset combat COMBAT
+				/if (${Bool[${combat}]}) {
+					/if (${is_burn_time[]}) /varset setBurnControl TRUE
+				}
+				/return TRUE
+			| } else /if (!${Target.ID} || !${Spawn[${Target2Kill}].ID}) {
+			} else /if (!${Target.ID}) {
+				/if (${Bool[${combat}]} || ${isValidTarget}) /call clear_combat
+				| /varset combat FALSE
+				/return FALSE
+			}
+		}
+
+
+		
+		
+		
+		
+	}
+	
+	**|
+	
 		
 	| manual mode
-	/if (!${coreAuto}) {
+	/if (!${coreAuto} && !${switchOverrideCombat}) {
 		/if (${Target.ID}) {
 			/if (${Target.ID} == ${Me.ID}) /return FALSE
 			| /if (!${Spawn[${Target2Kill}].ID}) /varset Target2Kill ${Target.ID}
@@ -5059,9 +5154,9 @@ sub prep_combat()
 		}
 		
 	| healers.. mostly.. in manual
-	} else /if (!${coreAuto} && ${switchOverrideCombat}) {
-		/varset combat COMBAT
-		/return FALSE
+	 } else /if (!${coreAuto} && ${switchOverrideCombat}) {
+	 	/varset combat FALSE
+	 	/return FALSE
 
 	| offtank check for mobs
 	} else /if (${coreAuto} && ${switchOffTank}) {
@@ -5532,11 +5627,11 @@ sub cast_AA_spire()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
-	/if (${Bool[${Raid.Members}]} && ${Bool[${${Me.Class.ShortName}spire${spireRaid}}]}) {
+	/if (${Raid.Members} && ${Bool[${${Me.Class.ShortName}spire${spireRaid}}]}) {
 		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireRaid}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireRaid}}].Stacks}) {
 			/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}spire${spireRaid}}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}spire${spireRaid}}" alt 0 FALSE
 		}
-	} else /if (!${Bool[${Raid.Members}]} && ${Bool[${${Me.Class.ShortName}spire${spireGroup}}]}) {
+	} else /if (!${Raid.Members} && ${Bool[${${Me.Class.ShortName}spire${spireGroup}}]}) {
 		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].Stacks}) {
 			/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}spire${spireGroup}}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
 		}
@@ -5647,10 +5742,10 @@ sub check_AA_agro()
  ***|
 sub cast_challenge(int _tmpID)
 	DEBUG cast_challenge(${_tmpID})
+	/if (${Target.Buff[${ChallengeSpell}].ID}) /return
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
-	/if (${Target.Buff[${ChallengeSpell}].ID}) /return
 	/if (${validate_cast[FALSE, spell, "${ChallengeSpell}", ${_tmpID}]}) /call core_cast2 "${ChallengeSpell}" 0 ${_tmpID} cast_break
 /return
 
@@ -5658,7 +5753,7 @@ sub cast_challenge(int _tmpID)
 
 |***
  *	DES: validates casting of "things on a target
-  *	USE: /call ${validate_cast[[TRUE|FALSE], [spell|alt|disc|item|pulse], name, targetID]
+  *	USE: /call ${validate_cast[[TRUE|FALSE], [spell|alt|disc|item|pulse|FIND], name, targetID]
  *	INI: 
  *  NOTE: will sort silver subscriptions as well.
  *  This is designed tomake sure whatever we are attempting to cast, is castable. be it a disc, item, spell, booger flick.. whatever.. IS IT READY TO BE USED?
@@ -5666,10 +5761,7 @@ sub cast_challenge(int _tmpID)
 sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	DEBUG validate_cast(${_error}, ${_type}, ${_spell}, ${_tmpID})
 	
-	| Error outputs
-	/if (${_error}) {
-		SDEBUG type:${_type}, name:${_spell}, ID:${_tmpID} 
-	}
+	/if (${_error}) SDEBUG type:${_type}, name:${_spell}, ID:${_tmpID} 
 	
 	| _spell set to false
 	/if (!${Bool[${_spell}]}) /return FALSE
@@ -5690,6 +5782,19 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 	
 	/if (${Me.Zoning}) /return FALSE
 	
+	| what type is it?
+	/if (${_type.Equal[FIND]}) {
+		/if (${Me.Book[${_spell}]}) {
+			/varset _type spell
+		} else /if (${Me.AltAbilityReady[${_spell}]}) {	
+			/varset _type alt
+		} else /if (${Me.CombatAbilityReady[${_spell}]}) {
+			/varset _type disc
+		} else /if (${Me.ItemReady[${_spell}]}) {
+			/varset _type item
+		}
+	}
+			
 	| check spell
 	/if (${_type.Equal[spell]}) {
 		/if (!${Bool[${Me.Book[${_spell}]}]}) /return FALSE
@@ -5829,6 +5934,19 @@ sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
 			/delay 1s ${Target.ID} == ${_tmpID}
 		}
 	}
+	
+	| what type is it?
+	/if (${_type.Equal[FIND]}) {
+		/if (${Me.Book[${_spell}]}) {
+			/varset _type spell
+		} else /if (${Me.AltAbilityReady[${_spell}]}) {	
+			/varset _type alt
+		} else /if (${Me.CombatAbilityReady[${_spell}]}) {
+			/varset _type disc
+		} else /if (${Me.ItemReady[${_spell}]}) {
+			/varset _type item
+		}
+	} 	
 
 	| spell
 	/if (!${Select[${_type},alt,item,disc,pulse]}) {
@@ -6021,7 +6139,7 @@ sub set_base_install()
 	PetList							|ENC|DRU|SHM|SHD|WIZ|BRD|BST|MAG
 	HealerList					|CLR|DRU|SHM|PAL
 	RezerList						|CLR|DRU|SHM|PAL|NEC
-	AASnareList					|RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL
+	AASnareList					|RNG|DRU|SHD|NEC|ROG|WAR|WIZ|MNK|PAL|BER
 	AAEradicateList			|RNG|DRU|NEC|WIZ|ENC|MAG
  
  ***|
@@ -6032,8 +6150,6 @@ sub validate_class(bool _error, string _class)
 	/declare _count int local 0
 
 	/for _count 1 to ${_class.Count[|]}
-		AMIDEAD
-		CHECKINPUTS
 		/if (${Me.Class.ShortName.Upper.Equal[${_class.Arg[${_count},|]}]}) {
 			/varset _pass TRUE
 			/break
@@ -6073,9 +6189,6 @@ sub validate_plugin(bool _error, string _plugin)
 	} else /if (${_plugcount} != ${_plugin.Count[|]}) {
 		/return FALSE
 	}
-	
-	| .IsTLO[plugin]
-	
 /return FALSE
 
 
@@ -6325,8 +6438,6 @@ sub check_deBuffs(int _tmpID)
 	 	/if (!${Bool[${timer_tash_${_tmpID}}]}) {
 			/if (${Select[${Me.Class.ShortName},ENC]}) { 
 				/call cast_tash ${_tmpID}
-				| /call check_for_adds
-				| /if (${addList.Count[|]}) /return
 			} else {
 			}
 		}

@@ -204,7 +204,7 @@ sub check_rune_WIZ()
 
 
 
- |***
+|***
  *	DES: Wizard burn routines
  *	USE: establish all comp/trigger skills
  *	INI: 
@@ -243,7 +243,12 @@ sub synergy_WIZ()
 	
 	| aww baby
 	/if (${switchManaBurn}) {
-		/if (${validate_cast[FALSE, alt, "Mana Burn", ${Target2Kill}]} && (${Target.ID} != ${Me.ID})) /call core_cast2 "Mana Burn" alt ${Target2Kill} FALSE
+		/if (${Target.ID} != ${Me.ID}) {
+			/target ID ${Target2Kill}
+		}
+		/if (!${Target.Buff[Mana Burn].ID}) {
+			/if (${validate_cast[FALSE, alt, "Mana Burn", ${Target2Kill}]}) /call core_cast2 "Mana Burn" alt ${Target2Kill} FALSE
+		}
 	}
 
 	| swarm pet

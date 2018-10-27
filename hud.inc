@@ -444,7 +444,7 @@ sub HUDUpdate(string _verbage)
 		| curent sub
 		HUDPATH "Debug" "debug.sub1" "19,5,197,100,149,237,${currentdebugsub}"
 		| zone
-		HUDPATH "Debug" "debug.zone" "7,310,197,100,149,237,${Zone.ShortName}"
+		HUDPATH "Debug" "debug.zone" "3,310,197,100,149,237,${Zone.ShortName}"
 		| communications?		
 		HUDPATH "Debug" "debug.comm" "19,365,150,100,149,237,${setCommunications}"
 
