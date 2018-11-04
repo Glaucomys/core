@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181027.00
+	/call setDeclare coreBuild											string	outer 20181104.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -446,7 +446,7 @@ sub set_declares()
 	/call setINIVar switchBandolier									bool		meleedisc FALSE
 	/call setINIVar stopnukeAt 											int 		Spells 0
 	/call setINIVar switchAlliance									string	Spells FALSE
-	/call setINIVar spellAllianceTrigger						string	Spells |FALSE|FALSE
+	/call setINIVar spellAllianceTrigger						string	Spells FALSE
 	/call setINIVar switchForceFadeRest							bool		Common FALSE
 	
 	/call setINIVar switchCombatMelee								bool		Common FALSE
@@ -1284,6 +1284,7 @@ sub declare_NEC()
 	/call setINIVar spellCripple 										string 	Spells FALSE
 	/call setINIVar switchGather					 					bool		Spells TRUE
 	/call setINIVar GatherPercent			 							int			Spells 60
+	/call setINIVar RandRezDelay										int 		Heal 5
 	
 	/call setINIVar DoDoT								 						int			Spells 0
 	/call setINIVar DoT1							 							string	Spells FALSE
@@ -1473,6 +1474,7 @@ sub declare_PAL()
 	/call setINIVar useGroupHeal 										bool		Heal TRUE
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar RampageTank											string	Heal FALSE
+	/call setINIVar RandRezDelay										int 		Heal 5
 	
 	/call setINIVar doYaulp 												bool		Buffs TRUE
 	/call setINIVar spellYaulp 											string	Buffs FALSE
@@ -4950,14 +4952,14 @@ sub Bind_cast_AA_invis()
 		
 	| Invis vs Normies  casters	
 	} else /if (${Me.AltAbilityReady[Group Perfected Invisibility]} && ${Select[${Me.Class.ShortName},WIZ,MAG,ENC]}) {
-		/call MQ2Cast "Group Perfected Invisibility" alt -targetid|${Me.ID}
+		/call MQ2Cast "Group Perfected Invisibility" alt
 		ECHOCHANNEL AA: Group Perfected Invisibility
 		/return
 	
 	| Invis Vs undead casters
 	} else /if (${Me.AltAbilityReady[Group Perfected Invisibility to Undead]} && ${Select[${Me.Class.ShortName},CLR,SHD,NEC,PAL]}) {
 		/delay 3
-		/call MQ2Cast "Group Perfected Invisibility to Undead" alt -targetid|${Me.ID}
+		/call MQ2Cast "Group Perfected Invisibility to Undead" alt
 		ECHOCHANNEL AA: Group Perfected Invisibility to Undead
 		/return
 		

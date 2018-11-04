@@ -1860,7 +1860,7 @@ sub setAkkapanCamp()
 
 
 |********************************************************************************************
- ** Empires of Kunark (November 16, 2018)
+ ** Empires of Kunark (November 16, 2017)
  **|
 
 
@@ -1881,3 +1881,14 @@ sub Event_Nexona()
 	/moveto loc ${tempy} ${tempx}
 	/delay 1s
 /return
+
+
+
+
+
+
+
+
+|********************************************************************************************
+ ** The Burning Lands (DEcember 11, 2018)
+ **|

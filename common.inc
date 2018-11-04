@@ -2115,7 +2115,7 @@ sub cast_AA_snare(int _tmpID)
 	AMIDEAD
 	CHECKEXIT
 
-	/if (!${Select[${Me.Class.ShortName},RNG,DRU,WAR,ROG,NEC,SHD,WIZ,MNK,PAL]}) {
+	/if (!${Select[${Me.Class.ShortName},RNG,DRU,WAR,ROG,NEC,SHD,WIZ,MNK,PAL,BER]}) {
 		VOUT ${onotice} ${sep} Not an AA snaring class. Delete toon and reroll a ranger.
 		/call writeINI switchdeBuffSnare Common FALSE  
 		/call echos debuff "Snare" switchdeBuffSnare 0 0	
@@ -2129,16 +2129,27 @@ sub cast_AA_snare(int _tmpID)
 	}
 		
 	| set AA for snaring
-	/declare _debuffSnare string local
-	/if (${validate_class[FALSE, |RNG|DRU]}) /varset _debuffSnare Entrap
-	/if (${validate_class[FALSE, |WAR]}) /varset _debuffSnare Call of Challenge
-	/if (${validate_class[FALSE, |ROG]}) /varset _debuffSnare Ligament Slice
-	/if (${validate_class[FALSE, |NEC|SHD]}) /varset _debuffSnare Encroaching Darkness
-	/if (${validate_class[FALSE, |WIZ]}) /varset _debuffSnare Atol's Shackles	
-	/if (${validate_class[FALSE, |MNK]}) /varset _debuffSnare Crippling Strike	
-	/if (${validate_class[FALSE, |BER]}) /varset _debuffSnare ${DiscSnare}	
-	
-	| ber Binding Axe disc .. ?? 
+	/if (${Select[${Me.Class.ShortName},BER]}) {
+		/declare _debuffSnare string local ${DiscSnare}	
+	} else /if (${Select[${Me.Class.ShortName},DRU]}) {
+		/declare _debuffSnare string local Entrap
+	} else /if (${Select[${Me.Class.ShortName},MNK]}) {
+		/declare _debuffSnare string local Crippling Strike
+	} else /if (${Select[${Me.Class.ShortName},NEC]}) {
+		/declare _debuffSnare string local Encroaching Darkness
+	} else /if (${Select[${Me.Class.ShortName},RNG]}) {
+		/declare _debuffSnare string local Entrap
+	} else /if (${Select[${Me.Class.ShortName},ROG]}) {
+		/declare _debuffSnare string local Ligament Slice
+	} else /if (${Select[${Me.Class.ShortName},SHD]}) {
+		/declare _debuffSnare string local Encroaching Darkness
+	} else /if (${Select[${Me.Class.ShortName},WAR]}) {
+		/declare _debuffSnare string local Call of Challenge
+	} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
+		/declare _debuffSnare string local Atol's Shackles
+	}	
+
+
 	
 	/if (!${Target.Snared.ID}) {
 		| non paladins berzerkers
@@ -2379,7 +2390,7 @@ sub cast_cure()
 				/if (${validate_cast[FALSE, alt, "Radiant Cure", ${Me.ID}]}) /call core_cast2 "Radiant Cure" alt 0 FALSE
 			}
 			| paladin splash
-			/if (${Select[${Me.Class.ShortName},PAL]}{
+			/if (${Select[${Me.Class.ShortName},PAL]}) {
 				/call Bind_pal_splash
 			}
 			
@@ -2519,7 +2530,7 @@ sub cast_cure()
 			}
 			
 			| paladin splash 50' range
-			/if (${Select[${Me.Class.ShortName},PAL]}{
+			/if (${Select[${Me.Class.ShortName},PAL]}) {
 				/call Bind_pal_splash
 			}
 			
@@ -3283,14 +3294,14 @@ sub update_HUD_notices(string _mode)
 		/varset _tmphudWarning ${_tmphudWarning} NEED REZ
 	}	
 			
-	/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility|Invisibility|Perfected Invisibility
+	/varset _IV[1] |Shared Perfected Camouflage|Shared Camouflage|Camouflage|Group Perfected Invisibility I|Invisibility|Perfected Invisibility
 	/varset _IV[2] |Phase March|Nethervoid March|Perfected Silent Presence|Cloak of Shadows|Cloak of Shadows I|Cloak of Shadows II|Gather Umbra|Invisibility Cloak
 	/varset _IV[3] |Perfected Natural Invisibility|Perfected Spirit Walk Invisibility|Perfected Group Spirit Walk Invisibility
 	/varset _IV[4] |Shauri's Sonorous Clouding|Shauri's Sonorous Clouding I|Shauri's Sonorous Clouding II|Shauri's Sonorous Clouding III|Selo's Song of Travel
 
 	/for _count 1 to ${_IV.Size}
 		/for _index 1 to ${_IV[${_count}].Count[|]}
-			/if (${Me.Buff[${_IV[${_count}].Arg[${_index},|]}].Name.Equal["${_IV[${_count}].Arg[${_index},|]}"]}) {
+			/if (${Me.Buff[${_IV[${_count}].Arg[${_index},|]}].Name.Equal[${_IV[${_count}].Arg[${_index},|]}]}) {
 				/varset _tmphudWarning ${_tmphudWarning} IV
 				/break
 			}
@@ -3302,8 +3313,9 @@ sub update_HUD_notices(string _mode)
 
 	/for _count 1 to ${_IVU.Size}
 		/for _index 1 to ${_IVU[${_count}].Count[|]}
-			/if (${Me.Buff[${_IVU[${_count}].Arg[${_index},|]}].Name.Equal["${_IVU[${_count}].Arg[${_index},|]}"]}) {
+			/if (${Me.Buff[${_IVU[${_count}].Arg[${_index},|]}].Name.Equal[${_IVU[${_count}].Arg[${_index},|]}]}) {
 				/varset _tmphudWarning ${_tmphudWarning} IVU 
+				/break
 			}
 			/next _index	
 	/next _count
@@ -3735,9 +3747,9 @@ sub check_for_corpse()
 		AMIDEAD
 		/if (!${timer_corpse_${NearestSpawn[${_count},pccorpse cleric radius ${maxRezRange}].ID}}) {
 			/varset _tmpID ${NearestSpawn[${_count},pccorpse cleric radius ${maxRezRange}].ID}
-			/if (${DivineRezCleric}) {
-				/if (${Me.AltAbilityReady[${_divinerezCLR}]}) /call cast_rez ${_tmpID} ${_divinerezCLR}		
-			} else /if (${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) {
+			/if (${Select[${Me.Class.ShortName},CLR]} && ${Me.AltAbilityReady[${_divinerezCLR}]}) {
+				/if (${DivineRezCleric}) /call cast_rez ${_tmpID} ${_divinerezCLR}		
+			} else /if (${Select[${Me.Class.ShortName},CLR,DRU,PAL,SHM,NEC]} && ${Me.AltAbilityReady[${_rez${Me.Class.ShortName}}]}) {
 				/call cast_rez ${_tmpID} ${_rez${Me.Class.ShortName}}
 			} else /if (${switchRezEmergency} && ${RezTokenList.Find[${Spawn[${_tmpID}].Class.ShortName}]}) {
 				/call cast_rez ${_tmpID} ${_rezEmergency}
@@ -3856,7 +3868,9 @@ sub cast_rez(int _tmpID, string _rezAA)
 	CHECKEXIT
 
 	| delay res a sec if they are not on the safe list.
-	/if (!${validate_safelist[${Spawn[pccorpse ${_tmpID}].DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM,PAL,NEC]}) /delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
+	/if (!${validate_safelist[${Spawn[pccorpse ${_tmpID}].DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM,PAL,NEC]}) {
+		/delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
+	}
 	| /if (!${safelist.Find[${Spawn[pccorpse ${_tmpID}].DisplayName}]} || ${Select[${Me.Class.ShortName},DRU,SHM,PAL,NEC]}) /delay ${Int[${Math.Calc[${Math.Rand[${RandRezDelay}]}+1]}]}s
 
 	| ignore the people we dont like
@@ -4024,7 +4038,8 @@ sub check_for_adds()
 	/if (${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable los].ID}) {
 		/varset _tmpID ${NearestSpawn[${_numMobs},npc radius ${MobAgro} targetable ${If[${switchOverrideLos},,los]} playerstate 4].ID}
 			/if (${switchdeBuffEradicate} && !${Defined[timer_eradicate_${_tmpID}]}) /call create_timer timer_eradicate_${_tmpID} 1
-			/if (${switchdeBuffTash} && !${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
+			| /if (${switchdeBuffTash} && !${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
+			/if (!${Defined[timer_tash_${_tmpID}]}) /call create_timer timer_tash_${_tmpID} 1
 			/if (${switchdeBuffSlow} && !${Defined[timer_slow_${_tmpID}]}) /call create_timer timer_slow_${_tmpID} 1
 			/if (${switchdeBuffCripple} && !${Defined[timer_cripple_${_tmpID}]}) /call create_timer timer_cripple_${_tmpID} 1
 			/if (${switchdeBuffMezz} && !${Defined[timer_mez_${_tmpID}]}) /call create_timer timer_mez_${_tmpID} 1
@@ -4638,6 +4653,11 @@ sub check_disc_now()
 
 
 
+
+${SpawnCount[!pc range 100 targetable]}
+
+
+
 |***
  *	DES: last mob is dedded we need a new thing(s) to kill
  *	USE: /call get_target
@@ -4653,7 +4673,7 @@ sub get_target()
 	/declare _tmpID int local
 	/declare _tmpRange int local ${Math.Calc[${MobAgro}/10]}
 	/declare _count int local
-	/declare _mobHP int local 100
+	/declare _mobHP int local 102
 	/declare _priorityMob bool local FALSE
 	
 	/if (!${switchOffTank}) {
@@ -4671,29 +4691,32 @@ sub get_target()
 				/if (!${switchPull} || !${coreAuto}) /return
 				AMIDEAD
 				/varset _tmpID ${NearestSpawn[${_count}, npc ${If[${switchOverrideLos},,los]} range ${minMobPullLvl} ${maxMobPullLvl} radius ${_tmpRange} zradius ${zradius} targetable].ID}
+				
+				| these things are our friends. dont kill them
+				/if (${Select[${Spawn[id ${_tmpID}].Type},AURA,BANNER,CAMPFIRE,CORPSE,CHEST,ITEM,TRIGGER,TRAP,TIMER,MOUNT,Mercenary]}) /continue
+				/if (${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]}) /continue
+				
+				| CYA for shit MQ will pick up in the environment that does not have a name
+				/if (${Spawn[id ${_tmpID}].DisplayName.Length} < 1) /continue
+			
+
+				| get the lowest HP mob if we can
+				/if (${Spawn[id ${_tmpID}].PctHPs} <= ${_mobHP}) {
+					/varset _mobHP ${Spawn[id ${_tmpID}].PctHPs}
+					/varset Target2Kill ${_tmpID}
+				}
+
+				| is this a priority mob?
+				/if (${NoMezzList.Find[${Spawn[id ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[id ${_tmpID}].DisplayName}]}) {
+
+					| off tanks have to sort by a different position
+					/if (${switchOffTank} && ${Me.XTarget[1].ID} == ${_tmpID}) /continue 
+
+					/varset _priorityMob TRUE
+					/break
+				}					
+			
 		
-				| normal tanks
-				/if (!${switchOffTank}) { 
-					/if (!${_priorityMob} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].PctHPs} <= ${_mobHP} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Mount]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1 || ${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-						/varset Target2Kill ${_tmpID}
-						/varset _mobHP ${Spawn[id ${_tmpID}].PctHPs}
-						/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-							/varset _priorityMob TRUE
-							/break
-						}
-					}
-					
-				| off tanks
-				} else /if (${switchOffTank}) {
-					/if (${Me.XTarget[1].ID} != ${_tmpID} && ${Spawn[id ${_tmpID}].Level} >= ${minMobPullLvl} && ${Spawn[id ${_tmpID}].Type.Equal[NPC]} && ${Spawn[id ${_tmpID}].Type.NotEqual[Mount]} && !${ExcludeList.Find[${Spawn[id ${_tmpID}].DisplayName}]} && ${Spawn[id ${_tmpID}].DisplayName.Length} > 1) {
-						/if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]} || ${NameList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
-							/varset Target2Kill ${_tmpID}
-							/varset _priorityMob TRUE
-							/break
-						}
-					}			
-				}	
-					
 			/next _count
 		}
 		
@@ -4716,10 +4739,10 @@ sub get_target()
 			/if (${Spawn[${Spawn[${_tmpID}].Master}].Type.Equal[Corpse]} || !${Spawn[${Spawn[${_tmpID}].Master}].ID}) /varset Target2Kill ${_tmpID}
 		/next _count	
 	} 
-		
-	/if (${Spawn[${Target2Kill}].Type.NotEqual[Aura]} && ${Target2Kill}) /target ID ${Target2Kill}
-
-	/if (${Target2Kill}) {
+	
+	| pull message	
+	/if (${Target2Kill}) {		
+		/if (${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
 		/if (!${switchOffTank}) {
 			OUT Pull ${sep} [${ctar}${Spawn[${Target2Kill}].DisplayName}\ax] ${sep} ${If[${Spawn[${Target2Kill}].LineOfSight},${cgood}${Int[${Target.Distance}]}\ax,${cbad}${Int[${Target.Distance}]}\ax]}
 			UPDATEHUD "Pull"		
@@ -4740,11 +4763,9 @@ sub get_target()
 		/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
 	/next _count
 		
-	/if (${FindItemCount[${RangeItemSummon}]} < 5 && ${Bool[${RangeItemSummon}]}) /call check_ammo
-
 	| if mob is over arrow range, start checking options to get him close
 	/if (${Spawn[id ${Target2Kill}].Distance} > 31 && !${Select[${Me.Class.ShortName},MAG,NEC,BST,ENC]}) {
-		/target ID ${Target2Kill}
+		/if (${Target.ID} != ${Target2Kill}) /target ID ${Target2Kill}
 		/if (${Target.ID} && (${switchCombatMelee} || ${switchCombatRange}) && !${Range.Between[0,${SetFaceArc}:${Math.Abs[${Math.Calc[${Target.HeadingTo.Degrees}-${Me.Heading.Degrees}]}]}]}) /face ID ${Target2Kill} nolook ${If[${SetFaceFast},fast,]}
 
 		/if (${Target.ID}) {
@@ -4789,7 +4810,7 @@ sub get_target()
 			}
 
 			| get mob to us
-			/if (${Spawn[ID ${Target2Kill}].Distance} > 31 && ${Spawn[ID ${Target2Kill}].Distance} <= ${MobAgro}) {
+			/if (${Spawn[id ${Target2Kill}].Distance} > 31 && ${Spawn[ID ${Target2Kill}].Distance} <= ${MobAgro}) {
 				/if (${Target.ID}) {
 					
 					| spell pull mob
@@ -4806,9 +4827,9 @@ sub get_target()
 		
 					| range item pull mob
 					} else {
-						/if (${Bool[${RangeItemCount}]}) {
-							/if (${FindItemCount[=${RangeItemSummon.Arg[${_count},|]}]} <= ${RangeItemCount}) /return				
-						}
+						/if (${Bool[${RangeItemSummon}]}) {
+							/if (${FindItemCount[${RangeItemSummon}]} <= ${RangeItemCount} && ${Bool[${RangeItemSummon}]}) /call check_ammo
+						}						
 					 	/range
 					}
 				}
@@ -4833,8 +4854,7 @@ sub get_target()
 		}
 	}
 	
-	/call is_target_dead ${Target2Kill}
-	/if (!${Bool[${Macro.Return}]} && ${Spawn[id ${Target2Kill}].Distance} >= 31 && !${Select[${Me.Class.ShortName},MAG,NEC,BST,ENC]}) {
+	/if (!${is_target_dead[${_tmpID}]} && ${Spawn[id ${Target2Kill}].Distance} >= 31 && !${Select[${Me.Class.ShortName},MAG,NEC,BST,ENC]}) { 
 		/delay 1
 		/goto :looppull
 	}
@@ -6230,7 +6250,7 @@ sub cast_slow(int _tmpID)
 
 	| spell not identified, using AA.
 	} else /if (${spellSlow.Equal[NULL]} || !${Bool[${spellSlow}]} || !${Bool[${Me.Gem[${spellSlow}]}]}) {
-		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellSlow Dreary Deeds
+		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellSlow Slowing Helix
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellSlow Turgur's Swarm
 		/if (${Select[${Me.Class.ShortName},BST]}) /varset spellSlow Sha's Reprisal
 		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellSlow Death's Malaise	
@@ -6284,12 +6304,15 @@ sub cast_malo(int _tmpID)
 		
 	| fall back to AA	
 	} else /if (${spellMalo.Equal[NULL]} || !${Bool[${spellMalo}]} || !${Bool[${Me.Gem[${spellMalo}]}]}) {
-		/if (${Select[${Me.Class.ShortName},MAG]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} >= 2) {
-			/varset spellMalo Wind of Malosinete
-		} else /if (${Select[${Me.Class.ShortName},MAG]} && ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${MobAgro} playerstate 4]} == 1) {
-			/varset spellMalo Malosinete
+		
+		| magician and shaman
+		/if (${Select[${Me.Class.ShortName},MAG,SHM]} && ${SpawnCount[npc radius ${MobAgro} playerstate 4]} >= 2 && ${Me.AltAbilityReady[Wind of Malaise]}) {
+			/varset spellMalo Wind of Malaise
+		} else /if (${Select[${Me.Class.ShortName},MAG,SHM]} && (${SpawnCount[npc radius ${MobAgro} playerstate 4]} == 1 || !${Me.AltAbilityReady[Wind of Malaise]})) {
+			/varset spellMalo Malaise
 		}
-		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellMalo Malosinete
+
+		| necromancer		
 		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellMalo Scent of Terris
 
 		/delay 2.25s ${Me.AltAbilityReady[${spellMalo}]}	
@@ -6347,7 +6370,7 @@ sub cast_cripple(int _tmpID)
 		
 	| fall back to alt ability	
 	} else /if (${Select[${Me.Class.ShortName},ENC,WIZ,SHM]} && (!${Bool[${Me.Gem[${spellCripple}]}]} || ${spellCripple.Equal[NULL]} || !${Bool[${spellCripple}]})) {
-		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellCripple Dreary Deeds
+		/if (${Select[${Me.Class.ShortName},ENC]}) /varset spellCripple Slowing Helix
 		/if (${Select[${Me.Class.ShortName},SHM]}) /varset spellCripple Crippling Spirit
 		/if (${Select[${Me.Class.ShortName},WIZ]}) /varset spellCripple Lower Element
 		
@@ -6564,13 +6587,14 @@ sub bandolier_swap(string _band)
  *  5	The Legacy of Ykesha											6	Lost Dungeons of Norrath
  *  7	Gates of Discord													8	Omens of War
  *  9	Dragons of Norrath												10	Depths of Darkhollow
- *  11	Prophecy of Ro													12	The Serpent's Spine
- *  13	The Buried Sea													14	Secrets of Faydwer
- *  15	Seeds of Destruction										16	Underfoot
- *  17	House of Thule													18	Veil of Alaris
- *  19	Rain of Fear														20	Call of the Forsaken
- *  21	The Darkened Sea												22	The Broken Mirror
- *  23	Empires of Kunark												24	Ring of Scale		 
+ *  11 Prophecy of Ro														12 The Serpent's Spine
+ *  13 The Buried Sea														14 Secrets of Faydwer
+ *  15 Seeds of Destruction											16 Underfoot
+ *  17 House of Thule														18 Veil of Alaris
+ *  19 Rain of Fear															20 Call of the Forsaken
+ *  21 The Darkened Sea													22 The Broken Mirror
+ *  23 Empires of Kunark												24 Ring of Scale		 
+ *  25 The Burning Lands
  *   
  ***|
 sub validate_expansion(bool _error, string _exp)

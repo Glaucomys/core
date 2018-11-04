@@ -1,4 +1,4 @@
-|***
+7886|***
  *	class.enc.inc
  *	Core Enchanter Include
  *
@@ -174,10 +174,10 @@ sub check_rune_auspice()
 		
 
 		| spell stacks ?
-		/if (${setCommunication.Equal[eqbc]}) {
+		/if (${setCommunications.Equal[eqbc]}) {
 			/if (${NetBots[${runeAuspiceToon.Arg[${_count},|]}].Buff.Find[${Spell[${runeAuspice}].ID}]}) /continue
-		} else /if (${setCommunication.Equal[dannet]}) {
 
+		} else /if (${setCommunications.Equal[dannet]}) {
 			/dquery ${_AuspiceToon} -q "Spell[${runeAuspice}].Stacks" -o _DNqout
 			/if (!${_DNqout}) /continue
 			
@@ -187,9 +187,9 @@ sub check_rune_auspice()
 		}
 
 
-		/if (${setCommunication.Equal[eqbc]}) {
+		/if (${setCommunications.Equal[eqbc]}) {
 			/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${NetBots[${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
-		} else /if (${setCommunication.Equal[dannet]}) {
+		} else /if (${setCommunications.Equal[dannet]}) {
 			/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${Spawn[pc ${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${Spawn[pc ${_AuspiceToon}].ID} check_for_adds
 		}
 	
@@ -294,21 +294,20 @@ sub patch_heal_ENC()
 	DEBUG patch_heal_ENC()
 	/if (${Me.PctHPs} > ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /return
 	/declare _count int local
-	/declare _tmpID int local
-	/if (${SpawnCount[npc radius 15]}) {
+	| /declare _tmpID int local
+	/if (${SpawnCount[npc radius 15 playerstate 4]} > 1) {
 		/for _count 1 to ${SpawnCount[npc radius 15]}
 			AMIDEAD
 			CHECKEXIT
-			CHECKINPUTS
-			CHECKTIE
 		/varset _tmpID ${NearestSpawn[${_count},npc radius 15].ID}
 		/if (!${NearestSpawn[${_count},npc radius 15].ID}) /next _count
 		/squelch /target id ${_tmpID}
 		/delay 5 ${Target.ID}==${_tmpID}
-		/delay 1
+		| /delay 1
 		/if (${Me.TargetOfTarget.ID} == ${Me.ID} && ${Target.ID} && ${Target.ID} != ${Me.ID} && (!${NoMezzList.Find[${Target.DisplayName}]} || ${timer_mez_${Target.ID}} > 0)) {
-			/call is_attacking ${NearestSpawn[${_count},npc radius 15].ID}
-			/if (${Bool[${Macro.Return}]}) {
+			| /call is_attacking ${NearestSpawn[${_count},npc radius 15].ID}
+			| /if (${Bool[${Macro.Return}]}) {
+			/if (${is_attacking[${NearestSpawn[${_count},npc radius 15].ID}]}) {				
 				/if (${Me.PctHPs} <= 60*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Doppelganger", ${Me.ID}]}) /call core_cast2 "Doppelganger" alt ${Me.ID} FALSE
 				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Nightmare Stasis", ${Target2Kill}]} && ${Target.Level} < 76) /call core_cast2 "Nightmare Stasis" alt ${Target2Kill} FALSE
 				/if (${Me.PctHPs} <= 30*.${tmpHealOverride} && ${validate_cast[FALSE, alt, "Dimensional Shield", ${Me.ID}]}) /call core_cast2 "Dimensional Shield" alt ${Me.ID} FALSE
@@ -356,9 +355,7 @@ sub mez_adds()
 			/if (${SpawnCount[npc los radius 30 zradius 15 targetable]} > 1 ) {
 				VOUT ${sepO} ${cinfo}${SpawnCount[npc radius 30 zradius 15]}\ax ${sepC} ${If[${SpawnCount[npc los radius 30 zradius 15 targetable]} == 1,Target,Targets]} in point blank range.
 
-				/if (${switchdeBuffTash}) {
-					/if (${validate_cast[FALSE, alt, "Bite of Tashani", ${Me.ID}]}) /call core_cast2 "Bite of Tashani" alt 0 check_for_adds
-				}
+				/if (${switchdeBuffTash}) /call cast_tash ${_tmpID}
 				
 				/if (${Me.Gem[${spellpbaeMez}]} && ${Me.SpellReady[${spellpbaeMez}]}) {
 					/if (${Me.Casting.Name.NotEqual[${spellpbaeMez}]}) /call interrupt
@@ -427,26 +424,28 @@ sub cast_mez(int _tmpID)
 		VOUT [${ctar}${Target.DisplayName}\ax] is being attacked!
 		/return
 	}
-	| /if (${Me.CurrentMana} > ${Spell[${spellMez}].Mana}) {
-		/delay 2.25s ${Me.SpellReady[${spellMez}]}
-		/if (${validate_cast[FALSE, spell, "${spellMez}", ${_tmpID}]}) /call core_cast2 "${spellMez}" 0 ${_tmpID} check_for_adds
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
-			/if (${Select[${castReturn},CAST_IMMUNE]}) {
-			  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
-			  VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
+	
+	| mez ready?
+	/delay 2.25s ${Me.SpellReady[${spellMez}]}
+	/if (${validate_cast[FALSE, spell, "${spellMez}", ${_tmpID}]}) /call core_cast2 "${spellMez}" 0 ${_tmpID} check_for_adds
+	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+		/call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.Seconds}s
+		/if (${Select[${castReturn},CAST_IMMUNE]}) {
+		  /call create_timer timer_mez_${_tmpID} ${Spell[${spellMez}].Duration.TotalSeconds}m
+		  /if (${NoMezzList.Find[${Spawn[ID ${_tmpID}].DisplayName}]}) {
+			  | VOUT ${owarning} IMMUNE TO\ax ${csp}${spellMez}\ax ${sep} [${ctar}${Target.DisplayName}\ax]
 			  ECHOCHANNEL MEZ IMMUNE to ${spellMez} ... ${Target.DisplayName}
-			  /call list_delete addList ${_tmpID}
 			}
-			/return
-		} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
-			/varcalc _resistCount ${_resistCount}+1
-			/if (${_resistCount}==2 && !${timer_tash_${_tmpID}}) /call cast_tash ${_tmpID}
+		  /call list_delete addList ${_tmpID}
 		}
-		| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
+		/return
+	} else /if (${Select[${castReturn},CAST_RESISTED,CAST_RESIST]}) {
+		/varcalc _resistCount ${_resistCount}+1
+		/if (${_resistCount}==2) /call cast_tash ${_tmpID}
+	}
+	| VOUT ${sepO} ${cinfo}${addList.Count[|]}\ax ${sepC} ${If[${addList.Count[|]} == 1,Target,Targets]} left to mez.
 
-		/goto :loopmez
-	| }
+	/goto :loopmez
 /return
 
 
@@ -462,31 +461,27 @@ sub cast_tash(int _tmpID)
 	/if (${timer_tash_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
-	CHECKINPUTS
-	CHECKTIE
-
-	/if (${ExcludeList.Find[${Spawn[${_tmpID}].DisplayName}]}) /return
-	/if (${Spawn[${_tmpID}].Type.Equal[corpse]}) /return
-	/if (!${Spawn[${_tmpID}].ID}) /return
-	/if (!${Target.LineOfSight}) /return
-
 
 	| if it's tashed, mark it and move on. better things to do
-	/if (${Target.Tashed.Duration} && !${Target.Buff[Bite of Tashani].ID}) {
+	/if (${Target.Tashed.ID}) {
 		/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s		
-		/return
+		/return TRUE
 	}
 	
-	/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} == 1) {
+	| more then one mob
+	/if (${SpawnCount[npc radius 49 playerstate 4]} >= 2 && ${Me.AltAbilityReady[Bite of Tashani]}) {
+		/if (${validate_cast[FALSE, alt, "Bite of Tashani", ${Me.ID}]}) /call core_cast2 "Bite of Tashani" alt 0 FALSE
+		
+	| one mob at a time	
+	} else /if (${SpawnCount[npc radius 49 playerstate 4]} == 1 || !${Me.AltAbilityReady[Bite of Tashani]}) {
 		/if (${validate_cast[FALSE, spell, "${spellTash}", ${_tmpID}]}) /call core_cast2 "${spellTash}" 0 ${_tmpID} check_for_adds
+		| set timer for tash.
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_tash_${_tmpID} ${Spell[${spellTash}].Duration.TotalSeconds}s
 		}
-	} else /if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 49]} > 1) {
-		/if (${validate_cast[FALSE, alt, "Bite of Tashani", ${Me.ID}]}) /call core_cast2 "Bite of Tashani" alt 0 FALSE
-	}
+	}	
 
-/return
+/return TRUE
 
 
 
@@ -499,36 +494,21 @@ sub cast_tash(int _tmpID)
 sub is_attacking(int _tmpID)
 	DEBUG is_attacking(${_tmpID})
 	/declare _ani int local
-	/declare _isAttacking FALSE
 	/varset _ani ${Spawn[${_tmpID}].Animation}
-	/if (${_ani} == 5) /varset _isAttacking TRUE
-	/if (${_ani} == 7) /varset _isAttacking TRUE
-	/if (${_ani} == 8) /varset _isAttacking TRUE
-	/if (${_ani} == 12) /varset _isAttacking TRUE
-	/if (${_ani} == 13) /varset _isAttacking TRUE
-	/if (${_ani} == 16) /varset _isAttacking FALSE
-	/if (${_ani} == 17) /varset _isAttacking FALSE
-	| /if (${animation} == 18) /return 2
-	/if (${_ani} == 26) /varset _isAttacking FALSE
-	/if (${_ani} == 32) /varset _isAttacking FALSE
-	/if (${_ani} == 33) /varset _isAttacking FALSE
-	/if (${_ani} == 34) /varset _isAttacking FALSE
-	/if (${_ani} == 37) /varset _isAttacking FALSE
-	/if (${_ani} == 38) /varset _isAttacking FALSE
-	/if (${_ani} == 42) /varset _isAttacking TRUE
-	/if (${_ani} == 43) /varset _isAttacking FALSE
-	/if (${_ani} == 44) /varset _isAttacking TRUE
-	/if (${_ani} == 71) /varset _isAttacking FALSE
-	/if (${_ani} == 72) /varset _isAttacking FALSE
-	/if (${_ani} == 73) /varset _isAttacking FALSE
-	/if (${_ani} == 80) /varset _isAttacking TRUE
-	/if (${_ani} == 106) /varset _isAttacking TRUE
-	/if (${_ani} == 110) /varset _isAttacking TRUE
-	/if (${_ani} == 111) /varset _isAttacking FALSE
-	/if (${_ani} == 129) /varset _isAttacking TRUE
-	/if (${_ani} == 144) /varset _isAttacking TRUE
-	/if (${_ani} == 146) /varset _isAttacking FALSE
-/return ${Bool[${_isAttacking}]}	
+	
+	/if (${_ani} == 5) /return TRUE
+	/if (${_ani} == 7) /return TRUE
+	/if (${_ani} == 8) /return TRUE
+	/if (${_ani} == 12) /return TRUE
+	/if (${_ani} == 13) /return TRUE
+	/if (${_ani} == 42) /return TRUE
+	/if (${_ani} == 44) /return TRUE
+	/if (${_ani} == 80) /return TRUE
+	/if (${_ani} == 106) /return TRUE
+	/if (${_ani} == 110) /return TRUE
+	/if (${_ani} == 129) /return TRUE
+	/if (${_ani} == 144) /return TRUE
+/return FALSE
 
 
 

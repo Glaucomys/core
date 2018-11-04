@@ -306,7 +306,7 @@ sub mode_drag()
 	/declare _count 		int local
 	/declare _corpseID 	int local
 	UPDATEHUD "Drag"
-	/doevents
+	CHECKINPUTS
 	AMIDEAD
 
 	/delay 1
@@ -315,7 +315,7 @@ sub mode_drag()
 			AMIDEAD
 
 			/varset _corpseID ${NearestSpawn[${_count},pccorpse radius 110].ID}
-			/if (${Spawn[${_corpseID}].Distance} > 30) {
+			/if (${Spawn[${_corpseID}].Distance} > 15) {
 				/target id ${_corpseID}
 				/delay 5 ${Target.ID} == ${_corpseID}
 				/corpse

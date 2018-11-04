@@ -12,6 +12,41 @@
   -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
+20181104.00
+- get_target()
+  -- redesign of the sort mechanics for valid targets for the puller. trying to find a bug where its pulling pets?! /shrug
+  -- update. after 14 hours. still do not see it
+- cast_AA_snare()
+  -- foud a bug that would make every snarer think it was a berzerker 
+- /invs
+  -- corrected a change in the spelling for perfected group invis. they added an "I". not sure why
+  -- adjusted the timing a little to correct for the #turbo change
+- check_for_corpse()
+  -- fixed (hopefully) undefined variables for non clerics
+- cast_cripple()
+  -- updated the chanter fall back AA to Slowing Helix
+- cast_slow()
+  -- updated the chanter fall back AA to Slowing Helix
+- cast_malo()
+  -- updated magician/shaman fall back single and AE AA Malo(s)
+  -- combinded magician and shaman. same spell names/functions now
+  -- adjusted the logic a little bit on the AA fall back if the group version is unavailable
+- class.pal.inc
+  -- some adjustments to /splash command. still not sure if i like how its working
+  -- first run at aliance
+- class.mnk.inc
+  -- added in the meledisc switch for intimidate. it was kind of missing
+- class.dru.inc
+  -- adjustments to the AA Ro debuff due to the triggered spell changes
+- class.enc.inc
+  -- some adjustments to tashing
+	-- rewrite of is_attacking(). should sort a little faster now
+  -- fixed a bug in excluded mob detection for mezing  
+  -- found another undefined variable. squash like grape
+- class.ber.inc
+  -- first run at an alliance
+
+
 20181027.00
 - Range Combat
   -- if you disable /cc melee and leave /cc range active, your toon will now try and stay a minimum of ~34 paces from the target so you can throw or bow the mob. 

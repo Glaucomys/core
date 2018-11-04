@@ -57,7 +57,7 @@ sub core_PAL()
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
-			/if (${switchAlliance}) /call cast_alliance_${Me.Class.ShortName} ${Target2Kill}
+			/if (${Bool[${switchAlliance}]}) /call cast_alliance_${Me.Class.ShortName} ${Target2Kill}
 			/call click_BP
 			/call click_item
 			/if (${switchPcSwarm}) /call click_item_swarm ${Target2Kill}
@@ -709,18 +709,20 @@ sub Bind_pal_splash()
 	/if (!${validate_class[TRUE, |PAL]}) /return FALSE
 
 	| mem spell if we do not have it	
-	/if (!${Bool[${Me.Gem[${splashCure}]}]} && !${coreAuto}) /call mem_spell TRUE "${splashCure}" ${buffGem} FALSE
+	| /if (!${Bool[${Me.Gem[${splashCure}]}]} && !${coreAuto}) /call mem_spell TRUE "${splashCure}" ${buffGem} FALSE
+	
 	| echo time remaining on splash
-	/if (!${Me.SpellReady[${splashCure}]}) {
-		VOUT ${cinfo}${splashCure}\ax ${sep} time left (${cnum}${Me.GemTimer[${splashCure}].Seconds}\ax)
-		/return FALSE
-	}
+	 /if (!${Me.SpellReady[${splashCure}]}) {
+	 	VOUT ${cinfo}${splashCure}\ax ${sep} time left (${cnum}${Me.GemTimer[${splashCure}].Seconds}\ax)
+	 	/return FALSE
+	 }
 	
 	AMIDEAD
 	CHECKEXIT
   CHECKINPUTS	
 
 	| splash
+	VOUT Splashing these dumb asses ${sep}
 	/if (${validate_cast[FALSE, spell, "${splashCure}", ${Me.ID}]}) /cast "${splashCure}" loc ${Me.X} ${Me.Y} ${Me.Z}
 	
 /return TRUE

@@ -119,15 +119,18 @@ sub cast_AA_ro(int _tmpID)
 	DEBUG cast_AA_ro(${_tmpID})
 	CHECKEXIT
 	CHECKINPUTS
-	/if (${timer_ro_${_tmpID}} || ${Target.Buff[Grasp of Ro].ID}) /return
+	/if (${timer_ro_${_tmpID}} || ${Target.Buff[${Spell[${debuffRo}].Trigger}].ID}) /return
 	/if (${is_target_dead[${_tmpID}]}) /return
 	
-	/if (${Bool[${debuffRo}]} && ${Me.AltAbilityReady[${debuffRo}]}) {
-		/if (${validate_cast[FALSE, alt, "${debuffRo}", ${_tmpID}]}) /call core_cast2 "${debuffRo}" alt ${_tmpID} FALSE
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_ro_${_tmpID} ${Spell[${debuffRo}].Duration.TotalSeconds}s
-		}		
+	/if (!${Bool[${debuffRo}]} || !${Me.AltAbilityReady[${debuffRo}]}) /return FALSE
+	
+	/if (${validate_cast[FALSE, alt, "${debuffRo}", ${_tmpID}]}) /call core_cast2 "${debuffRo}" alt ${_tmpID} FALSE
+	SDEBUG ${castReturn}
+	
+	/if (${Select[${castReturn},CAST_SUCCESS,CAST_IMMUNE,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+		/call create_timer timer_ro_${_tmpID} ${Spell[${debuffRo}].Trigger.Duration.TotalSeconds}s
 	}
+	
 /return
 
 

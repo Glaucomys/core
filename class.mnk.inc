@@ -70,7 +70,7 @@ sub disc_MNK()
 	/if (${validate_cast[FALSE, disc, "${DiscDoubleAttack}", ${Me.ID}]}) /call core_cast2 "${DiscDoubleAttack}" disc 0 FALSE
 	/if (${validate_cast[FALSE, alt, "${AAZanFi}", ${Me.ID}]}) /call core_cast2 "${AAZanFi}" alt 0 FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscMonkey}", ${Target2Kill}]}) /call core_cast2 "${DiscMonkey}" disc ${Target2Kill} FALSE	
-	/if (${Me.AbilityReady["Intimidation"]}) /doability Intimidation  
+	/if (${Bool[${intimidation}]} && ${Me.AbilityReady["Intimidation"]}) /doability Intimidation
 	/if (${validate_cast[FALSE, alt, "${AAWasp}", ${Target2Kill}]}) /call core_cast2 "${AAWasp}" alt ${Target2Kill} FALSE   
 	/if (${validate_cast[FALSE, disc, "${DiscFists}", ${Target2Kill}]}) /call core_cast2 "${DiscFists}" disc ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${DiscSynergy}", ${Target2Kill}]}) /call core_cast2 "${DiscSynergy}" disc ${Target2Kill} FALSE
