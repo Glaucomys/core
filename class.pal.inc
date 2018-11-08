@@ -743,7 +743,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|fade|groupheal|harmonious|healpoint|loh|mg|rampage|rod|shieldflash|spiregroup|spireraid|stance|steel|stun|taunt|xtclass|xtradius|xttime|yaulp
+  /declare _type string	local |ae|attraction|defcount|fade|groupheal|harmonious|healpoint|loh|mg|rampage|rod|shieldflash|spiregroup|spireraid|stance|steel|stun|taunt|xtclass|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -924,6 +924,10 @@ sub Bind_setPAL(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[ae]}]}) {
 		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
 
+	| attraction Divine call while pulling
+	} else /if (${Bool[${_classType.Equal[attraction]}]}) {
+		/call writeINI switchAttraction Discs ${If[${switchAttraction},FALSE,TRUE]}
+
 	| set rampage tank toon
 	} else /if (${Bool[${_classType.Equal[rampage]}]}) {
 		/if (${Bool[${_verbage}]}) {
@@ -970,6 +974,7 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/for _count 1 to ${_type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
 		/if (${_type.Arg[${_count},|].Equal[ae]}) /varset _listout ${_listout}(${If[${AEMelee},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[attraction]}) /varset _listout ${_listout}(${If[${Bool[${switchAttraction}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[defcount]}) /varset _listout ${_listout}(${cnum}${defCount}\ax)
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
@@ -994,6 +999,8 @@ sub Bind_setPAL(string _classType, string _verbage)
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+
 
 
 

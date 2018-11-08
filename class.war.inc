@@ -213,7 +213,7 @@ sub Bind_setWAR(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|fade|healpoint|spiregroup|spireraid|taunt
+  /declare _type string	local |ae|attraction|fade|healpoint|spiregroup|spireraid|taunt
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -263,6 +263,10 @@ sub Bind_setWAR(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[taunt]}]}) {
 		/call writeINI taunt meleedisc ${If[${taunt},FALSE,TRUE]}  
 
+	| attraction Warlord's Grasp while pulling
+	} else /if (${Bool[${_classType.Equal[attraction]}]}) {
+		/call writeINI switchAttraction Discs ${If[${switchAttraction},FALSE,TRUE]}
+
 	| panic heal pct
 	} else /if (${Bool[${_classType.Find[panicheal]}]}) {
 		/if (${Range.Between[1,99:${Int[${_verbage}]}]}) {
@@ -289,6 +293,7 @@ sub Bind_setWAR(string _classType, string _verbage)
 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${_type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[attraction]}) /varset _listout ${_listout}(${If[${Bool[${switchAttraction}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)

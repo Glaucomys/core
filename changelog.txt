@@ -12,6 +12,27 @@
   -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
+20181108.00
+- /cc force combat 
+  -- will remove invis now
+- BUFFING
+  -- externalized the Buff INI count. the default is still 15
+  -- core.ini->[general]=>setMaxINIBuffCount=  set to the number of buff counts you want core to generate and use.
+- get_target()
+  -- almost a complete rewrite. let me know if you see something .. off...
+  -- nomore /goto statement
+- get_resident()
+  -- error in MQ2EQBC member .InZone. does not play well with MQ2DanNet
+- class.pal.inc
+  /pal [attraction] enable/disable using Divine Call while pulling
+- class.shd.inc
+  /shd [attraction] enable/disable using Hate's Attraction while pulling
+- class.war.inc
+  /war [attraction] enable/disable using Warlord's Grasp while pulling
+
+
+
+
 20181104.00
 - get_target()
   -- redesign of the sort mechanics for valid targets for the puller. trying to find a bug where its pulling pets?! /shrug

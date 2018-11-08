@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181104.00
+	/call setDeclare coreBuild											string	outer 20181108.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -220,6 +220,7 @@ sub set_declares()
 	/call DeclareCoreIniVar setMQFontSize						int			General 2
 	/call DeclareCoreIniVar setMQCaptions						string	General off
 	/call DeclareCoreIniVar setAutoAssist						string	General off
+	/call DeclareCoreIniVar setMaxINIBuffCount			int			General 15
 
 	
 	| buff queue variables
@@ -699,8 +700,8 @@ sub set_declares()
 	
 	| bc/tell buffs
 	/call setDeclare Buff0 													string 	outer FALSE
-	/call setDeclare BuffCount											int 		outer 15
-	/for _count 1 to ${BuffCount}
+	| /call setDeclare BuffCount											int 		outer 15
+	/for _count 1 to ${setMaxINIBuffCount}
 		/call setINIVar Buff${_count}									string 	Buffs FALSE
 		/call setINIVar Buff${_count}chk							string 	Buffs FALSE
 		/call setINIVar Buff${_count}self							string 	Buffs FALSE
@@ -1428,6 +1429,7 @@ sub declare_SHD()
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 	/call setINIVar useShieldFlash									bool		Discs FALSE
 	/call setINIVar useShieldFlashPct								int			Discs 20
+	/call setINIVar switchAttraction								bool		Discs TRUE
 
 /return	
 
@@ -1559,6 +1561,8 @@ sub declare_PAL()
 	/call setINIVar useShieldFlashPct								int			Discs 20
 	/call setINIVar useLoH													bool		Heal FALSE
 	/call setINIVar useLoHPct												int			Heal 10
+	/call setINIVar switchAttraction								bool		Discs TRUE
+	
 
 /return	
 
@@ -1618,6 +1622,8 @@ sub declare_WAR()
 	                                        		
 	/call setINIVar PanicHPPCT		 									int			Heal 25
 	/call setINIVar spellCripple 										string 	Spells FALSE
+	/call setINIVar switchAttraction								bool		Discs TRUE
+
 	
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 /return	
@@ -4195,6 +4201,7 @@ sub Bind_setCombatControl(string _ccType, string _verbage)
 
 				| engage base combat
 				/if (${Bool[${_verbage.Equal[combat]}]}) {
+					/if (${Me.Invis}) /makemevisible
 					/varset isValidTarget TRUE
 					/varset combat COMBAT
 					/varset Target2Kill ${Target.ID}

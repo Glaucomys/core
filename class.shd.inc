@@ -310,7 +310,7 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |ae|defcount|fade|harmonious|healpoint|rod|shieldflash|skin|spiregroup|spireraid|stance|taunt|vot
+  /declare _type string	local |ae|attraction|defcount|fade|harmonious|healpoint|rod|shieldflash|skin|spiregroup|spireraid|stance|taunt|vot
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -392,6 +392,9 @@ sub Bind_setSHD(string _classType, string _verbage)
 	} else /if (${Bool[${_classType.Equal[ae]}]}) {
 		/call writeINI AEMelee Discs ${If[${AEMelee},FALSE,TRUE]}
 
+	| attraction Hate's Attraction while pulling
+	} else /if (${Bool[${_classType.Equal[attraction]}]}) {
+		/call writeINI switchAttraction Discs ${If[${switchAttraction},FALSE,TRUE]}
 
 	| AA Voice of Thule
 	} else /if (${Bool[${_classType.Equal[vot]}]}) {
@@ -412,6 +415,7 @@ sub Bind_setSHD(string _classType, string _verbage)
 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${_type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[attraction]}) /varset _listout ${_listout}(${If[${Bool[${switchAttraction}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}${${Me.Class.ShortName}Point}\ax)
