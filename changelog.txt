@@ -12,6 +12,20 @@
   -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
+20181114.00
+- xpac control
+  -- if you need to bypass it for any reason.
+  -- core.inc->[general]->switchIgnoreXpacControl=TRUE (FALSE is default)
+  -- it something messes up from this. let me know, i'll pass you the number for tech support
+- get_assist_target()
+  -- made it a bit less pick for assisting
+- tell_resident_mage()
+  -- fixed an issue that was turning the mages name to a bool  
+- class.enc.inc
+  -- fixed a missing comm check for runes
+  -- corrected the crystal summoning... again..
+
+
 20181108.00
 - /cc force combat 
   -- will remove invis now
@@ -29,8 +43,6 @@
   /shd [attraction] enable/disable using Hate's Attraction while pulling
 - class.war.inc
   /war [attraction] enable/disable using Warlord's Grasp while pulling
-
-
 
 
 20181104.00

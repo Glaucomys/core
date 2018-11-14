@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181108.00
+	/call setDeclare coreBuild											string	outer 20181114.00
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -79,20 +79,27 @@ sub set_declares()
 	/call DeclareCoreIniVar switchUseCLSinHUD				string	General FALSE
 	/call DeclareCoreIniVar switchUseADVL						string	General TRUE
 	/call DeclareCoreIniVar switchGlyphOutsideRaid	string	General FALSE
-	/call DeclareCoreIniVar maintenance							string	General "|FALSE|FALSE"
+	/call DeclareCoreIniVar maintenance							string	General "|FALSE"
 	/call DeclareCoreIniVar switchMQclearonCLS			string	General FALSE
 	/call DeclareCoreIniVar switchGuildinSafelist		string	General FALSE
 	/call DeclareCoreIniVar switchCheckGameCash			string	General FALSE
 	/call DeclareCoreIniVar switchPersistentModes		string	General FALSE 			
 	/call DeclareCoreIniVar switchNoTieonCombat			string	General FALSE 		
 	/call DeclareCoreIniVar switchDisableMQ2Melee		string	General TRUE 		
+	/call DeclareCoreIniVar switchIgnoreXpacControl	string	General FALSE 		
+	/call DeclareCoreIniVar switchBuffGemHold				string	General TRUE 		
+	/call DeclareCoreIniVar setMQFontSize						int			General 2
+	/call DeclareCoreIniVar setMQCaptions						string	General off
+	/call DeclareCoreIniVar setAutoAssist						string	General off
+	/call DeclareCoreIniVar setMaxINIBuffCount			int			General 15
+	
 		
-
 	| broadcast switches
 	| default on
 	/call DeclareCoreIniVar broadcastZonereset			bool	Broadcast TRUE
 	/call DeclareCoreIniVar broadcastStop						bool	Broadcast TRUE
 	/call DeclareCoreIniVar broadcastHere						bool	Broadcast TRUE
+
 
 	| default off
 	/call DeclareCoreIniVar broadcastTake						bool	Broadcast FALSE
@@ -216,13 +223,6 @@ sub set_declares()
 	/call setINIVar switchGiveRaidInvite						bool		Common FALSE
 
 
-	| OCD Shit - 
-	/call DeclareCoreIniVar setMQFontSize						int			General 2
-	/call DeclareCoreIniVar setMQCaptions						string	General off
-	/call DeclareCoreIniVar setAutoAssist						string	General off
-	/call DeclareCoreIniVar setMaxINIBuffCount			int			General 15
-
-	
 	| buff queue variables
 	/call DeclareCoreIniVar queueCountMax						int			General 10
 	/call setDeclare queueCount            					int  		outer 0
@@ -241,7 +241,6 @@ sub set_declares()
 	/call DeclareCoreIniVar ResidentMage									string	Group "|FALSE|FALSE"
 	/call DeclareCoreIniVar ResidentDruid						 			string	Group "|FALSE|FALSE"
 	/call DeclareCoreIniVar ResidentWizard								string	Group "|FALSE|FALSE"
-	
 	
 
 	| /here settings
@@ -2815,9 +2814,11 @@ sub Bind_itembuffs()
 #bind selfbuffs /sb
 sub Bind_selfbuffs()
 
-	/declare _tmpSpell string local FALSE
-	/if (${Bool[${Me.Gem[${fix_gem_id[${buffGem}]}]}]})  {
-		/varset _tmpSpell ${Me.Gem[${fix_gem_id[${buffGem}]}]}
+	/if (${switchBuffGemHold}) {
+		/declare _tmpSpell string local FALSE
+		/if (${Bool[${Me.Gem[${fix_gem_id[${buffGem}]}]}]})  {
+			/varset _tmpSpell ${Me.Gem[${fix_gem_id[${buffGem}]}]}
+		}
 	}
 	
 	/call check_buffs_self
@@ -2827,10 +2828,12 @@ sub Bind_selfbuffs()
 	/if (${Bool[${DiscNow1}]} || ${Bool[${DiscNow2}]}) /call check_Disc_now
 	/if (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) /call check_aura
 	
-	/if (${Bool[${_tmpSpell}]}) {
-		/call mem_spell TRUE "${_tmpSpell}" ${buffGem} FALSE	
-		/varset _tmpSpell FALSE
-	}	
+	/if (${switchBuffGemHold}) {
+		/if (${Bool[${_tmpSpell}]}) {
+			/call mem_spell TRUE "${_tmpSpell}" ${buffGem} FALSE	
+			/varset _tmpSpell FALSE
+		}	
+	}
 /return
 
 

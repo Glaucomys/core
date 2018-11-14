@@ -2,7 +2,7 @@
  *	class.shm.inc
  *	Core Shaman Include
  *
- *  /echo ${Target.CanSplashLand}
+ *
  ***|
 
 
@@ -53,7 +53,7 @@ sub core_SHM()
 			/call check_deBuffs ${Target2Kill}
 			/if (${switchCombatDoT}) /call cast_DOT
 			/if (${switchCombatNuke}) /call cast_nuke
-			| /if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
+			/if (${switchAlliance}) /call trigger_alliance ${Target2Kill}
 			/if (${switchPcSwarm} || ${switchPcPet}) /call send_pet
 			/call click_BP
 			/call click_item
@@ -218,8 +218,6 @@ sub check_heal_group_SHM()
 			}
 		/next _count 
 	}
-  
-  
 	
 	| check for personal debuffs
 	/if (${switchHealCure}) {
@@ -402,17 +400,16 @@ sub check_pet_heal_SHM()
 sub cast_surge_heal()
 	DEBUG cast_surge_heal()
 	/if (!${Bool[${TC1}]} && !${Bool[${TC1}]}) /return
-	
+	/if (!${Me.SpellReady[${TC1}]} && !${Me.SpellReady[${TC2}]}) /return
+	/if (${is_target_dead[${Target2Kill}]}) /return	
+
 	CHECKEXIT
 	AMIDEAD
 	CHECKINPUTS
-	
-	| nuke to engage twin heal proc
-	/if (${Target.ID} == ${Me.ID}) /squelch /target clear
-	/if (!${Me.SpellReady[${TC1}]} && !${Me.SpellReady[${TC2}]}) /return
 
+	| get the main assisst ID
 	/declare _tmpID int local
-	
+
 	/if (${useSmartAssistG}) {
 		/varset _tmpID ${Spawn[pc ${Group.MainAssist}].ID}
 	} else /if (${useSmartAssist1}) {
@@ -424,18 +421,12 @@ sub cast_surge_heal()
 	} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[pc ${MA2}].ID}]} && !${Bool[${Spawn[pc ${MA2}].Dead}]}) {
 		/varset _tmpID ${Spawn[pc ${MA2}].ID}
 	}
-
- 	/target ID ${Spawn[${_tmpID}].ID}
- 	/delay 1s ${Target.ID} == ${Spawn[${_tmpID}].ID}
-
 	
 	/if (!${Spawn[${_tmpID}].LineOfSight} || ${Spawn[${_tmpID}].Distance} > ${Spell[${TC1}].MyRange}) /return
 	
   /if (${Me.SpellReady[${TC1}]} && !${Me.Song[Healing Twincast].ID}) {
-  	/delay 1s ${Target.ID} == ${_tmpID}
 		/if (${validate_cast[FALSE, spell, "${TC1}", ${_tmpID}]}) /call core_cast2 "${TC1}" 0 ${_tmpID} FALSE
 	} else /if (${Me.SpellReady[${TC2}]} && !${Me.Song[Healing Twincast].ID}) {
-  	/delay 1s ${Target.ID} == ${_tmpID}
 		/if (${validate_cast[FALSE, spell, "${TC2}", ${_tmpID}]}) /call core_cast2 "${TC2}" 0 ${_tmpID} FALSE
 	}
 
@@ -445,6 +436,14 @@ sub cast_surge_heal()
 		/if (${validate_cast[FALSE, spell, "${healSurge}", ${_tmpID}]}) /call core_cast2 "${healSurge}" 0 ${_tmpID} FALSE
 	}
 /return
+
+
+
+
+
+
+
+
 
 
 
@@ -568,7 +567,7 @@ sub cast_talisman()
 	CHECKEXIT
 	CHECKINPUTS
 	/call create_timer timer_cast_Talisman ${tTalisman}
-	/if (${validate_cast[FALSE, spell, "${spellTalisman}", ${Me.ID}]}) /call core_cast2 "${spellTalisman}" 0 ${Me.ID} FALSE
+	/if (${validate_cast[FALSE, spell, "${spellTalisman}", ${Me.ID}]}) /call core_cast2 "${spellTalisman}" ${buffGem} ${Me.ID} FALSE
 /return
 
 

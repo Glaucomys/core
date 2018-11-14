@@ -107,6 +107,7 @@ sub check_rune_ENC()
 	/call create_timer timer_check_runes ${tCheck_Runes}
 	AMIDEAD
 	CHECKEXIT
+	CHECKTIE
 	UPDATEHUD "BUFF Rune"
 
 	/if (${validate_cast[FALSE, alt, "${runeVeil}", ${Me.ID}]}) /call core_cast2 "${runeVeil}" alt 0 FALSE
@@ -161,7 +162,11 @@ sub check_rune_auspice()
 		}		
 		
 		| if no network toons. were done here..		
-		/if (!${validate_plugin[FALSE, |MQ2DanNet]}) /return
+		/if (${setCommunications.Equal[eqbc]}) {
+			/if (!${validate_plugin[FALSE, |MQ2EQBC]}) /return
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/if (!${validate_plugin[FALSE, |MQ2DanNet]}) /return
+		}
 		
 		| ini set to FALSE?
 		/if (!${Bool[${_AuspiceToon}]}) /return
@@ -185,7 +190,6 @@ sub check_rune_auspice()
 			/dquery ${_AuspiceToon} -q "Me.Buff[${runeAuspice}].ID" -o _DNqout
 			/if (${Bool[${_DNqout}]}) /continue
 		}
-
 
 		/if (${setCommunications.Equal[eqbc]}) {
 			/if (${validate_cast[FALSE, spell, "${runeAuspice}", ${NetBots[${_AuspiceToon}].ID}]}) /call core_cast2 "${runeAuspice}" 0 ${NetBots[${_AuspiceToon}].ID} check_for_adds
@@ -220,6 +224,7 @@ sub disc_ENC()
 /return
 
 
+${Me.AltAbilityReady[Sanguine Mind Crystal]}
 
 |***
  *	DES: Keep the chanter stocked with self crystals
@@ -236,17 +241,19 @@ sub check_crystals()
 
 	/if (!${FindItem[${mannaCrystal}].ID}) {
 		/if (${Bool[${mannaCrystal}]} && !${Cursor.Name.Equal[${mannaCrystal}]}) {
-			/if (${validate_cast[FALSE, alt, "${mannaCrystal}", ${Me.ID}]}) /call core_cast2 "${mannaCrystal}" alt 0 check_for_adds
+			/if (${validate_cast[FALSE, alt, "Azure Mind Crystal", ${Me.ID}]}) /call core_cast2 "Azure Mind Crystal" alt 0 check_for_adds
 			/call sort_cursor TRUE
 		}
 	}
 
 	/if (!${FindItem[${healCrystal}].ID}) {
 		/if (${Bool[${healCrystal}]} && !${Cursor.Name.Equal[${healCrystal}]}) {
-			/if (${validate_cast[FALSE, alt, "${healCrystal}", ${Me.ID}]}) /call core_cast2 "${healCrystal}" alt 0 check_for_adds
+			/if (${validate_cast[FALSE, alt, "Sanguine Mind Crystal", ${Me.ID}]}) /call core_cast2 "Sanguine Mind Crystal" alt 0 check_for_adds
 			/call sort_cursor TRUE
 		}
 	}
+
+	/call sort_cursor TRUE
 
 	/if (${switchGather}) { 
 		
@@ -275,10 +282,6 @@ sub check_crystals()
  ***|
 sub click_DPS_ENC()
 	DEBUG click_DPS_ENC()
-	AMIDEAD
-	CHECKEXIT
-	CHECKINPUTS
-	CHECKTIE
 	/call click_horn_of_unity 	
 /return
 
@@ -299,6 +302,7 @@ sub patch_heal_ENC()
 		/for _count 1 to ${SpawnCount[npc radius 15]}
 			AMIDEAD
 			CHECKEXIT
+			CHECKTIE
 		/varset _tmpID ${NearestSpawn[${_count},npc radius 15].ID}
 		/if (!${NearestSpawn[${_count},npc radius 15].ID}) /next _count
 		/squelch /target id ${_tmpID}
@@ -461,6 +465,7 @@ sub cast_tash(int _tmpID)
 	/if (${timer_tash_${_tmpID}}) /return
 	AMIDEAD
 	CHECKEXIT
+	CHECKTIE
 
 	| if it's tashed, mark it and move on. better things to do
 	/if (${Target.Tashed.ID}) {

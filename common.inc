@@ -1636,7 +1636,7 @@ sub get_assist_target()
 
 	| no, you still cannot assist yourself. get over it
 	/if (${Group.MainAssist.Spawn.ID} == ${Me.ID}) /call validate_assist NOECHO X
-	/if (${Spawn[=${Raid.MainAssist} pc].ID} == ${Me.ID}) /call validate_assist NOECHO X	
+	/if (${Spawn[=${Raid.MainAssist} pc].ID} == ${Me.ID}) /call validate_assist NOECHO X
 
 	| tar acquisition when using smart assist. set XTarget positions.
 	/if (${useSmartAssistG} || ${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) {
@@ -1661,7 +1661,7 @@ sub get_assist_target()
 		
 		| smart assist group
 		/if (${useSmartAssistG}) {
-			/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]}) {
+			| /if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]}) {
 				/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat} || ${switchdeBuffMezz}) {
 					/varset Target2Kill ${Me.XTarget[1].ID}
 					/delay 1
@@ -1670,11 +1670,11 @@ sub get_assist_target()
 					}
 					/return
 				}
-			}
+			| }
 
 		| smart assist raid
 		} else /if (${useSmartAssist1} || ${useSmartAssist2} || ${useSmartAssist3}) {
-			/if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]}) {
+			| /if (${Bool[${Spawn[${Me.XTarget[1].ID}].Type.Equal[NPC]}]}) {
 				/if (${Me.XTarget[1].PctHPs} <= ${smartengageAt} || ${switchOverrideEngageat}) {
 					/varset Target2Kill ${Me.XTarget[1].ID}
 					/delay 1
@@ -1683,7 +1683,7 @@ sub get_assist_target()
 					}
 					/return
 				}	
-			}
+			| }
 		}
 
 		/return
@@ -1696,7 +1696,8 @@ sub get_assist_target()
 		/if (${Bool[${MA1}]} && ${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA1}].Dead}]}) {
 			/if (${switchCombatMelee} || ${switchCombatRange} || ${switchCombatNuke} || ${switchCombatDoT}) /assist ${MA1}
 			/delay 1s ${Me.AssistComplete}
-			/if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
+			| /if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
+			/if (!${Target2Kill} && ${Target.ID}) {
 				/varset Target2Kill ${Target.ID}
 			} else /if (${Target2Kill} != ${Target.ID} && ${Target2Kill} != 0 && ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
 				/delay 1
@@ -1708,7 +1709,8 @@ sub get_assist_target()
 		} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${Spawn[${MA2}].Dead}]} && (!${Bool[${Spawn[${MA1}].ID}]} || ${Bool[${Spawn[${MA1}].Dead}]})) {
 			/if (${switchCombatMelee} || ${switchCombatRange} || ${switchCombatNuke} || ${switchCombatDoT}) /assist ${MA2}
 			/delay 1s ${Me.AssistComplete}
-			/if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
+			| /if (!${Target2Kill} && ${Target.ID} && ${Spawn[${Target.ID}].Type.Equal[npc]}) {
+			/if (!${Target2Kill} && ${Target.ID}) {
 				/varset Target2Kill ${Target.ID}
 			} else /if (${Target2Kill} != ${Target.ID} && ${Target2Kill} != 0 && ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
 				/delay 1
@@ -1719,7 +1721,8 @@ sub get_assist_target()
 		} 		
 		AMIDEAD
 		CHECKINPUTS
-		/if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
+		| /if (${Target2Kill} == ${Target.ID} && ${Spawn[${Target}].Type.Equal[npc]}) {
+		/if (${Target2Kill} == ${Target.ID}) {
 			/if (${Target.PctHPs} > ${engageAt} && !${switchOverrideEngageat}) {
 				/delay 3
 				/goto :skippingtoMAtarget
@@ -1744,7 +1747,8 @@ sub get_assist_target()
 		
 		AMIDEAD
 		CHECKINPUTS
-		/if (${Target2Kill} && ${Spawn[${Target}].Type.Equal[npc]}) {
+		| /if (${Target2Kill} && ${Spawn[${Target}].Type.Equal[npc]}) {
+		/if (${Target2Kill}) {
 			/if (${Spawn[${Target2Kill}].PctHPs} > ${engageAt} && !${switchOverrideEngageat}) {
 				/delay 3
 				/goto :skippingtoMAforcedtarget
@@ -2132,19 +2136,15 @@ sub cast_AA_snare(int _tmpID)
 		
 	| set AA for snaring
 	/if (${Select[${Me.Class.ShortName},BER]}) {
-		/declare _debuffSnare string local ${DiscSnare}	
-	} else /if (${Select[${Me.Class.ShortName},DRU]}) {
+		/declare _debuffSnare string local Leg Strike	
+	} else /if (${Select[${Me.Class.ShortName},DRU,RNG]}) {
 		/declare _debuffSnare string local Entrap
 	} else /if (${Select[${Me.Class.ShortName},MNK]}) {
 		/declare _debuffSnare string local Crippling Strike
-	} else /if (${Select[${Me.Class.ShortName},NEC]}) {
+	} else /if (${Select[${Me.Class.ShortName},NEC,SHD]}) {
 		/declare _debuffSnare string local Encroaching Darkness
-	} else /if (${Select[${Me.Class.ShortName},RNG]}) {
-		/declare _debuffSnare string local Entrap
 	} else /if (${Select[${Me.Class.ShortName},ROG]}) {
 		/declare _debuffSnare string local Ligament Slice
-	} else /if (${Select[${Me.Class.ShortName},SHD]}) {
-		/declare _debuffSnare string local Encroaching Darkness
 	} else /if (${Select[${Me.Class.ShortName},WAR]}) {
 		/declare _debuffSnare string local Call of Challenge
 	} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
@@ -2154,22 +2154,24 @@ sub cast_AA_snare(int _tmpID)
 
 	
 	/if (!${Target.Snared.ID}) {
-		| non paladins berzerkers
-		/if (!${validate_class[FALSE, |PAL|BER]}) {
-			/if (${validate_cast[FALSE, alt, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" alt ${_tmpID} FALSE
 
-		| berzerkers
-		} else /if (${validate_class[FALSE, |BER]}) {
-			/if (${validate_cast[FALSE, disc, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" disc ${_tmpID} FALSE
-		
 		| paladins
-		} else /if (${validate_class[FALSE, |PAL]}) {
+		/if (${validate_class[FALSE, |PAL]}) {
 			/if (${Target.Body.Name.Equal[Undead]}) {
 				/if (${validate_cast[FALSE, alt, "Halt the Dead", ${_tmpID}]}) /call core_cast2 "Halt the Dead" alt ${_tmpID} FALSE
 			} else /if (!${Target.Body.Name.Equal[Undead]}) {
 				/if (${validate_cast[FALSE, alt, "Shackles of Tunare", ${_tmpID}]}) /call core_cast2 "Shackles of Tunare" alt ${_tmpID} FALSE
 			}
+
+		| berzerkers
+		} else /if (${validate_class[FALSE, |BER]}) {
+			/if (${validate_cast[FALSE, disc, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" disc ${_tmpID} FALSE
+
+		| everyone else
+		} else {
+			/if (${validate_cast[FALSE, alt, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" alt ${_tmpID} FALSE
 		}
+
 		
 		/if (${Select[${castReturn},CAST_SUCCESS,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
 			/call create_timer timer_snare_${_tmpID} 1m
@@ -3643,7 +3645,7 @@ sub tell_resident_mage(string _request)
 	
 	/declare _toon string local FALSE
 	/if (${Bool[${get_resident[mage, 150]}]}) {
-		/varset _toon ${Bool[${get_resident[mage, 150]}]}
+		/varset _toon ${get_resident[mage, 150]}
 	} else {
 		/return FALSE
 	}
@@ -3663,7 +3665,7 @@ sub tell_resident_mage(string _request)
 	}
 /return TRUE
 
-
+${timer_ask_for_rod_Ieve}
 
 |***
  *	DES: Res routines for the healer slobs.
@@ -5333,10 +5335,12 @@ sub check_buff_routines(bool _force)
 	CHECKINPUTS
 	/if (!${Me.Invis} || (${Select[${Me.Class.ShortName},ROG]} && ${switchSos})) {
 		
-		/declare _tmpSpell string local FALSE
-		/if (${Bool[${Me.Gem[${fix_gem_id[${buffGem}]}]}]})  {
-			/varset _tmpSpell ${Me.Gem[${fix_gem_id[${buffGem}]}]}
-		}		
+		/if (${switchBuffGemHold}) {
+			/declare _tmpSpell string local FALSE
+			/if (${Bool[${Me.Gem[${fix_gem_id[${buffGem}]}]}]})  {
+				/varset _tmpSpell ${Me.Gem[${fix_gem_id[${buffGem}]}]}
+			}		
+		}
 		
 		| check tell request for buffs
 	  /if (${switchBuffTell} && !${timer_check_buffs_tell}) /call check_buffs_tell
@@ -5381,10 +5385,12 @@ sub check_buff_routines(bool _force)
 			/if (${switchBuffMerc} && !${timer_check_buffs_merc}) /call check_buffs_manual mercenary
 			/if (${switchBuffGroup} && !${timer_check_buffs_group}) /call check_buffs_manual group
 		}
-	
-		/if (${Bool[${_tmpSpell}]}) {
-			/call mem_spell TRUE "${_tmpSpell}" ${buffGem} FALSE	
-			/varset _tmpSpell FALSE
+
+		/if (${switchBuffGemHold}) {
+			/if (${Bool[${_tmpSpell}]}) {
+				/call mem_spell TRUE "${_tmpSpell}" ${buffGem} FALSE	
+				/varset _tmpSpell FALSE
+			}
 		}
 		
 	}
@@ -5499,7 +5505,6 @@ sub check_for_item(string _verbage)
 
 
 
-
 |***
  *	DES: one line echo bitch
  *	USE: /call echo_bitch [MQWindow|ECHO]
@@ -5562,8 +5567,8 @@ sub check_stance()
 	/if (${validate_cast[FALSE, spell, "${Stance}", ${Me.ID}]}) /call core_cast2 "${Stance}" 0 0 FALSE
 /return
 
- 
- 
+
+
  |***
  *	DES: Circle of [Power|Life|Mana]
  *	USE: keep Circle of [Power|Life|Mana] going
@@ -5600,8 +5605,8 @@ sub synergy_click_Circle()
 	}
 /return TRUE
 
- 
-  
+
+
 |***
  *	DES: Clicks usefull 1 off items during a Burn
  *	USE: 
@@ -5618,7 +5623,7 @@ sub click_item_burn()
 		CHECKINPUTS
 		/if (${validate_cast[FALSE, item, "${clickItemBurn${_count}}", ${Me.ID}]}) /call core_cast2 "${clickItemBurn${_count}}" item 0 FALSE
 	/next _count
-/return  
+/return
 
 
 
@@ -5944,7 +5949,7 @@ sub core_cast2(string _spell, string _type, int _tmpID, string _sub)
 	| what type is it?
 	/if (${_type.Equal[FIND]}) {
 		/if (${Me.Book[${_spell}]}) {
-			/varset _type spell
+			/varset _type ${buffGem}
 		} else /if (${Me.AltAbilityReady[${_spell}]}) {	
 			/varset _type alt
 		} else /if (${Me.CombatAbilityReady[${_spell}]}) {
@@ -6585,6 +6590,7 @@ sub bandolier_swap(string _band)
  ***|
 sub validate_expansion(bool _error, string _exp)
 	DEBUG validate_expansion(${_error}, ${_exp})
+	/if (${switchIgnoreXpacControl}) /return TRUE
 	/declare _pass bool local TRUE
 	/declare _count int local 0
 
@@ -7218,7 +7224,7 @@ sub validate_target(bool _error, int _tmpID)
 	/if (${Target.ID} && ${Bool[${Target.Mezzed.Duration}]} && !${switchPull}) /return FALSE
 	/if ((!${Spawn[${_tmpID}].LineOfSight} && !${switchOverrideLos}) || ${Spawn[${_tmpID}].Distance} > ${MobAgro}) /return FALSE
 	/if (${Spawn[${_tmpID}].Type.Equal[PC]}) /return FALSE
-	| /if (${Target.Type.Equal[PC]}) /varset isValidTarget FALSE
+	/if (${Target.Type.Equal[PC]}) /varset isValidTarget FALSE
 	/if (${_tmpID} == ${Me.ID} || ${_tmpID} == ${Me.Pet.ID}) /return FALSE
 
 	| /if (${Select[${Me.Class.ShortName},ROG]} && ${switchSos}) /makemevisible
@@ -7366,6 +7372,7 @@ sub get_resident(string _class, int _distance)
 	/declare _count int local 0
 	
 	/for _count 1 to ${Resident${_class}.Count[|]}
+		| SDEBUG  ${_class}, ${_distance} --  ${Resident${_class}.Count[|]}:${Resident${_class}.Arg[${_count},|]}
 		/if (!${Bool[${Resident${_class}.Arg[${_count},|]}]}) /continue
 		/if (!${Bool[${Spawn[${Resident${_class}.Arg[${_count},|]}].ID}]}) /continue
 		/if (${Spawn[${Resident${_class}.Arg[${_count},|]}].Dead}) /continue
@@ -7373,7 +7380,7 @@ sub get_resident(string _class, int _distance)
 		/if (${setCommunications.Equal[eqbc]}) {
 			/if (!${Spawn[${Resident${_class}.Arg[${_count},|]}].InZone}) /continue
 		}
-		
+		| /echo _name ${Resident${_class}.Arg[${_count},|].Left[1].Upper}${Resident${_class}.Arg[${_count},|].Right[-1].Lower}
 		/varset _name ${Resident${_class}.Arg[${_count},|].Left[1].Upper}${Resident${_class}.Arg[${_count},|].Right[-1].Lower}
 		/if (${Bool[${_name}]}) /break
 	/next _count	
