@@ -379,7 +379,7 @@ sub cast_summon_weapons()
 		/if (${validate_cast[FALSE, spell, "${summonedWepSpell}", ${Me.ID}]}) /call core_cast2 "${summonedWepSpell}" ${buffGem} ${Me.ID} FALSE
 		/delay 20s !${Me.Casting.ID}
 		/delay 5
-		/call sort_cursor TRUE
+		CLEARCURSOR TRUE
 	}
 	/delay 5
 	
@@ -390,14 +390,14 @@ sub cast_summon_weapons()
 			/delay 1s !${Cursor.ID}
 		}
 		/squelch /exchange ${FindItem[${summonedWepClosedBag}].ID} pack${PetBagSlotNumber}
-		/call sort_cursor TRUE
+		CLEARCURSOR TRUE
 		/delay 2s !${Cursor.ID}
 		/delay 5
 		/if (${validate_cast[FALSE, item, "${summonedWepClosedBag}", ${Me.ID}]}) /call core_cast2 "${summonedWepClosedBag}" item 0 FALSE
 		/delay 3s !${Me.Casting.ID}
 		/delay 5
 		/delay 2s
-		/call sort_cursor TRUE		
+		CLEARCURSOR TRUE		
 		/delay 5
 
 		/if (${Bool[${FindItem[Pouch of Quellious]}]}) {
@@ -1041,7 +1041,7 @@ sub check_ammo()
 		| do we have enough of the summoned item
 		/if (${FindItemCount[=${RangeItemSummon.Arg[${_count},|]}]} > ${RangeItemCount}) /continue
 		
-		/call sort_cursor TRUE
+		CLEARCURSOR TRUE
 		
 		| sort what type of item we need to get
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
@@ -2133,54 +2133,52 @@ sub cast_AA_snare(int _tmpID)
 		/call create_timer timer_snare_${Target2Kill} 1m
 		/return
 	}
-		
-	| set AA for snaring
+
+	| Berzerkers
 	/if (${Select[${Me.Class.ShortName},BER]}) {
-		/declare _debuffSnare string local Leg Strike	
+		/if (${validate_cast[FALSE, disc, "Leg Strike", ${_tmpID}]}) /call core_cast2 "Leg Strike" disc ${_tmpID} FALSE
+
+	| Rangers and Druids
 	} else /if (${Select[${Me.Class.ShortName},DRU,RNG]}) {
-		/declare _debuffSnare string local Entrap
+		/if (${validate_cast[FALSE, alt, "Entrap", ${_tmpID}]}) /call core_cast2 "Entrap" alt ${_tmpID} FALSE
+
+	| Monks
 	} else /if (${Select[${Me.Class.ShortName},MNK]}) {
-		/declare _debuffSnare string local Crippling Strike
+		/if (${validate_cast[FALSE, alt, "Crippling Strike", ${_tmpID}]}) /call core_cast2 "Crippling Strike" alt ${_tmpID} FALSE
+
+	| Necromancers and Shadowknights
 	} else /if (${Select[${Me.Class.ShortName},NEC,SHD]}) {
-		/declare _debuffSnare string local Encroaching Darkness
+		/if (${validate_cast[FALSE, alt, "Encroaching Darkness", ${_tmpID}]}) /call core_cast2 "Encroaching Darkness" alt ${_tmpID} FALSE
+
+	| Rogues
 	} else /if (${Select[${Me.Class.ShortName},ROG]}) {
-		/declare _debuffSnare string local Ligament Slice
+		/if (${validate_cast[FALSE, alt, "Ligament Slice", ${_tmpID}]}) /call core_cast2 "Ligament Slice" alt ${_tmpID} FALSE
+
+	| Warriors
 	} else /if (${Select[${Me.Class.ShortName},WAR]}) {
-		/declare _debuffSnare string local Call of Challenge
+		/if (${validate_cast[FALSE, alt, "Call of Challenge", ${_tmpID}]}) /call core_cast2 "Call of Challenge" alt ${_tmpID} FALSE
+
+	| Wizards
 	} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
-		/declare _debuffSnare string local Atol's Shackles
-	}	
+		/if (${validate_cast[FALSE, alt, "Atol's Shackles", ${_tmpID}]}) /call core_cast2 "Atol's Shackles" alt ${_tmpID} FALSE
 
-
-	
-	/if (!${Target.Snared.ID}) {
-
-		| paladins
-		/if (${validate_class[FALSE, |PAL]}) {
-			/if (${Target.Body.Name.Equal[Undead]}) {
-				/if (${validate_cast[FALSE, alt, "Halt the Dead", ${_tmpID}]}) /call core_cast2 "Halt the Dead" alt ${_tmpID} FALSE
-			} else /if (!${Target.Body.Name.Equal[Undead]}) {
-				/if (${validate_cast[FALSE, alt, "Shackles of Tunare", ${_tmpID}]}) /call core_cast2 "Shackles of Tunare" alt ${_tmpID} FALSE
-			}
-
-		| berzerkers
-		} else /if (${validate_class[FALSE, |BER]}) {
-			/if (${validate_cast[FALSE, disc, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" disc ${_tmpID} FALSE
-
-		| everyone else
-		} else {
-			/if (${validate_cast[FALSE, alt, "${_debuffSnare}", ${_tmpID}]}) /call core_cast2 "${_debuffSnare}" alt ${_tmpID} FALSE
+	| Paladins
+	}	else /if (${Select[${Me.Class.ShortName},PAL]}) {
+		/if (${Target.Body.Name.Equal[Undead]}) {
+			/if (${validate_cast[FALSE, alt, "Halt the Dead", ${_tmpID}]}) /call core_cast2 "Halt the Dead" alt ${_tmpID} FALSE
+		} else /if (${Target.Body.Name.NotEqual[Undead]}) {
+			/if (${validate_cast[FALSE, alt, "Shackles of Tunare", ${_tmpID}]}) /call core_cast2 "Shackles of Tunare" alt ${_tmpID} FALSE
 		}
-
-		
-		/if (${Select[${castReturn},CAST_SUCCESS,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
-			/call create_timer timer_snare_${_tmpID} 1m
-		} else /if (${Select[${castReturn},CAST_IMMUNE]}) {
-			/call create_timer timer_snare_${_tmpID} 4m
-		}
-	} else /if (${Target.Snared.ID} && !${timer_snare_${_tmpID}}) {
-		/call create_timer timer_snare_${_tmpID} 30s
 	}
+		
+	| set timers on cast results
+	/if (${Select[${castReturn},CAST_SUCCESS,CAST_RESISTED,CAST_RESIST,CAST_NOHOLD,CAST_TAKEHOLD]}) {
+		/call create_timer timer_snare_${_tmpID} 1m
+	} else /if (${Select[${castReturn},CAST_IMMUNE]}) {
+		/call create_timer timer_snare_${_tmpID} 4m
+	}
+	
+	
 /return
 
 
@@ -2403,9 +2401,6 @@ sub cast_cure()
 			/if (${Debuff.Curses} || ${Debuff.Poisons} || ${Debuff.Diseases} || ${Debuff.Corruptions}) {
 				/if (${validate_cast[FALSE, alt, "Embrace the Decay", ${Me.ID}]}) /call core_cast2 "Embrace the Decay" alt 0 FALSE
 			}
-			
-			
-			
 		}
 		
 		/if (${Debuff.Curses} && ${Me.ItemReady[${cureCurseItem}]}) {
@@ -2424,7 +2419,6 @@ sub cast_cure()
 			/if (${validate_cast[FALSE, item, "${cureDiseaseItem}", ${Me.ID}]}) /call core_cast2 "${cureDiseaseItem}" item ${Me.ID} FALSE
 		}
 	}
-
 
 	/declare _count int local 0
 
@@ -3193,7 +3187,7 @@ sub odds_and_ends()
 		CHECKINPUTS
 		/if (${validate_cast[FALSE, item, "${clickOddItem${_count}}", ${Me.ID}]}) /call core_cast2 "${clickOddItem${_count}}" item 0 FALSE
 	/next _count
-	/call sort_cursor TRUE
+	CLEARCURSOR TRUE
 /return
 
 
@@ -4413,7 +4407,7 @@ sub do_loot()
 					/delay 5
 					| /nomodkey /shift /itemnotify ${FindItem[=${_advlItem}].InvSlot} leftmouseup
 					/nomodkey /shift /itemnotify in Pack${Math.Calc[${FindItem[=${_advlItem}].ItemSlot}-22]} ${Math.Calc[${FindItem[=${_advlItem}].ItemSlot2}+1]} leftmouseup
-					/call sort_cursor TRUE
+					CLEARCURSOR TRUE
 					/if (${Window[ConfirmationDialogBox].Open}) {
 						/delay 1
 						/nomodkey /notify ConfirmationDialogBox Yes_Button leftmouseup
@@ -4821,14 +4815,20 @@ sub get_target()
 				/for _count 1 to ${RangeItem.Count[|]}
 					/if (!${Bool[${FindItemCount[${RangeItemSummon}]}]} && ${Bool[${RangeItemSummon}]}) /call check_ammo
 				/next _count
-				/range
+				
+				/if (${Bool[${switchBandolier}]} && ${Bool[${bandolierRange}]} && ${Bool[${bandolierNormal}]}) {
+					/call bandolier_swap Range
+					/range
+					/call bandolier_swap Normal
+				} else /if (!${Bool[${switchBandolier}]}) {
+					/range
+				}
 			}
 		}
 
-		/if (${Spawn[ID ${Target2Kill}].Distance} < 32 && ${Spawn[ID ${Target2Kill}].Distance} > ${CombatDistance}) {
+	/if (${Spawn[ID ${Target2Kill}].Distance} < 32 && ${Spawn[ID ${Target2Kill}].Distance} > ${CombatDistance}) {
 			/if (${switchCombatMelee}) /squelch /stick ID ${Target2Kill} ${CombatDistance}
 		}
-
 
 		/delay 1
 		/if (${is_target_dead[${Target2Kill}]}) /break

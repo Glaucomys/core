@@ -16,7 +16,7 @@
  *  NOTE: 
  ***|
 sub set_declares()
-	/call setDeclare coreBuild											string	outer 20181114.00
+	/call setDeclare coreBuild											string	outer 20181118.03
 	/call setINIVar classBuild											string	Common 00.00
 	/call setDeclare forceINIcheck									bool		outer TRUE
 	/call setDeclare castReturn 										string 	outer NULL
@@ -390,16 +390,20 @@ sub set_declares()
 	/call setINIVar autoControl			 								bool		Common FALSE 
 	/call setINIVar noCastWith											string	Common "|Quick Defense|Protection of Bayle|Interrogation Intimidation|Energy Charge|Cloud of Terror|Faith"
 	/call setINIVar noMeleeWith											string	Common "|Itching Poison"
-	| /call setDeclare canMelee												bool		outer TRUE
 	
 	/call setINIVar shrinkItem 											string 	Common "Ring of the Ancients"
 	/call setINIVar IllusionItem										string	Common FALSE
 	/call setINIVar IllusionBuff										string	Common FALSE
 	/call setINIVar GTFO														string	Common FALSE
 	/call setINIVar switchAApicker									bool 		Common FALSE
-	/call setINIVar RangeItem												string	Common "|FALSE|FALSE"
-	/call setINIVar RangeItemSummon									string	Common "|FALSE|FALSE"
-	/call setINIVar RangeItemCount									int			Common 5
+	
+	| zerkers keep their own range item setup
+	/if (!${Select[${Me.Class.ShortName},BER]}) {
+		/call setINIVar RangeItem												string	Common "|FALSE|FALSE"
+		/call setINIVar RangeItemSummon									string	Common "|FALSE|FALSE"
+		/call setINIVar RangeItemCount									int			Common 5
+	}
+	
 	/call setINIVar RangeSpell											string	Common FALSE
 	/call setINIVar RangeClickItem									string	Common FALSE
 	/call setINIVar RangeDisc												string	Common FALSE
@@ -595,6 +599,7 @@ sub set_declares()
 	/call setDeclare bandolierSwap									string 	outer ${bandolierNormal}
 	/call setINIVar bandolierBash										string	meleedisc FALSE
 	/call setINIVar bandolierBurn										string	meleedisc FALSE
+	/call setINIVar bandolierRange									string	meleedisc FALSE
 
 	
 	/if (${Select[${Me.Class.ShortName},BER]}) {
@@ -1343,6 +1348,8 @@ sub declare_NEC()
  *  NOTE: 
  ***|
 sub declare_SHD()
+	/declare _count int local 0
+	
 	/call setTimer tcheck_vot												string Timer 1215s timer_check_vot
 
 	/call setDeclare SHDspire1											string	outer "Fundament: First Spire of the Reavers"
@@ -1363,72 +1370,280 @@ sub declare_SHD()
 	/call setTimer tcheck_Stance										string 	Timer 3m timer_check_Stance
 
 	/call setDeclare mobAECount											int			outer 0
-	/call setINIVar Withstand 											string 	Discs "Repel"
+
+	| fast rune
+	/if (${Me.Level} >= 108) {
+		/call setINIVar Withstand			 								string	Discs "Spurn"
+	} else /if (${Me.Level} >= 103) {
+		/call setINIVar Withstand			 								string	Discs "Repel"
+	} else /if (${Me.Level} >= 98) {
+		/call setINIVar Withstand			 								string	Discs "Reprove"
+	} else /if (${Me.Level} >= 93) {
+		/call setINIVar Withstand			 								string	Discs "Renounce"
+	} else /if (${Me.Level} >= 83) {
+		/call setINIVar Withstand			 								string	Discs "Withstand"
+	} else {
+		/call setINIVar Withstand			 								string	Discs FALSE
+	}	
+
 	/call setINIVar BladeStrike 										string 	Discs "Lacerating Blade"
-	/call setINIVar CrimsonBlade 										string 	Discs "Carmine Blade"
-	/call setINIVar DiscRest			 									string	Discs "Breather"
-	/call setINIVar DiscFakeHate										string	Discs	"Unflinching Acrimony"
-	/call setINIVar DiscLeech												string	Discs	"Leechcurse Discipline"
-	/call setINIVar DiscRancor											string	Discs	"Reflexive Revulsion"
+
+	| blade DPS
+	/if (${Me.Level} >= 110) {
+		/call setINIVar CrimsonBlade			 						string	Discs "Claret Blad"
+	} else /if (${Me.Level} >= 105) {
+		/call setINIVar CrimsonBlade			 						string	Discs "Carmine Blade"
+	} else /if (${Me.Level} >= 95) {
+		/call setINIVar CrimsonBlade			 						string	Discs "Crimson Blade"
+	} else {
+		/call setINIVar CrimsonBlade			 						string	Discs FALSE
+	}	
 	
-	/call setINIVar DefensiveDisc1									string 	Discs "Krellnakor Mantle "
-	/call setINIVar DefensiveDisc2 									string 	Discs "Tylix's Carapace"
-	/call setINIVar DefensiveDisc3 									string 	Discs "Cursed Guardian Discipline"
+	| rest disc
+	/if (${Me.Level} >= 101)  {
+		/call setINIVar DiscRest			 								string	Discs "Breather"
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar DiscRest			 								string	Discs "Rest"
+	} else /if (${Me.Level} >= 91)  {
+		/call setINIVar DiscRest			 								string	Discs "Reprive"
+	} else /if (${Me.Level} >= 86)  {
+		/call setINIVar DiscRest			 								string	Discs "Respite"
+	} else {
+		/call setINIVar DiscRest			 								string	Discs FALSE
+	}	
+
+	| acromony
+	/if (${Me.Level} >= 109) {
+		/call setINIVar DiscFakeHate			 						string	Discs "Unyielding Acrimony"
+	} else /if (${Me.Level} >= 104) {
+		/call setINIVar DiscFakeHate			 						string	Discs "Unflinching Acrimony"
+	} else /if (${Me.Level} >= 99) {
+		/call setINIVar DiscFakeHate			 						string	Discs "Unbroken Acrimony"
+	} else /if (${Me.Level} >= 94) {
+		/call setINIVar DiscFakeHate			 						string	Discs "Undivided Acrimony"
+	} else {
+		/call setINIVar DiscFakeHate			 						string	Discs FALSE
+	}	
+	
+	/call setINIVar DiscLeech												string	Discs	"Leechcurse Discipline"
+	
+	| rancor	
+	/if (${Me.Level} >= 104) {
+		/call setINIVar DiscRancor				 						string	Discs "Reflexive Revulsion"
+	} else /if (${Me.Level} >= 100) {
+		/call setINIVar DiscRancor				 						string	Discs "Reflexive Rancor"
+	} else {
+		/call setINIVar DiscRancor				 						string	Discs FALSE
+	}	
+
+	| defensive mantle
+	/if (${Me.Level} >= 108) {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Krellnakor Mantle"
+	} else /if (${Me.Level} >= 103) {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Doomscale Mantle"
+	} else /if (${Me.Level} >= 98) {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Bonebrood Mantle"
+	} else /if (${Me.Level} >= 93) {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Recondite Mantle"
+	} else /if (${Me.Level} >= 83) {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Malarian Mantle"
+	} else {
+		/call setINIVar DefensiveDisc1			 					string	Discs FALSE
+	}	
+
+	| defensive carpace
+	/if (${Me.Level} >= 108)  {
+		/call setINIVar DefensiveDisc2			 					string	Discs "Tylix's Carapace"
+	} else /if (${Me.Level} >= 103)  {
+		/call setINIVar DefensiveDisc2								string	Discs "Vizat's Carpace"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DefensiveDisc2								string	Discs "Grelleth's Carpace"
+	} else /if (${Me.Level} >= 93)  {
+		/call setINIVar DefensiveDisc2		 						string	Discs "Sholothian Carpace"
+	} else {
+		/call setINIVar DefensiveDisc2		 						string	Discs FALSE
+	}	
+
+	| defensive guardian
+	/if (${Me.Level} >= 107) {
+		/call setINIVar DefensiveDisc3			 					string	Discs "Cursed Guardian Discipline"
+	} else /if (${Me.Level} >= 97) {
+		/call setINIVar DefensiveDisc3			 					string	Discs "Unholy Guardian Discipline"
+	} else {
+		/call setINIVar DefensiveDisc3			 					string	Discs FALSE
+	}		
+
 	/call setINIVar defCount												int			Discs 2
 	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 
-	/call setINIVar ChallengeSpell									string 	Spells "Impose for Power"
-	/call setINIVar Hate1 													string 	Spells "Terror of Narus"
-	/call setINIVar Hate2 													string 	Spells "Terror of Poria"
+	| challenge	
+	/if (${Me.Level} >= 107) {
+		/call setINIVar ChallengeSpell			 					string	Spells "Refute for Power"
+	} else /if (${Me.Level} >= 102) {
+		/call setINIVar ChallengeSpell								string	Spells "Impose for Power"
+	} else /if (${Me.Level} >= 97) {
+		/call setINIVar ChallengeSpell								string	Spells "Demand for Power"
+	} else /if (${Me.Level} >= 92) {
+		/call setINIVar ChallengeSpell		 						string	Spells "Provocation for Power"
+	} else /if (${Me.Level} >= 82) {
+		/call setINIVar ChallengeSpell		 						string	Spells "Charge for Power"
+	} else /if (${Me.Level} >= 77) {
+		/call setINIVar ChallengeSpell		 						string	Spells "Trial for Power"
+	} else /if (${Me.Level} >= 77) {
+		/call setINIVar ChallengeSpell		 						string	Spells "Challenge for Power"
+	} else {
+		/call setINIVar ChallengeSpell		 						string	Spells FALSE
+	}	
+	
 	/call setINIVar spellCripple										string 	Spells FALSE
-	/call setINIVar spellUndeadCripple							string 	Spells "Helix of the Undying"
-	 
-	/call setINIVar AEHate1 												string 	Spells "Disgust"
-	/call setINIVar AEHate2 												string 	Spells "Repugnance"
-	/call setINIVar AELifeTap 											string 	Spells "Deceitful Deflection"
-	
-	/call setINIVar DoNuke					 								int			Spells 2
-	/call setINIVar Nuke1 													string 	Spells "Touch of Holmein"
-	/call setINIVar Nuke1Condition 									string	Spells FALSE
-	/call setINIVar Nuke2 													string 	Spells "Touch of Lutzen"
-	/call setINIVar Nuke2Condition 									string	Spells FALSE
-	/call setINIVar Nuke3 													string 	Spells FALSE
-	/call setINIVar Nuke3Condition 									string	Spells FALSE
-	/call setINIVar Nuke4 													string 	Spells FALSE
-	/call setINIVar Nuke4Condition 									string	Spells FALSE
-	/call setINIVar Nuke5 													string 	Spells FALSE
-	/call setINIVar Nuke5Condition 									string	Spells FALSE
-	/call setINIVar Nuke6 													string 	Spells FALSE
-	/call setINIVar Nuke6Condition 									string	Spells FALSE
-	
-	/call setINIVar DoDoT										 				int			Spells 0
-	/call setINIVar DoT1									 					string	Spells FALSE
-	/call setINIVar DoT1chk								 					string	Spells FALSE
-	/call setINIVar DoT1Condition 									string	Spells FALSE
-	/call setINIVar DoT2									 					string	Spells FALSE
-	/call setINIVar DoT2chk								 					string	Spells FALSE
-	/call setINIVar DoT2Condition 									string	Spells FALSE
-	/call setINIVar DoT3									 					string	Spells FALSE
-	/call setINIVar DoT3chk								 					string	Spells FALSE
-	/call setINIVar DoT3Condition 									string	Spells FALSE
-	/call setINIVar DoT4									 					string	Spells FALSE
-	/call setINIVar DoT4chk								 					string	Spells FALSE
-	/call setINIVar DoT4Condition 									string	Spells FALSE
-	 
-	/call setINIVar spellCripple 										string 	Spells FALSE
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
 	/call setINIVar switchHarmonious 								bool	 	Buffs TRUE
 	/call setINIVar Harmonious 											string 	Buffs "Harmonious Disruption"
-	/call setINIVar switchStance 										bool	 	Buffs TRUE
-	/call setINIVar Stance 													string 	Buffs "Staunch Stance"
-	/call setINIVar switchSkin			 								bool	 	Buffs TRUE
-	/call setINIVar Skin			 											string 	Buffs "Tylix's Skin"
-	/call setINIVar switchVoT				 								bool	 	Buffs TRUE
-	/call setINIVar switchModRod										bool	 	Buffs TRUE
 
+	| single hate
+	/if (${Me.Level} >= 106)  {
+		/call setINIVar Hate1 												string 	Spells "Terror of Kra`Du"
+		/call setINIVar Hate2 												string 	Spells "Terror of Narus"
+	} else /if (${Me.Level} >= 101) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Narus"
+		/call setINIVar Hate2 												string 	Spells "Terror of Poira"
+	} else /if (${Me.Level} >= 96) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Poira"
+		/call setINIVar Hate2 												string 	Spells "Terror of Desalin"
+	} else /if (${Me.Level} >= 91) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Desalin"
+		/call setINIVar Hate2 												string 	Spells "Terror of Rerekalen"
+	} else /if (${Me.Level} >= 86) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Rerekalen"
+		/call setINIVar Hate2 												string 	Spells "Terror of Jelvalak"
+	} else /if (${Me.Level} >= 81) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Jelvalak"
+		/call setINIVar Hate2 												string 	Spells "Terror of the Soulbleeder"
+	} else /if (${Me.Level} >= 76) {
+		/call setINIVar Hate1 												string 	Spells "Terror of the Soulbleeder"
+		/call setINIVar Hate2 												string 	Spells "Terror of Vergalid"
+	} else /if (${Me.Level} >= 71) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Vergalid"
+		/call setINIVar Hate2 												string 	Spells "Terror of Discord"
+	} else /if (${Me.Level} >= 67) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Discord"
+		/call setINIVar Hate2 												string 	Spells "Terror of Thule"
+	} else /if (${Me.Level} >= 63) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Thule"
+		/call setINIVar Hate2 												string 	Spells "Terrir of Terris"
+	} else /if (${Me.Level} >= 59) {
+		/call setINIVar Hate1 												string 	Spells "Terrir of Terris"
+		/call setINIVar Hate2 												string 	Spells "Terror of Death"
+	} else /if (${Me.Level} >= 53) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Death"
+		/call setINIVar Hate2 												string 	Spells "Terror of Shadows"
+	} else /if (${Me.Level} >= 42) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Shadows"
+		/call setINIVar Hate2 												string 	Spells "Terror of Darkness"
+	} else /if (${Me.Level} >= 33) {
+		/call setINIVar Hate1 												string 	Spells "Terror of Darkness"
+		/call setINIVar Hate2 												string 	Spells FALSE
+	} else {
+		/call setINIVar Hate1 												string 	Spells FALSE
+		/call setINIVar Hate2 												string 	Spells FALSE
+	}
+
+	| AE Hate	
+	/if (${Me.Level} >= 109) {
+		/call setINIVar AEHate1 											string 	Spells "Revulsion"
+		/call setINIVar AEHate2 											string 	Spells "Disgust"
+	} else /if (${Me.Level} >= 104) {
+		/call setINIVar AEHate1 											string 	Spells "Disgust"
+		/call setINIVar AEHate2 											string 	Spells "Repugnance"
+	} else /if (${Me.Level} >= 99) {
+		/call setINIVar AEHate1 											string 	Spells "Repugnance"
+		/call setINIVar AEHate2 											string 	Spells "Abhorrence"
+	} else /if (${Me.Level} >= 94) {
+		/call setINIVar AEHate1 											string 	Spells "Abhorrence"
+		/call setINIVar AEHate2 											string 	Spells "Loathing"
+	} else /if (${Me.Level} >= 89) {
+		/call setINIVar AEHate1 											string 	Spells "Loathing"
+		/call setINIVar AEHate2 											string 	Spells "Burst of Spite"
+	} else /if (${Me.Level} >= 84) {
+		/call setINIVar AEHate1 											string 	Spells "Burst of Spite"
+		/call setINIVar AEHate2 											string 	Spells "Revile"
+	} else /if (${Me.Level} >= 79) {
+		/call setINIVar AEHate1 											string 	Spells "Revile"
+		/call setINIVar AEHate2 											string 	Spells "Vilify"
+	} else /if (${Me.Level} >= 74) {
+		/call setINIVar AEHate1 											string 	Spells "Vilify"
+		/call setINIVar AEHate2 											string 	Spells "Dread Gaze"
+	} else /if (${Me.Level} >= 69) {
+		/call setINIVar AEHate1 											string 	Spells "Dread Gaze"
+		/call setINIVar AEHate2 											string 	Spells FALSE
+	} else {
+		/call setINIVar AEHate1 											string 	Spells FALSE
+		/call setINIVar AEHate2 											string 	Spells FALSE
+	}	
+
+	/call setINIVar AELifeTap 											string 	Spells "Deceitful Deflection"
+	/call setINIVar AAHatePet												string	Discs "Projection of Doom"
+
+	| stance	
+	/call setINIVar switchStance 										bool	 	Buffs TRUE
+	/if (${Me.Level} >= 109) {
+		/call setINIVar Stance			 									string	Buffs "Defiant Stance"
+	} else /if (${Me.Level} >= 104) {
+		/call setINIVar Stance												string	Buffs "Staunch Stance"
+	} else /if (${Me.Level} >= 99) {
+		/call setINIVar Stance												string	Buffs "Steadfast Stance"
+	} else /if (${Me.Level} >= 94) {
+		/call setINIVar Stance		 										string	Buffs "Stoic Stance"
+	} else /if (${Me.Level} >= 89) {
+		/call setINIVar Stance		 										string	Buffs "Stubborn Stance"
+	} else /if (${Me.Level} >= 84) {
+		/call setINIVar Stance		 										string	Buffs "Steely Stance"
+	} else {
+		/call setINIVar Stance		 										string	Buffs FALSE
+	}	
+
+	| skin rune buff	
+	/call setINIVar switchSkin			 								bool	 	Buffs TRUE
+	/if (${Me.Level} >= 110) {
+		/call setINIVar Skin			 										string	Buffs "Tylix's Skin"
+	} else /if (${Me.Level} >= 105) {
+		/call setINIVar Skin													string	Buffs "Vizat's Skin"
+	} else /if (${Me.Level} >= 100) {
+		/call setINIVar Skin													string	Buffs "Grelleth's Skin"
+	} else /if (${Me.Level} >= 95) {
+		/call setINIVar Skin		 											string	Buffs "Sholothian Skin"
+	} else /if (${Me.Level} >= 90) {
+		/call setINIVar Skin		 											string	Buffs "Gorgon Skin"
+	} else /if (${Me.Level} >= 85) {
+		/call setINIVar Skin		 											string	Buffs "Malarian Skin"
+	} else /if (${Me.Level} >= 80) {
+		/call setINIVar Skin		 											string	Buffs "Umbrial Skin"
+	} else /if (${Me.Level} >= 70) {
+		/call setINIVar Skin		 											string	Buffs "Decrepit Skin"
+	} else {
+		/call setINIVar Skin		 											string	Buffs FALSE
+	}	
+
+	/call setINIVar switchVoT				 								bool	 	Buffs TRUE
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
 	/call setINIVar useShieldFlash									bool		Discs FALSE
 	/call setINIVar useShieldFlashPct								int			Discs 20
 	/call setINIVar switchAttraction								bool		Discs TRUE
+
+	| Nukes
+	/call setINIVar DoNuke					 								int			Spells 0
+	/for _count 1 to 6
+		/call setINIVar Nuke${_count}									string	Spells FALSE
+		/call setINIVar Nuke${_count}Condition				string	Spells FALSE
+	/next _count	
+	
+	| DoTs
+	/call setINIVar DoDoT								 						int			Spells 0
+	/for _count 1 to 6
+		/call setINIVar DoT${_count}									string	Spells FALSE
+		/call setINIVar DoT${_count}chk								string	Spells FALSE
+		/call setINIVar DoT${_count}Condition					string	Spells FALSE
+	/next _count
 
 /return	
 
@@ -1441,6 +1656,8 @@ sub declare_SHD()
  *  NOTE: 
  ***|
 sub declare_PAL()
+	/declare _count int local 0
+
 	/call setDeclare PALspire1											string	outer "Fundament: First Spire of Holiness"
 	/call setDeclare PALspire2											string	outer "Fundament: Second Spire of Holiness"
 	/call setDeclare PALspire3											string	outer "Fundament: Third Spire of Holiness"
@@ -1478,22 +1695,89 @@ sub declare_PAL()
 	/call setINIVar RandRezDelay										int 		Heal 5
 	
 	/call setINIVar doYaulp 												bool		Buffs TRUE
-	/call setINIVar spellYaulp 											string	Buffs FALSE
 	/call setINIVar useYaulpPct											int			Buffs 98
-	/call setINIVar DiscRest			 									string	Discs "Breather"
-	/call setINIVar DiscFastRune	 									string	Discs "Repel"
-		                                   	
-	/call setINIVar DefensiveDisc1			 						string	Discs "Armor of Mercy"
-	/call setINIVar DefensiveDisc2			 						string	Discs "Kar`Zok Mantle"
-	/call setINIVar DefensiveDisc3			 						string	Discs "Blessed Guardian Discipline"
+
+	| yaulp attack buff
+	/if (${Me.Level} >= 60)  {
+		/call setINIVar spellYaulp			 							string	Buffs "Yaulp IV"
+	} else /if (${Me.Level} >= 56)  {
+		/call setINIVar spellYaulp			 							string	Buffs "Yaulp III"
+	} else /if (${Me.Level} >= 38)  {
+		/call setINIVar spellYaulp			 							string	Buffs "Yaulp II"
+	} else /if (${Me.Level} >= 9)  {
+		/call setINIVar spellYaulp			 							string	Buffs "Yaulp"
+	} else {
+		/call setINIVar spellYaulp					 					string	Buffs FALSE
+	}		
+
+	| rest disc
+	/if (${Me.Level} >= 101)  {
+		/call setINIVar DiscRest			 								string	Discs "Breather"
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar DiscRest			 								string	Discs "Rest"
+	} else /if (${Me.Level} >= 91)  {
+		/call setINIVar DiscRest			 								string	Discs "Reprive"
+	} else /if (${Me.Level} >= 86)  {
+		/call setINIVar DiscRest			 								string	Discs "Respite"
+	} else {
+		/call setINIVar DiscRest			 								string	Discs FALSE
+	}	
+	
+	| fast rune
+	/if (${Me.Level} >= 108)  {
+		/call setINIVar DiscFastRune			 						string	Discs "Spurn"
+	} else /if (${Me.Level} >= 103)  {
+		/call setINIVar DiscFastRune			 						string	Discs "Repel"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DiscFastRune			 						string	Discs "Reprove"
+	} else /if (${Me.Level} >= 93)  {
+		/call setINIVar DiscFastRune			 						string	Discs "Renounce"
+	} else {
+		/call setINIVar DiscFastRune			 						string	Discs FALSE
+	}	
+
+	| armor disc
+	/if (${Me.Level} >= 108)  {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Armor of Mercy"
+	} else /if (${Me.Level} >= 103)  {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Armor of Ardency"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Armor of Reverence"
+	} else /if (${Me.Level} >= 93)  {
+		/call setINIVar DefensiveDisc1			 					string	Discs "Armor of Zeal"
+	} else {
+		/call setINIVar DefensiveDisc1			 					string	Discs FALSE
+	}	
+
+	| mantle disc
+	/if (${Me.Level} >= 107)  {
+		/call setINIVar DefensiveDisc2			 					string	Discs "Kar`Zok Mantle"
+	} else /if (${Me.Level} >= 103)  {
+		/call setINIVar DefensiveDisc2			 					string	Discs "Skalber Mantle"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DefensiveDisc2			 					string	Discs "Bright Wing Mantle"
+	} else /if (${Me.Level} >= 93)  {
+		/call setINIVar DefensiveDisc2			 					string	Discs "Prominent Mantle"
+	} else {
+		/call setINIVar DefensiveDisc2			 					string	Discs FALSE
+	}		
+
+	| guardian disc
+	/if (${Me.Level} >= 107)  {
+		/call setINIVar DefensiveDisc3			 					string	Discs "Blessed Guardian Discipline"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DefensiveDisc3			 					string	Discs "Holy Guardian Discipline"
+	} else {
+		/call setINIVar DefensiveDisc3			 					string	Discs FALSE
+	}			
+
 	/call setINIVar defCount												int			Discs 2
-                                           	
+                                          	
 	/call setINIVar DiscUnflinching									string	Discs "Unflinching Affirmation"
-	/call setINIVar DiscJudgement										string	Discs "Inquisitors Judgement"
-	/call setINIVar DiscHate												string	Discs "Projection of Piety"
-	/call setINIVar DiscTwincast										string	Discs "Hand of Tunare"
 	/call setINIVar DiscReflexive										string	Discs "Reflexive Reverence"
-                                           	
+
+	/call setINIVar AAHatePet												string	Discs "Projection of Piety"
+	/call setINIVar DiscTwincast										string	Discs "Hand of Tunare"
 	/call setINIVar AALayonHands										string	Discs "Lay on Hands"
 	/call setINIVar AAHandofPiety										string	Discs "Hand of Piety"
 	/call setINIVar AAForceofDisruption							string	Discs "Force of Disruption"
@@ -1512,56 +1796,91 @@ sub declare_PAL()
 	/call setINIVar chainStun												string	Discs FALSE
 	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 	                                         	
-	/call setINIVar DoNuke					 								int			Spells 5
-	/call setINIVar Nuke1														string 	Spells "Force of Ardency"
-	/call setINIVar Nuke1Condition 									string	Spells FALSE
-	/call setINIVar Nuke2														string 	Spells "Ardent Force"
-	/call setINIVar Nuke2Condition 									string	Spells FALSE
-	/call setINIVar Nuke3														string 	Spells "Force of the Darkened Sea"
-	/call setINIVar Nuke3Condition 									string	Spells FALSE
-	/call setINIVar Nuke4														string 	Spells "Lesson of Grief"
-	/call setINIVar Nuke4Condition 									string	Spells FALSE
-	/call setINIVar Nuke5							 							string	Spells "Protective Devotion"
-	/call setINIVar Nuke5Condition 									string	Spells "!${Me.Song[Protective Devotion].ID}"
-	/call setINIVar Nuke6							 							string	Spells FALSE
-	/call setINIVar Nuke6Condition 									string	Spells FALSE
-                                           	
+	| Nukes
+	/call setINIVar DoNuke					 								int			Spells 0
+	/for _count 1 to 6
+		/call setINIVar Nuke${_count}									string	Spells FALSE
+		/call setINIVar Nuke${_count}Condition				string	Spells FALSE
+	/next _count                                           	
+
+	| DoTs
 	/call setINIVar DoDoT								 						int			Spells 0
-	/call setINIVar DoT1							 							string	Spells FALSE
-	/call setINIVar DoT1chk						 							string	Spells FALSE
-	/call setINIVar DoT1Condition 									string	Spells FALSE
-	/call setINIVar DoT2							 							string	Spells FALSE
-	/call setINIVar DoT2chk						 							string	Spells FALSE
-	/call setINIVar DoT2Condition 									string	Spells FALSE
-	/call setINIVar DoT3							 							string	Spells FALSE
-	/call setINIVar DoT3chk						 							string	Spells FALSE
-	/call setINIVar DoT3Condition 									string	Spells FALSE
-	/call setINIVar DoT4							 							string	Spells FALSE
-	/call setINIVar DoT4chk						 							string	Spells FALSE
-	/call setINIVar DoT4Condition 									string	Spells FALSE
-                                          		
+	/for _count 1 to 6
+		/call setINIVar DoT${_count}									string	Spells FALSE
+		/call setINIVar DoT${_count}chk								string	Spells FALSE
+		/call setINIVar DoT${_count}Condition					string	Spells FALSE
+	/next _count
+	
 	/call setINIVar spellCripple 										string 	Spells FALSE
-	/call setINIVar ChallengeSpell									string 	Spells "Impose for Honor"
-	/call setINIVar ValiantDefense									string 	Spells "Valiant Defense"
-		                                      		
+	
+	| single target challenge spell
+	/if (${Me.Level} >= 107)  {
+		/call setINIVar ChallengeSpell			 					string	Spells "Refute for Honor"
+	} else /if (${Me.Level} >= 102)  {
+		/call setINIVar ChallengeSpell			 					string	Spells "Impose for Honor"
+	} else /if (${Me.Level} >= 97)  {
+		/call setINIVar ChallengeSpell			 					string	Spells "Demand for Honor"
+	} else /if (${Me.Level} >= 87)  {
+		/call setINIVar ChallengeSpell			 					string	Spells "Confrontation for Honor"
+	} else /if (${Me.Level} >= 82)  {
+		/call setINIVar ChallengeSpell			 					string	Spells "Charge for Honor"
+	} else /if (${Me.Level} >= 77)  {
+		/call setINIVar ChallengeSpell			 					string	Spells "Trial for Honor"
+	} else /if (${Me.Level} >= 72)  {
+		/call setINIVar ChallengeSpell			 					string	Spells "Challenge for Honor"
+	} else {
+		/call setINIVar ChallengeSpell			 					string	Spells FALSE
+	}		
+
+	| def proc spell
+	/if (${Me.Level} >= 107)  {
+		/call setINIVar ValiantDefense			 					string	Spells "Valiant Defense"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar ValiantDefense			 					string	Spells "Valiant Deflection"
+	} else {
+		/call setINIVar ValiantDefense			 					string	Spells FALSE
+	}		
+
 	/call setINIVar Twincast												string 	Spells "Glorious Exoneration"
-	                                        		
 	/call setINIVar switchModRod										bool	 	Buffs TRUE
+
 	/call setINIVar switchHarmonious 								bool	 	Buffs TRUE
 	/call setINIVar Harmonious 											string 	Buffs "Harmonious Blessing"
+
+	| steel weapon heal proc
 	/call setINIVar switchSteel			 								bool	 	Buffs TRUE
-	/call setINIVar Steel			 											string 	Buffs "Reinvigorating Steel"
-	/call setINIVar switchStance 										bool	 	Buffs TRUE
-	/call setINIVar Stance 													string 	Buffs "Staunch Stance"
-	                                        		
+	/call setINIVar Steel			 											string 	Buffs ""
+	/if (${Me.Level} >= 109)  {
+		/call setINIVar Steel			 										string	Buffs "Revitalizating Steel"
+	} else /if (${Me.Level} >= 99)  {
+		/call setINIVar Steel			 										string	Buffs "Reinvigorating Steel"
+	} else {
+		/call setINIVar Steel			 										string	Buffs FALSE
+	}		
+	
+	| stance temp HP buff
+	/call setINIVar switchStance 										bool	 	Buffs FALSE
+	/if (${Me.Level} >= 109)  {
+		/call setINIVar Stance			 									string	Buffs "Defiant Stance"
+	} else /if (${Me.Level} >= 104)  {
+		/call setINIVar Stance			 									string	Buffs "Staunch Stance"
+	} else /if (${Me.Level} >= 99)  {
+		/call setINIVar Stance			 									string	Buffs "Steadfast Stance"
+	} else /if (${Me.Level} >= 89)  {
+		/call setINIVar Stance			 									string	Buffs "Stubborn Stance"
+	} else /if (${Me.Level} >= 84)  {
+		/call setINIVar Stance			 									string	Buffs "Steely Stance"
+	} else {
+		/call setINIVar Stance			 									string	Buffs FALSE
+	}		
+                                        		
 	/call setINIVar useMG														bool		Buffs TRUE
 	/call setINIVar useMGPct												int			Buffs 60
 	/call setINIVar useShieldFlash									bool		Discs FALSE
 	/call setINIVar useShieldFlashPct								int			Discs 20
 	/call setINIVar useLoH													bool		Heal FALSE
 	/call setINIVar useLoHPct												int			Heal 10
-	/call setINIVar switchAttraction								bool		Discs TRUE
-	
+	/call setINIVar switchAttraction								bool		Discs FALSE
 
 /return	
 
@@ -1636,6 +1955,51 @@ sub declare_WAR()
  *  NOTE: 
  ***|
 sub declare_BER()
+	/declare _count int local 0
+                                        		
+	| Axe Summoning
+	/if (${Me.Level} >= 106)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Mangler|Axe of the Demolisher"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Mangler|Axe of the Demolisher"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 101)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Demolisher"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Demolisher"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Brute"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Brute"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 91)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Sunderer"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Sunderer"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 86)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Savage"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Savage"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 81)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Eradicator"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Eradicator"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 76)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Decimator"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Decimator"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 71)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Annihilator"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Annihilator"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else /if (${Me.Level} >= 66)  {
+		/call setINIVar RangeItem											string	Common "|Axe of the Destroyer"
+		/call setINIVar RangeItemSummon								string	Common "|Axe of the Destroyer"
+		/call setINIVar RangeItemCount								int			Common 5
+	} else {
+		/call setINIVar RangeItem											string	Common "|FALSE|FALSE"
+		/call setINIVar RangeItemSummon								string	Common "|FALSE|FALSE"
+		/call setINIVar RangeItemCount								int			Common 5
+	}
+
 	/call setDeclare BERspire1											string	outer "Fundament: First Spire of Savagery"
 	/call setDeclare BERspire2											string	outer "Fundament: Second Spire of Savagery"
 	/call setDeclare BERspire3											string	outer "Fundament: Third Spire of Savagery"
@@ -1645,7 +2009,7 @@ sub declare_BER()
 	/call setDeclare BEREpic2												string	outer "Vengeful Taelosian Blood Axe"
 	/call setINIVar BERAlliance											string	Discs "Demolisher's Alliance"
 	/call setDeclare BERAAUnity											string	outer FALSE
-	/call setDeclare BERAAFade											string	outer FALSE
+	/call setDeclare BERAAFade											string	outer "Self Preservation"
 	
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
@@ -1653,38 +2017,332 @@ sub declare_BER()
 	/call setINIVar AEMelee					 								bool	 	Discs FALSE
 	/call setINIVar DiscSnare 											string 	Discs FALSE
 	/call setINIVar SnareAxe 												string 	Discs FALSE
-	/call setINIVar DiscVolley 											string 	Discs "Brutal Volley"
+
+	| Volley Line
+	/if (${Me.Level} >= 109)  {
+		/call setINIVar DiscVolley 										string 	Discs "Mangling Volley"
+	} else /if (${Me.Level} >= 104)  {
+		/call setINIVar DiscVolley 										string 	Discs "Demolishing Volley"
+	} else /if (${Me.Level} >= 99)  {
+		/call setINIVar DiscVolley 										string 	Discs "Brutal Volley"
+	} else /if (${Me.Level} >= 94)  {
+		/call setINIVar DiscVolley 										string 	Discs "Sundering Volley"
+	} else /if (${Me.Level} >= 89)  {
+		/call setINIVar DiscVolley 										string 	Discs "Savage Volley"
+	} else /if (${Me.Level} >= 84)  {
+		/call setINIVar DiscVolley 										string 	Discs "Eradicator's Volley"
+	} else /if (${Me.Level} >= 79)  {
+		/call setINIVar DiscVolley 										string 	Discs "Decimator's Volley"
+	} else /if (${Me.Level} >= 74)  {
+		/call setINIVar DiscVolley 										string 	Discs "Annihilator's Volley"
+	} else /if (${Me.Level} >= 69)  {
+		/call setINIVar DiscVolley 										string 	Discs "Destroyer's Volley"
+	} else /if (${Me.Level} >= 61)  {
+		/call setINIVar DiscVolley 										string 	Discs "Rage Volley"
+	} else {
+		/call setINIVar DiscVolley			 							string	Discs FALSE
+	}
+	
 	/call setINIVar CryOfChaos 											string 	Discs "Ancient: Cry of Chaos"
-	/call setINIVar DiscBerserking 									string 	Discs "Berserking Discipline"
-	/call setINIVar DiscRest 												string 	Discs "Breather"
-	/call setINIVar DiscCombatFrenzy 								string 	Discs "Amplified Frenzy"
-	/call setINIVar DiscScream 											string 	Discs "Distressing Scream"
-	/call setINIVar ThrowingAxe 										string 	Discs "Demolishing Axe Throw"
-	/call setINIVar DiscJolt 												string 	Discs "Jarring Smite"
-	/call setINIVar SharedBloodLust 								string 	Discs "Shared Cruelty"
-	/call setINIVar SharedBloodLustRecourse					string 	Discs "Reflected Brutality II"
-	/call setINIVar DiscOverwhelmingFrenzy 					string 	Discs "Demolishing Frenzy"
-	/call setINIVar DiscCleavingAnger 							string 	Discs "Cleaving Acrimony Discipline"
-	/call setINIVar DiscSlapintheFace 							string 	Discs "Kick in the Shins"
-	/call setINIVar DiscAxeofRallos 								string 	Discs "Axe of Numicia"
-	/call setINIVar DiscVengeful 										string 	Discs "Avenging Flurry Discipline"
-	/call setINIVar DiscFesteringRage 							string 	Discs "Bubbling Rage"
-	/call setINIVar DiscCryHavoc 										string 	Discs "Cry Carnage"
-	/call setINIVar DiscAugmentedFrenzy 						string 	Discs "Amplified Frenzy"
-  /call setINIVar DiscOpenWound 									string 	Discs "Open Wound"
-  /call setINIVar DiscFrenzyResolve								string 	Discs "Frenzied Resolve"
-  /call setINIVar UntamedgRage										string 	Discs "Untamed Rage"
-  /call setINIVar RecklessAbandon									string 	Discs "Reckless Abandon"
+	
+	| Berserking Line
+	/if (${Me.Level} >= 100)  {
+		/call setINIVar DiscBerserking								string 	Discs "Brutal Discipline"
+	} else /if (${Me.Level} >= 95)  {
+		/call setINIVar DiscBerserking 								string 	Discs "Sundering Discipline"
+	} else /if (${Me.Level} >= 75)  {
+		/call setINIVar DiscBerserking 								string 	Discs "Berserking Discipline"
+	} else /if (${Me.Level} >= 60)  {
+		/call setINIVar DiscBerserking 								string 	Discs "Burning Rage Discipline"
+	} else /if (${Me.Level} >= 58)  {
+		/call setINIVar DiscBerserking 								string 	Discs "Blind Rage Discipline"
+	} else /if (${Me.Level} >= 57)  {
+		/call setINIVar DiscBerserking 								string 	Discs "Focused Fury Discipline"
+	} else /if (${Me.Level} >= 54)  {
+		/call setINIVar DiscBerserking 								string 	Discs "Cleaving Rage Discipline"
+	} else /if (${Me.Level} >= 53)  {
+		/call setINIVar DiscBerserking 								string 	Discs "Inspired Anger Discipline"
+	} else {
+		/call setINIVar DiscBerserking			 					string	Discs FALSE
+	}
+
+	| rest disc
+	/if (${Me.Level} >= 101)  {
+		/call setINIVar DiscRest			 								string	Discs "Breather"
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar DiscRest			 								string	Discs "Rest"
+	} else /if (${Me.Level} >= 91)  {
+		/call setINIVar DiscRest			 								string	Discs "Reprive"
+	} else /if (${Me.Level} >= 86)  {
+		/call setINIVar DiscRest			 								string	Discs "Respite"
+	} else {
+		/call setINIVar DiscRest			 								string	Discs FALSE
+	}
+
+	| Combat Frenzy
+	/if (${Me.Level} >= 106)  {
+		/call setINIVar DiscCombatFrenzy 							string 	Discs "Mangler Frenzy"
+	} else /if (${Me.Level} >= 101)  {
+		/call setINIVar DiscCombatFrenzy 							string 	Discs "Demolishing Frenzy"
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar DiscCombatFrenzy 							string 	Discs "Vanquishing Frenzy"
+	} else /if (${Me.Level} >= 91)  {
+		/call setINIVar DiscCombatFrenzy 							string 	Discs "Conquering Frenzy"
+	} else /if (${Me.Level} >= 86)  {
+		/call setINIVar DiscCombatFrenzy 							string 	Discs "Overwhelming Frenzy"
+	} else /if (${Me.Level} >= 81)  {
+		/call setINIVar DiscCombatFrenzy 							string 	Discs "Overpowering Frenzy"
+	} else {
+		/call setINIVar DiscCombatFrenzy			 				string	Discs FALSE
+	}
+
+	| Disc Scream
+	/if (${Me.Level} >= 92)  {
+		/call setINIVar DiscScream 										string 	Discs "Perturbing Scream"
+	} else /if (${Me.Level} >= 87)  {
+		/call setINIVar DiscScream 										string 	Discs "Distracting Scream"
+	} else /if (${Me.Level} >= 82)  {
+		/call setINIVar DiscScream 										string 	Discs "Distressing Scream"
+	} else /if (${Me.Level} >= 77)  {
+		/call setINIVar DiscScream 										string 	Discs "Agitating Scream"
+	} else /if (${Me.Level} >= 72)  {
+		/call setINIVar DiscScream 										string 	Discs "Unsettling Scream"
+	}else {
+		/call setINIVar DiscScream			 							string	Discs FALSE
+	}
+
+	| Axe Throw
+	/if (${Me.Level} >= 108)  {
+		/call setINIVar ThrowingAxe 									string 	Discs "Mangling Axe Throw"
+	} else /if (${Me.Level} >= 103)  {
+		/call setINIVar ThrowingAxe 									string 	Discs "Demolishing Axe Throw"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar ThrowingAxe 									string 	Discs "Brutal Axe Throw"
+	} else /if (${Me.Level} >= 93)  {
+		/call setINIVar ThrowingAxe 									string 	Discs "Spirited Axe Throw"
+	} else /if (${Me.Level} >= 88)  {
+		/call setINIVar ThrowingAxe 									string 	Discs "Energetic Axe Throw"
+	} else /if (${Me.Level} >= 83)  {
+		/call setINIVar ThrowingAxe 									string 	Discs "Vigorous Axe Throw"
+	} else {
+		/call setINIVar ThrowingAxe			 							string	Discs FALSE
+	}
+
+	| Jolt Line
+	/if (${Me.Level} >= 109)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Jolt"
+	} else /if (${Me.Level} >= 104)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Smite"
+	} else /if (${Me.Level} >= 99)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Crush"
+	} else /if (${Me.Level} >= 94)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Blow"
+	} else /if (${Me.Level} >= 89)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Slam"
+	} else /if (${Me.Level} >= 84)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Clash"
+	} else /if (${Me.Level} >= 79)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Smash"
+	} else /if (${Me.Level} >= 74)  {
+		/call setINIVar DiscJolt 											string 	Discs "Jarring Strike"
+	} else /if (${Me.Level} >= 69)  {
+		/call setINIVar DiscJolt 											string 	Discs "Baffling Strike"
+	} else /if (${Me.Level} >= 65)  {
+		/call setINIVar DiscJolt 											string 	Discs "Confusing Strike"
+	} else /if (${Me.Level} >= 48)  {
+		/call setINIVar DiscJolt 											string 	Discs "Distracting Strike"
+	} else /if (${Me.Level} >= 24)  {
+		/call setINIVar DiscJolt 											string 	Discs "Divertive Strike"
+	} else {
+		/call setINIVar DiscJolt			 								string	Discs FALSE
+	}
+	
+	| Bloodlust
+	/if (${Me.Level} >= 110)  {
+		/call setINIVar SharedBloodLust 							string 	Discs "Shared Ruthlessness"
+		/call setINIVar SharedBloodLustRecourse				string 	Discs "Reflected Ruthlessness"
+	} else /if (${Me.Level} >= 105)  {
+		/call setINIVar SharedBloodLust 							string 	Discs "Shared Cruelty"
+		/call setINIVar SharedBloodLustRecourse				string 	Discs "Reflected Cruelty"
+	} else /if (${Me.Level} >= 100)  {
+		/call setINIVar SharedBloodLust 							string 	Discs "Shared Viciousness"
+		/call setINIVar SharedBloodLustRecourse				string 	Discs "Reflected Viciousness"
+	} else /if (${Me.Level} >= 95)  {
+		/call setINIVar SharedBloodLust 							string 	Discs "Shared Savagery"
+		/call setINIVar SharedBloodLustRecourse				string 	Discs "Reflected Savagery"
+	} else /if (${Me.Level} >= 90)  {
+		/call setINIVar SharedBloodLust 							string 	Discs "Shared Brutality"
+		/call setINIVar SharedBloodLustRecourse				string 	Discs "Reflected Brutality"
+	} else /if (${Me.Level} >= 85)  {
+		/call setINIVar SharedBloodLust 							string 	Discs "Shared Bloodlust"
+		/call setINIVar SharedBloodLustRecourse				string 	Discs "Reflected Bloodlust"
+	} else {
+		/call setINIVar SharedBloodLust 							string 	Discs FALSE
+		/call setINIVar SharedBloodLustRecourse				string 	Discs FALSE
+	}
+	
+	| Overwhelming Frenzy Line
+	/if (${Me.Level} >= 110)  {
+		/call setINIVar DiscOverwhelmingFrenzy				string 	Discs "Torrid Frenzy"
+	} else /if (${Me.Level} >= 105)  {
+		/call setINIVar DiscOverwhelmingFrenzy 				string 	Discs "Stormwild Frenzy"
+	} else /if (${Me.Level} >= 100)  {
+		/call setINIVar DiscOverwhelmingFrenzy 				string 	Discs "Fearless Frenzy"
+	} else /if (${Me.Level} >= 95)  {
+		/call setINIVar DiscOverwhelmingFrenzy 				string 	Discs "Steel Frenzy"
+	} else /if (${Me.Level} >= 90)  {
+		/call setINIVar DiscOverwhelmingFrenzy 				string 	Discs "Fighting Frenzy"
+	} else /if (${Me.Level} >= 85)  {
+		/call setINIVar DiscOverwhelmingFrenzy 				string 	Discs "Combat Frenzy"
+	} else /if (${Me.Level} >= 80)  {
+		/call setINIVar DiscOverwhelmingFrenzy 				string 	Discs "Battle Frenzy"
+	} else {
+		/call setINIVar DiscOverwhelmingFrenzy			 	string	Discs FALSE
+	}
+
+	| Cleaving Anger Line
+	/if (${Me.Level} >= 86)  {
+		/call setINIVar DiscCleavingAnger							string 	Discs "Cleaving Acrimony Discipline"
+	} else /if (${Me.Level} >= 65)  {
+		/call setINIVar DiscCleavingAnger 						string 	Discs "Cleaving Anger Discipline"
+	} else /if (${Me.Level} >= 54)  {
+		/call setINIVar DiscCleavingAnger 						string 	Discs "Cleaving Rage Discipline"
+	} else {
+		/call setINIVar DiscCleavingAnger			 				string	Discs FALSE
+	}
+
+	| Opening Attack Line
+	/if (${Me.Level} >= 107)  {
+		/call setINIVar DiscSlapintheFace							string 	Discs "Sucker Punch"
+	} else /if (${Me.Level} >= 102)  {
+		/call setINIVar DiscSlapintheFace 						string 	Discs "Kick in the Shins"
+	} else /if (${Me.Level} >= 97)  {
+		/call setINIVar DiscSlapintheFace 						string 	Discs "Punch in the Throat"
+	} else /if (${Me.Level} >= 92)  {
+		/call setINIVar DiscSlapintheFace 						string 	Discs "Kick in the Teeth"
+	} else /if (${Me.Level} >= 87)  {
+		/call setINIVar DiscSlapintheFace 						string 	Discs "Kick in the Shins"
+	} else {
+		/call setINIVar DiscSlapintheFace			 				string	Discs FALSE
+	}
+
+	| Axe of Line
+	/if (${Me.Level} >= 110)  {
+		/call setINIVar DiscAxeofRallos								string 	Discs "Axe of Rekatok"
+	} else /if (${Me.Level} >= 105)  {
+		/call setINIVar DiscAxeofRallos 							string 	Discs "Axe of Numicia"
+	} else /if (${Me.Level} >= 102)  {
+		/call setINIVar DiscAxeofRallos 							string 	Discs "Axe of Aeons"
+	} else /if (${Me.Level} >= 100)  {
+		/call setINIVar DiscAxeofRallos 							string 	Discs "Axe of Zurel"
+	} else /if (${Me.Level} >= 95)  {
+		/call setINIVar DiscAxeofRallos 							string 	Discs "Axe of Illdaera"
+	} else /if (${Me.Level} >= 90)  {
+		/call setINIVar DiscAxeofRallos 							string 	Discs "Axe of Graster"
+	} else /if (${Me.Level} >= 85)  {
+		/call setINIVar DiscAxeofRallos 							string 	Discs "Axe of Rallos"
+	} else {
+		/call setINIVar DiscAxeofRallos			 					string	Discs FALSE
+	}
+
+	| Flurry Line
+	/if (${Me.Level} >= 89)  {
+		/call setINIVar DiscVengeful									string 	Discs "Avenging Flurry Discipline"
+	} else /if (${Me.Level} >= 60)  {
+		/call setINIVar DiscVengeful 									string 	Discs "Vengeful Flurry Discipline"
+	} else {
+		/call setINIVar DiscVengeful			 						string	Discs FALSE
+	}
+
+	| Rage Line
+	/if (${Me.Level} >= 102)  {
+		/call setINIVar DiscFesteringRage							string 	Discs "Bubbling Rage"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DiscFesteringRage 						string 	Discs "Festering Rage"
+	} else {
+		/call setINIVar DiscFesteringRage			 				string	Discs FALSE
+	}
+
+	| Cry Havoc Line
+	/if (${Me.Level} >= 98)  {
+		/call setINIVar DiscCryHavoc									string 	Discs "Cry Carnage"
+	} else /if (${Me.Level} >= 68)  {
+		/call setINIVar DiscCryHavoc 									string 	Discs "Cry Havoc"
+	} else {
+		/call setINIVar DiscCryHavoc			 						string	Discs FALSE
+	}
+
+	| Augmented Frenzy Line
+	/if (${Me.Level} >= 109)  {
+		/call setINIVar DiscAugmentedFrenzy						string 	Discs "Bolstered Frenzy"
+		/call setDeclare AugmentedFrenzyEffect 				string 	outer "Bolstered Frenzy Effect"
+	} else /if (${Me.Level} >= 104)  {
+		/call setINIVar DiscAugmentedFrenzy 					string 	Discs "Amplified Frenzy"
+		/call setDeclare AugmentedFrenzyEffect 				string 	outer "Amplified Frenzy Effect"
+	} else /if (${Me.Level} >= 99)  {
+		/call setINIVar DiscAugmentedFrenzy 					string 	Discs "Augmented Frenzy"
+		/call setDeclare AugmentedFrenzyEffect 				string 	outer "Augmented Frenzy Effect"
+	} else {
+		/call setINIVar DiscAugmentedFrenzy			 			string	Discs FALSE
+		/call setDeclare AugmentedFrenzyEffect 				string 	outer FALSE
+	}
+
+	| Frenzied Line
+	/if (${Me.Level} >= 94)  {
+		/call setINIVar DiscFrenzyResolve							string 	Discs "Frenzied Resolve"
+	} else {
+		/call setINIVar DiscFrenzyResolve			 				string	Discs FALSE
+	}
+	
+	/call setINIVar UntamedgRage										string 	Discs "Untamed Rage"
+	/call setINIVar RecklessAbandon									string 	Discs "Reckless Abandon"
  	/call setINIVar frenzy													bool		meleedisc FALSE
- 	/call setINIVar DiscDicho		 										string 	Discs "Dichotomic Rage"
- 	/call setINIVar DiscDisconcert									string 	Discs "Disconcerting Discipline"
- 	/call setINIVar DiscEnduranceTap								string 	Discs "Sapping Strikes"
- 	/call setINIVar DiscPet													string 	Discs "Phantom Assailant"
+
+ 	| Dichotomic Line
+	/if (${Me.Level} >= 101)  {
+		/call setINIVar DiscDicho											string 	Discs "Dichotomic Rage"
+	} else {
+		/call setINIVar DiscDicho			 								string	Discs FALSE
+	}
+
+	| Disconcerting Line
+	/if (${Me.Level} >= 108)  {
+		/call setINIVar DiscDisconcert								string 	Discs "Mangling Discipline"
+	} else /if (${Me.Level} >= 104)  {
+		/call setINIVar DiscDisconcert 								string 	Discs "Disconcerting Discipline"
+	} else {
+		/call setINIVar DiscDisconcert			 					string	Discs FALSE
+	}
+
+	| Endurance Tap Line
+	/if (${Me.Level} >= 103)  {
+		/call setINIVar DiscEnduranceTap							string 	Discs "Sapping Strikes"
+	} else {
+		/call setINIVar DiscEnduranceTap			 				string	Discs FALSE
+	}
+
+	| Pet Line
+	/if (${Me.Level} >= 100)  {
+		/call setINIVar DiscPet												string 	Discs "Phantom Assailant"
+	} else {
+		/call setINIVar DiscPet			 									string	Discs FALSE
+	}
+
 	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 60
-	/call setDeclare OpenWoundEffect								string 	outer "Open Wound"
-	/call setDeclare AugmentedFrenzyEffect 					string 	outer "Augmented Frenzy Effect"
+
+	| Open Wound Line
+	/if (${Me.Level} >= 106)  {
+		/call setINIVar DiscOpenWound									string 	Discs "Ritual Scarification"
+		/call setDeclare OpenWoundEffect							string 	outer "Ritual Scarification"
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar DiscOpenWound 								string 	Discs "Open Wound"
+		/call setDeclare OpenWoundEffect							string 	outer "Open Wound"
+	} else {
+		/call setINIVar DiscOpenWound			 						string	Discs FALSE
+		/call setDeclare OpenWoundEffect							string 	outer FALSE
+	}
+
 	/call setINIVar buffGem 												string 	Spells FALSE
-   
 	/call setINIVar spellCripple 										string 	Spells FALSE
 /return	
 
@@ -1697,6 +2355,8 @@ sub declare_BER()
  *  NOTE: 
  ***|
 sub declare_RNG()
+	/declare _count int local 0
+	
 	/call setDeclare RNGspire1											string	outer "Fundament: First Spire of the Pathfinders"
 	/call setDeclare RNGspire2											string	outer "Fundament: Second Spire of the Pathfinders"
 	/call setDeclare RNGspire3											string	outer "Fundament: Third Spire of the Pathfinders"
@@ -1714,62 +2374,203 @@ sub declare_RNG()
 	/call setINIVar switchAAFade										bool		Buffs FALSE
 	/call setINIVar useAAFadePct										int			Buffs 50
 
-	/call setTimer tNuke_Summer											string	Timer 3s timer_cast_nuke_summer
-
-	/call setINIVar DoNuke					 								int			Spells 5
-	/call setINIVar Nuke1					 									string	Spells "Anticipated Shots"	
-	/call setINIVar Nuke1Condition 									string	Spells FALSE
-	/call setINIVar Nuke2					 									string	Spells "Focused Arrowrain"
-	/call setINIVar Nuke2Condition 									string	Spells FALSE
-	/call setINIVar Nuke3					 									string	Spells "Heartsplit"
-	/call setINIVar Nuke3Condition 									string	Spells FALSE
-	/call setINIVar Nuke4					 									string	Spells "Wildfire Boon"
-	/call setINIVar Nuke4Condition 									string	Spells FALSE
-	/call setINIVar Nuke5					 									string	Spells "Wildfire Ash"
-	/call setINIVar Nuke5Condition 									string	Spells FALSE
-	/call setINIVar Nuke6					 									string	Spells FALSE
-	/call setINIVar Nuke6Condition 									string	Spells FALSE
-	/call setINIVar NukeSummer		 									string	Spells "Summer's Cyclone"
-	/call setINIVar NukeSummerCondition							string	Spells FALSE
-	/call setINIVar switchNukeSummer		 						bool		Spells TRUE
-	                                        		
-                                          		
-	/call setINIVar DoDoT								 						int			Spells 0
-	/call setINIVar DoT1							 							string	Spells FALSE
-	/call setINIVar DoT1chk						 							string	Spells FALSE
-	/call setINIVar DoT1Condition										string	Spells FALSE
-	/call setINIVar DoT2							 							string	Spells FALSE
-	/call setINIVar DoT2chk						 							string	Spells FALSE
-	/call setINIVar DoT2Condition										string	Spells FALSE
-	/call setINIVar DoT3							 							string	Spells FALSE
-	/call setINIVar DoT3chk						 							string	Spells FALSE
-	/call setINIVar DoT3Condition										string	Spells FALSE
-	/call setINIVar DoT4							 							string	Spells FALSE
-	/call setINIVar DoT4chk						 							string	Spells FALSE
-	/call setINIVar DoT4Condition 									string	Spells FALSE
-	/call setINIVar DoTSwarmDS		 									string	Spells "Swarm of Glistenwings"
-	/call setINIVar DoTSwarmDSdeBuff 								string	Spells "Glistenwing Swarm"
-	                                        		
+	/call setINIVar AuspiceTXT											string	Spells "AUSPICE Lit"
 	/call setINIVar spellCripple 										string 	Spells FALSE
 
-	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
-  /call setINIVar heal1	 													string  Heal "Cloudfont"
-  /call setINIVar heal2					 									string  Heal "Desperate Dousing"
-                                          		
-	/call setINIVar DiscMele			 									string	Spells "Windstalkers's Discipline"
-	/call setINIVar DiscRange			 									string	Spells "Pureshot Discipline"
-	/call setINIVar DiscRest			 									string	Spells "Breather"
-	/call setINIVar DiscJolt			 									string	Spells "Jolting Wheel Kicks"
-	/call setINIVar DiscEnrage		 									string	Spells "Enraging Wheel Kicks"
-	/call setINIVar DiscHeal			 									string	Spells "Reflexive Bladespurs"
-	/call setINIVar BladeStorm											string	Spells "Focused Squall of Blades"
-	/call setINIVar AuspiceTXT											string	Spells "AUSPICE (critSpell 33%, accuracy 230%, critHeal 33%, critMelee 225%, critDoT 33%, attack +165)"
-	/call setINIVar DiscSqual			 									string	Spells "Focused Squall of Blades"
-	                                        		
 	/call setINIVar AADefensive1 										string	Spells "Outrider's Evasion"
 	/call setINIVar AADefensive2 										string	Spells "Protection of the Spirit Wolf"
 	/call setINIVar AADefensive3 										string	Spells "Bulwark of the Brownies"
 	/call setINIVar switchModRod										bool	 	Buffs TRUE
+	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
+
+	| Nukes
+	/call setINIVar DoNuke					 								int			Spells 0
+	/for _count 1 to 6
+		/call setINIVar Nuke${_count}									string	Spells FALSE
+		/call setINIVar Nuke${_count}Condition				string	Spells FALSE
+	/next _count
+                                          		
+	| Summer's line
+	/call setINIVar switchNukeSummer		 						bool		Spells TRUE
+	/call setTimer tNuke_Summer											string	Timer 3s timer_cast_nuke_summer
+	/if (${Me.Level} >= 109)  {
+		/call setINIVar NukeSummer		 								string	Spells "Summer's Tempest"
+	} else /if (${Me.Level} >= 104)  {
+		/call setINIVar NukeSummer		 								string	Spells "Summer's Cyclone"
+	} else /if (${Me.Level} >= 99)  {
+		/call setINIVar NukeSummer		 								string	Spells "Summer's Gale"
+	} else /if (${Me.Level} >= 89)  {
+		/call setINIVar NukeSummer		 								string	Spells "Summer's Storm"
+	} else /if (${Me.Level} >= 84)  {
+		/call setINIVar NukeSummer		 								string	Spells "Summer's Mist"
+	} else /if (${Me.Level} >= 79)  {
+		/call setINIVar NukeSummer		 								string	Spells "Summer's Viridity"
+	} else /if (${Me.Level} >= 74)  {
+		/call setINIVar NukeSummer		 								string	Spells "Summer's Dew"
+	} else {
+		/call setINIVar NukeSummer		 								string	Spells FALSE
+	}
+	/call setINIVar NukeSummerCondition							string	Spells FALSE
+
+	| DoTs
+	/call setINIVar DoDoT								 						int			Spells 0
+	/for _count 1 to 6
+		/call setINIVar DoT${_count}									string	Spells FALSE
+		/call setINIVar DoT${_count}chk								string	Spells FALSE
+		/call setINIVar DoT${_count}Condition					string	Spells FALSE
+	/next _count
+
+	| ToT DS DoT / debuff
+	/if (${Me.Level} >= 108)  {
+		/call setINIVar DoTSwarmDS		 								string	Spells "Swarm of Polybiads"
+		/call setINIVar DoTSwarmDSdeBuff 							string	Spells "Polybiad Swarm"
+	} else /if (${Me.Level} >= 103)  {
+		/call setINIVar DoTSwarmDS		 								string	Spells "Swarm of Glistenwings"
+		/call setINIVar DoTSwarmDSdeBuff 							string	Spells "Glistenwing Swarm"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DoTSwarmDS		 								string	Spells "Swarm of Vespines"
+		/call setINIVar DoTSwarmDSdeBuff 							string	Spells "Vespines Swarm"
+	} else /if (${Me.Level} >= 93)  {
+		/call setINIVar DoTSwarmDS		 								string	Spells "Swarm of Sand Wasps"
+		/call setINIVar DoTSwarmDSdeBuff 							string	Spells "Sand Wasp Swarm"
+	} else /if (${Me.Level} >= 88)  {
+		/call setINIVar DoTSwarmDS		 								string	Spells "Swarm of Hornets"
+		/call setINIVar DoTSwarmDSdeBuff 							string	Spells "Hornet Swarm"
+	} else /if (${Me.Level} >= 83)  {
+		/call setINIVar DoTSwarmDS		 								string	Spells "Swarm of Bees"
+		/call setINIVar DoTSwarmDSdeBuff 							string	Spells "Bee Swarm"
+	} else {
+		/call setINIVar DoTSwarmDS		 								string	Spells FALSE
+		/call setINIVar DoTSwarmDSdeBuff 							string	Spells FALSE
+	}
+	
+	| slow heal
+	/if (${Me.Level} >= 106)  {
+	  /call setINIVar heal1	 												string  Heal "Wellspring"
+	} else /if (${Me.Level} >= 101)  {
+	  /call setINIVar heal1	 												string  Heal "Cloudfont"
+	} else /if (${Me.Level} >= 96)  {
+	  /call setINIVar heal1	 												string  Heal "Cloudburst"
+	} else /if (${Me.Level} >= 91)  {
+	  /call setINIVar heal1	 												string  Heal "Purespring"
+	} else /if (${Me.Level} >= 86)  {
+	  /call setINIVar heal1	 												string  Heal "Purefont"
+	} else {
+	  /call setINIVar heal1	 												string  Heal FALSE
+	}
+
+	| fast heal
+	/if (${Me.Level} >= 109)  {
+	  /call setINIVar heal2				 									string  Heal "Desperate Dewcloud"
+	} else /if (${Me.Level} >= 104)  {
+	  /call setINIVar heal2				 									string  Heal "Desperate Dousing"
+	} else /if (${Me.Level} >= 99)  {
+	  /call setINIVar heal2				 									string  Heal "Desperate Drenching"
+	} else /if (${Me.Level} >= 94)  {
+	  /call setINIVar heal2				 									string  Heal "Desperate Dounpour"
+	} else /if (${Me.Level} >= 89)  {
+	  /call setINIVar heal2				 									string  Heal "Desperate Deluge"
+	} else {
+	  /call setINIVar heal2				 									string  Heal FALSE
+	}
+
+	| bow disc
+	/if (${Me.Level} >= 100)  {
+		/call setINIVar DiscRange			 								string	Spells "Pureshot Discipline"
+	} else /if (${Me.Level} >= 90)  {
+		/call setINIVar DiscRange			 								string	Spells "Bullseye Discipline"
+	} else /if (${Me.Level} >= 80)  {
+		/call setINIVar DiscRange			 								string	Spells "Aimshot Discipline"
+	} else /if (${Me.Level} >= 55)  {
+		/call setINIVar DiscRange			 								string	Spells "Trueshot Discipline"
+	} else {
+		/call setINIVar DiscRange			 								string	Spells FALSE
+	}
+
+	| rest disc
+	/if (${Me.Level} >= 101)  {
+		/call setINIVar DiscRest			 								string	Discs "Breather"
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar DiscRest			 								string	Discs "Rest"
+	} else /if (${Me.Level} >= 91)  {
+		/call setINIVar DiscRest			 								string	Discs "Reprive"
+	} else /if (${Me.Level} >= 86)  {
+		/call setINIVar DiscRest			 								string	Discs "Respite"
+	} else {
+		/call setINIVar DiscRest			 								string	Discs FALSE
+	}
+	
+	| melee disc
+	/if (${Me.Level} >= 110)  {
+		/call setINIVar DiscMele			 								string	Spells "Windstalker's Discipline"
+	} else /if (${Me.Level} >= 105)  {
+		/call setINIVar DiscMele			 								string	Spells "Copsestalker's Discipline"
+	} else /if (${Me.Level} >= 100)  {
+		/call setINIVar DiscMele			 								string	Spells "Bosquestalker's Discipline"
+	} else /if (${Me.Level} >= 69)  {
+		/call setINIVar DiscMele			 								string	Spells "Warder's Wrath"
+	} else {
+		/call setINIVar DiscMele			 								string	Spells FALSE
+	}	
+
+	| agro/anti agro kicks
+	/if (${Me.Level} >= 107)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Wheel Kicks"
+		/call setINIVar DiscEnrage		 								string	Spells "Enraging Wheel Kicks"
+	} else /if (${Me.Level} >= 102)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Cut Kicks"
+		/call setINIVar DiscEnrage		 								string	Spells "Enraging Cut Kicks"
+	} else /if (${Me.Level} >= 97)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Heel Kicks"
+		/call setINIVar DiscEnrage		 								string	Spells "Enraging Heel Kicks"
+	} else /if (${Me.Level} >= 92)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Crescent Kicks"
+		/call setINIVar DiscEnrage		 								string	Spells "Enraging Crescent Kicks"
+	} else /if (${Me.Level} >= 87)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Hook Kicks"
+		/call setINIVar DiscEnrage		 								string	Spells "Enraging Hook Kicks"
+	} else /if (${Me.Level} >= 105)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Frootkicks"
+		/call setINIVar DiscEnrage		 								string	Spells FALSE
+	} else /if (${Me.Level} >= 77)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Snapkicks"
+		/call setINIVar DiscEnrage		 								string	Spells FALSE
+	} else /if (${Me.Level} >= 72)  {
+		/call setINIVar DiscJolt			 								string	Spells "Jolting Kicks"
+		/call setINIVar DiscEnrage		 								string	Spells FALSE
+	} else {
+		/call setINIVar DiscJolt			 								string	Spells FALSE
+		/call setINIVar DiscEnrage		 								string	Spells FALSE
+	}	
+
+	| AE group heal disc
+	/if (${Me.Level} >= 105)  {
+		/call setINIVar DiscHeal			 								string	Spells "Reflexive Nettlespears"
+	} else /if (${Me.Level} >= 100)  {
+		/call setINIVar DiscHeal			 								string	Spells "Reflexive Bladespurs"
+	} else {
+		/call setINIVar DiscHeal		 									string	Spells FALSE
+	}	
+
+	| ae melee disc
+	/if (${Me.Level} >= 106)  {
+		/call setINIVar BladeStorm			 								string	Spells "Gale of Blades"
+	} else /if (${Me.Level} >= 101)  {
+		/call setINIVar BladeStorm			 								string	Spells "Squal of Blades"
+	} else /if (${Me.Level} >= 96)  {
+		/call setINIVar BladeStorm			 								string	Spells "Storm of Blades"
+	} else {
+		/call setINIVar BladeStorm		 									string	Spells FALSE
+	}	
+
+	| focused melee disc
+	/if (${Me.Level} >= 103)  {
+		/call setINIVar DiscSqual			 								string	Spells "Focused Squall of Blades"
+	} else /if (${Me.Level} >= 98)  {
+		/call setINIVar DiscSqual			 								string	Spells "Focused Storm of Blades"
+	} else {
+		/call setINIVar DiscSqual		 									string	Spells FALSE
+	}	
 
 /return	
 
@@ -1802,6 +2603,7 @@ sub declare_DRU()
 	/call setINIVar WoodTXT													string	Spells "SoWood cast."
                                         		
 	/call setINIVar spellCripple 										string 	Spells FALSE
+	/call setINIVar AAWolfSpirit										string 	Buffs FALSE
 
 	/call setINIVar DoNuke					 								int			Spells 0
 	/call setINIVar Nuke1					 									string	Spells FALSE
@@ -2263,6 +3065,8 @@ sub declare_ROG()
  *  NOTE: 
  ***|
 sub declare_CLR()
+	/declare _count int local 0
+	
 	/call setDeclare CLRspire1											string	outer "Fundament: First Spire of Divinity"
 	/call setDeclare CLRspire2											string	outer "Fundament: Second Spire of Divinity"
 	/call setDeclare CLRspire3											string	outer "Fundament: Third Spire of Divinity"
@@ -2279,7 +3083,14 @@ sub declare_CLR()
 
 	/call setTimer	tHealWard												string	Timer 185s timer_heal_ward
 	/call setINIVar switchLockMA										bool 		Heal FALSE
-		
+	/call setINIVar switchModRod										bool	 	Buffs TRUE
+	/call setINIVar switchVP												bool		Buffs TRUE
+	/call setINIVar useVPPct												int			Buffs 40
+	/call setINIVar spellCripple 										string 	Spells FALSE
+
+	/call setINIVar BreastplateHeal		 							string	Items FALSE
+	/call setINIVar BreastplateHealCondition				string	Items FALSE		
+
 	/call setDeclare hurtID		 											string 	outer FALSE
 	/call setDeclare hurtPctHP											int 		outer 100
 	/call setDeclare hurtCLS		 										string 	outer FALSE
@@ -2292,77 +3103,367 @@ sub declare_CLR()
 	/call setINIVar ProtectNPCList									string	Heal "|FALSE|FALSE"
 	/call setINIVar useGroupHeal 										bool		Heal TRUE
 	/call setINIVar useGroupHoT											bool		Heal TRUE
-	/call setINIVar tempPet						 							string	Pet "Ardent Hammer of Zeal"
 	/call setINIVar setDivinetoGroupHeal						bool		Heal FALSE
-                                            		
-  /call setINIVar healWholeGroup									string 	Heal "Word of Greater Reformation"
-  /call setINIVar healWholeGroup2									string 	Heal "Syllable of Convalescence"
-  /call setINIVar healWholeGroup3									string 	Heal "Word of Convalescence"
-  /call setINIVar healWholeGroupHoT								string 	Heal "Elixir of the Seas"
-  /call setINIVar healRemedy1											string 	Heal "Merciful Remedy"
-  /call setINIVar healRemedy2											string 	Heal "Spiritual Remedy"
-  /call setINIVar healRemedy3											string 	Heal "Graceful Remedy"
-  /call setINIVar healHoT 												string 	Heal FALSE
-  /call setINIVar healSplash											string 	Heal "Convalescent Splash"
-  /call setINIVar healIntervention1 							string  Heal "Merciful Intervention"
-  /call setINIVar healIntervention2 							string  Heal "Mystical Intervention"
-  /call setINIVar healIntervention3 							string 	Heal "Virtuous Intervention"
-  /call setINIVar healIntervention4 							string  Heal "Elysian Intervention"
-  /call setINIVar healRenewal1	 									string  Heal "Fervid Renewal"
-  /call setINIVar healRenewal2	 									string  Heal "Fraught Renewal"
-  /call setINIVar healRenewal3	 									string  Heal "Fervent Renewal"
-  /call setINIVar healPanic			 									string  Heal "Fifteenth Emblem"
-  /call setINIVar healWard			 									string  Heal "Ward of Surety"
-  /call setINIVar healWardToon	 									string  Heal "|FALSE|FALSE"
+
   /call setINIVar useCelestialRegen								bool	  Heal TRUE
-  /call setINIVar healIssuance										string  Heal "Issuance of Spirit"
 	/call setINIVar CRTXT														string	Heal "Celestial Regeneration"
+	
 	/call setINIVar XTHealRadius										int			Heal 300
 	/call setINIVar switchForceGroupHeal						bool		Heal FALSE
 	/call setINIVar RampageTank											string	Heal FALSE
 	/call setINIVar switchHealAggressive						bool		Heal FALSE
 	/call setINIVar switchCompleteHeal							bool		Heal FALSE
 	/call setINIVar CompleteHealpct									int 		Heal 70	
+
+	| group heals (not cures) *mostly                                            		
+	/if (${Me.Level} >= 108) {
+	  /call setINIVar healWholeGroup 								string  Heal "Syllable of Mending"
+	} else /if (${Me.Level} >= 103) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Syllable of Convalescence"
+	} else /if (${Me.Level} >= 98) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Syllable of Renewal"
+	} else /if (${Me.Level} >= 96) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Renewal"
+	} else /if (${Me.Level} >= 91) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Recuperation"
+	} else /if (${Me.Level} >= 86) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Awakening"
+	} else /if (${Me.Level} >= 80) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Vivacity"
+	} else /if (${Me.Level} >= 69) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Vivification"
+	} else /if (${Me.Level} >= 64) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Replenishment"
+	} else /if (${Me.Level} >= 60) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Redemption"
+	} else /if (${Me.Level} >= 57) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Restoration"
+	} else /if (${Me.Level} >= 52) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Vigor"
+	} else /if (${Me.Level} >= 45) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Healing"
+	} else /if (${Me.Level} >= 30) {	
+	  /call setINIVar healWholeGroup 								string  Heal "Word of Health"
+	} else {	
+	  /call setINIVar healWholeGroup 								string  Heal FALSE
+	}
+  /call setINIVar healWholeGroup2									string 	Heal FALSE
+  /call setINIVar healWholeGroup3									string 	Heal FALSE
+
+	| group HoT
+ 	/if (${Me.Level} >= 110) {
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of Wulthan"
+	} else /if (${Me.Level} >= 105) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of the Seas"
+	} else /if (${Me.Level} >= 100) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of the Acquittal"
+	} else /if (${Me.Level} >= 95) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of the Beneficent"
+	} else /if (${Me.Level} >= 90) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of the Ardent"
+	} else /if (${Me.Level} >= 85) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of Expiation"
+	} else /if (${Me.Level} >= 80) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of Atonment"
+	} else /if (${Me.Level} >= 75) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of Redemption"
+	} else /if (${Me.Level} >= 70) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Elixir of Divinity"
+	} else /if (${Me.Level} >= 60) {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal "Etheral Elixir"
+	} else {	
+	  /call setINIVar healWholeGroupHoT 						string  Heal FALSE
+	}
+
+	| remedies
+ 	/if (${Me.Level} >= 106) {
+	  /call setINIVar healRemedy1										string 	Heal "Merciful Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Spiritual Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Graceful Remedy"
+	} else /if (${Me.Level} >= 101) {	
+	  /call setINIVar healRemedy1										string 	Heal "Spiritual Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Graceful Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Faithful Remedy"
+	} else /if (${Me.Level} >= 96) {	
+	  /call setINIVar healRemedy1										string 	Heal "Graceful Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Faithful Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Earnest Remedy"
+	} else /if (${Me.Level} >= 91) {	
+	  /call setINIVar healRemedy1										string 	Heal "Faithful Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Earnest Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Devout Remedy"
+	} else /if (${Me.Level} >= 86) {	
+	  /call setINIVar healRemedy1										string 	Heal "Earnest Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Devout Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Solemn Remedy"
+	} else /if (${Me.Level} >= 81) {	
+	  /call setINIVar healRemedy1										string 	Heal "Devout Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Solemn Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Sacred Remedy"
+	} else /if (${Me.Level} >= 76) {	
+	  /call setINIVar healRemedy1										string 	Heal "Solemn Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Sacred Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Pious Remedy"
+	} else /if (${Me.Level} >= 71) {	
+	  /call setINIVar healRemedy1										string 	Heal "Sacred Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Pious Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Supernal Remedy"
+	} else /if (${Me.Level} >= 66) {	
+	  /call setINIVar healRemedy1										string 	Heal "Pious Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Supernal Remedy"
+		/call setINIVar healRemedy3										string 	Heal "Ethereal Remedy"
+	} else /if (${Me.Level} >= 61) {	
+	  /call setINIVar healRemedy1										string 	Heal "Supernal Remedy"
+	  /call setINIVar healRemedy2										string 	Heal "Ethereal Remedy"
+		/call setINIVar healRemedy3										string 	Heal FALSE
+	} else /if (${Me.Level} >= 59) {	
+	  /call setINIVar healRemedy1										string 	Heal "Ethereal Remedy"
+	  /call setINIVar healRemedy2										string 	Heal FALSE
+		/call setINIVar healRemedy3										string 	Heal FALSE
+	} else {	
+	  /call setINIVar healRemedy1										string 	Heal FALSE
+	  /call setINIVar healRemedy2										string 	Heal FALSE
+		/call setINIVar healRemedy3										string 	Heal FALSE
+	}
+
+  /call setINIVar healHoT 												string 	Heal FALSE
+
+	| target AE splash heals
+ 	/if (${Me.Level} >= 110) {
+	  /call setINIVar healSplash 										string  Heal "Mending Splash"
+	} else /if (${Me.Level} >= 105) {	
+	  /call setINIVar healSplash 										string  Heal "Convalescent Splash"
+	} else /if (${Me.Level} >= 100) {	
+	  /call setINIVar healSplash 										string  Heal "Reforming Splash"
+	} else /if (${Me.Level} >= 95) {	
+	  /call setINIVar healSplash 										string  Heal "Rejuvenating Splash"
+	} else /if (${Me.Level} >= 90) {	
+	  /call setINIVar healSplash 										string  Heal "Healing Splash"
+	} else {	
+	  /call setINIVar healSplash 										string  Heal FALSE
+	}
+
+	| interventions
+	/if (${Me.Level} >= 108) {
+	  /call setINIVar healIntervention1 						string  Heal "Merciful Intervention"
+	  /call setINIVar healIntervention2 						string  Heal "Mystical Intervention"
+	  /call setINIVar healIntervention3 						string 	Heal "Virtuous Intervention"
+	  /call setINIVar healIntervention4 						string  Heal "Elysian Intervention"
+	} else /if (${Me.Level} >= 103)  {
+	  /call setINIVar healIntervention1 						string  Heal "Mystical Intervention"
+	  /call setINIVar healIntervention2 						string  Heal "Virtuous Intervention"
+	  /call setINIVar healIntervention3 						string 	Heal "Elysian Intervention"
+	  /call setINIVar healIntervention4 						string  Heal "Celestial Intervention"
+	} else /if (${Me.Level} >= 98)  {
+	  /call setINIVar healIntervention1 						string  Heal "Virtuous Intervention"
+	  /call setINIVar healIntervention2 						string  Heal "Elysian Intervention"
+	  /call setINIVar healIntervention3 						string 	Heal "Celestial Intervention"
+	  /call setINIVar healIntervention4 						string  Heal "Holy Intervention"
+	} else /if (${Me.Level} >= 93)  {
+	  /call setINIVar healIntervention1 						string  Heal "Elysian Intervention"
+	  /call setINIVar healIntervention2 						string  Heal "Celestial Intervention"
+	  /call setINIVar healIntervention3 						string 	Heal "Holy Intervention"
+	  /call setINIVar healIntervention4 						string  Heal FALSE
+	} else /if (${Me.Level} >= 88)  {
+	  /call setINIVar healIntervention1 						string  Heal "Celestial Intervention"
+	  /call setINIVar healIntervention2 						string  Heal "Holy Intervention"
+	  /call setINIVar healIntervention3 						string 	Heal FALSE
+	  /call setINIVar healIntervention4 						string  Heal FALSE
+	} else /if (${Me.Level} >= 83)  {
+	  /call setINIVar healIntervention1 						string  Heal "Holy Intervention"
+	  /call setINIVar healIntervention2 						string  Heal FALSE
+	  /call setINIVar healIntervention3 						string 	Heal FALSE
+	  /call setINIVar healIntervention4 						string  Heal FALSE
+	} else {
+	  /call setINIVar healIntervention1 						string  Heal FALSE
+	  /call setINIVar healIntervention2 						string  Heal FALSE
+	  /call setINIVar healIntervention3 						string 	Heal FALSE
+	  /call setINIVar healIntervention4 						string  Heal FALSE
+	}
+
+	| renewals
+	/if (${Me.Level} >= 110) {
+	  /call setINIVar healRenewal1 									string  Heal "Furial Renewal"
+	  /call setINIVar healRenewal2 									string  Heal "Fervid Renewal"
+	  /call setINIVar healRenewal3 									string 	Heal "Fraught Renewal"
+	} else /if (${Me.Level} >= 105) {	
+	  /call setINIVar healRenewal1 									string  Heal "Fervid Renewal"
+	  /call setINIVar healRenewal2 									string  Heal "Fraught Renewal"
+	  /call setINIVar healRenewal3 									string 	Heal "Fervent Renewal"
+	} else /if (${Me.Level} >= 100) {	
+	  /call setINIVar healRenewal1 									string  Heal "Fraught Renewal"
+	  /call setINIVar healRenewal2 									string  Heal "Fervent Renewal"
+	  /call setINIVar healRenewal3 									string 	Heal "Frenetic Renewal"
+	} else /if (${Me.Level} >= 95) {	
+	  /call setINIVar healRenewal1 									string  Heal "Fervent Renewal"
+	  /call setINIVar healRenewal2 									string  Heal "Frenetic Renewal"
+	  /call setINIVar healRenewal3 									string 	Heal "Desperate Renewal"
+	} else /if (${Me.Level} >= 85) {	
+	  /call setINIVar healRenewal1 									string  Heal "Frenetic Renewal"
+	  /call setINIVar healRenewal2 									string  Heal "Desperate Renewal"
+	  /call setINIVar healRenewal3 									string 	Heal FALSE
+	} else /if (${Me.Level} >= 70) {	
+	  /call setINIVar healRenewal1 									string  Heal "Desperate Renewal"
+	  /call setINIVar healRenewal2 									string  Heal FALSE
+	  /call setINIVar healRenewal3 									string 	Heal FALSE
+	} else {	
+	  /call setINIVar healRenewal1 									string  Heal FALSE
+	  /call setINIVar healRenewal2 									string  Heal FALSE
+	  /call setINIVar healRenewal3 									string 	Heal FALSE
+	}
+
+	| panic heals
+ 	/if (${Me.Level} >= 107) {
+	  /call setINIVar healPanic 										string  Heal "Sixteenth Serenity"
+	} else /if (${Me.Level} >= 97) {	
+	  /call setINIVar healPanic 										string  Heal "Fifteenth Emblem"
+	} else /if (${Me.Level} >= 93) {	
+	  /call setINIVar healPanic 										string  Heal "Fourteenth Catalyst"
+	} else /if (${Me.Level} >= 87) {	
+	  /call setINIVar healPanic 										string  Heal "Thirteenth Salve"
+	} else /if (${Me.Level} >= 82) {	
+	  /call setINIVar healPanic 										string  Heal "Twelfth Night"
+	} else /if (${Me.Level} >= 77) {	
+	  /call setINIVar healPanic 										string  Heal "Eleventh-Hour"
+	} else {	
+	  /call setINIVar healPanic 										string  Heal FALSE
+	}
+   
+  | wards
+ 	/if (${Me.Level} >= 107) {
+	  /call setINIVar healWard			 								string  Heal "Ward of Assurance"
+	} else /if (${Me.Level} >= 102) {	
+	  /call setINIVar healWard			 								string  Heal "Ward of Surety"
+	} else /if (${Me.Level} >= 97) {	
+	  /call setINIVar healWard			 								string  Heal "Ward of Certitude"
+	} else {	
+	  /call setINIVar healWard			 								string  Heal FALSE
+	}
+  /call setINIVar healWardToon	 									string  Heal "|FALSE|FALSE"
+
+	| healing pet shield
 	/call setINIVar switchIssuance									bool		Heal FALSE
 	/call setINIVar issuanceMobCount								int			Heal 4
-	                                          		
-	/call setINIVar doYaulp 												bool		Buffs TRUE
-	/call setINIVar spellYaulp 											string	Buffs FALSE
-	/call setINIVar useYaulpPct											INT			Buffs 98
-	/call setINIVar sumWeaponSpell									string	Buffs "Hammer of Reverence"
-	/call setINIVar sumWeaponItem										string	Buffs "Hammer of Reverence III"
-	/call setINIVar switchModRod										bool	 	Buffs TRUE
-                                            		
-	/call setINIVar switchVP												bool		Buffs TRUE
-	/call setINIVar useVPPct												int			Buffs 40
-                                            		
-	/call setINIVar spellCripple 										string 	Spells FALSE
-                                            		
-	/call setINIVar DoNuke					 								int			Spells 0
-	/call setINIVar Nuke1					 									string	Spells FALSE	
-	/call setINIVar Nuke1Condition 									string	Spells FALSE
-	/call setINIVar Nuke2					 									string	Spells FALSE
-	/call setINIVar Nuke2Condition 									string	Spells FALSE
-	/call setINIVar Nuke3					 									string	Spells FALSE
-	/call setINIVar Nuke3Condition 									string	Spells FALSE
-	/call setINIVar Nuke4					 									string	Spells FALSE
-	/call setINIVar Nuke4Condition 									string	Spells FALSE
-	/call setINIVar DoDoT								 						int			Spells 0
-	/call setINIVar DoT1							 							string	Spells FALSE
-	/call setINIVar DoT1chk						 							string	Spells FALSE
-	/call setINIVar DoT1Condition										string	Spells FALSE
-	/call setINIVar DoT2							 							string	Spells FALSE
-	/call setINIVar DoT2chk						 							string	Spells FALSE
-	/call setINIVar DoT2Condition										string	Spells FALSE
-	/call setINIVar DoT3							 							string	Spells FALSE
-	/call setINIVar DoT3chk						 							string	Spells FALSE
-	/call setINIVar DoT3Condition										string	Spells FALSE
-	/call setINIVar DoT4							 							string	Spells FALSE
-	/call setINIVar DoT4chk						 							string	Spells FALSE
-	/call setINIVar DoT4Condition 									string	Spells FALSE
+	/if (${Me.Level} >= 108) {
+	  /call setINIVar healIssuance 									string  Heal "Issuance of Mercy"
+	} else /if (${Me.Level} >= 103) {	
+	  /call setINIVar healIssuance 									string  Heal "Issuance of Spirit"
+	} else /if (${Me.Level} >= 98) {	
+	  /call setINIVar healIssuance 									string  Heal "Issuance of Grace"
+	} else /if (${Me.Level} >= 93) {	
+	  /call setINIVar healIssuance 									string  Heal "Issuance of Faith"
+	} else {	
+	  /call setINIVar healIssuance 									string  Heal FALSE
+	}
 	
-	/call setINIVar BreastplateHeal		 							string	Items FALSE
-	/call setINIVar BreastplateHealCondition				string	Items FALSE	
+	| yodeling anyone?                                       		
+	/call setINIVar doYaulp 												bool		Buffs TRUE
+	/call setINIVar useYaulpPct											INT			Buffs 98
+ 	/if (${Me.Level} >= 106) {
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp XV"
+	} else /if (${Me.Level} >= 101) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp XIV"
+	} else /if (${Me.Level} >= 96) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp XIII"
+	} else /if (${Me.Level} >= 91) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp XII"
+	} else /if (${Me.Level} >= 86) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp XI"
+	} else /if (${Me.Level} >= 81) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp X"
+	} else /if (${Me.Level} >= 76) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp IX"
+	} else /if (${Me.Level} >= 71) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp VIII"
+	} else /if (${Me.Level} >= 69) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp VII"
+	} else /if (${Me.Level} >= 65) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp VI"
+	} else /if (${Me.Level} >= 56) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp V"
+	} else /if (${Me.Level} >= 53) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp IV"
+	} else /if (${Me.Level} >= 41) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp III"
+	} else /if (${Me.Level} >= 16) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp II"
+	} else /if (${Me.Level} >= 1) {	
+	  /call setINIVar spellYaulp 										string  Buffs "Yaulp"
+	} 
+	
+	| hammer of ass kickery	
+ 	/if (${Me.Level} >= 107) {
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Repudation"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Repudation"
+	} else /if (${Me.Level} >= 97) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Reverence"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Reverence III"
+	} else /if (${Me.Level} >= 68) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Reproach"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Reproach"
+	} else /if (${Me.Level} >= 63) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Damnation"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Damnation"
+	} else /if (${Me.Level} >= 60) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Souls"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Souls"
+	} else /if (${Me.Level} >= 58) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Divinity"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Divinity"
+	} else /if (${Me.Level} >= 56) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Judgment"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Judgment"
+	} else /if (${Me.Level} >= 40) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Requital"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Requital"
+	} else /if (${Me.Level} >= 20) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Striking"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Striking"
+	} else /if (${Me.Level} >= 7) {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs "Hammer of Wrath"
+	  /call setINIVar sumWeaponItem 								string  Buffs "Hammer of Wrath"
+	} else {	
+	  /call setINIVar sumWeaponSpell 								string  Buffs FALSE
+	  /call setINIVar sumWeaponItem 								string  Buffs FALSE
+	}
+	
+	| cute hammer pet
+ 	/if (${Me.Level} >= 109) {
+	  /call setINIVar tempPet 											string  Pet "Unyielding Hammer of Zeal"
+	} else /if (${Me.Level} >= 104) {	
+	  /call setINIVar tempPet 											string  Pet "Ardent Hammer of Zeal"
+	} else /if (${Me.Level} >= 99) {	
+	  /call setINIVar tempPet 											string  Pet "Infallible Hammer of Reverence"
+	} else /if (${Me.Level} >= 94) {	
+	  /call setINIVar tempPet 											string  Pet "Imfallible Hammer of Zeal"
+	} else /if (${Me.Level} >= 89) {	
+	  /call setINIVar tempPet 											string  Pet "Devout Hammer of Zeal"
+	} else /if (${Me.Level} >= 84) {	
+	  /call setINIVar tempPet 											string  Pet "Unwavering Hammer of Zeal"
+	} else /if (${Me.Level} >= 79) {	
+	  /call setINIVar tempPet 											string  Pet "Unflinching Hammer of Zeal"
+	} else /if (${Me.Level} >= 68) {	
+	  /call setINIVar tempPet 											string  Pet "Unswerving Hammer of Retribution"
+	} else /if (${Me.Level} >= 54) {	
+	  /call setINIVar tempPet 											string  Pet "Unswerving Hammer of Faith"
+	} else {	
+	  /call setINIVar tempPet 											string  Pet FALSE
+	}
+	
+	| Nukes
+	/call setINIVar DoNuke					 								int			Spells 0
+	/for _count 1 to 6
+		/call setINIVar Nuke${_count}									string	Spells FALSE
+		/call setINIVar Nuke${_count}Condition				string	Spells FALSE
+	/next _count
+	
+	| DoTs
+	/call setINIVar DoDoT								 						int			Spells 0
+	/for _count 1 to 6
+		/call setINIVar DoT${_count}									string	Spells FALSE
+		/call setINIVar DoT${_count}chk								string	Spells FALSE
+		/call setINIVar DoT${_count}Condition					string	Spells FALSE
+	/next _count
 
 /return	
 
@@ -5123,7 +6224,6 @@ sub Bind_set_combat_here()
 
 	/if (${Me.Casting.ID}) /stopcast
 	
-	| stop 'all' the movement options
 	AMIDEAD
 	| stop sticking to stuff
 	/if (${tempsnapstuck}) /varset tempsnapstuck FALSE

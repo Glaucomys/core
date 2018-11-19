@@ -243,7 +243,7 @@ sub get_agro_PAL()
 
 	| AA pet hate (the little sword thingie)
 	/if (${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-		/if (${validate_cast[FALSE, alt, "Projection of Piety", ${Target2Kill}]}) /call core_cast2 "Projection of Piety" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "${AAHatePet}", ${Target2Kill}]}) /call core_cast2 "${AAHatePet}" alt ${Target2Kill} FALSE
 	}
 
 	| snap hate

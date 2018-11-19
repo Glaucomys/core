@@ -30,10 +30,10 @@
 	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
 	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
 	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell, Announce
-	- blurb.inc									Expansion specific raid announcements. A lazy way to send raid instructions to all in RS.
-	- mode.inc									All Non-Standard Mode controlls.
-	- core.SERVER.CLS.NAME.ini	Character specific INI settings.
-	- core.augmentdump.ini			list of all augments by toon.
+	- blurb.inc									Expansion specific raid announcements. A lazy way to send raid instructions to all in RS
+	- mode.inc									All Non-Standard Mode controlls
+	- core.SERVER.CLS.NAME.ini	Character specific INI settings
+	- core.augmentdump.ini			list of all augments by toon
 	- custom.inc								initialized blank file for people that want to add custom ... whatever ... 
 	
 	Naming Conventions:
@@ -107,6 +107,8 @@
 #include tc\mode.inc
 #include tc\events.inc
 #include tc\test.inc
+#include tc\hud.inc
+#include tc\fixini.inc
 #include tc\class.ber.inc
 #include tc\class.brd.inc
 #include tc\class.bst.inc
@@ -123,9 +125,8 @@
 #include tc\class.shm.inc
 #include tc\class.war.inc
 #include tc\class.wiz.inc
-#include tc\hud.inc
-#include tc\fixini.inc
 #include tc\custom.inc
+
 
 
 |***
@@ -155,10 +156,13 @@ sub main(string _ini)
 		
 		| make sure we're in the right zone
 		/if (!${timer_validate_zone}) /call validate_zone FALSE FALSE
+	
 		| what is this for??
 		/varset combat ${If[${coreAuto},${Ini[${INIClass},Common,combat]},FALSE]}
+	
 		| sort /heal override ##
 		/if (${tmpHealOverride} != ${HealOverride}) /varset tmpHealOverride ${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	
 		| adjustHUD death count
 		/if (!${timer_HUD_death_check}) /varset hudDeathCount ${Int[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}]}
 		
@@ -196,7 +200,7 @@ sub main(string _ini)
 				/if (!${switchPull} || (${switchPull} && !${SpawnCount[npc radius ${MobAgro} playerstate 4]})) /call do_rest
 			}			
 			
-			| buff a thing
+			| buff all the things
 			/call check_buff_routines
 
 			| fix exp
@@ -270,7 +274,7 @@ sub main(string _ini)
 
 	/goto :loopmain
 	
-	| this is MQ2 reserved..
+	| this is MQ2 reserved for end of macro
 	| :OnExit	
 	
 /return
@@ -420,11 +424,6 @@ sub base_preperation()
 		/squelch /cpu auto
 	}
 
-	| make sure netbots is running	
-	| /if (${validate_plugin[FALSE, |mq2netbots]}) {
-	| 	/squelch /netbots ON send=ON grab=ON	
-	| }
-
 	| turn off rez non guildies/group if it is still on. 'cause fuck everyone else.
 	/if (${switchRezEveryone}) {
 		/call writeINI switchRezEveryone Heal FALSE
@@ -458,3 +457,4 @@ sub base_preperation()
 		VOUT ${cbad}CHANGE THIS\ax
 	}		
 /return
+

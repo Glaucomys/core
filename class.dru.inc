@@ -46,7 +46,6 @@ sub core_DRU()
 			CHECKREZ
 			/call set_combat ${combat.Upper}
 			/if (${setBurnControl}) /call synergy_${Me.Class.ShortName}
-			/if (${switchPcPet} && !${Me.Pet.ID}) /call cast_temp_pet_${Me.Class.ShortName}
 			/if (${switchCombatMelee}) /call use_skill_melee ${Target2Kill}
 			/call disc_${Me.Class.ShortName}
 			/call check_deBuffs ${Target2Kill}
@@ -84,6 +83,26 @@ sub disc_DRU()
 
 	/if (${validate_cast[FALSE, alt, "Storm Strike", ${Target2Kill}]}) /call core_cast2 "Storm Strike" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, alt, "Season's Wrath", ${Target2Kill}]}) /call core_cast2 "Season's Wrath" alt ${Target2Kill} FALSE
+	
+	| wolf spirit AAs
+	
+	
+	
+	/if (${switchWolf.Equal[black]}) {	
+		/if (!${Me.Buff[Spirit of the Black Wolf].ID} && ${Me.AltAbilityReady[Group Spirit of the Black Wolf]}) {
+			/if (${validate_cast[FALSE, alt, "Group Spirit of the Black Wolf", ${Me.ID}]}) /call core_cast2 "Group Spirit of the Black Wolf" alt 0 FALSE
+		} else /if (!${Me.Buff[Group Spirit of the Black Wolf].ID} && !${Me.AltAbilityReady[Group Spirit of the Black Wolf]} && ${Me.AltAbilityReady[Spirit of the Black Wolf]}) {
+			/if (${validate_cast[FALSE, alt, "Spirit of the Black Wolf", ${Me.ID}]}) /call core_cast2 "Spirit of the Black Wolf" alt 0 FALSE
+		}
+	} else 	/if (${switchWolf.Equal[white]}) {	
+		/if (!${Me.Buff[Spirit of the White Wolf].ID} && ${Me.AltAbilityReady[Group Spirit of the White Wolf]}) {
+			/if (${validate_cast[FALSE, alt, "Group Spirit of the White Wolf", ${Me.ID}]}) /call core_cast2 "Group Spirit of the White Wolf" alt 0 FALSE
+		} else /if (!${Me.Buff[Group Spirit of the White Wolf].ID} && !${Me.AltAbilityReady[Group Spirit of the White Wolf]} && ${Me.AltAbilityReady[Spirit of the White Wolf]}) {
+			/if (${validate_cast[FALSE, alt, "Spirit of the White Wolf", ${Me.ID}]}) /call core_cast2 "Spirit of the White Wolf" alt 0 FALSE
+		}
+	}
+	
+	
 /return
 
 
@@ -504,7 +523,7 @@ sub Bind_setDRU(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |fade|groupheal|healpoint|rampage|rod|spiregroup|spireraid|xtradius|xttime
+  /declare _type string	local |fade|groupheal|healpoint|rampage|rod|spiregroup|spireraid|wolf|xtradius|xttime
 	
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -526,6 +545,25 @@ sub Bind_setDRU(string _classType, string _verbage)
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal" useGroupHeal 0 0
 	 	/return
+
+	| wolf spirit AAs
+	} else /if (${Bool[${_classType.Equal[wolf]}]}) {
+		/declare _wolflist string local |FALSE|black|white
+
+		/if (${Bool[${_verbage.Equal[false]}]}) {
+			/call writeINI AAWolfSpirit Buffs FALSE
+		} else /if (${Bool[${_verbage.Equal[black]}]}) {
+			/call writeINI AAWolfSpirit Buffs black	
+		} else /if (${Bool[${_verbage.Equal[white]}]}) {
+			/call writeINI AAWolfSpirit Buffs white 	
+		}
+
+		/for _count 1 to ${_wolflist.Count[|]}
+			/varset _listout ${_listout} ${If[${_sep},${sep},]} ${If[${AAWolfSpirit.Equal[${_wolflist.Arg[${_count},|]}]},${cgood},${cinfo}]}${_wolflist.Arg[${_count},|]}\ax
+			/varset _sep TRUE
+		/next _count
+		VOUT /dru wolf [${_listout}]
+		/return
 
 	| set Class Heal Point	
 	} else /if (${Bool[${_classType.Equal[healpoint]}]}) {
@@ -600,16 +638,20 @@ sub Bind_setDRU(string _classType, string _verbage)
 	/if (${switchMQclearonCLS}) /mqclear
 	/for _count 1 to ${_type.Count[|]}
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
+		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
+		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
+		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[spiregroup]}) /varset _listout ${_listout}(${cnum}${spireGroup}\ax)
 		/if (${_type.Arg[${_count},|].Equal[spireraid]}) /varset _listout ${_listout}(${cnum}${spireRaid}\ax)
-		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
+		/if (${_type.Arg[${_count},|].Equal[wolf]}) /varset _listout ${_listout}(${cnum}->\ax)
 		/if (${_type.Arg[${_count},|].Equal[xtradius]}) /varset _listout ${_listout}(${cnum}${XTHealRadius}\ax)
-		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})
-		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
-
+		/if (${_type.Arg[${_count},|].Equal[xttime]}) /varset _listout ${_listout}(${cnum}${tXHeal}\ax)
 		/varset _sep TRUE
 	/next _count
 	VOUT /${_bind} [${_listout}]
 /return
+
+
+

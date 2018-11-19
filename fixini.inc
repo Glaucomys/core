@@ -318,6 +318,15 @@ sub fix_ini_current()
 	
 	| toon INI non specific class --------------------------------------------------------------------------------------
 	
+		| 201911
+		/ini "${INIClass}" "Spells" "DiscRest" NULL	
+		/ini "${INIClass}" "Spells" "DiscFastRune" NULL	
+		/ini "${INIClass}" "Spells" "DefensiveDisc1" NULL	
+		/ini "${INIClass}" "Spells" "DefensiveDisc2" NULL	
+		/ini "${INIClass}" "Spells" "DefensiveDisc3" NULL	
+	
+	
+	
 		| 202180921
 		/ini "${INIClass}" "Override" "switchOverrideRangecombat" NULL	
 		/ini "${INIClass}" "Override" "switchOverrideMeleecombat" NULL	
@@ -429,6 +438,13 @@ sub fix_ini_current()
 			
 		| PALADIN
 		} else /if (${Select[${Me.Class.ShortName},PAL]}) {
+			
+			| 20181118
+			/ini "${INIClass}" "Discs" "DiscJudgement" NULL
+
+			/ini "${INIClass}" "Discs" "DiscHate" NULL
+			/ini "${INIClass}" "Discs" "DiscTwincast" NULL
+			
 			| 20180602
 			/ini "${INIClass}" "Heal" "healPanic" NULL
 			/ini "${INIClass}" "Heal" "healWholeGroup" NULL
@@ -452,6 +468,12 @@ sub fix_ini_current()
 
 		| SHADOWKNIGHT
 		} else /if (${Select[${Me.Class.ShortName},SHD]}) {
+
+			| 20181118
+			/ini "${INIClass}" "Spells" "spellUndeadCripple" NULL
+
+
+
 
 		| SHAMAN
 		} else /if (${Select[${Me.Class.ShortName},SHM]}) {

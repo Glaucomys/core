@@ -7,16 +7,44 @@
  *
  ***|
 
+Discord: https://discord.gg/2pY6Byt
+MQ2DanNet: https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
-- MQ2DanNet.DLL download 
-  -- https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
+
+- ini generation completed:
+  -- PAL, CLR, BER, RNG, SHD
 
 
+
+20181119.00
+- lot of wiki updates
+- Class INI Generation
+  -- each class specific declare is being rewritten to prepopulate their INIs by level
+  -- this does not include typical buffs. 
+  -- this is going to take me quite a while to get through. if anyone wants to offer to do a class, let me know i'll give you the structure
+  -- untill a class is listed above, it will continue to generate @ ~105 level
+- mode.inc
+  -- updated all the core_cast() routines to core_cast2(). not sure how i missed them. old age setting in i suppose...
+- get_target()
+  -- added bandolier swapping for range pulls
+- converted the remaining sort_cursor() to CLEARCURSOR
+- cast_AA_snare()
+  -- redesigned the sub. trying to find out why its an instant CTD.
+- class.shd.inc
+  -- corrected some disc vs AA naming conventions  
+- class.pal.inc
+  -- corrected some disc vs AA naming conventions  
+- class.dru.inc
+  -- removed the control for a druid temp pet, it sucks. if you want to use it, add it as a nuke with a condition of ${switchSwarmPet}
+	-- hardcoded in the spirit wolf AAs.
+	-- /dru wolf (FALSE|black|white) to use the wolf AAs
+		
+	
 20181114.00
 - xpac control
   -- if you need to bypass it for any reason.
   -- core.inc->[general]->switchIgnoreXpacControl=TRUE (FALSE is default)
-  -- it something messes up from this. let me know, i'll pass you the number for tech support
+  -- if something messes up from this. let me know, i'll pass you the number for tech support
 - get_assist_target()
   -- made it a bit less pick for assisting
 - tell_resident_mage()
@@ -36,7 +64,7 @@
   -- almost a complete rewrite. let me know if you see something .. off...
   -- nomore /goto statement
 - get_resident()
-  -- error in MQ2EQBC member .InZone. does not play well with MQ2DanNet
+  -- error in MQ2EQBC member .InZone does not play well with MQ2DanNet
 - class.pal.inc
   /pal [attraction] enable/disable using Divine Call while pulling
 - class.shd.inc

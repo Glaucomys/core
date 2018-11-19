@@ -155,7 +155,7 @@ sub mode_get_mob()
 	CLEARCURSOR TRUE
 	/doevents
 	
-	/if (!${Spawn[${Target2Kill}].ID} || ${Spawn[${Target2Kill}].Dead}) {
+	/if (!${Spawn[${Target2Kill}].ID} || ${Spawn[${Target2Kill}].Dead} || ${Target.Dead}) {
 		/call set_stop NOECHO
 		/call clear_combat
 		/return
@@ -193,10 +193,11 @@ sub mode_get_mob()
 		/if (${Me.Pet.ID} && !${Me.Pet.Target.ID}) /pet attack
 		
 		/if (${Bool[${ModeNuke}]}) {
-			/if (${Me.Book[${ModeNuke}]}) /call core_cast "${ModeNuke}" ${buffGem} ${Target2Kill}
-			/if (${Me.ItemReady[${ModeNuke}]}) /call core_cast "${ModeNuke}" item ${Target2Kill}
-			/if (${Me.CombatAbility[${ModeNuke}]}) /call core_cast "${ModeNuke}" disc ${Target2Kill}
-			/if (${Me.AltAbilityReady[${ModeNuke}]})  /call core_cast "${ModeNuke}" alt ${Target2Kill}
+			/if (${validate_cast[FALSE, FIND, "${ModeNuke}", ${Target2Kill}]}) /call core_cast2 "${ModeNuke}" FIND ${Target2Kill} FALSE 
+			| /if (${Me.Book[${ModeNuke}]}) /call core_cast "${ModeNuke}" ${buffGem} ${Target2Kill}
+			| /if (${Me.ItemReady[${ModeNuke}]}) /call core_cast "${ModeNuke}" item ${Target2Kill}
+			| /if (${Me.CombatAbility[${ModeNuke}]}) /call core_cast "${ModeNuke}" disc ${Target2Kill}
+			| /if (${Me.AltAbilityReady[${ModeNuke}]})  /call core_cast "${ModeNuke}" alt ${Target2Kill}
 		}
 	} 
 
@@ -264,7 +265,7 @@ sub mode_fish()
 	/if (!${Me.Standing}) /stand
 	/if (${Me.ItemReady[Fisherman's Companion]} && !${Me.ItemReady[Brell's Fishin' Pole]}) {
 		/if (${Me.Invis}) /docommand /makemevisable
-		/call core_cast "Fisherman's Companion" item ${Me.ID}
+		/If (${validate_cast[FALSE, item, "Fisherman's Companion", ${Me.ID}]}) /call core_cast2 "Fisherman's Companion" item ${Me.ID}
 		CLEARCURSOR TRUE
 	}
 	/if (${Me.AbilityReady[fishing]}) /doability fishing
@@ -435,7 +436,9 @@ sub mode_petfarm()
 
 		/if (!${timer_Petfarm_delay}) /call create_timer timer_Petfarm_delay ${tPetfarm_delay}
 		/if (${Me.Pet.Target.ID}) /pet back off
-		/if (${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) /call core_cast "Summon Companion" alt 0
+		/if (${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) {
+			/if (${validate_cast[FALSE, alt, "Summon Companion", ${Me.Pet.ID}]}) /call core_cast2 "Summon Companion" alt 0 FALSE
+		}
 
 		/return
 	}
@@ -454,7 +457,7 @@ sub mode_petfarm()
 	
 	/if (${_resetCount} > 30) {
 		/varset _resetCount 0
-		/if (${Me.AltAbilityReady[Summon Companion]}) /call core_cast "Summon Companion" alt 0
+		/if (${validate_cast[FALSE, alt, "Summon Companion", ${Me.Pet.ID}]}) /call core_cast2 "Summon Companion" alt 0 FALSE
 		/goto :loopfindmob
 	}		
 		
@@ -558,7 +561,9 @@ sub mode_scorched_earth()
 		/varset _nameloop 1
 		/if (!${timer_ScorchedEarth_delay}) /call create_timer timer_ScorchedEarth_delay ${tScorchedEarth_delay}
 		/if (${Me.Pet.Target.ID}) /pet back off
-		/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) /call core_cast "Summon Companion" alt 0
+		/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) {
+			/if (${validate_cast[FALSE, alt, "Summon Companion", ${Me.Pet.ID}]}) /call core_cast2 "Summon Companion" alt 0 FALSE
+		}
 		/return
 	}
 	/call echos hunt 0 0 ${Target2Kill} 0
@@ -580,7 +585,9 @@ sub mode_scorched_earth()
 
 	/if (${_resetCount} > 30) {
 		/varset _resetCount 0
-		/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) /call core_cast "Summon Companion" alt 0
+		/if (${Me.Pet.ID} && ${Me.AltAbilityReady[Summon Companion]} && ${Me.Pet.Distance} > 80) {
+			/if (${validate_cast[FALSE, alt, "Summon Companion", ${Me.Pet.ID}]}) /call core_cast2 "Summon Companion" alt 0 FALSE
+		}
 		/goto :loopfindmob
 	}		
 		
@@ -756,7 +763,7 @@ sub mode_get_waisted()
 	
 	| need booze! keep a stock on hand
 	/if (${FindItemCount[${_ale}]} < ${_aleCount} && ${Me.ItemReady[${_pole}]} && !${Me.Drunk}) {
-		/call core_cast "${_pole}" item ${Me.ID} FALSE
+		/if (${validate_cast[FALSE, item, "${_pole}", ${Me.ID}]}) /call core_cast2 "${_pole}" item ${Me.ID} FALSE
 		CLEARCURSOR TRUE
 	}
 	
@@ -849,7 +856,7 @@ sub mode_trainspell(string _type)
 	| start getting things done
 	/for _count 1 to ${_skill.Count[|]}
 		/if (!${_gem[${_count}]}) /continue
-		/call core_cast "${${_skill.Arg[${_count},|]}}" 0 0 FALSE
+		/if (${validate_cast[FALSE, spell, "${${_skill.Arg[${_count},|]}}", ${Me.ID}]}) /call core_cast2 "${${_skill.Arg[${_count},|]}}" 0 0 FALSE
 		/call sort_cursor TRUE
 	/next _count
 /return

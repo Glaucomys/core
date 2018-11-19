@@ -140,9 +140,8 @@ sub get_agro_SHD()
 	
 	| AA pet hate
 	/if (${Me.PctAggro} < 80 || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
-		/if (${validate_cast[FALSE, alt, "Projection of Doom", ${Target2Kill}]}) /call core_cast2 "Projection of Doom" alt ${Target2Kill} FALSE
-	}	
-	
+		/if (${validate_cast[FALSE, alt, "${AAHatePet}", ${Target2Kill}]}) /call core_cast2 "${AAHatePet}" alt ${Target2Kill} FALSE
+	}
 
 	| single hate
 	/if ((!${Target.Buff[${Hate1}].ID} && !${Target.Buff[${Hate2}].ID}) || ${Me.TargetOfTarget.Name.NotEqual[${Me.DisplayName}]}) {
@@ -157,6 +156,7 @@ sub get_agro_SHD()
 	| AE Hate
 	/if (${AEMelee}) {
 		/varset mobAECount ${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius 50]}
+		
 		/if (${mobAECount} > 1) {
 			/if (${Me.AltAbilityReady[Explosion of Hatred]}) {
 				/if (${validate_cast[FALSE, alt, "Explosion of Hatred", ${Me.ID}]}) /call core_cast2 "Explosion of Hatred" alt 0 FALSE
@@ -164,6 +164,7 @@ sub get_agro_SHD()
 				/if (${validate_cast[FALSE, spell, "${AEHate1}", ${Me.ID}]}) /call core_cast2 "${AEHate1}" 0 0 FALSE
 			}
 		} 
+		
 		/if (${mobAECount} > 3) {
 			/if (${Me.AltAbilityReady[Explosion of Spite]}) {
 				/if (${validate_cast[FALSE, alt, "Explosion of Spite", ${Me.ID}]}) /call core_cast2 "Explosion of Spite" alt 0 FALSE
@@ -171,10 +172,8 @@ sub get_agro_SHD()
 				/if (${validate_cast[FALSE, spell, "${AEHate2}", ${Me.ID}]}) /call core_cast2 "${AEHate2}" 0 0 FALSE
 			}
 		}	
-	}
 
-	| AE lifetap	
-	/if (${AEMelee}) {
+		| AE lifetap	
 		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 playerstate 4 targetable]} >= 2 && !${SpawnCount[pc enchanter radius ${combatRadius}*2]}) {
 			/if (${validate_cast[FALSE, spell, "${AELifeTap}", ${Target2Kill}]}) /call core_cast2 "${AELifeTap}" 0 ${Target2Kill} FALSE
 		}
@@ -208,7 +207,6 @@ sub click_DPS_SHD()
 	AMIDEAD
 	CHECKEXIT
 	CHECKINPUTS
-	/call use_skill_melee ${Target2Kill}
 	/call click_horn_of_unity 	
 /return
 
@@ -268,7 +266,6 @@ sub synergy_SHD()
 	
 	/if (${useShieldFlash}) /call cast_AA_shield_flash
 
-
 	/if (${validate_cast[FALSE, alt, "T`Vyl's Resolve", ${Me.ID}]}) /call core_cast2 "T`Vyl's Resolve" alt ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, disc, "${CrimsonBlade}", ${Me.ID}]}) /call core_cast2 "${CrimsonBlade}" disc 0 FALSE
 	/call cast_AA_spire
@@ -284,7 +281,6 @@ sub synergy_SHD()
 	} else /if (!${Me.AltAbilityReady[Visage of Death]} && !${Me.Buff[Visage of Death].ID}) {
 		/if (${validate_cast[FALSE, alt, "Visage of Decay", ${Me.ID}]})	/call core_cast2 "Visage of Decay" alt 0 FALSE
 	}
-
 	
 	| epic 2.0
 	/if (${validate_cast[FALSE, epicitem, "2", ${Me.ID}]} && ${Spawn[${Target2Kill}].Distance} <= ${CombatDistance}) /call core_cast2 "${${Me.Class.ShortName}Epic2}" item 0 FALSE
