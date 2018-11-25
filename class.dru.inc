@@ -85,9 +85,6 @@ sub disc_DRU()
 	/if (${validate_cast[FALSE, alt, "Season's Wrath", ${Target2Kill}]}) /call core_cast2 "Season's Wrath" alt ${Target2Kill} FALSE
 	
 	| wolf spirit AAs
-	
-	
-	
 	/if (${switchWolf.Equal[black]}) {	
 		/if (!${Me.Buff[Spirit of the Black Wolf].ID} && ${Me.AltAbilityReady[Group Spirit of the Black Wolf]}) {
 			/if (${validate_cast[FALSE, alt, "Group Spirit of the Black Wolf", ${Me.ID}]}) /call core_cast2 "Group Spirit of the Black Wolf" alt 0 FALSE
@@ -101,7 +98,6 @@ sub disc_DRU()
 			/if (${validate_cast[FALSE, alt, "Spirit of the White Wolf", ${Me.ID}]}) /call core_cast2 "Spirit of the White Wolf" alt 0 FALSE
 		}
 	}
-	
 	
 /return
 

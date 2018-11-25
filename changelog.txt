@@ -16,6 +16,59 @@ MQ2DanNet: https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
 
+
+20181125.00
+- assisting
+  -- made some changes to how the MA1/MA2 assist works. you can now assist anything you like. Mercs, pets, a tree, whatever
+  -- also (little rough to explain) /override combat will now work in conjunction with the normal combat roles (melee/range/nuke/dot)
+  -- if you do actually get it to assist a tree, bonus points
+- pet weapons
+  -- added in an exceptions dor druids and their slack pets only getting one weapon
+- food and drink
+  -- this is a complete rewrite. you will need to fix your INI entries
+  -- each toon has INI entries under [Meal] these control eating and drinking
+	-- if you have a clickie that summons food (or drink), it will keep that item and however many of the food on you you sepcify. for example:
+		[Meal]
+		Food=Fresh Cookie
+		FoodDispenser=Fresh Cookie Dispenser
+		FoodCount=10
+		Drink=Spiced Iced Tea
+		DrinkDispenser=Spiced Iced Tea Dispenser
+		DrinkCount=10
+	-- if you are like me and simply keep a metric ass tonne of misty thicket picnics and kaladim constitutions here is how its done:
+		[Meal]
+		Food=Misty Thicket Picnic
+		FoodDispenser=FALSE
+		FoodCount=0
+		Drink=Kaladim Constitutional
+		DrinkDispenser=FALSE
+		DrinkCount=0
+	-- Core will use these foods and save your stat food. This is calcualted at about the half way to hungry mark. So, you shoudnt even get close to using stat foods
+	-- Also, this only works in auto mode. If you want this to function in manual, set the folowing entry in core.ini 
+	  -- SwitchMealinManual=TRUE
+- spellbook / gem control
+  -- /gc [list|load|save] [name]
+  -- /gc [list] will list all the saved gem listings you have for that class
+  -- /gc [list] [name] will list all the spells by gem for that save
+  -- /gc [load] [name] will load all the spells by gem onto your spellbar
+	-- does not save/load the buffgem slot spell
+  -- example core.ini saves:
+	  [GC_CLR]
+		110=|1|Merciful Remedy Rk. II|2|Spiritual Remedy Rk. III|3|Furial Renewal Rk. II|4|Merciful Intervention Rk. II|5|Mystical Intervention Rk. III|6|Undying Life|7|Syllable of Mending Rk. II|8|Elixir of Wulthan Rk. II|9|Sixteenth Serenity Rk. II|10|Shining Fortress Rk. II|11|Ward of Assurance Rk. II|12|Issuance of Mercy Rk. II
+		[GC_WIZ]
+		110fire=|1|Claw of Qunard Rk. II|2|Ethereal Braid|3|Ethereal Skyfire Rk. II|4|Dragoflux's Fire Rk. II|5|Chaos Burn Rk. II|6|Thricewoven Capacity|7|Dichotomic Fire|8|Twincast Rk. III|9|Musing Harvest Rk. II|10|Arcron Husk Rk. II|11|Armor of Wirn Rk. II|12|Shield of Scales Rk. II
+- /crew
+  -- fixed an error between eqbc and dannet
+- tell_resident_mage()
+  -- fixed a concatenation error
+  -- adjusted to be used for dannet or eqbc
+- class.clr.inc
+  -- small adjustment to pet healing
+  -- added renewals and panic heals to pet healing
+  -- corrected a remedy vs renewal error in pet healing
+  -- redesign of the main healing loop. trying to squeeze more speed out of it
+  
+
 20181119.00
 - lot of wiki updates
 - Class INI Generation

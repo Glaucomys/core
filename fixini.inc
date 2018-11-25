@@ -98,7 +98,6 @@ sub setINIVar(string _name, string _type, string _section, string _value)
 	/if (!${Defined[${_name}]}) /declare ${_name} ${_type} outer
 	
 	/if (!${Bool[${Ini[${INIClass},${_section}].Find[${_name}]}]}) {
-		| /echo \arINI writing\ax: ${Me.DisplayName} "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
 		/ini "${INIClass}" "${_section}" "${_name.Left[1].Upper}${_name.Right[-1]}" "${_value}"
 		/varset ${_name} ${_value}
 	} else {
@@ -318,7 +317,19 @@ sub fix_ini_current()
 	
 	| toon INI non specific class --------------------------------------------------------------------------------------
 	
-		| 201911
+	
+		| 201811 food redesign
+		/ini "${INIClass}" "Meal" "clickFoodDispenser" NULL	
+		/ini "${INIClass}" "Meal" "clickFoodItem" NULL	
+		/ini "${INIClass}" "Meal" "clickFoodCount" NULL	
+		/ini "${INIClass}" "Meal" "clickDrinkDispenser" NULL	
+		/ini "${INIClass}" "Meal" "clickDrinkItem" NULL	
+		/ini "${INIClass}" "Meal" "clickDrinkCount" NULL	
+		/ini "${INIClass}" "Timer" "tClick_FoodDrink" NULL	
+
+
+	
+		| 201811
 		/ini "${INIClass}" "Spells" "DiscRest" NULL	
 		/ini "${INIClass}" "Spells" "DiscFastRune" NULL	
 		/ini "${INIClass}" "Spells" "DefensiveDisc1" NULL	

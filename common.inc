@@ -342,7 +342,7 @@ sub check_pet()
 
 	/if (!${Me.Pet.ID}) /call cast_summon_pet
 	/if (${switchBuffPet} && !${timer_check_buffs_pet}) /call check_buffs_pet
-	/if (${Me.Pet.ID} && ${useSummonWeps} && (!${Bool[${Me.Pet.Equipment[primary]}]} || !${Bool[${Me.Pet.Equipment[offhand]}]} || ${Me.Pet.Equipment[primary]} == 10855)) {
+	/if (${Me.Pet.ID} && ${useSummonWeps} && (!${Bool[${Me.Pet.Equipment[primary]}]} || (!${Bool[${Me.Pet.Equipment[offhand]}]} && !${Select[${Me.Class.ShortName},DRU]}) || ${Me.Pet.Equipment[primary]} == 10855)) {
 		/if (!${Select[${Me.Class.ShortName},MAG]} && !${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
 			/call tell_resident_mage weapons
 		} else /if (${Select[${Me.Class.ShortName},MAG]} && !${Bool[${FindItem[${summonedWepClosedBag}]}]}) {
@@ -412,6 +412,7 @@ sub cast_summon_weapons()
 					/call give_to_pet
 					/delay 3s !${Bool[${Cursor.ID}]}
 					/delay 1s
+					/if (${Select[${Me.Class.ShortName},DRU}]}) /break
 				}
 			/next _count
 			/if (${Window[GiveWnd].Open}) {
@@ -1621,7 +1622,7 @@ sub get_assist_target()
 	/if (${useForceAssist} && ${Target2Kill} == ${Me.ID}) /return
 	
 	| if no MA present. move along..	
-	/if (!${Bool[${Spawn[pc ${MA1}].ID}]} && !${Bool[${Spawn[pc ${MA2}].ID}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG} && !${useForceAssist}) {
+	/if (!${Bool[${Spawn[${MA1}].ID}]} && !${Bool[${Spawn[${MA2}].ID}]} && !${useSmartAssist1} && !${useSmartAssist2} && !${useSmartAssist3} && !${useSmartAssistG} && !${useForceAssist}) {
 		/delay 1
 		/return
 	} 	
@@ -1703,7 +1704,7 @@ sub get_assist_target()
 				/delay 1
 				/varset Target2Kill 0
 				/return
-			}	
+			}
 	
 		| MA2
 		} else /if (${Bool[${MA2}]} && ${Bool[${Spawn[${MA2}].ID}]} && !${Bool[${Spawn[${MA2}].Dead}]} && (!${Bool[${Spawn[${MA1}].ID}]} || ${Bool[${Spawn[${MA1}].Dead}]})) {
@@ -3397,7 +3398,7 @@ sub update_HUD_notices(string _mode)
 		/varset hudNotice ${_tmphudNotice}
 	} 	
 		
-	| ** target debuffs notices
+	| target debuffs notices
 	/varset _sep FALSE
 
 	/if (${Bool[${Spawn[${Target.ID}].Master}]}) {
@@ -3478,6 +3479,7 @@ sub cast_temp_pet(int _tmpID, string _tmpSpell)
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${is_target_dead[${_tmpID}]}) /return
+	
 	/if (${validate_cast[FALSE, spell, "${_tmpSpell}", ${_tmpID}]}) /call core_cast2 "${_tmpSpell}" 0 ${_tmpID} FALSE
 /return
 
@@ -3646,7 +3648,7 @@ sub tell_resident_mage(string _request)
 
 	| ask for weapons
 	/if (${validate_class[FALSE, ${PetList}]}) {
-		/if (${_request.Equal[weapons]} && !${timer_ask_for_weapons_${_toon} && !${FindItem[${summonedWepClosedBag}].ID}) {
+		/if (${_request.Equal[weapons]} && !${timer_ask_for_weapons_${_toon}} && !${FindItem[${summonedWepClosedBag}].ID}) {
 			/t ${_toon} weapons
 			/call create_timer timer_ask_for_weapons_${_toon} ${tAsk_for_weapons}
 		}
@@ -3659,7 +3661,7 @@ sub tell_resident_mage(string _request)
 	}
 /return TRUE
 
-${timer_ask_for_rod_Ieve}
+
 
 |***
  *	DES: Res routines for the healer slobs.
@@ -3973,14 +3975,6 @@ sub list_delete(string _listName, string _tmpID)
 	/varcalc _b ${${_listName}.Length}-${_tmpID.Length}-${_a}
 	/if (${_a} > 0) /varset _strLeft ${${_listName}.Left[${_a}]}
 	/if (${_a} > 0) /varset _strRight ${If[${Select[${_b},0,NULL,FALSE,""]},,${${_listName}.Right[${_b}]}]} 
-	
-	|**
-	/for _count 1 to ${${_listName}.Count[|]}
-		/if (${${${_listName}.Arg[${_count},|]}.Equal[FALSE]}) /continue
-		/if (${_tmpID.Find[${${_listName}.Arg[${_count},|]}]}) /continue
-		/varset ${_listName} ${_tmpList}|${${_listName}.Arg[${_count},|]}
-	/next _count	
-	**|
 	
 	/varset ${_listName} ${_strLeft}${_strRight}
 /return
@@ -5205,7 +5199,7 @@ sub exit_class_loop()
 	DEBUG exit_class_loop()
 
 	/if (${coreAuto}) {	
-		/if (${switchOverrideCombat}) /return TRUE
+		/if (${switchOverrideCombat} && !${switchCombatMelee} && !${switchCombatRange} && !${switchCombatNuke} && !${switchCombatDoT}) /return TRUE
 		/if (!${Spawn[${Target2Kill}].ID}) /return TRUE
 		/if (${is_target_dead[${Target2Kill}]}) /return TRUE
 	} else /if (!${coreAuto}) {
@@ -5278,46 +5272,46 @@ sub check1offBuffs()
 
 
 
+
 |***
- *	DES: Summons Food
- *	USE: /call click_summon_food 
+ *	DES: food coma time
+ *	USE: /call last_supper 
  *	INI: toon INI [Meal]->
  *  NOTE: 
  ***|
-sub click_summon_food()
-	DEBUG click_summon_food()
-	/call create_timer timer_click_food ${tClick_FoodDrink}
-	AMIDEAD
-	CHECKTIE
-	CHECKEXIT
-	CHECKINPUTS
+sub last_supper()
+	DEBUG last_supper()
+
+	| summon food and drink if we are using items	
 	
-	/if (${FindItemCount[=${clickFoodItem}]} < ${clickFoodCount}) {
-		/if (${validate_cast[FALSE, item, "${clickFoodDispenser}", ${Me.ID}]}) /call core_cast2 "${clickFoodDispenser}" item ${Me.ID} FALSE
-		CLEARCURSOR TRUE
+	| summon food
+	/if (${Bool[${FoodDispenser}]}) {
+		/if (${FindItemCount[=${Food}]} < ${FoodCount}) {
+			/if (${validate_cast[FALSE, item, "${FoodDispenser}", ${Me.ID}]}) /call core_cast2 "${FoodDispenser}" item ${Me.ID} FALSE
+			CLEARCURSOR TRUE
+		}		
 	}
-/return
-
-
-
-|***
- *	DES: Summons Drink
- *	USE: /call click_summon_drink
- *	INI: toon INI [Meal]->
- *  NOTE: 
- ***|
-sub click_summon_drink()
-	DEBUG click_summon_drink()
-	CHECKTIE
-	AMIDEAD
-	CHECKEXIT
-	CHECKINPUTS
-	/call create_timer timer_click_drink ${tClick_FoodDrink}
 	
-	/if (${FindItemCount[=${clickDrinkItem}]} < ${clickDrinkCount}) {
-		/if (${validate_cast[FALSE, item, "${clickDrinkDispenser}", ${Me.ID}]}) /call core_cast2 "${clickDrinkDispenser}" item ${Me.ID} FALSE
-		CLEARCURSOR TRUE
+	| summon drink
+	/if (${Bool[${DrinkDispenser}]}) {
+		/if (${FindItemCount[=${Drink}]} < ${DrinkCount}) {
+			/if (${validate_cast[FALSE, item, "${DrinkDispenser}", ${Me.ID}]}) /call core_cast2 "${DrinkDispenser}" item ${Me.ID} FALSE
+			CLEARCURSOR TRUE
+		}		
 	}
+	
+	| dont spam this shit
+	/call create_timer timer_meal ${tFoodDrink}		
+
+
+	| for a frame of reference hunger and thirst seem to go to ~10k
+	| one bite of black bread from a cleric is 500
+	| one drink of a kadim constitution is almost 6k
+
+	| eat, drink and be merry
+	/if (${FindItemCount[=${Food}]} && ${Me.Hunger} < 3000) /useitem "${Food}"
+	/if (${FindItemCount[=${Drink}]} && ${Me.Thirst} < 3000) /useitem "${Drink}"
+			
 /return
 
 
@@ -5384,6 +5378,7 @@ sub check_buff_routines(bool _force)
 			/if (${switchBuffSelf} && (${Bool[${Aura1Spell}]} || ${Bool[${Aura2Spell}]}) && !${timer_check_aura}) /call check_aura
 			/if (${switchBuffMerc} && !${timer_check_buffs_merc}) /call check_buffs_manual mercenary
 			/if (${switchBuffGroup} && !${timer_check_buffs_group}) /call check_buffs_manual group
+			/if (${switchBuffMgb} && !${timer_check_buffs_mgb}) /call check_buffs_mgb
 		}
 
 		/if (${switchBuffGemHold}) {
@@ -7378,7 +7373,7 @@ sub get_resident(string _class, int _distance)
 		/if (${Spawn[${Resident${_class}.Arg[${_count},|]}].Dead}) /continue
 		/if (${Spawn[${Resident${_class}.Arg[${_count},|]}].Distance} > ${_distance}) /continue
 		/if (${setCommunications.Equal[eqbc]}) {
-			/if (!${Spawn[${Resident${_class}.Arg[${_count},|]}].InZone}) /continue
+			/if (!${Spawn[${Resident${_class}.Arg[${_count},|]}].ID}) /continue
 		}
 		| /echo _name ${Resident${_class}.Arg[${_count},|].Left[1].Upper}${Resident${_class}.Arg[${_count},|].Right[-1].Lower}
 		/varset _name ${Resident${_class}.Arg[${_count},|].Left[1].Upper}${Resident${_class}.Arg[${_count},|].Right[-1].Lower}
@@ -7404,3 +7399,42 @@ sub check_inputs()
 	/doevents
 	
 /return TRUE
+
+
+
+|***
+ *	DES: the the mass group buff
+ *	USE: CHECKINPUTS
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub check_buffs_mgb()
+	DEBUG check_buffs_mgb()
+	
+	| caster?
+	/if (!${validate_class[FALSE, ${CastList}]}) /return FALSE
+	
+	| need more mana
+	/if (${Me.PctMana} < ${BuffMGBMana}) /return FALSE
+	
+	| more people!
+	/if (${Raid.Members} < ${BuffMGBCount}) /return FALSE
+
+	| is my stuff ready?
+	/if(!${Me.AltAbilityReady[Tranquil Blessings]} && !${Me.AltAbilityReady[Mass Group Buff]}) /return FALSE
+	
+	| do I have
+	/if (${Bool[${Me.Buff[${BuffMGBchk}].Duration}]}) /return FALSE
+	
+	| TB or MGB ??
+	/if (${Me.AltAbilityReady[Tranquil Blessings]}) {
+		/if (${validate_cast[FALSE, alt, "Tranquil Blessings", ${Me.ID}]}) /call core_cast2 "Tranquil Blessings" alt 0 FALSE	
+	} else /if(${Me.AltAbilityReady[Mass Group Buff]}) {
+		/if (${validate_cast[FALSE, alt, "Mass Group Buff", ${Me.ID}]}) /call core_cast2 "Mass Group Buff" alt 0 FALSE	
+	}
+	/if (${validate_cast[FALSE, spell, "${BuffMGBname}", ${Me.ID}]}) /call core_cast2 "${BuffMGBname}" ${buffgem} ${Me.ID} FALSE
+
+
+/return
+
+

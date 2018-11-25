@@ -19,22 +19,23 @@
 	Optional: MQ2Nav
 		
 	Files:
-	- core.mac									You are looking at it
-	- core.ini									Script settings that affect all the toons and environment.
-	- common.inc								All common use functions.
-	- events.inc								Contains responses to EQ generated changes (environment/emotes).
-	- fixini.inc								holds all INI legacy removed entries.
-	- hud.inc										Sets the Heads Up Display
-	- declare.inc								99.9% of all variables, class INI creations, forced event, watched commands, alias, binds.
-	- test.inc									empty. testing purposes.
-	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
-	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
-	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell, Announce
 	- blurb.inc									Expansion specific raid announcements. A lazy way to send raid instructions to all in RS
-	- mode.inc									All Non-Standard Mode controlls
+	- class.???.inc							One include for each class [WIZ|NEC|MAG|ENC|WAR|PAL|SHD|BST|BER|BRD|RNG|ROG|CLR|DRU|SHM|MNK]
+	- common.inc								All common use functions.
+	- core.augmentdump.ini			list of all augments by toon (forced generation)
+	- core.ini									Script settings that affect all the toons and environment.
+	- core.loot.ini							loot list. Leave, Keep, Destroy, Sell, Announce
+	- core.mac									You are looking at it
 	- core.SERVER.CLS.NAME.ini	Character specific INI settings
-	- core.augmentdump.ini			list of all augments by toon
+	- core.zone.ini							Zone spawn range, no cast, no melee, no mezz, NAMED, charm mobs
 	- custom.inc								initialized blank file for people that want to add custom ... whatever ... 
+	- declare.inc								forced event, watched commands, alias, binds
+	- events.inc								Contains responses to EQ generated changes (environment/emotes).
+	- fixini.inc								holds all INI legacy removed entries
+	- hud.inc										Sets the Heads Up Display
+	- mode.inc									All Non-Standard Mode controlls
+	- pregen.inc								environment variables and INI generation 
+	- test.inc									empty for testing purposes
 	
 	Naming Conventions:
 	Local/Private Variables: _camelCasing						eg. _loopOutside, _count
@@ -102,6 +103,7 @@
 
 
 #include tc\declare.inc
+#include tc\pregen.inc
 #include tc\common.inc
 #include tc\MQ2Cast_Spell_Routines.inc
 #include tc\mode.inc
@@ -211,15 +213,14 @@ sub main(string _ini)
 			| fix ur pet!
 			/if (!${timer_Check_Familiar}) /call sort_familiar
 			
-			| food/drink
-			/if (${Bool[${clickFoodDispenser}]} && !${timer_click_food}) /call click_summon_food
-			/if (${Bool[${clickDrinkDispenser}]} && !${timer_click_drink}) /call click_summon_drink
-
 			| sort out return to camp
 			/if (${HomeSet}) {
 				/if (!${SpawnCount[npc radius ${combatRadius} playerstate 4 targetable]} && ((${Me.Y} != ${MakeCamp.AnchorY}) && (${Me.X} != ${MakeCamp.AnchorX})) && (!${SafeZone} || ${switchOverrideSafezone})) /makecamp return
 			}
 		}
+	
+		| meal
+		/if ((${coreAuto} || ${switchMealinManual}) && !${timer_meal}) /call last_supper
 		
 		/if (${Me.PctEndurance} < 32) {
 			/if (${validate_class[FALSE, ${MeleeList}]}) /call cast_stamina_recovery
@@ -332,16 +333,45 @@ sub initialize_core(string _ini)
 	/if (!${Defined[INIWiki]}) /declare INIWiki string outer tc\core.wiki.ini
 	/if (!${Defined[INIBlurb]}) /declare INIBlurb string outer tc\core.blurb.ini
 	
-	/call set_declares
+
+	| load non static environment variables
+	/call pregen_environment
+
+	| load settings from core.ini
+	/call pregen_core
+	
+	| load base character settings
+	/call pregen_character
+	
+	| load any custom settings
 	/call set_declares_custom
+	
+	| echos
 	/if (${switchDispBuild}) /call echos initialize 0 0 0 0
+	
+	| load class specific ini settings
 	/call declare_${Me.Class.ShortName}
+	/call pregen_${Me.Class.ShortName}
+	
+	| validate pulgins, reload if needed
 	/call check_plugin
+	
+	| cycle through all clickies on character to build [itemclicke]
 	/call intialize_item_buffs
+	
+	| load aliases
 	/call set_alias
-	/call declare_timers
+	
+	| initialize timers
+	/call pregen_timers
+	
+	| validate current build
 	/call verify_build
+	
+	| verify current zone is loaded
 	/call validate_zone FALSE TRUE
+	
+	| set base core environment
 	/call base_preperation
 
   /if (${switchOverrideLos}) VOUT ${ocaution} ${sep} Ignoring Line of Sight\ax

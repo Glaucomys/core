@@ -42,6 +42,7 @@ sub core_CLR()
 		CHECKINPUTS
 		/if (${switchHealGroup}) /call check_heal_group_${Me.Class.ShortName}
 		/if (${switchHealXtarget}) /call check_heal_XTarget_${Me.Class.ShortName}
+		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		/if (${switchHealCure}) /call cast_cure
 
 		/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
@@ -51,7 +52,6 @@ sub core_CLR()
 
 		/if (${exit_class_loop[]}) /return
 
-		/if (${switchHealPet}) /call check_pet_heal_${Me.Class.ShortName}
 		
 		/if (${isValidTarget}) {
 			CHECKREZ
@@ -85,6 +85,7 @@ sub click_DPS_CLR()
 	DEBUG click_DPS_CLR()
 	AMIDEAD
 	CHECKEXIT
+	/if (${is_target_dead[${Target2Kill}]}) /return
 	/call click_horn_of_unity 	
 /return
 
@@ -100,17 +101,20 @@ sub disc_CLR()
 	DEBUG disc_CLR()
 	AMIDEAD
 	CHECKEXIT
+	CHECKINPUTS
+	/if (${is_target_dead[${Target2Kill}]}) /return
+	CHECKTIE
 
-	/if (${is_target_valid[${Target2Kill}]}) {
-		/if (${Spawn[${Target2Kill}].Body.Name.Equal[Undead]}) {
-			/if (${validate_cast[FALSE, alt, "Turn Undead", ${Target2Kill}]} && !${Raid.Members}) /call core_cast2 "Turn Undead" alt ${Target2Kill} FALSE
-		}
-	}
-	
 	| pet AA hammer	
 	/if (${burnForce} || (${burnAuto} && ${NameList.Find[${Target.DisplayName}]})) {
 		/if (${validate_cast[FALSE, alt, "Celestial Hammer", ${Target2Kill}]}) /call core_cast2 "Celestial Hammer" alt ${Target2Kill} FALSE
 	}	
+	
+	| undead aa nuke
+	/if (${Target.Body.Name.Equal[Undead]}) {
+		/if (${validate_cast[FALSE, alt, "Turn Undead", ${Target2Kill}]}) /call core_cast2 "Turn Undead" alt ${Target2Kill} FALSE
+	}	
+	
 /return
 
 
@@ -161,7 +165,7 @@ sub check_heal_group_CLR()
 
 	| Does the control toon need healing?
 	/if (${toonControlProtect} && ${Bool[${toonControl}]} && ${Bool[${Spawn[${toonControl}]}]}) {
-		/if (!${Bool[${Group.Member[${toonControl}]}]} && ${RampageTank.NotEqual[${toonControl}]}) {
+		/if (!${Group.Member[${toonControl}].ID} && ${RampageTank.NotEqual[${toonControl}]}) {
 			/if (!${Spawn[${toonControl}].Dead} && ${Spawn[pc ${toonControl}].ID} && ${Spawn[pc ${toonControl}].PctHPs} <= ${hurtPctHP} && ${Spawn[${toonControl}].Distance} <= ${MobAgro} && ${Spawn[${toonControl}].PctHPs} <= ${${Spawn[${toonControl}].Class.ShortName}Point}*.${tmpHealOverride}) {
 				/varset hurtID ${Spawn[pc ${toonControl}].ID}
 				/varset hurtPctHP ${Spawn[pc ${toonControl}].PctHPs}
@@ -171,36 +175,27 @@ sub check_heal_group_CLR()
 	}
 
 	| Do group members need healing? 
-	/if (${Bool[${Group.Members}]}) {
-		/for _count 0 to ${Group.Members}
+	/for _count 0 to ${Group}
+		/if (${Group.Member[${_count}].PctHPs} > ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
+		/if (${Group.Member[${_count}].PctHPs} > ${hurtPctHP}) /continue
+		/if (${Group.Member[${_count}].Distance} > ${MobAgro}) /continue
+		/if (!${Spawn[${Group.Member[${_count}]}].ID} || ${Group.Member[${_count}].Dead}) /continue
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+		/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
 
-			| no healing the rampage tank
-			/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+		| we found a slacker
+		/varset hurtID ${Group.Member[${_count}].ID}
+		/varset hurtPctHP ${Group.Member[${_count}].PctHPs}
+		/varset hurtCLS ${Group.Member[${_count}].Class.ShortName}
+		/varcalc hurtCount ${hurtCount}+1
 
-			| no heallist bitches
-			/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
-
-			/if (${Spawn[${Group.Member[${_count}]}].ID} && ${Group.Member[${_count}].Distance} <= ${MobAgro}) {
-				/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} <= ${hurtPctHP} && ${Group.Member[${_count}].PctHPs} <= ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
-					/varset hurtID ${Group.Member[${_count}].ID}
-					/varset hurtPctHP ${Group.Member[${_count}].PctHPs}
-					/varset hurtCLS ${Group.Member[${_count}].Class.ShortName}
-				} 
-
-		 		| set count for # of toons hurt
-				/if (!${Group.Member[${_count}].Dead} && ${Group.Member[${_count}].PctHPs} < ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) {
-					/varcalc hurtCount ${hurtCount}+1
-				}   
-			}
-	    
-	  /next _count
-	}
+  /next _count
 	
 	CHECKEXIT
 	CHECKREZ
 	/if (${switchAAFade} && ${Me.PctHPs} <= ${useAAFadePct}) /call cast_AA_fade
 	
-	| Regen Heals 
+	| Group Regen Heal 
  	/if (${useGroupHoT} && !${hurtCount}) {
 	 	/if (${SpawnCount[npc radius ${MobAgro} playerstate 4 targetable]} >= 1 && !${SafeZone}) {
 	 	 	/if (${Me.AltAbilityReady[Celestial Regeneration]} && !${Raid.Members} && !${Bool[${Me.Song[Celestial Regeneration]}]} && !${Bool[${Me.Song[Focused Celestial Regeneration]}]} && !${Bool[${Me.Song[${healWholeGroupHoT}]}]} && !${Bool[${Me.Song[Shear of Renewal]}]} && !${Bool[${Me.Song[Ghost of Renewal]}]}) {
@@ -392,8 +387,6 @@ sub check_heal_group_CLR()
 			}
 		}
 	}
-	
-		
 
   | check for group debuffs
 	/if (${switchHealCure}) {
@@ -525,30 +518,32 @@ sub check_heal_XTarget_CLR()
  ***|
 sub check_HP_CLR()
 	DEBUG check_HP_CLR()
-	AMIDEAD
-	/if (!${Me.Casting.ID}) /return
+	| AMIDEAD
+	| /if (!${Me.Casting.ID}) /return
 	/declare _count int local 0
 
-	/varset hurtID 					${Me.ID}
-	/varset hurtPctHP 			${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
-	/varset hurtCLS 				${Me.Class.ShortName}
+	| /varset hurtID 					${Me.ID}
+	| /varset hurtPctHP 			${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
+	| /varset hurtCLS 				${Me.Class.ShortName}
 
-	/if (${Bool[${Group.Members}]}) {
-		/for _count 0 to ${Group.Members}
-	  	/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
-	  	/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue
-			SIMPLEEXIT
-			/if (${Group.Member[${_count}].Type.NotEqual[Corpse]} && ${Group.Member[${_count}].ID}) {
-				/if (${Group.Member[${_count}].PctHPs} <= ${hurtPctHP} || !${hurtID}) {
-				/varset hurtID ${Group.Member[${_count}].ID} 
-				/varset hurtPctHP ${Group.Member[${_count}].PctHPs} 
-				/varset hurtCLS ${Group.Member[${_count}].Class.ShortName} 
-			}
-		}
-		/next _count
-	}
+	/for _count 0 to ${Group}
+ 
+		/if (${Group.Member[${_count}].PctHPs} > ${${Group.Member[${_count}].Class.ShortName}Point}*.${tmpHealOverride}) /continue
+		/if (${Group.Member[${_count}].PctHPs} > ${hurtPctHP}) /continue
+		/if (${Group.Member[${_count}].Distance} > ${MobAgro}) /continue
+		/if (!${Spawn[${Group.Member[${_count}]}].ID} || ${Group.Member[${_count}].Dead}) /continue
+		/if (${Bool[${RampageTank}]} && ${RampageTank.Equal[${Group.Member[${_count}].DisplayName}]}) /continue
+		/if (${heallist.Find[${Group.Member[${_count}].DisplayName}]}) /continue 
 
-	/if (${hurtID} == ${Me.ID}) /return
+		/varset hurtID ${Group.Member[${_count}].ID} 
+		/varset hurtPctHP ${Group.Member[${_count}].PctHPs} 
+		/varset hurtCLS ${Group.Member[${_count}].Class.ShortName} 
+		
+	/next _count
+
+	| /if (${hurtID} == ${Me.ID}) /return
+
+|**
 
 	| panic heal
 	/if (${Me.SpellReady[${healPanic}]}) {
@@ -582,6 +577,8 @@ sub check_HP_CLR()
 			}
 		/next _count
 	}		
+	
+**| 
 
 /return
 
@@ -589,7 +586,7 @@ sub check_HP_CLR()
 
 |***
  *	DES: Checks and Heals Pets. Group ONLY
- *	USE: /healpet
+ *	USE: /heal pet
  *	INI: 
  *  NOTE: 
  ***|
@@ -599,25 +596,37 @@ sub check_pet_heal_CLR()
 	SIMPLEEXIT
 	CHECKINPUTS
 	CHECKREZ
+	UPDATEHUD "HEAL Pet"
 
-	/declare _count int local
+	/declare _count int local 0
 	/varset hurtID 				${Me.ID}
 	/varset hurtPctHP 		100
   
-  /for _count 0 to ${Group}
-    /if (${Group.Member[${_count}].Pet.ID}) {
-      /if (${Group.Member[${_count}].Pet.Distance} <= ${MobAgro}) {
-        /if (${Group.Member[${_count}].Pet.PctHPs} < ${hurtPctHP} && ${Group.Member[${_count}].Pet.PctHPs} < ${PetPoint}) {
-          /varset hurtID ${Group.Member[${_count}].Pet.ID}
-          /varset hurtPctHP ${Group.Member[${_count}].Pet.PctHPs}
-        }
-      }
-    }
+	/for _count 0 to ${Group}
+		/if (!${Group.Member[${_count}].Pet.ID}) /continue
+    /if (${Group.Member[${_count}].Pet.PctHPs} >= ${PetPoint}) /continue
+    /if (${Group.Member[${_count}].Pet.Distance} > ${MobAgro}) /continue
+    /if (${Group.Member[${_count}].Pet.PctHPs} >= ${hurtPctHP}) /continue
+
+		/varset hurtID ${Group.Member[${_count}].Pet.ID}
+		/varset hurtPctHP ${Group.Member[${_count}].Pet.PctHPs}
+
   /next _count
 
 	| any pets hurt?
-  /if (${hurtID} == ${Me.ID}) /return
- 	UPDATEHUD "HEAL Pet"
+  /if (${hurtID} == ${Me.ID}) {
+ 		UPDATEHUD FALSE
+ 		/return
+	}
+	
+	| Panic heal
+	/if (${Me.SpellReady[${healPanic}]}) {
+		/if (${Spawn[${hurtID}].PctHPs} < 20*.${HealOverride}) {
+			/if (${Me.Casting.ID}) /stopcast
+			/if (${validate_cast[FALSE, spell, "${healPanic}", ${hurtID}]}) /call core_cast2 "${healPanic}" 0 ${hurtID} FALSE
+			/return
+		}
+	}  	
 	
  	/if (${switchHealAggressive}) {
  		/if (${Me.SpellReady[${healIntervention1}]} || ${Me.SpellReady[${healIntervention2}]} || ${Me.SpellReady[${healIntervention3}]} || ${Me.SpellReady[${healIntervention4}]}) /goto :PETinterventionheals
@@ -626,23 +635,33 @@ sub check_pet_heal_CLR()
  	| Remedy Heals 
   /if (${Spawn[${hurtID}].PctHPs} <= ${PetPoint}) {
 		/for _count 1 to 3
-			/if (${Me.SpellReady[${healRenewal${_count}}]}) {
-				/if (${validate_cast[FALSE, spell, "${healRemedy${_count}}", ${hurtID}]}) /call core_cast2 "${healRemedy${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
-				/break
+			/if (${Me.SpellReady[${healRemedy${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRemedy${_count}}", ${hurtID}]}) /call core_cast2 "${healRemedy${_count}}" 0 ${hurtID} FALSE
+				/return
 			}
 		/next _count 
-	}	
+	}
 	
 	| Intervention Heals
 	:PETinterventionheals
   /if (${Spawn[${hurtID}].PctHPs} <= ${PetPoint}) {
 		/for _count 1 to 4
 			/if (${Me.SpellReady[${healIntervention${_count}}]}) {
-				/if (${validate_cast[FALSE, spell, "${healIntervention${_count}}", ${hurtID}]}) /call core_cast2 "${healIntervention${_count}}" 0 ${hurtID} check_HP_${Me.Class.ShortName}
-				/break
+				/if (${validate_cast[FALSE, spell, "${healIntervention${_count}}", ${hurtID}]}) /call core_cast2 "${healIntervention${_count}}" 0 ${hurtID} FALSE
+				/return
 			}
 		/next _count
-	}		
+	}
+	
+	| Renewal Heals
+  /if (${Spawn[${hurtID}].PctHPs} <= ${${hurtCLS}Point}*.${tmpHealOverride}) {
+		/for _count 1 to 3
+			/if (${Me.SpellReady[${healRenewal${_count}}]}) {
+				/if (${validate_cast[FALSE, spell, "${healRenewal${_count}}", ${hurtID}]}) /call core_cast2 "${healRenewal${_count}}" 0 ${hurtID} FALSE
+				/return
+			}
+		/next _count 
+	}	
 
 	UPDATEHUD FALSE
 /return
@@ -883,7 +902,7 @@ sub Bind_setCLR(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|issuance|rampage|regen|rod|spiregroup|spireraid|vp|xtclass|xtradius|xttime|yaulp
+  /declare _type string	local |aggressive|ch|fade|forcegroupheal|groupheal|grouphot|healpoint|issuance|rampage|rod|spiregroup|spireraid|vp|xtclass|xtradius|xttime|yaulp
 
 	| get help
 	/if (${_classType.Equal[info]}) {

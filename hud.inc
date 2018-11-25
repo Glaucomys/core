@@ -266,7 +266,7 @@ sub HUDUpdate(string _verbage)
 
 		| buff switches
 		HUDPATH "Core" "buff1" "3,280,62,100,149,237,Buff"
-		HUDPATH "Core" "buff2" "3,305,61,100,149,237,[                         ]"
+		HUDPATH "Core" "buff2" "3,305,61,100,149,237,[                            ]"
 		HUDPATH "Core" "buff3" "19,310,62,0,255,0,${If[${switchBuffSelf},S,]}"
 		HUDPATH "Core" "buff4" "19,310,62,25,25,25,${If[${switchBuffSelf},,S]} "
 		HUDPATH "Core" "buff5" "19,319,62,0,255,0,${If[${switchBuffItem},I,]}"
@@ -285,8 +285,10 @@ sub HUDUpdate(string _verbage)
 		HUDPATH "Core" "buff18" "19,365,62,25,25,25,${If[${switchBuffMerc},,M]}"
 		HUDPATH "Core" "buff19" "19,374,62,0,255,0,${If[${switchBuffGroup},G,]}"
 		HUDPATH "Core" "buff20" "19,374,62,25,25,25,${If[${switchBuffGroup},,G]}"
+		HUDPATH "Core" "buff21" "19,383,62,0,255,0,${If[${switchBuffMgb},X,]}"
+		HUDPATH "Core" "buff22" "19,383,62,25,25,25,${If[${switchBuffMgb},,X]}"
 
-		| lazy ass controlls
+		| lazy ass controls
 		HUDPATH "Core" "rest0" "19,140,74,100,149,237,Rest"
 		HUDPATH "Core" "rest2" "3,165,73,100,149,237,[     ]"
 		HUDPATH "Core" "rest3" "19,170,74,255,255,255,${If[${autoRest},${autoRest},]}"
