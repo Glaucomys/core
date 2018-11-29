@@ -84,7 +84,6 @@ sub disc_SHM()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${switchTalisman}) /call cast_talisman
-	
 /return
 
 
@@ -635,8 +634,6 @@ sub check_cani()
 
 
 
-
-
 |***
  *	DES: Shaman Alliance
  *	USE: 
@@ -695,7 +692,7 @@ sub Bind_setSHM(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |aggressive|cannihps|cannimanna|epic|fade|groupheal|grouphot|healpoint|rampage|rod|spiregroup|spireraid|surge|talisman|xtradius|xttime
+  /declare _type string	local |aggressive|cannihps|cannimanna|epic|fade|groupheal|grouphot|grow|healpoint|rampage|rod|spiregroup|spireraid|surge|talisman|xtradius|xttime
 
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -734,7 +731,11 @@ sub Bind_setSHM(string _classType, string _verbage)
 	| use Modulation Rods
 	} else /if (${Bool[${_classType.Equal[rod]}]}) {
 		/call writeINI switchModRod Buffs ${If[${switchModRod},FALSE,TRUE]} 	
-
+		
+	| use grow temp buff
+	} else /if (${Bool[${_classType.Equal[grow]}]}) {
+		/call writeINI switchGrowth Spells ${If[${switchGrowth},FALSE,TRUE]} 	
+	
 	| force epic click
 	} else /if (${Bool[${_classType.Equal[epic]}]}) {
 		/if (${Me.Casting.ID}) /stopcast
@@ -839,6 +840,7 @@ sub Bind_setSHM(string _classType, string _verbage)
 		/if (${_type.Arg[${_count},|].Equal[grouphot]}) /varset _listout ${_listout}(${If[${useGroupHoT},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[talisman]}) /varset _listout ${_listout}(${If[${switchTalisman},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[surge]}) /varset _listout ${_listout}(${If[${switchSurge},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[grow]}) /varset _listout ${_listout}(${If[${switchGrowth},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[aggressive]}) /varset _listout ${_listout}(${If[${switchHealAggressive},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)

@@ -123,6 +123,8 @@ sub check_rune_ENC()
 	/if (${validate_cast[FALSE, spell, "${runeShieldofFate}", ${Me.ID}]}) /call core_cast2 "${runeShieldofFate}" ${buffGem} ${Me.ID} FALSE
 	/if (${validate_cast[FALSE, spell, "${runeLegion}", ${Me.ID}]} && ${FindItemCount[Peridot]}) /call core_cast2 "${runeLegion}" ${buffGem} ${Me.ID} FALSE
 
+	/if (${FindItemCount[Peridot]}) /call check_buffs_tmp_list "${runeAuspice}" "${runeAuspiceToon}"
+
 	/call check_rune_auspice
 	UPDATEHUD FALSE
 /return
@@ -134,7 +136,7 @@ sub check_rune_ENC()
  *	USE: have the spell memed and the toon identified in the INI.
  *	INI: 
  *  NOTE: 
- ***|
+
 sub check_rune_auspice()
 	DEBUG check_rune_auspice()
 	/if (!${FindItemCount[Peridot]}) /return
@@ -200,7 +202,7 @@ sub check_rune_auspice()
 	/next _count	
 
 /return
-
+ ***|
 
 
 |***

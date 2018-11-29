@@ -35,6 +35,7 @@
 	- hud.inc										Sets the Heads Up Display
 	- mode.inc									All Non-Standard Mode controlls
 	- pregen.inc								environment variables and INI generation 
+	- pregen.ini								stored spell names/level for new ini generation
 	- test.inc									empty for testing purposes
 	
 	Naming Conventions:
@@ -166,7 +167,7 @@ sub main(string _ini)
 		/if (${tmpHealOverride} != ${HealOverride}) /varset tmpHealOverride ${If[${HealOverride},${Float[${HealOverride}].Centi},99.99]}
 	
 		| adjustHUD death count
-		/if (!${timer_HUD_death_check}) /varset hudDeathCount ${Int[${Ini[${INICore},deathcount,${MacroQuest.Server}.${Me.Class.ShortName}.${Me.DisplayName}]}]}
+		/if (!${timer_HUD_death_check}) /varset hudDeathCount ${Int[${Ini[${INICore},deathcount,${MacroQuest.Server.Left[1].Upper}${MacroQuest.Server.Right[-1]}_${Me.Class.ShortName}_${Me.DisplayName}]}]}
 		
 		CHECKREZ	
 		CLEARCURSOR
@@ -310,6 +311,11 @@ sub initialize_core(string _ini)
 		/if (!${Defined[INILoot]}) /declare INILoot string outer 
 		/varset INILoot tc\core.${_ini}.loot.ini
 
+		| pregeneration INI
+		/if (!${Defined[INIPreGen]}) /declare INIPreGen string outer 
+		/varset INIPreGen tc\core.pregen.ini		
+
+
 	| and if you are not, use the base
 	} else {
 		| set core INI
@@ -327,6 +333,10 @@ sub initialize_core(string _ini)
 		| set loot INI
 		/if (!${Defined[INILoot]}) /declare INILoot string outer 
 		/varset INILoot tc\core.loot.ini
+		
+		| pregeneration INI
+		/if (!${Defined[INIPreGen]}) /declare INIPreGen string outer 
+		/varset INIPreGen tc\core.pregen.ini		
 	}
 	
 	| set remaining INIs

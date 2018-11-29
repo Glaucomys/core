@@ -12,7 +12,47 @@ MQ2DanNet: https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
 
 
 - ini generation completed:
-  -- PAL, CLR, BER, RNG, SHD
+  -- PAL, CLR, BER, RNG, SHD, BRD
+
+
+
+20181129.00
+- class INI pregeneration
+  -- more progress in the class pregeneration. If you see variables not loading, letme know
+  - files: pregen.inc, core.pregen.ini, fixini.inc, core.mac, 
+  - bard is complete
+  - i cannot stress enough how big of a change this has been making to the ini structure. if you see something not working let me know
+- core.ini
+  -- corected the deathcount generation. variables will no longer have a '.' seperating them
+- stacking issues
+  -- replaced every instance of .Stacks with .NewStacks. maybe this eill let classes buff the SKs
+- /crew
+  -- fixed another eqbc/dannet sort i missed.
+- hud.inc
+  -- fixed an undeclared variable
+- class.shm.inc
+  -- /shm [grow] enable/disable using growth line of spells
+    ini example:
+	  spellGrowth=Ferocious Growth
+	  spellGrowthToon=|shamyname|tankname
+	-- will keep growth on as many toons as it can in the list
+- class.dru.inc
+  -- fixed the pet fix. i blame the druids
+  -- /dru [grow] enable/disable using growth line of spells
+    ini example:
+	  spellGrowth=Ferocious Growth
+	  spellGrowthToon=|tankname|druidname
+	-- will keep growth on as many toons as it can in the list
+- class.enc.inc
+  -- adjusted runeAuspice to work off the new check_buffs_tmp_list()
+- class.nec.inc
+  -- corrected the AA malo Scent of Thule
+- class.shd.inc
+  -- updated an error in Viscious Bite of Chaos. missed a comma
+- class.rng.inc
+  -- relocated a bunch of discs that were in the spells section of the INI
+
+
 
 
 
@@ -23,7 +63,7 @@ MQ2DanNet: https://drive.google.com/open?id=1nHtokSxlprmaoWhW4prvwsQLXmJ5j1r6
   -- also (little rough to explain) /override combat will now work in conjunction with the normal combat roles (melee/range/nuke/dot)
   -- if you do actually get it to assist a tree, bonus points
 - pet weapons
-  -- added in an exceptions dor druids and their slack pets only getting one weapon
+  -- added in an exceptions for druids and their slack pets only getting one weapon
 - food and drink
   -- this is a complete rewrite. you will need to fix your INI entries
   -- each toon has INI entries under [Meal] these control eating and drinking

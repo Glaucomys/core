@@ -21,18 +21,6 @@ sub whitewash(string _echo)
 	/declare _index 				int local 0
 	/declare _increment			int local 1
 	
-	| retired aliases
-	| /varset _todelete[xx] |healoverride|healself|healgroup|healxtarget|healpet|healcure|healaggressive|autoshrink|toast|companionswarm|companion|home|paragon|combatradius|HuntMobAgro
-	| /varset _todelete[xx] |spice|stop|setagro|smartma|setpull|HUDTime|banestrike|broadcast|ib|sb|pb|resetcore|verbose|buildpet|autorest|toastauto|primary|secondary|invis|info|whohas
-	| /varset _todelete[xx] |rezeveryone|rezcombat|rezauto|rezemergency|rezenable|core|invites|facefast|stickbehind|hudupdate|qmpct|qm|toastmobcount|toastengageat|combatdistance
-	| /varset _todelete[xx] |debuffmezz|debuffslow|debufftash|debuffmalo|debuffcripple|debufferadicate|debuffsnare|checkcash|agro|engageat|autorest|smartengageat|watchspawn|petengageat|petswarmengageat
-	| /varset _todelete[xx] |buffbc|bufftell|buffpet|buffitem|buffraid|buffraid|buffself|buffcombat|tie|ignorelos|forage|fish|train|petfarm|drag|ri|hunt|tietoon|tiedistance|tietime
-	| /varset _todelete[xx]	|listremove|listnomezz|listnocast|listexclude|listnamed|listnomelee|listrange|listnomagic|listnodisease|listnofire|listnopoison|listnocold|listnocorruption|listhuntmob
-	| /varset _todelete[xx] |lootleave|lootkeep|lootdestroy|lootsell|buy|sell|lootwhat|lootannounce|lootignore|pettype|pettank|whitewash|doyaulp|cr|ma1|ma2|info|huntagro|killcode|useeradicate
-	| /varset _todelete[xx] |control|smartengageat|killmob|combat|on|off|maxlevel|autoadjustexp|oneoff|userain|crew|autologin|usebuffkill|pathiosis|bcsay|blurb|clean|stack|stein|gtfo|door|echochannel|core
-	| /varset _todelete[xx] |mirror|maintexplvl|autocontrol|echoaugments|relay|givecoin|stop|usegrouphot|usegroupheal|rc|purify|sendpets|harvest|gather|rod|redorod|rods|song|glyph|lesson|wood|cani
-	| /varset _todelete[xx] |here|take|homeradius|homeleash
-		
 	| core aliases
 	/varset _todelete[1] |take|door|stack|here|sendpets|killmob|mirror|stein|stop|blurb|bcsay|echoaugments|autologin|rc|purify|buy|sell|on|off|zonereset|givecoin|oneoff|gtfo|lesson|clean|checkvar|bcsay
 	
@@ -61,7 +49,7 @@ sub whitewash(string _echo)
 sub writeINI(string _varName, string _section, string _value)
 	/if (${Defined[${_varName}]} && ${Ini[${INIClass},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
 		/varset ${_varName} ${_value}
-	 	/ini "${INIClass}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
+	 	/ini "${INIClass}" ${_section} "${_varName}" "${_value}"
 	}
 /return
 
@@ -76,7 +64,7 @@ sub writeINI(string _varName, string _section, string _value)
 sub writeCoreINI(string _varName, string _section, string _value)
 	/if (${Defined[${_varName}]} && ${Ini[${INICore},${_section},${_varName},"${_value}",noparse].NotEqual[${_value}]}) {
 		/varset ${_varName} ${_value}
-	 	/ini "${INICore}" ${_section} "${_varName.Left[1].Upper}${_varName.Right[-1]}" "${_value}"
+	 	/ini "${INICore}" ${_section} "${_varName}" "${_value}"
 	}
 /return
 
@@ -89,6 +77,7 @@ sub writeCoreINI(string _varName, string _section, string _value)
  *  NOTE: 
  ***|
 sub setINIVar(string _name, string _type, string _section, string _value)
+
 	/if (!${Bool[${_name}]} || !${Bool[${_type}]} || !${Bool[${_section}]}) {
 		VOUT ${owarning} ${sep} INVALID INI SETTING/STRING [_name:${_name}/_type:${_type}/_section:${_section}] --\ax
 		/return
@@ -117,12 +106,198 @@ sub setINIVar(string _name, string _type, string _section, string _value)
 
 
 
+
+
+
+|***
+ *	DES: INI controller: will create new entries and read/adapt current entries for use in memory
+ *	USE: 
+ *	INI: 
+ *  NOTE: 
+ ***|
+sub iniControl(bool _error, string _file, string _name, string _type, string _section, string _value)
+	/if (${_error}) SDEBUG passed -- file:${_file}, name:${_name}, type:${_type}, section:${_section}, value:${_value}
+
+	/declare _tmpName string local
+	/declare _count int local 0
+	
+	| set core.ini variables
+	/if (${_file.Equal[core]}) {
+		/varset _file INICore
+	
+	| set the class ini variables
+	} else /if (${_file.Equal[class]}) {
+		/varset _file INIClass
+		
+	| write to core ini only (small updates)
+	} else /if (${_file.Equal[writecore]}) {
+		/if (${Defined[${_name}]} && ${Ini[${INICore},${_section},${_name},"${_value}",noparse].NotEqual[${_value}]}) {
+			/varset ${_name} ${_value}
+		 	/ini "${INICore}" ${_section} ${_name} ${_value}
+		}
+		/return TRUE
+		
+	| write to class ini only (small updates)
+	} else /if (${_file.Equal[writeclass]}) {
+		/if (${Defined[${_name}]} && ${Ini[${INIClass},${_section},${_name},"${_value}",noparse].NotEqual[${_value}]}) {
+			/varset ${_name} ${_value}
+		 	/ini "${INIClass}" ${_section} "${_name}" "${_value}"
+		}
+		/return TRUE
+
+	| just reset the variable.. and go away
+	} else /if (${_file.Equal[declare]}) {
+		/if (${Defined[${_name}]}) {
+			/varset ${_name} ${_value}
+		} else {
+			/declare ${_name} ${_type} outer ${_value}
+		}
+		/return TRUE
+		
+	| bad operations
+	} else {
+		OUT ${owarning} bad INI in operation
+		/return FALSE
+	}
+
+	| define the variable
+	/if (!${Defined[${_name}]}) {
+		/declare ${_name} ${_type} outer
+	}
+
+	| create the INI if it does not exist
+	/if (!${Bool[${Ini[${${_file}},${_section}].Find[${_name}]}]}) {
+
+		/if (!${Bool[${_value}]} && ${_value.NotEqual[FALSE]}) {
+			/for _count 1 to ${Ini[${INIPreGen},${Me.Class.ShortName},${_name}].Count[|]}
+				/if (${Me.Level} >= ${Ini[${INIPreGen},${Me.Class.ShortName},${_name}].Arg[${_count},|]}) {
+					/ini "${${_file}}" "${_section}" "${_name}" "${Ini[${INIPreGen},${Me.Class.ShortName},${_name},noparse].Arg[${Math.Calc[${_count}+1]},|]}"
+					/break
+				}
+				/varset _count ${Math.Calc[${_count}+1]}	
+			/next _count
+		} else {
+			/ini "${${_file}}" "${_section}" "${_name}" "${_value}"
+		}
+
+		/varset ${_name} ${_value}
+
+
+	| or read the INI if it does exist
+	} else {
+		
+		/if (${correctINICase}) {
+			/for _count 1 to ${Ini[${${_file}},${_section}].Count[|]}
+				/varset _tmpName ${Ini[${${_file}},${_section}].Arg[${_count},|]}
+
+				/if (${_tmpName.Equal[${_name}]} && ${_tmpName.NotEqualCS[${_name}]}) {
+					/varset _value ${Ini[${${_file}},${_section},${_name},"${_value}",noparse]}
+					
+					OUT Fixing [${cnum}${_section}\ax] -> ${cnum}${_name}\ax
+					| delete the ini entry
+					/ini "${${_file}}" "${_section}" "${_name}" NULL	
+
+					| rebuild the shit with proper case sensitive
+					/ini "${${_file}}" "${_section}" "${_name}" "${_value}"
+
+					| reset the varible data
+					/varset ${_name} ${Ini[${${_file}},${_section},${_name},"${_value}",noparse]}
+					/break
+				}
+		
+			/next _count
+		}
+		
+		/varset ${_name} ${Ini[${${_file}},${_section},${_name},"${_value}",noparse]}
+	}
+	
+	/if (${_error}) {
+		SDEBUG read -- file:${_file}, name:${_name}, type:${_type}, section:${_section}, data:${${_name}}
+		/echo ${_name}
+	}	
+	
+
+	| reset _name variable if it is a spell with a rank
+	| we do this for the odd spells that do not have ranks that proc spells that do
+	|**
+	/if (${Me.Book[${Me.Book[${${_name}} Rk. III]}].ID}) {
+		/varset ${_name} ${Me.Book[${Me.Book[${${_name}} Rk. III]}].Name} 
+	} else /if (${Me.Book[${Me.Book[${${_name}} Rk. II]}].ID}) {
+		/echo here
+		/varset ${_name} ${Me.Book[${Me.Book[${${_name}} Rk. II]}].Name}
+	} else /if (${Me.CombatAbility[${${_name}} Rk. III]}) {
+		/varset ${_name} ${${_name}} Rk. III
+	} else /if (${Me.CombatAbility[${${_name}} Rk. II]}) {
+		/varset ${_name} ${${_name}} Rk. II
+	}
+	
+	| /if (${Me.Book[${Spell[${${_name}}].RankName}]}) /varset ${_name} ${Spell[${_name}].RankName} 
+	**|
+	
+	
+	/if (${Me.Book[${${_name}} Rk. III]}) {
+		/varset ${_name} ${${_name}} Rk. III
+	} else /if (${Me.Book[${${_name}} Rk. II]}) {
+		| /varset _name ${Spell[${_name}].RankName}
+		/varset ${_name} ${${_name}} Rk. II
+	} else /if (${Me.CombatAbility[${${_name}} Rk. III]}) {
+		/varset ${_name} ${${_name}} Rk. III
+	} else /if (${Me.CombatAbility[${${_name}} Rk. II]}) {
+		/varset ${_name} ${${_name}} Rk. II
+	}	
+
+	
+	
+	/if (${_error}) {
+		SDEBUG ${_name}:${${_name}}
+		SDEBUG 
+	}
+	
+
+
+/return TRUE
+
+
+
+
+${Spell[Frozen Toxin Rk. II].ID}
+${Spell[Frozen Toxin].RankName}
+
+${Spell[Rake].RankName}
+
+
+${Me.CombatAbility[${Spell[Rake].RankName}]}
+
+
+Frozen Toxin
+
+
+Frostbite Lance
+
+
+
+
+${Me.Book[Frozen Toxin Rk. II]}
+
+${Me.Book[Frozen Toxin]}
+
+
+
+
+
+
+
+
+
+
+
+
 |***
  *	DES: creates INI entries for core.ini
  *	USE: 
  *	INI: 
  *  NOTE: 
- ***|
+  ***|
 sub DeclareCoreIniVar(string name, string varType, string section, string value)
 	/if (!${Bool[${name}]} || !${Bool[${varType}]} || !${Bool[${section}]}) {
 		/echo ${cbad}-- INVALID INI SETTING/STRING [${name}/${varType}/${section}] --\ax
@@ -135,7 +310,7 @@ sub DeclareCoreIniVar(string name, string varType, string section, string value)
 		/ini "${INICore}" "${section}" "${name.Left[1].Upper}${name.Right[-1]}" "${${name}}" "${${value}}"
 	}
 /return
- 
+
 
 
 |***
@@ -282,9 +457,22 @@ sub fix_ini_namedlist()
  *  NOTE: 
  ***|
 sub fix_ini_current()
+	/declare _tmpVar string local
+
 
 	| core.ini entries adjusted here EQBCPort
 	
+	
+		| fix the deathcount variable structure
+		/if (${Bool[${Ini[${INICore},deathcount,"${MacroQuest.Server.Left[1].Upper}${MacroQuest.Server.Right[-1]}.${Me.Class.ShortName}.${Me.DisplayName}"]}]}) {
+			/varset _tmpVar ${Ini[${INICore},deathcount,"${MacroQuest.Server.Left[1].Upper}${MacroQuest.Server.Right[-1]}.${Me.Class.ShortName}.${Me.DisplayName}"]}
+			/ini "${INICore}" "deathcount" "${MacroQuest.Server.Left[1].Upper}${MacroQuest.Server.Right[-1]}.${Me.Class.ShortName}.${Me.DisplayName}" NULL
+			/ini "${INICore}" "deathcount" "${MacroQuest.Server.Left[1].Upper}${MacroQuest.Server.Right[-1]}_${Me.Class.ShortName}_${Me.DisplayName}" ${_tmpVar}
+			
+			/varset ${MacroQuest.Server.Left[1].Upper}${MacroQuest.Server.Right[-1]}_${Me.Class.ShortName}_${Me.DisplayName} ${_tmpVar}
+			
+		}
+
 		| 20180926	
 		/ini "${INICore}" "General" "setTGB" NULL
 		/ini "${INICore}" "General" "EQBCServer" NULL
@@ -463,6 +651,17 @@ sub fix_ini_current()
 		| RANGER
 		} else /if (${Select[${Me.Class.ShortName},RNG]}) {
 			
+			| 20181128
+			/ini "${INIClass}" "Spells" "DiscRange" NULL
+			/ini "${INIClass}" "Spells" "DiscMele" NULL
+			/ini "${INIClass}" "Spells" "DiscJolt" NULL
+			/ini "${INIClass}" "Spells" "DiscEnrage" NULL
+			/ini "${INIClass}" "Spells" "DiscHeal" NULL
+			/ini "${INIClass}" "Spells" "BladeStorm" NULL
+			/ini "${INIClass}" "Spells" "DiscSqual" NULL
+
+
+
 			/ini "${INIClass}" "Spells" "SlowHeal" NULL
 			/ini "${INIClass}" "Spells" "FastHeal" NULL
 			/ini "${INIClass}" "Spells" "FastHealPCT" NULL

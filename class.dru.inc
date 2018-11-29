@@ -519,7 +519,7 @@ sub Bind_setDRU(string _classType, string _verbage)
 	/declare _listout string local
 	/declare _count int local 0
 	/declare _bind string local ${Me.Class.ShortName.Lower}
-  /declare _type string	local |fade|groupheal|healpoint|rampage|rod|spiregroup|spireraid|wolf|xtradius|xttime
+  /declare _type string	local |fade|groupheal|grow|healpoint|rampage|rod|spiregroup|spireraid|wolf|xtradius|xttime
 	
 	| get help
 	/if (${_classType.Equal[info]}) {
@@ -541,6 +541,10 @@ sub Bind_setDRU(string _classType, string _verbage)
 		/call writeINI useGroupHeal Heal ${If[${useGroupHeal},FALSE,TRUE]} 	
 	 	/call echos switch "Use Group Heal" useGroupHeal 0 0
 	 	/return
+
+	| use grow temp buff
+	} else /if (${Bool[${_classType.Equal[grow]}]}) {
+		/call writeINI switchGrowth Spells ${If[${switchGrowth},FALSE,TRUE]} 	
 
 	| wolf spirit AAs
 	} else /if (${Bool[${_classType.Equal[wolf]}]}) {
@@ -636,6 +640,7 @@ sub Bind_setDRU(string _classType, string _verbage)
 		/varset _listout ${_listout} ${If[${_sep},${sep},]} ${cinfo}${_type.Arg[${_count},|]}\ax
 		/if (${_type.Arg[${_count},|].Equal[fade]}) /varset _listout ${_listout}(${If[${switchAAFade},${cnum}${useAAFadePct}\ax,${cbad}${useAAFadePct}\ax]})
 		/if (${_type.Arg[${_count},|].Equal[groupheal]}) /varset _listout ${_listout}(${If[${useGroupHeal},${oon},${ooff}]})
+		/if (${_type.Arg[${_count},|].Equal[grow]}) /varset _listout ${_listout}(${If[${switchGrowth},${oon},${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[healpoint]}) /varset _listout ${_listout}(${cnum}->\ax)
 		/if (${_type.Arg[${_count},|].Equal[rampage]}) /varset _listout ${_listout}(${If[${Bool[${RampageTank}]},${cnum}${RampageTank}\ax,${ooff}]})
 		/if (${_type.Arg[${_count},|].Equal[rod]}) /varset _listout ${_listout}(${If[${Bool[${switchModRod}]},${oon},${ooff}]})

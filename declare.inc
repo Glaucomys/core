@@ -580,6 +580,27 @@ sub declare_SHM()
 	/call setINIVar RampageTank											string	Heal FALSE
 	/call setINIVar switchModRod										bool	 	Buffs TRUE
 
+
+	| temp HP grow line
+	/call iniControl FALSE class switchGrowth									bool  Spells FALSE
+ 	/if (${Me.Level} >= 106) {
+	  /call iniControl FALSE class spellGrowth 								string  Spells "Savage Growth"
+	} else /if (${Me.Level} >= 101) {	
+	  /call iniControl FALSE class spellGrowth 								string  Spells "Ferocious Growth"
+	} else /if (${Me.Level} >= 96) {	
+	  /call iniControl FALSE class spellGrowth 								string  Spells "Rampant Growth"
+	} else /if (${Me.Level} >= 91) {	
+	  /call iniControl FALSE class spellGrowth 								string  Spells "Unfettered Growth"
+	} else /if (${Me.Level} >= 86) {	
+	  /call iniControl FALSE class spellGrowth 								string  Spells "Untamed Growth"
+	} else /if (${Me.Level} >= 81) {	
+	  /call iniControl FALSE class spellGrowth 								string  Spells "Wild Growth"
+	} else {	
+	  /call iniControl FALSE class spellGrowth 								string  Spells FALSE
+	}
+	/call iniControl FALSE class spellGrowthToon							string  Spells |FALSE
+
+
 /return	
 
 
@@ -591,55 +612,6 @@ sub declare_SHM()
  *  NOTE: 
  ***|
 sub declare_BRD()
-	/call setTimer tValidate_Lists									string	Timer 15s timer_validate_lists
-	/call setDeclare BRDspire1											string	outer "Fundament: First Spire of the Minstrel"
-	/call setDeclare BRDspire2											string	outer "Fundament: Second Spire of the Minstrel"
-	/call setDeclare BRDspire3											string	outer "Fundament: Third Spire of the Minstrel"
-	/call setDeclare BRDsynergyAA										string	outer "Troubadour's Synergy"
-	/call setDeclare BRDEpic1												string	outer "Singing Short Sword"
-	/call setDeclare BRDEpic15											string	outer "Prismatic Dragon Blade"
-	/call setDeclare BRDEpic2												string	outer "Prismatic Dragon Blade"
-	/call setINIVar BRDAlliance											string	Song "Alliance of Sticks and Stones"
-	/call setDeclare BRDAAUnity											string	outer FALSE
-	/call setDeclare BRDAAFade											string	outer "Fading Memories"
-
-	/call setINIVar switchAAFade										bool		Buffs FALSE
-	/call setINIVar useAAFadePct										int			Buffs 50
-
-	/call setINIVar ServantNukeAA1 									string 	Pet "Lyrical Prankster"
-	/call setINIVar ServantNukeAA2 									string 	Pet "Song of Stone"
-	/call setINIVar songServantNuke									string 	Pet "Plague of the Piper"
-	                                          		
-	/call setDeclare lineType												string	outer |caster|melee|mix|other|tank
-	/call setINIVar lineCurrent											string 	Song Tank
-	/call setINIVar lineTank												string	Song "|Chorus of Sionachie|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Fjilnauk's Song of Suffering|Doben's Spry Sonata"
-	/call setINIVar lineCaster											string	Song "|Chorus of Sionachie|Nilsara's Aria|Fatesong of Jocelyn|Arcane Melody|Aria of Maetanrus"
-	/call setINIVar lineMelee												string	Song "|Chorus of Sionachie|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Fjilnauk's Song of Suffering|Arcane Melody"
-	/call setINIVar lineMix													string	Song "|Chorus of Sionachie|War March of Jocelyn|Fjilnauk's Spiteful Lyric|Nilsara's Aria"
-	/call setINIVar lineOther												string	Song FALSE
-	                                          		
-	/call setINIVar songDicho												string	Song "Dichotomic Psalm"
-	                                          		
-	/call setINIVar DoNuke					 								int			Song 0
-	/call setINIVar Nuke1														string 	Song FALSE
-	/call setINIVar Nuke2														string 	Song FALSE
-                                            		
-	/call setINIVar DoDoT						 								int			Song 0
-	/call setINIVar DoT1														string 	Song FALSE
-	/call setINIVar DoT2														string 	Song FALSE
-                                            		
-	/call setINIVar spellMez												string 	Song "Slumber of Silisia"
-	/call setINIVar spellpbaeMez										string	Song "Wave of Torpor"
-	/call setINIVar spellSlow												string	Song "Requiem of Time"
-	/call setINIVar switchRestSong									bool		Song FALSE
-	/call setINIVar spellRestSong										string	Song FALSE
-	/call setINIVar spellCripple 										string 	Spells FALSE
-	/call setINIVar ${Me.Class.ShortName}Point		 	int 		Heal 80
-	                                          		
-	/call setINIVar switchIntimidKick 							bool	 	meleedisc FALSE
-	/call setINIVar switchModRod										bool	 	Buffs TRUE
-	
-	
 /return	
 
 
@@ -650,80 +622,6 @@ sub declare_BRD()
  *  NOTE: 
  ***|
 sub declare_BST()
-	/call setDeclare BSTspire1											string	outer "Fundament: First Spire of the Savage Lord"
-	/call setDeclare BSTspire2											string	outer "Fundament: Second Spire of the Savage Lord"
-	/call setDeclare BSTspire3											string	outer "Fundament: Third Spire of the Savage Lord"
-	/call setDeclare BSTsynergyAA										string	outer "Primalist's Synergy"
-	/call setDeclare BSTEpic1												string	outer "Claw of the Savage Spirit"
-	/call setDeclare BSTEpic15											string	outer "Savage Lord's Totem"
-	/call setDeclare BSTEpic2												string	outer "Spiritcaller Totem of the Feral"
-	/call setINIVar BSTAlliance											string	Spells "Venomous Alliance"
-	/call setDeclare BSTAAUnity											string	outer "Feralist's Unity"
-	/call setDeclare BSTAAFade											string	outer FALSE
-	
-	/call setINIVar switchAAFade										bool		Buffs FALSE
-	/call setINIVar useAAFadePct										int			Buffs 50
-
-	/call setINIVar DiscForay 											string 	Spells "Pummel"
-	/call setINIVar DiscFocusClaws 									string 	Spells "Focused Clamor of Claws"
-	/call setINIVar DiscSavage 											string 	Spells "Savage Rage"
-	/call setINIVar DiscRuaabri 										string 	Spells "Ruaabri's Fury"	
-	/call setINIVar GrowlSpell 											string 	Spells "Growl of the Leopard"
- 	/call setINIVar ServantNuke		 									string 	Spells "Cry at the Moon"
-  /call setINIVar FeroSpell 											string 	Spells "Savage Ferocity"
-  /call setINIVar DiscEnduring										string 	Spells "Enduring Frenzy"
-  /call setINIVar DiscRending											string 	Spells "Reflexive Rending"
-	                                           		
-	/call setINIVar GrowlSpell 											string 	Pet "Growl of the Leopard"
-	/call setINIVar TasteofBlood										string 	Pet "Taste of Blood"
-	| /call setINIVar Aggression											string 	Pet "Sekmoset's Aggression"
-	/call setINIVar ProcHeal												string 	Pet "Mending Warder"
-	/call setINIVar Calm														string 	Pet "Companion's Calm Demeanor"
-	/call setINIVar DiscRest				 								string	Spells "Breather"
-	/call setINIVar ParagonTXT 											string 	Spells "PARAGON DONE (+5790 HP/tick, +2450 Mana/tick, +264 End/tick)"
-	                                           		
-	/call setINIVar DoNuke							 						int			Spells 5
-	/call setINIVar Nuke1					 									string	Spells "Fozen Miasma"	
-	/call setINIVar Nuke1Condition 									string	Spells FALSE
-	/call setINIVar Nuke2					 									string	Spells "Kromtus Lance"
-	/call setINIVar Nuke2Condition 									string	Spells FALSE
-	/call setINIVar Nuke3					 									string	Spells "Visoracius' Maelstrom"
-	/call setINIVar Nuke3Condition 									string	Spells FALSE
-	/call setINIVar Nuke4					 									string	Spells "Kromrif Lance"
-	/call setINIVar Nuke4Condition 									string	Spells FALSE
-	/call setINIVar Nuke5					 									string	Spells "Krieg's Bite"
-	/call setINIVar Nuke5Condition 									string	Spells FALSE
-	/call setINIVar Nuke6					 									string	Spells FALSE
-	/call setINIVar Nuke6Condition 									string	Spells FALSE
-                                             		
-	/call setINIVar DoDoT						 								int			Spells 0
-	/call setINIVar DoT1							 							string	Spells FALSE
-	/call setINIVar DoT1chk						 							string	Spells FALSE
-	/call setINIVar DoT1Condition 									string	Spells FALSE
-	/call setINIVar DoT2							 							string	Spells FALSE
-	/call setINIVar DoT2chk						 							string	Spells FALSE
-	/call setINIVar DoT2Condition 									string	Spells FALSE
-	/call setINIVar DoT3							 							string	Spells FALSE
-	/call setINIVar DoT3chk						 							string	Spells FALSE
-	/call setINIVar DoT3Condition 									string	Spells FALSE
-	/call setINIVar DoT4							 							string	Spells FALSE
-	/call setINIVar DoT4chk						 							string	Spells FALSE
-	/call setINIVar DoT4Condition 									string	Spells FALSE
-	                                           		
-	/call setINIVar FastHeal			 									string	Spells "Sabhattin's Mending" 
-
-	/call setINIVar switchSelfParagon		 						bool		Spells TRUE
-	/call setINIVar selfParagonPct 									int			Spells 80
-	/call setINIVar switchConsumeSpirit	 						bool		Spells TRUE
-	/call setINIVar ConsumeSpiritPct								int			Spells 80
-	/call setINIVar switchGroupParagon		 					bool		Spells TRUE
-	/call setINIVar groupParagonPct 								int			Spells 50
-                                          		
-	/call setINIVar spellSlow		 										string	Spells "Sha's Reprisal"		
-	/call setINIVar spellCripple 										string 	Spells "Incapacitate"
-                                             		
-	/call setINIVar ${Me.Class.ShortName}Point 			int 		Heal 80
-	/call setINIVar switchModRod										bool	 	Buffs TRUE
 /return	
 
 
@@ -3185,7 +3083,11 @@ sub Bind_crew(string _crewNumber)
 	
 	| drop group. we dont care if you are in one or not.
 	/for _count 1 to ${_clist.Count[|]}
-		/dexecute ${_clist.Arg[${_count},|]} /disband
+			/if (${setCommunications.Equal[eqbc]}) {
+				/bct ${_clist.Arg[${_count},|]} //disband
+			} else /if (${setCommunications.Equal[dannet]}) {
+				/dexecute ${_clist.Arg[${_count},|]} /disband
+			}			
 		/delay 1
 	/next _count			
 	
@@ -4071,8 +3973,8 @@ sub Bind_pregen_control(int _lvl, string _cls, string _name, string _server)
 |***
  *	DES: spellbar gem controls
  *	USE: /gc 
- *	INI: 
- *  NOTE: 
+ *	INI: core.ini
+ *  NOTE: this will store the current spell line up in core.ini. it is sorted by class, not level.
  ***|
 #bind gem_control /gc
 sub Bind_gem_control(string _verbage, string _name)

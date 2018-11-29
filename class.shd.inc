@@ -101,7 +101,7 @@ sub disc_SHD()
 		/if (${SpawnCount[npc ${If[${switchOverrideLos},,los]} radius ${combatRadius}*2 targetable]} >= ${defCount}) {
 			/if (${validate_cast[FALSE, disc, "${DiscLeech}", ${Me.ID}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "${DiscLeech}" disc 0 FALSE
 		}
-		/if (${validate_cast[FALSE, alt, "Vicious Bite of Chaos" ${Target2Kill}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Vicious Bite of Chaos" alt ${Target2Kill} FALSE
+		/if (${validate_cast[FALSE, alt, "Vicious Bite of Chaos", ${Target2Kill}]} && ${Me.PctHPs} < ${${Me.Class.ShortName}Point}*.${tmpHealOverride}) /call core_cast2 "Vicious Bite of Chaos" alt ${Target2Kill} FALSE
 	}
 
 	| heal clickies

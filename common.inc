@@ -277,7 +277,7 @@ sub cast_summon_pet()
 			OUT Missing pet component. 
 			OUT Shutting pets off 'till you go buy some.
 			OUT Don't forget to turn back on.
-			/call writeINI switchPcPet Pet FALSE
+			/call iniControl FALSE writeclass switchPcPet Pet FALSE
 			/return
 		}
 	}
@@ -412,7 +412,7 @@ sub cast_summon_weapons()
 					/call give_to_pet
 					/delay 3s !${Bool[${Cursor.ID}]}
 					/delay 1s
-					/if (${Select[${Me.Class.ShortName},DRU}]}) /break
+					/if (${Select[${Me.Class.ShortName},DRU]}) /break
 				}
 			/next _count
 			/if (${Window[GiveWnd].Open}) {
@@ -632,7 +632,7 @@ sub check_buffs_item()
 
  	AMIDEAD
 	CHECKEXIT
-  /if (${Me.ItemReady[${IllusionItem}]} && !${Bool[${Me.Buff[${IllusionBuff}]}]} && ${Spell[${IllusionBuff}].Stacks}) {
+  /if (${Me.ItemReady[${IllusionItem}]} && !${Bool[${Me.Buff[${IllusionBuff}]}]} && ${Spell[${IllusionBuff}].NewStacks}) {
 		VOUT Item ${sep} ${citem}${IllusionItem}\ax
  		/call MQ2Cast "${IllusionItem}" item 30s
  	}  	
@@ -695,7 +695,7 @@ sub check_buffs_self()
 			/if (!${Me.AltAbilityReady[${${Me.Class.ShortName}AAUnity}]}) /break
 			/if (${Me.CurrentMana} < ${Spell[${${Me.Class.ShortName}AAUnity}].Mana}) /break
 			/if (!${Bool[${BuffAAUnity${_count}}]}) /continue
-			/if (!${Spell[${BuffAAUnity${_count}}].Stacks}) /continue
+			/if (!${Spell[${BuffAAUnity${_count}}].NewStacks}) /continue
 			/if (!${Bool[${Me.Buff[${BuffAAUnity${_count}}].Duration}]}) {
 				/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}AAUnity}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}AAUnity}" alt 0 FALSE
 				/break
@@ -717,7 +717,7 @@ sub check_buffs_self()
 		| self buff ?
 		/if (!${Bool[${Buff${_count}self}]}) /continue		
 		| stacks?
-		/if (!${Spell[${Buff${_count}}].Stacks}) /continue		
+		/if (!${Spell[${Buff${_count}}].NewStacks}) /continue		
 		| already there?
 		/if (${Bool[${Me.Buff[${Buff${_count}chk}].Duration}]}) /continue		
 		| fail the condition?
@@ -812,11 +812,11 @@ sub check_buffs_pet()
 	/next _count
 	
 	| chekck for pet illusion
-	/if (${Bool[${PetIllusion}]} && !${Bool[${Me.Pet.Buff[${PetIllusionBuff}]}]} && ${Me.Pet.Distance} < 100 && ${Spell[${PetIllusionBuff}].Stacks}) /call MQ2Cast "${PetIllusion}" item -targetid|${Me.Pet.ID}
+	/if (${Bool[${PetIllusion}]} && !${Bool[${Me.Pet.Buff[${PetIllusionBuff}]}]} && ${Me.Pet.Distance} < 100 && ${Spell[${PetIllusionBuff}].NewStacks}) /call MQ2Cast "${PetIllusion}" item -targetid|${Me.Pet.ID}
 	| shrink the little bastards..
 	/if (${Bool[${Me.Pet.ID}]}) /call cast_shrink_pet
 	| pet epic click
-	/if (${Me.ItemReady[${EpicClick}]} && !${Me.Pet.Buff[Elemental Conjunction]} && !${Me.Pet.Buff[${EpicPetBuff}]} && !${Me.Pet.Buff[Blessing of Unity]} && ${Spell[${EpicPetBuff}].Stacks}) {
+	/if (${Me.ItemReady[${EpicClick}]} && !${Me.Pet.Buff[Elemental Conjunction]} && !${Me.Pet.Buff[${EpicPetBuff}]} && !${Me.Pet.Buff[Blessing of Unity]} && ${Spell[${EpicPetBuff}].NewStacks}) {
 		/if (${validate_cast[FALSE, item, "${EpicClick}", ${Me.ID}]}) /call core_cast2 "${EpicClick}" item 0 FALSE
 	}
 	
@@ -985,13 +985,13 @@ sub check_buffs_BC()
 
 			| stacking?
 			/if (${setCommunications.Equal[eqbc]}) {
-				/if (!${NetBots[${NetBots.Client[${_toon}]}].Stacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
+				/if (!${NetBots[${NetBots.Client[${_toon}]}].NewStacks[${Spell[${Buff${_buff}chk}].ID}]}) /continue
 			
 			} else /if (${setCommunications.Equal[dannet]}) {
 				/dquery ${_toonName} -q "Me.FreeBuffSlots" -o _DNqout
 				/if (${_DNqout.Equal[0]}) /continue
 								
-				/dquery ${_toonName} -q "Spell[${Buff${_buff}chk}].Stacks" -o _DNqout
+				/dquery ${_toonName} -q "Spell[${Buff${_buff}chk}].NewStacks" -o _DNqout
 				/if (!${_DNqout}) /continue
 
 				| has the buff?
@@ -1330,7 +1330,7 @@ sub set_stop(string _echo)
 	/if (${Me.Pet.ID} && ${Bool[${Me.Pet.Target}]}) /pet back off
 	/doevents flush
 	/if (${Bool[${tempHomeSet}]}) {
-		/call writeINI HomeSet Movement TRUE 
+		/call iniControl FALSE writeclass HomeSet Movement TRUE 
 		/call set_home
 	}
 
@@ -1452,7 +1452,7 @@ sub set_xtarget()
 	/if (!${validate_expansion[FALSE, |16]}) /return	
 	/if (!${Select[${Me.Class.ShortName},SHM,CLR,PAL,DRU]}) {
 		/call echo_bitch MQWindow
-		/if (${Defined[switchHealXtarget]}) /call writeINI switchHealXtarget Heal FALSE 
+		/if (${Defined[switchHealXtarget]}) /call iniControl FALSE writeclass switchHealXtarget Heal FALSE 
 		/return
 	}
 	
@@ -1851,7 +1851,7 @@ sub clear_combat()
  *  NOTE: timers that need clearing when the target is deaded
  ***|
 sub clear_timer(int _tmpID)
-DEBUG clear_timer(${_tmpID})
+	DEBUG clear_timer(${_tmpID})
 	CHECKINPUTS
 	/if (!${_tmpID}) /return
 
@@ -2094,7 +2094,7 @@ sub cast_AA_eradicate_magic(int _tmpID)
 
 	/if (!${AAEradicateList.Find[${Me.Class.ShortName}]}) {
 		VOUT ${onotice} ${sep} Class does not have the AA Eradicate.
-		/call writeINI switchdeBuffEradicate Common FALSE
+		/call iniControl FALSE writeclass switchdeBuffEradicate Common FALSE
 		/call echos switch "deBuff Eradicate" switchdeBuffEradicate	0 0
 		/return
 	}
@@ -2124,7 +2124,7 @@ sub cast_AA_snare(int _tmpID)
 
 	/if (!${Select[${Me.Class.ShortName},RNG,DRU,WAR,ROG,NEC,SHD,WIZ,MNK,PAL,BER]}) {
 		VOUT ${onotice} ${sep} Not an AA snaring class. Delete toon and reroll a ranger.
-		/call writeINI switchdeBuffSnare Common FALSE  
+		/call iniControl FALSE writeclass switchdeBuffSnare Common FALSE  
 		/call echos debuff "Snare" switchdeBuffSnare 0 0	
 		/return
 	}
@@ -2204,12 +2204,12 @@ sub click_BP()
 	
 	/if (${Me.ItemReady[${Breastplate1}]}) {
 		/if (!${cast_condition[Breastplate1Condition]}) /return
-		/if (!${Bool[${Me.Buff[${Breastplate2effect}]}]} && ${Spell[${Breastplate1effect}].Stacks}) {
+		/if (!${Bool[${Me.Buff[${Breastplate2effect}]}]} && ${Spell[${Breastplate1effect}].NewStacks}) {
 			/if (${validate_cast[FALSE, item, "${Breastplate1}", ${Me.ID}]}) /call core_cast2 "${Breastplate1}" item 0 FALSE
 		}
 	} else /if (${Me.ItemReady[${Breastplate2}]}) {
 		/if (!${cast_condition[Breastplate2Condition]}) /return
-		/if (!${Bool[${Me.Song[${Breastplate1effect}]}]} && ${Spell[${Breastplate2effect}].Stacks}) {
+		/if (!${Bool[${Me.Song[${Breastplate1effect}]}]} && ${Spell[${Breastplate2effect}].NewStacks}) {
 			/if (${validate_cast[FALSE, item, "${Breastplate2}", ${Me.ID}]}) /call core_cast2 "${Breastplate2}" item 0 FALSE
 		}
 	}
@@ -3019,7 +3019,7 @@ sub set_tie()
 	| turn off camp
 	/if (${Bool[${MakeCamp}]}) {
 		/squelch /makecamp off
-		/call writeINI HomeSet Movement FALSE 
+		/call iniControl FALSE writeclass HomeSet Movement FALSE 
 	}
 		
 	| MQ2Nav mode for stick
@@ -3503,18 +3503,18 @@ sub cast_yaulp()
 	
 	| use spell Yaulp
 	/if (${Bool[${spellYaulp}]}) {
-		/if (${Me.SpellReady[${spellYaulp}]} && ${Spell[${spellYaulp}].Stacks}) {
+		/if (${Me.SpellReady[${spellYaulp}]} && ${Spell[${spellYaulp}].NewStacks}) {
 			/if (${validate_cast[FALSE, spell, "${spellYaulp}", ${Me.ID}]}) /call core_cast2 "${spellYaulp}" 0 0 FALSE
 		}
 	
 	| use Donals Helm Yaulp (cleric only)
 	} else /if (${Select[${Me.Class.ShortName},CLR]} && ${Me.ItemReady[Darkened Donal's Helm of Mourning]}) {
-		/if (!${Spell[Yaulp XIV Rk. II].Stacks}) /return
+		/if (!${Spell[Yaulp XIV Rk. II].NewStacks}) /return
 		/if (${validate_cast[FALSE, item, "Darkened Donal's Helm of Mourning", ${Me.ID}]}) /call core_cast2 "Darkened Donal's Helm of Mourning" item 0 FALSE
 	
 	| use AA yaulp
 	} else /if (!${FindItem[Darkened Donal's Helm of Mourning].ID} && ${Me.AltAbilityReady[Yaulp (Lesser)]}) {
-		/if (!${Spell[Yaulp (Lesser)].Stacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
+		/if (!${Spell[Yaulp (Lesser)].NewStacks} || ${Bool[${Me.Buff[Lesser Yaulp]}]} || ${Bool[${Me.Buff[Yaulp]}]}) /return
 			/if (${validate_cast[FALSE, alt, "Yaulp (Lesser)", ${Me.ID}]}) /call core_cast2 "Yaulp (Lesser)" alt 0 FALSE
 
 	}
@@ -4628,14 +4628,14 @@ sub check_disc_now()
 	CHECKINPUTS
 
 	| nowDisc1
-	/if (${Bool[${DiscNow1}]} && ${Me.CombatAbilityReady[${DiscNow1}]} && ${Spell[${DiscNow1}].Stacks}) {
+	/if (${Bool[${DiscNow1}]} && ${Me.CombatAbilityReady[${DiscNow1}]} && ${Spell[${DiscNow1}].NewStacks}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (!${Bool[${Me.Buff[${DiscNow1.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow1.Left[-7]}]}]}) {
 			/if (${validate_cast[FALSE, disc, "${DiscNow1}", ${Me.ID}]}) /call core_cast2 "${DiscNow1}" disc 0 FALSE
 		}
 	}
 	| nowDisc2
-	/if (${Bool[${DiscNow2}]} && ${Me.CombatAbilityReady[${DiscNow2}]} && ${Spell[${DiscNow2}].Stacks}) {
+	/if (${Bool[${DiscNow2}]} && ${Me.CombatAbilityReady[${DiscNow2}]} && ${Spell[${DiscNow2}].NewStacks}) {
 		/if (${Select[${Me.Class.ShortName},BRD]} && ${Me.Casting.ID}) /call pulse_stop
 		/if (!${Bool[${Me.Buff[${DiscNow2.Left[-7]}]}]} && !${Bool[${Me.Song[${DiscNow2.Left[-7]}]}]}) {
 			/if (${validate_cast[FALSE, disc, "${DiscNow2}", ${Me.ID}]}) /call core_cast2 "${DiscNow2}" disc 0 FALSE
@@ -5345,6 +5345,7 @@ sub check_buff_routines(bool _force)
 		} else /if (${Select[${Me.Class.ShortName},BST]}) {
 		} else /if (${Select[${Me.Class.ShortName},CLR]}) {
 		} else /if (${Select[${Me.Class.ShortName},DRU]}) {
+			/if (${switchGrowth}) /call check_buffs_tmp_list "${spellGrowth}" "${spellGrowthToon}"
 		} else /if (${Select[${Me.Class.ShortName},ENC]}) {
 			/if (!${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
  			/if (${switchBuffItem}) /call check_crystals
@@ -5363,6 +5364,7 @@ sub check_buff_routines(bool _force)
 			/if (${switchSkin} && !${timer_check_Skin}) /call check_skin
 			/if (${switchStance} && (!${timer_check_Stance} || !${Bool[${Me.Buff[${Stance}]}]})) /call check_stance
 		} else /if (${Select[${Me.Class.ShortName},SHM]}) {
+			/if (${switchGrowth}) /call check_buffs_tmp_list "${spellGrowth}" "${spellGrowthToon}"
 		} else /if (${Select[${Me.Class.ShortName},WAR]}) {
 		} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
 			/if (!${timer_check_runes}) /call check_rune_${Me.Class.ShortName}
@@ -5580,21 +5582,21 @@ sub synergy_click_Circle()
 	| circle of power
 	/if (${useCircle.Equal[Power]}) {
 		/if (${Bool[${Me.Song[Circle of Power]}]}) /return
-		/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].Stacks}) {
+		/if (${Me.ItemReady[${CircleofPower}]} && ${Spell[${FindItem[${CircleofPower}].Spell}].NewStacks}) {
 			/if (${validate_cast[FALSE, item, "${CircleofPower}", ${Me.ID}]}) /call core_cast2 "${CircleofPower}" item 0 FALSE
 		}
 
 	| circle of life
 	} else /if (${useCircle.Equal[Life]}) {
 		/if (${Bool[${Me.Song[Circle of Life]}]}) /return
-		/if (${Me.ItemReady[${CircleofLife}]} && ${Spell[${FindItem[${CircleofLife}].Spell}].Stacks}) {
+		/if (${Me.ItemReady[${CircleofLife}]} && ${Spell[${FindItem[${CircleofLife}].Spell}].NewStacks}) {
 			/if (${validate_cast[FALSE, item, "${CircleofLife}", ${Me.ID}]}) /call core_cast2 "${CircleofLife}" item 0 FALSE
 		}		
 
 	| circle of Mana
 	} else /if (${useCircle.Equal[Mana]}) {
 		/if (${Bool[${Me.Song[Circle of Mana]}]}) /return
-		/if (${Me.ItemReady[${CircleofMana}]} && ${Spell[${FindItem[${CircleofMana}].Spell}].Stacks}) {
+		/if (${Me.ItemReady[${CircleofMana}]} && ${Spell[${FindItem[${CircleofMana}].Spell}].NewStacks}) {
 			/if (${validate_cast[FALSE, item, "${CircleofMana}", ${Me.ID}]}) /call core_cast2 "${CircleofMana}" item 0 FALSE
 		}
 	}
@@ -5634,11 +5636,11 @@ sub cast_AA_spire()
 	CHECKEXIT
 	CHECKINPUTS
 	/if (${Raid.Members} && ${Bool[${${Me.Class.ShortName}spire${spireRaid}}]}) {
-		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireRaid}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireRaid}}].Stacks}) {
+		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireRaid}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireRaid}}].NewStacks}) {
 			/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}spire${spireRaid}}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}spire${spireRaid}}" alt 0 FALSE
 		}
 	} else /if (!${Raid.Members} && ${Bool[${${Me.Class.ShortName}spire${spireGroup}}]}) {
-		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].Stacks}) {
+		/if (!${Bool[${Me.Buff[${${Me.Class.ShortName}spire${spireGroup}}]}]} && ${Spell[${${Me.Class.ShortName}spire${spireGroup}}].NewStacks}) {
 			/if (${validate_cast[FALSE, alt, "${${Me.Class.ShortName}spire${spireGroup}}", ${Me.ID}]}) /call core_cast2 "${${Me.Class.ShortName}spire${spireGroup}}" alt 0 FALSE
 		}
 	}
@@ -5838,7 +5840,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		| check for stacking issues
 		/if (${_tmpID} == ${Me.ID}) {
 			/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && !${Spell[${_spell}].Category.Equal[Heals]}) {
-				/if (!${Spell[${_spell}].Stacks}) /return FALSE
+				/if (!${Spell[${_spell}].NewStacks}) /return FALSE
 				/if (${Me.Buff[${_spell}].ID}) /return FALSE
 				/if (${Me.Song[${_spell}].ID}) /return FALSE		
 			}
@@ -5853,7 +5855,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		}		
 		| stacking
 		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
-			/if (!${Spell[${_spell}].Stacks}) /return FALSE
+			/if (!${Spell[${_spell}].NewStacks}) /return FALSE
 			/if (${Me.Buff[${_spell}].ID}) /return FALSE
 			/if (${Me.Song[${_spell}].ID}) /return FALSE		
 		}
@@ -5871,7 +5873,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 					
 		| stacking
 		/if (${Spell[${_spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
-			/if (!${Spell[${_spell}].Stacks}) /return FALSE
+			/if (!${Spell[${_spell}].NewStacks}) /return FALSE
 		}
 
 	| check disc that requires running disc slot
@@ -5897,7 +5899,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 					
 		| stacking
 		/if (${Spell[${FindItem[=${_spell}].Spell}].SpellType.Equal[Beneficial]} && (${_tmpID} == ${Me.ID})) {
-			/if (!${Spell[${FindItem[=${_spell}].Spell}].Stacks}) /return FALSE
+			/if (!${Spell[${FindItem[=${_spell}].Spell}].NewStacks}) /return FALSE
 		}
 		
 	| epic clicks
@@ -5911,7 +5913,7 @@ sub validate_cast(bool _error, string _type, string _spell, int _tmpID)
 		/if (${Me.Song[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].ID}) /return FALSE
 		
 		/if (${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].SpellType.Equal[Beneficial]} && (${Target.ID} == ${Me.ID})) {
-			/if (!${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].Stacks}) /return FALSE
+			/if (!${Spell[${FindItem[=${${Me.Class.ShortName}Epic${_spell}}].Spell}].NewStacks}) /return FALSE
 		}
 
 	| check bard shit.. gotta be difficult..
@@ -6057,75 +6059,75 @@ sub set_base_install()
 	VOUT Setting base environment for first time use.
 
 	| basics
-	/call writeINI verbose Common TRUE
-	/call writeINI autoRest Common 80
+	/call iniControl FALSE writeclass verbose Common TRUE
+	/call iniControl FALSE writeclass autoRest Common 80
 
 	| set tie stuff
-	/call writeINI tCheck_Tie Timer 5
-	/call writeINI SetTieDistance Movement 5
+	/call iniControl FALSE writeclass tCheck_Tie Timer 5
+	/call iniControl FALSE writeclass SetTieDistance Movement 5
 	
 	| set burns
-	/call writeINI burnAuto Common TRUE
-	/call writeINI burnCount Common 5
-	/call writeINI burnEngageat Common 98
+	/call iniControl FALSE writeclass burnAuto Common TRUE
+	/call iniControl FALSE writeclass burnCount Common 5
+	/call iniControl FALSE writeclass burnEngageat Common 98
 	
 	| combat stuff
-	/call writeINI MobAgro Common 80
-	/call writeINI switchPull Common FALSE
-	/call writeINI MobAgro Common FALSE
-	/call writeINI engageAt Common 98
-	/call writeINI smartengageAt Common98
-	/call writeINI CombatDistance Movement 15
-	/call writeINI combatRadius Common 30
-	/call writeINI zradius Common 30
+	/call iniControl FALSE writeclass MobAgro Common 80
+	/call iniControl FALSE writeclass switchPull Common FALSE
+	/call iniControl FALSE writeclass MobAgro Common FALSE
+	/call iniControl FALSE writeclass engageAt Common 98
+	/call iniControl FALSE writeclass smartengageAt Common98
+	/call iniControl FALSE writeclass CombatDistance Movement 15
+	/call iniControl FALSE writeclass combatRadius Common 30
+	/call iniControl FALSE writeclass zradius Common 30
 	
 	| movement
-	/call writeINI SetStickBehind Movement FALSE
-	/call writeINI SetFaceFast Movement TRUE
-	/call writeINI SetFaceArc Movement 30	
+	/call iniControl FALSE writeclass SetStickBehind Movement FALSE
+	/call iniControl FALSE writeclass SetFaceFast Movement TRUE
+	/call iniControl FALSE writeclass SetFaceArc Movement 30	
 	
 	| buffs
-	/call writeINI switchBuffCombat Buffs FALSE
-	/call writeINI switchBuffItem Buff TRUE
-	/call writeINI switchBuffSelf Buffs TRUE
+	/call iniControl FALSE writeclass switchBuffCombat Buffs FALSE
+	/call iniControl FALSE writeclass switchBuffItem Buff TRUE
+	/call iniControl FALSE writeclass switchBuffSelf Buffs TRUE
 	
 
 	| class specific settings
 	|**
 	/if (${Select[${Me.Class.ShortName},BER]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},BRD]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},BST]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},CLR]}) {
-		/call writeINI combat Common HEAL
+		/call iniControl FALSE writeclass combat Common HEAL
 	} else /if (${Select[${Me.Class.ShortName},DRU]}) {
-		/call writeINI combat Common DUAL
+		/call iniControl FALSE writeclass combat Common DUAL
 	} else /if (${Select[${Me.Class.ShortName},ENC]}) {
-		/call writeINI combat Common DUAL
+		/call iniControl FALSE writeclass combat Common DUAL
 	} else /if (${Select[${Me.Class.ShortName},MAG]}) {
-		/call writeINI combat Common NUKE
+		/call iniControl FALSE writeclass combat Common NUKE
 	} else /if (${Select[${Me.Class.ShortName},MNK]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},NEC]}) {
-		/call writeINI combat Common NUKE
+		/call iniControl FALSE writeclass combat Common NUKE
 	} else /if (${Select[${Me.Class.ShortName},PAL]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},RNG]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},ROG]}) {
-		/call writeINI combat Common MELEE
-		/call writeINI SetStickBehind Movement TRUE
+		/call iniControl FALSE writeclass combat Common MELEE
+		/call iniControl FALSE writeclass SetStickBehind Movement TRUE
 		/override los
 	} else /if (${Select[${Me.Class.ShortName},SHD]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},SHM]}) {
-		/call writeINI combat Common HEAL
+		/call iniControl FALSE writeclass combat Common HEAL
 	} else /if (${Select[${Me.Class.ShortName},WAR]}) {
-		/call writeINI combat Common MELEE
+		/call iniControl FALSE writeclass combat Common MELEE
 	} else /if (${Select[${Me.Class.ShortName},WIZ]}) {
-		/call writeINI combat Common NUKE
+		/call iniControl FALSE writeclass combat Common NUKE
 	}
 	**|
 
@@ -6299,7 +6301,7 @@ sub cast_malo(int _tmpID)
 		}
 
 		| necromancer		
-		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellMalo Scent of Terris
+		/if (${Select[${Me.Class.ShortName},NEC]}) /varset spellMalo Scent of Thule
 
 		/delay 2.25s ${Me.AltAbilityReady[${spellMalo}]}	
 		/if (${validate_cast[FALSE, alt, "${spellMalo}", ${_tmpID}]}) /call core_cast2 "${spellMalo}" alt ${_tmpID} FALSE
@@ -6530,7 +6532,7 @@ sub verify_build()
 			/call fix_INI_declares FALSE
 			
 			| fix INI version builds
-			/call writeINI classBuild common ${coreBuild}
+			/call iniControl FALSE writeclass classBuild outer common ${coreBuild}
 			
 			| clean out all old aliases.
 			/call whitewash NOECHO
@@ -6541,7 +6543,8 @@ sub verify_build()
 	}
 /return
 
-
+${coreBuild}
+${classBuild}
 
 |***
  *	DES: swaps the bandolier if needed
@@ -6613,7 +6616,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	| check mezz switch
 	/if (${Bool[${_deBuffType.Equal[mezz]}]} || ${switchdeBuffMezz}) {
 		/if (!${validate_class[${_error}, |ENC|BRD|MAG|NEC]}) {
-			/call writeINI switchdeBuffMezz Buffs FALSE  
+			/call iniControl FALSE writeclass switchdeBuffMezz Buffs FALSE  
 			/return FALSE
 		}
 	}
@@ -6621,7 +6624,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	| check malo switch
 	/if (${Bool[${_deBuffType.Equal[malo]}]} || ${switchdeBuffMalo}) {
 		/if (!${validate_class[${_error}, |MAG|SHM|NEC]}) {
-			/call writeINI switchdeBuffMalo Buffs FALSE  
+			/call iniControl FALSE writeclass switchdeBuffMalo Buffs FALSE  
 			/return FALSE
 		}
 	}
@@ -6629,7 +6632,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	| check tash switch
 	/if (${Bool[${_deBuffType.Equal[tash]}]} || ${switchdeBuffTash}) {
 		/if (!${validate_class[${_error}, |ENC]}) {
-			/call writeINI switchdeBuffTash Buffs FALSE  
+			/call iniControl FALSE writeclass switchdeBuffTash Buffs FALSE  
 			/return FALSE
 		}
 	}
@@ -6637,7 +6640,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	| check cripple switch
 	/if (${Bool[${_deBuffType.Equal[cripple]}]} || ${switchdeBuffCripple}) {
 		/if (!${validate_class[${_error}, |ENC|SHM|DRU|MAG|NEC|SHD|BST|WIZ]}) {
-			/call writeINI switchdeBuffCripple Buffs FALSE  
+			/call iniControl FALSE writeclass switchdeBuffCripple Buffs FALSE  
 			/return FALSE
 		}
 	}
@@ -6645,7 +6648,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	| check slow swich
 	/if (${Bool[${_deBuffType.Equal[slow]}]} || ${switchdeBuffSlow}) {
 		/if (!${validate_class[${_error}, |ENC|SHM|BRD|NEC|BST]}) {
-			/call writeINI switchdeBuffSlow Buffs FALSE  
+			/call iniControl FALSE writeclass switchdeBuffSlow Buffs FALSE  
 			/return FALSE
 		}
 	}
@@ -6653,7 +6656,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	| check eradicate switch
 	/if (${Bool[${_deBuffType.Equal[eradicate]}]} || ${switchdeBuffEradicate}) {
 		/if (!${validate_class[${_error}, ${AAEradicateList}]}) {
-			/call writeINI switchdeBuffEradicate Buffs FALSE  
+			/call iniControl FALSE writeclass switchdeBuffEradicate Buffs FALSE  
 			/return FALSE
 		}
 	}
@@ -6661,7 +6664,7 @@ sub validate_debuff(bool _error, string _deBuffType)
 	| check snare switch
 	/if (${Bool[${_deBuffType.Equal[snare]}]} || ${switchdeBuffSnare}) {
 		/if (!${validate_class[${_error}, ${AASnareList}|BER]}) {
-			/call writeINI switchdeBuffSnare Buffs FALSE  
+			/call iniControl FALSE writeclass switchdeBuffSnare Buffs FALSE  
 			/return FALSE
 		}
 	}
@@ -6915,7 +6918,7 @@ sub validate_zone(bool _error, bool _force)
 	/if (${_zoned}) {
 		/if (${burnForce}) /varset burnForce FALSE
 		/squelch /makecamp off
-		/if (${HomeSet}) /call writeINI HomeSet Movement FALSE
+		/if (${HomeSet}) /call iniControl FALSE writeclass HomeSet Movement FALSE
 		/if (!${switchPersistentModes}) /call switch_clear_mode
 		/if (${coreAuto} && ${switchShrink}) /call check_shrink
 	}
@@ -6961,77 +6964,77 @@ sub validate_assist(string _echo, string _assist, string _name)
 
 	| disable all assists
 	/if (${_assist.Equal[x]}) {
-		/call writeINI MA1 Common FALSE
-		/call writeINI MA2 Common FALSE
- 		/call writeINI useSmartAssist1 Common FALSE
- 		/call writeINI useSmartAssist2 Common FALSE
- 		/call writeINI useSmartAssist3 Common FALSE
-		/call writeINI useSmartAssistG Common FALSE
-		/call writeINI useForceAssist Common FALSE
+		/call iniControl FALSE writeclass MA1 Common FALSE
+		/call iniControl FALSE writeclass MA2 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist1 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist2 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist3 Common FALSE
+		/call iniControl FALSE writeclass useSmartAssistG Common FALSE
+		/call iniControl FALSE writeclass useForceAssist Common FALSE
 		/xtarget set 1 Autohater
 	
 	| group assist
 	} else /if (${_assist.Equal[g]}) {
- 		/call writeINI useSmartAssist1 Common FALSE
- 		/call writeINI useSmartAssist2 Common FALSE
- 		/call writeINI useSmartAssist3 Common FALSE
-		/call writeINI useSmartAssistG Common TRUE
-		/call writeINI useForceAssist Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist1 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist2 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist3 Common FALSE
+		/call iniControl FALSE writeclass useSmartAssistG Common TRUE
+		/call iniControl FALSE writeclass useForceAssist Common FALSE
 		/xtarget set 1 groupassisttarget	
 
 	| raid assist 1
 	} else /if (${_assist.Equal[1]}) {
- 		/call writeINI useSmartAssist1 Common TRUE
- 		/call writeINI useSmartAssist2 Common FALSE
- 		/call writeINI useSmartAssist3 Common FALSE
-		/call writeINI useSmartAssistG Common FALSE
-		/call writeINI useForceAssist Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist1 Common TRUE
+ 		/call iniControl FALSE writeclass useSmartAssist2 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist3 Common FALSE
+		/call iniControl FALSE writeclass useSmartAssistG Common FALSE
+		/call iniControl FALSE writeclass useForceAssist Common FALSE
 		/xtarget set 1 raidassist1target
 
 	| raid assist 2
 	} else /if (${_assist.Equal[2]}) {
- 		/call writeINI useSmartAssist1 Common FALSE
- 		/call writeINI useSmartAssist2 Common TRUE
- 		/call writeINI useSmartAssist3 Common FALSE
-		/call writeINI useSmartAssistG Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist1 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist2 Common TRUE
+ 		/call iniControl FALSE writeclass useSmartAssist3 Common FALSE
+		/call iniControl FALSE writeclass useSmartAssistG Common FALSE
 		/ca5ll writeINI useForceAssist Common FALSE
 		/xtarget set 1 raidassist2target
 
 	| raid assist 3
 	} else /if (${_assist.Equal[3]}) {
- 		/call writeINI useSmartAssist1 Common FALSE
- 		/call writeINI useSmartAssist2 Common FALSE
- 		/call writeINI useSmartAssist3 Common TRUE
-		/call writeINI useSmartAssistG Common FALSE
-		/call writeINI useForceAssist Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist1 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist2 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist3 Common TRUE
+		/call iniControl FALSE writeclass useSmartAssistG Common FALSE
+		/call iniControl FALSE writeclass useForceAssist Common FALSE
 		/xtarget set 1 raidassist3target
 				
 	| set assist to forced from driver
 	} else /if (${_assist.Equal[f]}) {
-		/call writeINI MA1 Common FALSE
-		/call writeINI MA2 Common FALSE
- 		/call writeINI useSmartAssist1 Common FALSE
- 		/call writeINI useSmartAssist2 Common FALSE
- 		/call writeINI useSmartAssist3 Common FALSE
-		/call writeINI useSmartAssistG Common FALSE
-		/call writeINI useForceAssist Common TRUE
+		/call iniControl FALSE writeclass MA1 Common FALSE
+		/call iniControl FALSE writeclass MA2 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist1 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist2 Common FALSE
+ 		/call iniControl FALSE writeclass useSmartAssist3 Common FALSE
+		/call iniControl FALSE writeclass useSmartAssistG Common FALSE
+		/call iniControl FALSE writeclass useForceAssist Common TRUE
 		/xtarget set 1 Autohater
 		
 	| set assist to MA1
 	} else /if (${_assist.Equal[ma1]}) {
 		/if (${Bool[${_name}]}) {
-			/call writeINI MA1 Common ${_name.Left[1].Upper}${_name.Right[-1].Lower}
+			/call iniControl FALSE writeclass MA1 Common ${_name.Left[1].Upper}${_name.Right[-1].Lower}
 		} else /if (!${Bool[${_name}]})  {
-			/call writeINI MA1 Common FALSE
+			/call iniControl FALSE writeclass MA1 Common FALSE
 		} 				
 		/xtarget set 1 Autohater
 		
 	| set assist to MA2
 	} else /if (${_assist.Equal[ma2]}) {
 		/if (${Bool[${_name}]}) {
-			/call writeINI MA2 Common ${_name.Left[1].Upper}${_name.Right[-1].Lower}
+			/call iniControl FALSE writeclass MA2 Common ${_name.Left[1].Upper}${_name.Right[-1].Lower}
 		} else /if (!${Bool[${_name}]})  {
-			/call writeINI MA2 Common FALSE
+			/call iniControl FALSE writeclass MA2 Common FALSE
 		} 				
 		/xtarget set 1 Autohater
 	} 
@@ -7438,3 +7441,73 @@ sub check_buffs_mgb()
 /return
 
 
+|***
+ *	DES: checks and casts short term te3mp buffs that have a toon list.
+ *	USE: /call check_buffs_tmp_list "${spellvariable}" "${toonlistvariable}"
+ *	INI: 
+ *  NOTE: toons ini
+ ***|
+sub check_buffs_tmp_list(string _spell, string _toonList)
+	DEBUG check_growth()
+	CHECKCOMBATCAST
+	AMIDEAD
+	SIMPLEEXIT
+	CHECKINPUTS
+	CHECKTIE
+
+	
+	/declare _count int local
+	/declare _growthToon string local
+	/declare _DNqout string local
+
+	/for _count 1 to ${_toonList.Count[|]}
+		/varset _growthToon ${_toonList.Arg[${_count},|]}
+		
+		| ready?
+		/if (!${Me.SpellReady[${_spell}]}) /return
+		
+		| me?
+		/if (${_growthToon.Equal[${Me.DisplayName}]} && !${Me.Buff[${_spell}].ID}) {
+			/if (${validate_cast[FALSE, spell, "${_spell}", ${Me.ID}]}) /call core_cast2 "${_spell}" 0 ${Me.ID} FALSE
+			/continue
+		}		
+		
+		| if no network toons. were done here..		
+		/if (${setCommunications.Equal[eqbc]}) {
+			/if (!${validate_plugin[FALSE, |MQ2EQBC]}) /return
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/if (!${validate_plugin[FALSE, |MQ2DanNet]}) /return
+		}
+		
+		| ini set to FALSE?
+		/if (!${Bool[${_growthToon}]}) /return
+		
+		| seriously dont buff corpses
+		/if (${Spawn[${_growthToon}].Type.Equal[corpse]}) /continue
+		
+		| no one to cast on?
+		/if (!${Spawn[${_growthToon}].ID}) /continue
+		
+
+		| spell stacks ?
+		/if (${setCommunications.Equal[eqbc]}) {
+			/if (${NetBots[${_toonList.Arg[${_count},|]}].Buff.Find[${Spell[${_spell}].ID}]}) /continue
+
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/dquery ${_growthToon} -q "Spell[${_spell}].NewStacks" -o _DNqout
+			/if (!${_DNqout}) /continue
+			
+			| has the rune?
+			/dquery ${_growthToon} -q "Me.Buff[${_spell}].ID" -o _DNqout
+			/if (${Bool[${_DNqout}]}) /continue
+		}
+
+		/if (${setCommunications.Equal[eqbc]}) {
+			/if (${validate_cast[FALSE, spell, "${_spell}", ${NetBots[${_growthToon}].ID}]}) /call core_cast2 "${_spell}" 0 ${NetBots[${_growthToon}].ID} FALSE
+		} else /if (${setCommunications.Equal[dannet]}) {
+			/if (${validate_cast[FALSE, spell, "${_spell}", ${Spawn[pc ${_growthToon}].ID}]}) /call core_cast2 "${_spell}" 0 ${Spawn[pc ${_growthToon}].ID} FALSE
+		}
+	
+	/next _count	
+
+/return

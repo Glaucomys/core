@@ -115,6 +115,7 @@ sub click_DPS_MAG()
 	/call click_horn_of_unity 	
 	
 	| click summon rods. DPS fillers....
+	
 	/if (${validate_cast[FALSE, item, "${ParadoxRodName}", ${Target2Kill}]}) /call core_cast2 "${ParadoxRodName}" item ${Target2Kill} FALSE
 	/if (${validate_cast[FALSE, item, "${OrbName}", ${Target2Kill}]}) /call core_cast2 "${OrbName}" item ${Target2Kill} FALSE
 

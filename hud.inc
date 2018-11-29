@@ -28,7 +28,7 @@ sub Bind_hud(string _hcType, string _verbage)
 			VOUT /${_bind} ${cinfo}${${_bind}Type.Arg[${_count},|]}\ax ${sep} ${Ini[${INIWiki},${_bind},${${_bind}Type.Arg[${_count},|]}]}
 		/next _count
 		/return			
-	} else /if (${Bool[${${_bind}Type.Find[${_hcType}]}]} && ${_${_bind}Verbage.Equal[info]}) {
+	} else /if (${Bool[${${_bind}Type.Find[${_hcType}]}]} && ${_verbage.Equal[info]}) {
 		VOUT /${_bind} ${cinfo}${_${_bind}Type.Lower}\ax ${sep} ${Ini[${INIWiki},${_bind},${_${_bind}Type.Lower}]}
 		/return
 	}		
